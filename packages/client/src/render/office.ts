@@ -84,8 +84,9 @@ function extrasFor(item: PlacedItemView): { kind: string; matrix: THREE.Matrix4 
         new THREE.Vector3(1, 1, 1),
       ),
     },
-    { kind: '@screen', matrix: onDesk(-0.5, -0.1) },
-    { kind: '@keyboard', matrix: onDesk(-0.5, 0.2) },
+    // Écran et clavier sont posés sur le plateau : leur gabarit dépend de la hauteur du bureau.
+    { kind: `@screen:${item.kind}`, matrix: onDesk(-0.5, -0.1) },
+    { kind: `@keyboard:${item.kind}`, matrix: onDesk(-0.5, 0.2) },
   ];
 }
 
@@ -100,7 +101,6 @@ export class OfficeView {
   private layoutKey = '';
   private itemsKey = '';
   private buildId = 0;
-  private deskTopY = 0.75;
 
   constructor(private readonly assets: AssetLibrary) {
     this.root.add(this.structure, this.furniture);
@@ -196,17 +196,18 @@ export class OfficeView {
   }
 
   private async loadTemplate(kind: string): Promise<THREE.Object3D> {
-    switch (kind) {
+    const [extra, deskKind = 'desk'] = kind.split(':');
+    switch (extra) {
       case '@chair':
         return (await this.assets.loadFurniture('chairDesk'))?.clone() ?? new THREE.Group();
       case '@screen':
       case '@keyboard': {
-        const model = kind === '@screen' ? 'computerScreen' : 'computerKeyboard';
-        const desk = await this.assets.loadFurniture('desk');
-        if (desk) this.deskTopY = new THREE.Box3().setFromObject(desk).max.y;
+        const model = extra === '@screen' ? 'computerScreen' : 'computerKeyboard';
+        const desk = await this.assets.itemTemplate(deskKind);
+        const deskTop = new THREE.Box3().setFromObject(desk).max.y;
         const loaded = (await this.assets.loadFurniture(model))?.clone();
         if (!loaded) return new THREE.Group();
-        loaded.position.y = this.deskTopY;
+        loaded.position.y = deskTop;
         const group = new THREE.Group();
         group.add(loaded);
         return group;
