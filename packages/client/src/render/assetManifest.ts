@@ -8,7 +8,7 @@
  * Les fichiers sont servis depuis `public/assets/kenney/<pack>/`.
  */
 
-export const KENNEY_BASE = '/assets/kenney';
+export const KENNEY_BASE = `${import.meta.env.BASE_URL}assets/kenney`;
 
 export const PACKS = {
   characters: 'kenney_blocky-characters_20',
