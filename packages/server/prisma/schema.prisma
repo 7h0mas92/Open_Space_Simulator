@@ -1,0 +1,159 @@
+// Modèle de données d'Open Space Simulator.
+// Après modification : `pnpm db:migrate` (crée une migration et régénère le client).
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Locale {
+  fr
+  en
+}
+
+enum GameMode {
+  NORMAL
+  HARDCORE
+  INTERNS_ONLY
+  SHIP_IN_3
+  DAILY
+}
+
+enum Outcome {
+  BANKRUPTCY
+  IPO
+  ACQUISITION
+  ZOMBIE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String?  @unique
+  /// Absent pour un compte créé uniquement via GitHub.
+  passwordHash String?
+  githubId     String?  @unique
+  pseudo       String   @unique
+  role         Role     @default(USER)
+  locale       Locale   @default(fr)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  saves         Save[]
+  scores        Score[]
+  achievements  UserAchievement[]
+  aiQuotas      AiQuota[]
+}
+
+/// Refresh token opaque : seul son empreinte SHA-256 est stockée.
+/// Rotation à chaque usage ; la réutilisation d'un jeton révoqué révoque toute la session.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Save {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Emplacement de 1 à 5.
+  slot      Int
+  state     Json
+  seed      String
+  mode      GameMode
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, slot])
+}
+
+model EventCard {
+  id         String   @id
+  /// { title: {fr, en}, description: {fr, en} }
+  content    Json
+  conditions Json
+  choices    Json
+  weight     Int      @default(1)
+  cooldown   Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  stats EventStat[]
+}
+
+model Score {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode          GameMode
+  /// Valorisation finale en euros (peut dépasser la capacité d'un Int 32 bits).
+  valuation     Float
+  outcome       Outcome
+  sprintsPlayed Int
+  seed          String
+  /// Liste des commandes du joueur : permet le rejeu côté serveur (anti-triche) et les replays.
+  commandsLog   Json
+  dailyDate     DateTime? @db.Date
+  createdAt     DateTime  @default(now())
+
+  @@index([mode, valuation])
+  @@index([dailyDate, valuation])
+  @@index([userId])
+}
+
+model Achievement {
+  id          String @id
+  title       Json
+  description Json
+  icon        String
+
+  users UserAchievement[]
+}
+
+model UserAchievement {
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+
+  @@id([userId, achievementId])
+}
+
+model EventStat {
+  cardId      String
+  card        EventCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  choiceIndex Int
+  count       Int       @default(0)
+
+  @@id([cardId, choiceIndex])
+}
+
+/// Quota quotidien d'appels au Slack IA par utilisateur.
+model AiQuota {
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   DateTime @db.Date
+  count  Int      @default(0)
+
+  @@id([userId, date])
+}

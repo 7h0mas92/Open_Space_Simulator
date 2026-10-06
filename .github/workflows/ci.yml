@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+
+jobs:
+  quality:
+    name: Lint, typecheck, tests, build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: oss
+          POSTGRES_PASSWORD: oss
+          POSTGRES_DB: oss
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U oss" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - name: Tests unitaires et d'intégration
+        run: pnpm test
+        env:
+          TEST_DATABASE_URL: postgresql://oss:oss@localhost:5432/oss_test
+      - run: pnpm build
+
+  e2e:
+    name: Tests end-to-end (Playwright)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: oss
+          POSTGRES_PASSWORD: oss
+          POSTGRES_DB: oss
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U oss" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @oss/shared build && pnpm --filter @oss/server db:generate
+      - run: pnpm --filter @oss/client exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+        env:
+          E2E_DATABASE_URL: postgresql://oss:oss@localhost:5432/oss_e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: packages/client/playwright-report
+          retention-days: 7

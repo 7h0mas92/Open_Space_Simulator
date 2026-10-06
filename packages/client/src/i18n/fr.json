@@ -1,0 +1,50 @@
+{
+  "app": {
+    "title": "Open Space Simulator 2026",
+    "pitch": "Ta startup a levé 2 millions. Tu as 18 mois avant que tout explose. Bonne chance."
+  },
+  "menu": {
+    "newGame": "Nouvelle partie",
+    "guest": "Jouer en invité",
+    "comingSoon": "Le jeu arrive dans les prochaines étapes. Pour l'instant, crée ton compte de fondateur.",
+    "welcome": "Bienvenue, {{pseudo}} !",
+    "admin": "Administrateur",
+    "logout": "Se déconnecter"
+  },
+  "language": {
+    "label": "Langue",
+    "fr": "Français",
+    "en": "English"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "email": "Email",
+    "password": "Mot de passe",
+    "passwordHint": "8 caractères minimum",
+    "pseudo": "Pseudo",
+    "pseudoHint": "3 à 24 caractères : lettres, chiffres, _ . -",
+    "submitLogin": "Se connecter",
+    "submitRegister": "Créer mon compte",
+    "github": "Continuer avec GitHub",
+    "or": "ou",
+    "loading": "Chargement…",
+    "githubSuccess": "Connecté avec GitHub."
+  },
+  "errors": {
+    "VALIDATION_ERROR": "Certains champs sont invalides.",
+    "UNAUTHORIZED": "Tu dois être connecté.",
+    "FORBIDDEN": "Accès refusé.",
+    "NOT_FOUND": "Introuvable.",
+    "CONFLICT": "Conflit avec des données existantes.",
+    "INVALID_CREDENTIALS": "Email ou mot de passe incorrect.",
+    "EMAIL_TAKEN": "Un compte existe déjà avec cet email.",
+    "PSEUDO_TAKEN": "Ce pseudo est déjà pris.",
+    "INVALID_REFRESH_TOKEN": "Session expirée, reconnecte-toi.",
+    "OAUTH_FAILED": "La connexion GitHub a échoué.",
+    "OAUTH_NOT_CONFIGURED": "La connexion GitHub n'est pas configurée sur ce serveur.",
+    "RATE_LIMITED": "Trop de tentatives, patiente une minute.",
+    "INTERNAL_ERROR": "Le serveur a planté. Comme la prod un vendredi à 17h.",
+    "NETWORK_ERROR": "Serveur injoignable. Vérifie ta connexion."
+  }
+}
