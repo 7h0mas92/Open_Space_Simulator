@@ -57,8 +57,8 @@ export const ROLE_PROFILES: Record<DevRole, RoleProfile> = {
     stats: { speed: 8, quality: 5, endurance: 6, ego: 9 },
     salary: 10000,
     speedMultiplier: 2.2,
-    qualityMultiplier: 1,
-    debtMultiplier: 2.2,
+    qualityMultiplier: 1.2,
+    debtMultiplier: 1.3,
   },
   INTERN: {
     stats: { speed: 4, quality: 3, endurance: 8, ego: 3 },
@@ -92,8 +92,8 @@ export const ROLE_PROFILES: Record<DevRole, RoleProfile> = {
     stats: { speed: 9, quality: 4, endurance: 10, ego: 1 },
     salary: 4000,
     speedMultiplier: 3,
-    qualityMultiplier: 0.9,
-    debtMultiplier: 1.5,
+    qualityMultiplier: 1.2,
+    debtMultiplier: 1,
   },
   GHOST: {
     stats: { speed: 6, quality: 6, endurance: 7, ego: 4 },
@@ -178,7 +178,7 @@ export const BALANCE = {
   },
   economy: {
     /** Revenu mensuel moyen par utilisateur (euros). */
-    arpuMonthly: 0.6,
+    arpuMonthly: 0.45,
     /** Frais fixes par dev et par mois : matériel, licences, mutuelle, tickets resto. */
     overheadPerDevMonthly: 2500,
     /** Frais fixes mensuels de la phase : loyer, marketing, comptable, avocats... */
@@ -205,14 +205,14 @@ export const BALANCE = {
     instabilityDailyChurn: 0.02,
     designerBonus: 0.15,
     hypePerFeaturePoint: 0.5,
-    hypePerRefactoPoint: -0.35,
+    hypePerRefactoPoint: -0.8,
   },
   debt: {
     featurePerPoint: 1.1,
-    refactoPerPoint: -2.6,
+    refactoPerPoint: -1.8,
     bugfixPerPoint: -0.4,
     infraPerPoint: -0.3,
-    hallucinationDebt: 3,
+    hallucinationDebt: 1,
   },
   stability: {
     featurePerPoint: -0.35,

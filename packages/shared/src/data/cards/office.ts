@@ -40,11 +40,11 @@ export const OFFICE_CARDS: EventCard[] = [
     choices: [
       {
         label: t('Acheter la plus chère du marché', 'Buy the most expensive one available'),
-        effects: { treasury: -8000, coffee: 40, moral: 3 },
+        effects: { treasury: -30000, coffee: 40, moral: 3 },
       },
       {
         label: t('Passer au thé', 'Switch to tea'),
-        effects: { coffee: -50, moral: -15, 'moral.DESIGNER': 5 },
+        effects: { coffee: -35, moral: -8, 'moral.DESIGNER': 10, treasury: 2000 },
       },
     ],
   }),

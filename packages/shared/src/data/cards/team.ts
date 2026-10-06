@@ -287,11 +287,11 @@ export const TEAM_CARDS: EventCard[] = [
     choices: [
       {
         label: t('Boire le décaféiné quand même', 'Drink it anyway'),
-        effects: { coffee: -40, moral: -5 },
+        effects: { coffee: -25, moral: -3, 'moral.INTERN': 5 },
       },
       {
         label: t('Racheter du vrai café', 'Buy real coffee'),
-        effects: { treasury: -4000, coffee: 20 },
+        effects: { treasury: -15000, coffee: 20 },
       },
     ],
   }),
