@@ -43,7 +43,11 @@ export const EnvSchema = z
     GITHUB_CALLBACK_URL: z.url().optional(),
 
     /** Slack piloté par l'IA (facultatif) : sans clé, le jeu utilise ses templates. */
-    ANTHROPIC_API_KEY: z.string().min(1).optional(),
+    // Une ligne `ANTHROPIC_API_KEY=` vide dans le .env vaut « pas de clé ».
+    ANTHROPIC_API_KEY: z
+      .string()
+      .optional()
+      .transform((key) => key?.trim() || undefined),
     ANTHROPIC_MODEL: z.string().min(1).default('claude-opus-5-5'),
     /** Appels à l'IA par joueur et par jour (les réponses en cache ne comptent pas). */
     AI_DAILY_QUOTA: z.coerce.number().int().min(0).default(40),
