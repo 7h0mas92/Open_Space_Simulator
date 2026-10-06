@@ -220,7 +220,7 @@ describe('formatage', () => {
     expect(formatGauge('treasury', 2_000_000, 'en-US@posix')).toBe('€2M');
     expect(formatGauge('users', 1500, 'en')).toBe('1.5K');
     expect(formatGauge('coffee', 79.6, 'fr')).toBe('80');
-    expect(intlLocale('EN')).toBe('en-GB');
+    expect(intlLocale('EN')).toBe('en-US');
     expect(formatClock(17 * 60 + 4)).toBe('17:04');
   });
 

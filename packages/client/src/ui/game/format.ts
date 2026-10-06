@@ -5,7 +5,7 @@ import type { GaugeName } from '../../view/types';
  * (« en-US@posix ») qu'Intl refuse : on se ramène aux deux langues du jeu.
  */
 export function intlLocale(language: string): string {
-  return language.toLowerCase().startsWith('en') ? 'en-GB' : 'fr-FR';
+  return language.toLowerCase().startsWith('en') ? 'en-US' : 'fr-FR';
 }
 
 /** Formate la valeur d'une jauge pour l'affichage (euros compacts, pourcentages, nombres). */
