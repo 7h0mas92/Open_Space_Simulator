@@ -114,47 +114,53 @@ function CardsTab() {
       ) : (
         <>
           <p>{t('admin.count', { shown: filtered.length, total: cards.length })}</p>
-          <table className="score-table admin-table">
-            <thead>
-              <tr>
-                <th scope="col">{t('admin.cardTitle')}</th>
-                <th scope="col" className="hide-narrow">
-                  {t('admin.weight')}
-                </th>
-                <th scope="col">{t('admin.state')}</th>
-                <th scope="col">
-                  <span className="visually-hidden">{t('admin.actions')}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((card) => (
-                <tr key={card.id} className={card.active ? undefined : 'inactive'}>
-                  <th scope="row">
-                    {localized(card.title, i18n.language)}
-                    <small>{card.id}</small>
+          <div className="table-scroll">
+            <table className="score-table admin-table">
+              <thead>
+                <tr>
+                  <th scope="col">{t('admin.cardTitle')}</th>
+                  <th scope="col" className="hide-narrow">
+                    {t('admin.weight')}
                   </th>
-                  <td className="hide-narrow">{card.weight}</td>
-                  <td>{card.active ? t('admin.on') : t('admin.off')}</td>
-                  <td className="row-actions">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEditing({ card: editableCard(card), active: card.active, isNew: false })
-                      }
-                    >
-                      {t('admin.edit')}
-                    </button>
-                    {card.active && (
-                      <button type="button" className="danger" onClick={() => void disable(card)}>
-                        {t('admin.disable')}
-                      </button>
-                    )}
-                  </td>
+                  <th scope="col">{t('admin.state')}</th>
+                  <th scope="col">
+                    <span className="visually-hidden">{t('admin.actions')}</span>
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map((card) => (
+                  <tr key={card.id} className={card.active ? undefined : 'inactive'}>
+                    <th scope="row">
+                      {localized(card.title, i18n.language)}
+                      <small>{card.id}</small>
+                    </th>
+                    <td className="hide-narrow">{card.weight}</td>
+                    <td>{card.active ? t('admin.on') : t('admin.off')}</td>
+                    <td className="row-actions">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditing({
+                            card: editableCard(card),
+                            active: card.active,
+                            isNew: false,
+                          })
+                        }
+                      >
+                        {t('admin.edit')}
+                      </button>
+                      {card.active && (
+                        <button type="button" className="danger" onClick={() => void disable(card)}>
+                          {t('admin.disable')}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </div>

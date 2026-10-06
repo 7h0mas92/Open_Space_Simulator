@@ -23,7 +23,11 @@ export const pendingAchievements = {
     const ids = await this.all();
     if (ids.length === 0) return [];
     const unlocked = await metaApi.unlockAchievements(ids);
-    await localStore().delete(KEY);
+    // On ne retire que ce qui a été envoyé : un succès ajouté pendant la requête est gardé.
+    const sent = new Set(ids);
+    const left = (await this.all()).filter((id) => !sent.has(id));
+    if (left.length === 0) await localStore().delete(KEY);
+    else await localStore().set(KEY, left);
     return unlocked;
   },
 };

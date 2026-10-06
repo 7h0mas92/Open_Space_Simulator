@@ -2,6 +2,10 @@
  * Effets de bord d'une partie, branchés sur le store du jeu : sauvegarde automatique à chaque
  * planification, publication du score à la fin, succès gardés pour le serveur.
  */
+import { ApiRequestError } from '../../api/client';
+import { metaApi } from '../../api/meta';
+import { pendingAchievements } from '../../save/achievements';
+import { saves } from '../../save/saves';
 import type { GameView } from '../../view/types';
 import { useGame } from './game';
 import { useSession } from './session';
@@ -17,8 +21,7 @@ export function dailyDateOf(seed: string): string | undefined {
 export async function saveGame(slot: number): Promise<boolean> {
   const { source, replayOf } = useGame.getState();
   if (!source || replayOf !== null) return false;
-  const [{ saves }, data] = await Promise.all([import('../../save/saves'), source.save()]);
-  return saves.write(slot, data, source.cardsVersion, isOnline());
+  return saves.write(slot, await source.save(), source.cardsVersion, isOnline());
 }
 
 /** Publie le score d'une partie terminée (le serveur la rejoue pour la vérifier). */
@@ -31,7 +34,7 @@ export async function submitScore(): Promise<void> {
   }
   useGame.setState({ submission: { status: 'pending' } });
   try {
-    const [{ metaApi }, data] = await Promise.all([import('../../api/meta'), source.save()]);
+    const data = await source.save();
     const response = await metaApi.submitScore({
       mode: view.mode,
       seed: view.seed,
@@ -49,7 +52,6 @@ export async function submitScore(): Promise<void> {
       },
     });
   } catch (error) {
-    const { ApiRequestError } = await import('../../api/client');
     useGame.setState({
       submission: {
         status: 'error',
@@ -60,7 +62,6 @@ export async function submitScore(): Promise<void> {
 }
 
 async function rememberAchievements(ids: readonly string[]): Promise<void> {
-  const { pendingAchievements } = await import('../../save/achievements');
   await pendingAchievements.add(ids);
   if (isOnline()) await pendingAchievements.sync().catch(() => undefined);
 }
@@ -87,10 +88,6 @@ export function installGameLifecycle(): () => void {
 
 /** À la connexion : envoie les sauvegardes et les succès faits hors ligne. */
 export async function syncOfflineProgress(): Promise<void> {
-  const [{ saves }, { pendingAchievements }] = await Promise.all([
-    import('../../save/saves'),
-    import('../../save/achievements'),
-  ]);
   await saves.syncPending().catch(() => 0);
   await pendingAchievements.sync().catch(() => []);
 }

@@ -140,8 +140,13 @@ export class SlackFeed {
     const slack = useSlack.getState();
     const callAi = this.options.callAi;
     const important = notifications.findLast((n) => AI_KINDS.has(n.kind));
+    // L'IA a besoin d'au moins un dev pour écrire ; sinon on reste sur les templates.
     const useAi =
-      callAi && slack.ai === 'on' && important && this.now() - this.lastAiCall >= AI_COOLDOWN_MS;
+      callAi &&
+      slack.ai === 'on' &&
+      important &&
+      view.devs.length > 0 &&
+      this.now() - this.lastAiCall >= AI_COOLDOWN_MS;
     const rest = useAi ? notifications.filter((n) => n !== important) : notifications;
     slack.add(messagesForNotifications(rest, view, this.random));
     if (!useAi || !important || !callAi) return;

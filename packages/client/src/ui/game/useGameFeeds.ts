@@ -4,6 +4,7 @@
  */
 import type { SlackAiRequest } from '@oss/shared';
 import { useEffect } from 'react';
+import { metaApi } from '../../api/meta';
 import { AudioPlayer } from '../../audio/player';
 import { aiMessage, type SlackMessage } from '../../slack/generator';
 import { SlackFeed, useSlack } from '../../slack/store';
@@ -18,7 +19,6 @@ const volumesOf = (settings: Settings) => ({
 });
 
 async function callAi(request: SlackAiRequest): Promise<SlackMessage[]> {
-  const { metaApi } = await import('../../api/meta');
   const response = await metaApi.slackAi.message(request);
   const view = useGame.getState().view;
   return view ? response.messages.map((message) => aiMessage(message, view)) : [];
@@ -35,8 +35,8 @@ function useAiState() {
       return;
     }
     let cancelled = false;
-    import('../../api/meta')
-      .then(({ metaApi }) => metaApi.slackAi.status())
+    metaApi.slackAi
+      .status()
       .then((status) => !cancelled && slack.setAi(status.enabled ? 'on' : 'unavailable'))
       .catch(() => !cancelled && slack.setAi('unavailable'));
     return () => {

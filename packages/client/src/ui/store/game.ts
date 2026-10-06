@@ -16,6 +16,7 @@ import {
   type SaveData,
 } from '@oss/shared';
 import { create } from 'zustand';
+import { metaApi } from '../../api/meta';
 import type { PickTarget } from '../../render/GameRenderer';
 import type { GameSource } from '../../view/source';
 import type {
@@ -146,7 +147,6 @@ function randomSeed(): string {
 /** Graine du Daily : demandée au serveur, ou calculée localement hors ligne. */
 async function todaySeed(): Promise<string> {
   try {
-    const { metaApi } = await import('../../api/meta');
     return (await metaApi.daily()).seed;
   } catch {
     return dailySeed(utcDate(new Date()));

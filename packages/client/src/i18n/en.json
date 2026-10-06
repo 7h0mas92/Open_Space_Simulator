@@ -4,12 +4,9 @@
     "pitch": "Your startup just raised 2 million. You have 18 months before everything blows up. Good luck."
   },
   "menu": {
-    "newGame": "New game",
-    "guest": "Play as guest",
     "welcome": "Welcome, {{pseudo}}!",
     "admin": "Administrator",
     "logout": "Log out",
-    "credits": "Credits",
     "guestHint": "No account, no leaderboard. Prod still goes down, though.",
     "continue": "Load a game",
     "more": "More",
@@ -192,15 +189,7 @@
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
     "day": "{{day}} {{time}}",
-    "days": [
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-      "Sun"
-    ],
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     "pause": "Pause",
     "speed": "Speed x{{speed}}",
     "speeds": "Game speed",
@@ -477,7 +466,8 @@
     "replay": "Watch",
     "watch": "Watch {{pseudo}}'s game",
     "empty": "Nobody has posted a score here yet.",
-    "error": "Could not reach the server."
+    "error": "Could not reach the server.",
+    "replayError": "Could not load this replay."
   },
   "replay": {
     "banner": "{{pseudo}}'s replay: command {{played}}/{{total}}",

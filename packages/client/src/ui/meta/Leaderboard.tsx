@@ -52,6 +52,7 @@ function BoardTable({ board }: { board: Board }) {
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
   const [error, setError] = useState(false);
   const [loadingReplay, setLoadingReplay] = useState<string | null>(null);
+  const [replayError, setReplayError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,6 +67,7 @@ function BoardTable({ board }: { board: Board }) {
 
   async function watch(entry: LeaderboardEntry) {
     setLoadingReplay(entry.id);
+    setReplayError(false);
     try {
       const replay = await metaApi.replay(entry.id);
       await start({
@@ -79,7 +81,7 @@ function BoardTable({ board }: { board: Board }) {
         },
       });
     } catch {
-      setError(true);
+      setReplayError(true);
     } finally {
       setLoadingReplay(null);
     }
@@ -87,6 +89,11 @@ function BoardTable({ board }: { board: Board }) {
 
   return (
     <>
+      {replayError && (
+        <p className="error" role="alert">
+          {t('leaderboard.replayError')}
+        </p>
+      )}
       {error && (
         <p className="error" role="alert">
           {t('leaderboard.error')}
@@ -95,44 +102,46 @@ function BoardTable({ board }: { board: Board }) {
       {!error && entries === null && <p aria-live="polite">{t('auth.loading')}</p>}
       {entries?.length === 0 && <p>{t('leaderboard.empty')}</p>}
       {entries && entries.length > 0 && (
-        <table className="score-table">
-          <caption className="visually-hidden">{t('leaderboard.title')}</caption>
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">{t('leaderboard.player')}</th>
-              <th scope="col">{t('leaderboard.outcome')}</th>
-              <th scope="col">{t('leaderboard.valuation')}</th>
-              <th scope="col" className="hide-narrow">
-                {t('leaderboard.sprints')}
-              </th>
-              <th scope="col">
-                <span className="visually-hidden">{t('leaderboard.replay')}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((entry) => (
-              <tr key={entry.id}>
-                <td>{entry.rank}</td>
-                <th scope="row">{entry.pseudo}</th>
-                <td>{t(`end.outcomes.${entry.outcome}`)}</td>
-                <td>{formatGauge('treasury', entry.valuation, i18n.language)}</td>
-                <td className="hide-narrow">{entry.sprintsPlayed}</td>
-                <td>
-                  <button
-                    type="button"
-                    disabled={loadingReplay !== null}
-                    onClick={() => void watch(entry)}
-                    aria-label={t('leaderboard.watch', { pseudo: entry.pseudo })}
-                  >
-                    ▶ {t('leaderboard.replay')}
-                  </button>
-                </td>
+        <div className="table-scroll">
+          <table className="score-table">
+            <caption className="visually-hidden">{t('leaderboard.title')}</caption>
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">{t('leaderboard.player')}</th>
+                <th scope="col">{t('leaderboard.outcome')}</th>
+                <th scope="col">{t('leaderboard.valuation')}</th>
+                <th scope="col" className="hide-narrow">
+                  {t('leaderboard.sprints')}
+                </th>
+                <th scope="col">
+                  <span className="visually-hidden">{t('leaderboard.replay')}</span>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {entries.map((entry) => (
+                <tr key={entry.id}>
+                  <td>{entry.rank}</td>
+                  <th scope="row">{entry.pseudo}</th>
+                  <td>{t(`end.outcomes.${entry.outcome}`)}</td>
+                  <td>{formatGauge('treasury', entry.valuation, i18n.language)}</td>
+                  <td className="hide-narrow">{entry.sprintsPlayed}</td>
+                  <td>
+                    <button
+                      type="button"
+                      disabled={loadingReplay !== null}
+                      onClick={() => void watch(entry)}
+                      aria-label={t('leaderboard.watch', { pseudo: entry.pseudo })}
+                    >
+                      ▶ <span className="hide-narrow">{t('leaderboard.replay')}</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </>
   );

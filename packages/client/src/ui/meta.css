@@ -473,3 +473,56 @@
   transform: none;
   padding: 0.5rem 0.75rem;
 }
+
+/* Un tableau trop large défile dans son cadre plutôt que de déborder de la page. */
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 600px) {
+  .score-table {
+    font-size: 0.9rem;
+  }
+}
+
+/* Barre d'actions : le compteur Slack se pose sur l'icône. */
+.action-bar button {
+  position: relative;
+}
+
+.action-bar .unread {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 1rem;
+  height: 1rem;
+  font-size: 0.65rem;
+}
+
+/* Téléphone en portrait : 8 actions, on ne garde que les icônes (le nom reste lu par les
+   lecteurs d'écran). */
+@media (max-width: 599px) {
+  .action-bar .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .action-bar .icon {
+    font-size: 1.35rem;
+  }
+
+  /* 8 cibles de 44 px doivent tenir dans 375 px : pas d'espace perdu entre elles. */
+  .action-bar {
+    gap: 0;
+    padding: 1px;
+  }
+
+  .action-bar button {
+    padding: 0;
+  }
+}

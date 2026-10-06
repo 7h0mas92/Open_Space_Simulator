@@ -4,12 +4,9 @@
     "pitch": "Ta startup a levé 2 millions. Tu as 18 mois avant que tout explose. Bonne chance."
   },
   "menu": {
-    "newGame": "Nouvelle partie",
-    "guest": "Jouer en invité",
     "welcome": "Bienvenue, {{pseudo}} !",
     "admin": "Administrateur",
     "logout": "Se déconnecter",
-    "credits": "Crédits",
     "guestHint": "Sans compte, pas de classement. Mais la prod tombe quand même.",
     "continue": "Charger une partie",
     "more": "Plus",
@@ -192,15 +189,7 @@
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
     "day": "{{day}} {{time}}",
-    "days": [
-      "Lun",
-      "Mar",
-      "Mer",
-      "Jeu",
-      "Ven",
-      "Sam",
-      "Dim"
-    ],
+    "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
     "pause": "Pause",
     "speed": "Vitesse x{{speed}}",
     "speeds": "Vitesse du jeu",
@@ -477,7 +466,8 @@
     "replay": "Revoir",
     "watch": "Revoir la partie de {{pseudo}}",
     "empty": "Personne n'a encore publié de score ici.",
-    "error": "Impossible de joindre le serveur."
+    "error": "Impossible de joindre le serveur.",
+    "replayError": "Impossible de charger ce replay."
   },
   "replay": {
     "banner": "Replay de {{pseudo}} : commande {{played}}/{{total}}",
