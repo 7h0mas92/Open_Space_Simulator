@@ -1035,6 +1035,10 @@ legend {
 /* --- Ordinateur (≥ 1024 px) : HUD latéral, panneau à droite --------------------------- */
 
 @media (min-width: 1024px) and (min-height: 501px) {
+  .game {
+    --panel-width: min(34rem, 42vw);
+  }
+
   .hud {
     flex-direction: row;
     padding: 16px;
@@ -1089,15 +1093,23 @@ legend {
 
   .sheet {
     inset: 16px 16px 16px auto;
-    width: min(34rem, 42vw);
+    width: var(--panel-width);
     height: auto;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     animation-name: sheet-left;
   }
 
-  .game.has-panel .alerts {
-    left: calc(50% - 17rem);
+  /* Panneau ouvert à droite : les éléments centrés se recentrent sur la partie visible. */
+  .game.has-panel .alerts,
+  .game.has-panel .selection-bar {
+    left: calc((100vw - var(--panel-width) - 32px) / 2);
+  }
+
+  /* L'horloge se cale à droite de la colonne des jauges pour ne pas la chevaucher. */
+  .game.has-panel .time-controls {
+    left: calc(15rem + 32px);
+    transform: none;
   }
 
   .kanban-columns {
@@ -1118,7 +1130,7 @@ legend {
 }
 
 @media (min-width: 1440px) {
-  .sheet {
-    width: 40rem;
+  .game {
+    --panel-width: 40rem;
   }
 }

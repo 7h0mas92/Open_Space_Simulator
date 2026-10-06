@@ -26,21 +26,22 @@ interface Keyframe {
   readonly background: number;
 }
 
+// Le soir, les lumières du bureau prennent le relais : l'ambiance reste lisible, en plus chaud.
 const KEYFRAMES: readonly Keyframe[] = [
   {
     hour: 0,
-    sun: 0.05,
+    sun: 0.15,
     sunColor: 0x6b7bd6,
-    ambient: 0.35,
-    skyColor: 0x2a3160,
+    ambient: 0.6,
+    skyColor: 0x8a96d8,
     background: 0x10131f,
   },
   {
     hour: 6,
-    sun: 0.35,
+    sun: 0.45,
     sunColor: 0xffb47a,
-    ambient: 0.55,
-    skyColor: 0x8a7fb8,
+    ambient: 0.7,
+    skyColor: 0xb3a6d8,
     background: 0x2b2f4a,
   },
   { hour: 9, sun: 1.6, sunColor: 0xfff1dc, ambient: 0.9, skyColor: 0xd6e6ff, background: 0x3a4466 },
@@ -56,24 +57,24 @@ const KEYFRAMES: readonly Keyframe[] = [
     hour: 18,
     sun: 1.0,
     sunColor: 0xff9b5c,
-    ambient: 0.7,
-    skyColor: 0xf0a77a,
+    ambient: 0.85,
+    skyColor: 0xf0b48a,
     background: 0x34304f,
   },
   {
     hour: 20,
-    sun: 0.25,
+    sun: 0.3,
     sunColor: 0x7a6bd6,
-    ambient: 0.45,
-    skyColor: 0x4a3f7a,
+    ambient: 0.8,
+    skyColor: 0xffd9a8,
     background: 0x1a1830,
   },
   {
     hour: 24,
-    sun: 0.05,
+    sun: 0.15,
     sunColor: 0x6b7bd6,
-    ambient: 0.35,
-    skyColor: 0x2a3160,
+    ambient: 0.6,
+    skyColor: 0x8a96d8,
     background: 0x10131f,
   },
 ];
