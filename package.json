@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "test": "pnpm --filter @oss/shared build && pnpm -r test",
     "test:e2e": "pnpm --filter @oss/client test:e2e",
+    "balance": "pnpm --filter @oss/shared build && pnpm --filter @oss/client balance",
     "db:up": "docker compose up -d db",
     "db:migrate": "pnpm --filter @oss/server db:migrate",
     "db:seed": "pnpm --filter @oss/server db:seed",

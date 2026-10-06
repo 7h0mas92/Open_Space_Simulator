@@ -11,7 +11,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "balance": "tsx scripts/balance/index.ts"
   },
   "dependencies": {
     "@oss/shared": "workspace:*",
@@ -33,6 +34,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/coverage-v8": "^5.0.3",
     "jsdom": "^27.0.1",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "vite": "^8.3.3",
     "vitest": "^5.0.3"
