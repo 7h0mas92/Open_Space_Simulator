@@ -109,10 +109,12 @@ test('mode construction : poser une plante dans le bureau', async ({ page }) => 
     await page.getByRole('button', { name: 'Fermer' }).click();
   await expect(page.getByText(/Pose : Plante/)).toBeVisible();
 
-  const items = (await debug(page))!.items;
+  const count = async () => (await debug(page))!.items;
+  const items = await count();
   const canvas = page.getByTestId('scene');
   const box = (await canvas.boundingBox())!;
-  // On essaie quelques points autour du centre jusqu'à trouver une case libre.
+  // On essaie quelques points autour du centre jusqu'à trouver une case libre. L'achat passe
+  // par le worker de la simulation : on attend sa réponse avant d'essayer ailleurs.
   for (const [dx, dy] of [
     [0, 0],
     [30, 30],
@@ -122,9 +124,11 @@ test('mode construction : poser une plante dans le bureau', async ({ page }) => 
     [-60, -20],
   ] as const) {
     await canvas.click({ position: { x: box.width / 2 + dx, y: box.height / 2 + dy } });
-    if ((await debug(page))!.items > items) break;
+    for (let wait = 0; wait < 10 && (await count()) === items; wait++)
+      await page.waitForTimeout(100);
+    if ((await count()) > items) break;
   }
-  await expect.poll(async () => (await debug(page))!.items).toBe(items + 1);
+  expect(await count()).toBe(items + 1);
 });
 
 test('la caméra zoome à la molette et au clavier', async ({ page, isMobile }) => {
