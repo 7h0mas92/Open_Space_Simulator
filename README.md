@@ -9,6 +9,8 @@ Le cahier des charges complet est dans [`CLAUDE.md`](./CLAUDE.md).
 événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),
 Slack simulé (templates ou IA), back-office, PWA hors ligne et configuration de déploiement.
 
+**Jouer en ligne (mode invité) :** <https://7h0mas92.github.io/Open_Space_Simulator/>
+
 | Menu                               | Partie (ordinateur)                                         | Partie (mobile)                                        |
 | ---------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
 | ![Menu](docs/screenshots/menu.png) | ![Partie sur ordinateur](docs/screenshots/game-desktop.png) | ![Partie sur mobile](docs/screenshots/game-mobile.png) |
@@ -243,6 +245,14 @@ Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prê
    service Render (par exemple `oss-server.onrender.com`).
 3. **Vercel** → _Add New Project_ → ce dépôt, _Root Directory_ `packages/client`. Les
    commandes d'installation et de build sont dans `vercel.json`.
+
+### Version invité sur GitHub Pages
+
+Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur GitHub Pages à
+chaque push sur `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
+Sans serveur, le jeu se joue en invité avec les 100 cartes intégrées et les sauvegardes
+locales ; le compte, les classements, le Daily en ligne et le Slack IA demandent le serveur
+Render. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
 
 Les secrets ne vont jamais dans le dépôt : ils se saisissent dans les tableaux de bord de
 Render et Vercel. Toutes les variables sont décrites dans

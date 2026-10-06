@@ -3,7 +3,11 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Chemin de publication : '/' par défaut (Vercel), '/Open_Space_Simulator/' sur GitHub Pages.
+const base = process.env.BASE_PATH ?? '/';
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     // PWA : installable, et jouable hors ligne en invité. Tout le jeu (code, modèles Kenney,
@@ -18,8 +22,8 @@ export default defineConfig({
         description:
           'Ta startup a levé 2 millions. Tu as 18 mois avant que tout explose. Bonne chance.',
         lang: 'fr',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         display: 'standalone',
         orientation: 'any',
         background_color: '#1b1f2e',
