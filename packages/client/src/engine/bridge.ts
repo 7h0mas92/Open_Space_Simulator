@@ -57,6 +57,7 @@ class WorkerGameEngine implements GameEngine {
           speed: message.speed,
           running: message.running,
           tickDurationMs: message.tickDurationMs,
+          replay: message.replay,
         };
         this.latest = snapshot;
         this.firstSnapshot?.(snapshot);
