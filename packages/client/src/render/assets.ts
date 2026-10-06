@@ -54,7 +54,31 @@ export class AssetLibrary {
     if (!def) return fallbackBox(1, 1, 0.5);
     if (def.model.source === 'primitive') return withShadows(buildPrimitive(def.model.model));
     const loaded = await this.loadFurniture(def.model.model);
-    return loaded ? loaded.clone() : fallbackBox(def.size[0], def.size[1], def.height);
+    if (!loaded) return fallbackBox(def.size[0], def.size[1], def.height);
+    const body = loaded.clone();
+    // Le modèle est centré et posé au sol : l'agrandir autour de l'origine le garde en place.
+    if (def.scale) body.scale.set(...def.scale);
+    const root = new THREE.Group();
+    root.add(body);
+    if (def.onTop) await this.placeOnTop(root, def.onTop);
+    return root;
+  }
+
+  /** Pose de petits appareils côte à côte, centrés sur le dessus du meuble. */
+  private async placeOnTop(base: THREE.Object3D, models: readonly FurnitureModel[]) {
+    const top = new THREE.Box3().setFromObject(base).max.y;
+    const loaded = await Promise.all(models.map((model) => this.loadFurniture(model)));
+    const parts = loaded.flatMap((part) => (part ? [part.clone()] : []));
+    const widths = parts.map(
+      (part) => new THREE.Box3().setFromObject(part).getSize(new THREE.Vector3()).x,
+    );
+    let x = -widths.reduce((sum, width) => sum + width, 0) / 2;
+    parts.forEach((part, index) => {
+      const width = widths[index] ?? 0;
+      part.position.set(x + width / 2, top, 0);
+      x += width;
+      base.add(part);
+    });
   }
 
   /** Personnage animé (une copie indépendante avec son propre squelette). */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CHARACTER_CLIPS,
+  CHARACTER_IDS,
   characterUrl,
   FURNITURE_MODELS,
   furnitureUrl,
@@ -213,8 +214,25 @@ describe('manifeste des assets Kenney', () => {
     for (const item of CATALOG) {
       if (item.model.source === 'kenney') expect(FURNITURE_MODELS).toContain(item.model.model);
       else expect(missing.has(item.model.model)).toBe(true);
+      for (const model of item.onTop ?? []) expect(FURNITURE_MODELS).toContain(model);
     }
     expect(CATALOG.length).toBeGreaterThanOrEqual(15);
+  });
+
+  it('chaque fichier du manifeste est bien présent dans public/assets/kenney', () => {
+    // Vite liste les fichiers sans les charger : on compare leurs URL à celles du manifeste.
+    const urls = (paths: Record<string, unknown>) =>
+      new Set(Object.keys(paths).map((path) => encodeURI(path.replace(/^\/public/, ''))));
+    const models = urls(import.meta.glob('/public/assets/kenney/**/*.glb'));
+    for (const model of FURNITURE_MODELS) expect(models).toContain(furnitureUrl(model));
+    for (const id of CHARACTER_IDS) expect(models).toContain(characterUrl(id));
+    expect(models.size).toBe(FURNITURE_MODELS.length + CHARACTER_IDS.length);
+    // Les personnages chargent leur texture à côté du GLB.
+    const textures = urls(import.meta.glob('/public/assets/kenney/**/Textures/*.png'));
+    for (const id of CHARACTER_IDS)
+      expect(textures).toContain(
+        characterUrl(id).replace(/character-(\w)\.glb$/, 'Textures/texture-$1.png'),
+      );
   });
 
   it('chaque posture a un clip qui existe dans les GLB', () => {

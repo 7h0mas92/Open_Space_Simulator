@@ -22,9 +22,16 @@ export type ItemUse = 'desk' | 'coffee' | 'meeting' | 'babyfoot' | 'rest';
 interface ItemLook {
   readonly category: ItemCategory;
   readonly model: ItemModel;
-  /** Hauteur visée du modèle, en unités de grille. */
+  /** Hauteur visée du modèle, en unités de grille (sert à la forme de secours). */
   readonly height: number;
   readonly use?: ItemUse;
+  /**
+   * Échelle propre au modèle (x, y, z), appliquée en plus de l'échelle commune du kit, pour
+   * qu'il couvre son emprise (la table de cantine fait 3 x 2 cases).
+   */
+  readonly scale?: readonly [number, number, number];
+  /** Petits appareils posés côte à côte sur le meuble (machine à café sur un placard…). */
+  readonly onTop?: readonly FurnitureModel[];
 }
 
 export interface CatalogItem extends ItemLook {
@@ -48,47 +55,65 @@ type SimItemId = (typeof FURNITURE_CATALOG)[number]['id'];
 /** Habillage de chaque objet de la simulation (le typage oblige à n'en oublier aucun). */
 const LOOKS: Record<SimItemId, ItemLook> = {
   desk: { category: 'work', model: kenney('desk'), height: 0.75, use: 'desk' },
-  'ikea-desk': { category: 'work', model: kenney('table'), height: 0.75, use: 'desk' },
+  'ikea-desk': { category: 'work', model: kenney('table'), height: 0.65, use: 'desk' },
   'standing-desk': {
     category: 'work',
     model: primitive('standingDesk'),
     height: 1.1,
     use: 'desk',
   },
-  'ergonomic-chair': { category: 'work', model: kenney('chairDesk'), height: 1 },
+  'ergonomic-chair': { category: 'work', model: kenney('chairDesk'), height: 1.2 },
   'noise-headsets': { category: 'work', model: primitive('headphones'), height: 0.4 },
-  bookcase: { category: 'work', model: kenney('bookcaseOpen'), height: 1.8 },
-  'tv-dashboard': { category: 'work', model: kenney('televisionModern'), height: 1.1 },
-  'server-rack': { category: 'work', model: kenney('bookcaseClosedDoors'), height: 1.9 },
+  bookcase: { category: 'work', model: kenney('bookcaseClosedWide'), height: 1.6 },
+  'tv-dashboard': {
+    category: 'work',
+    model: kenney('cabinetTelevision'),
+    height: 1.5,
+    onTop: ['televisionModern'],
+  },
+  'server-rack': { category: 'work', model: kenney('bookcaseClosedDoors'), height: 1.7 },
   'coffee-machine': {
     category: 'kitchen',
-    model: kenney('kitchenCoffeeMachine'),
-    height: 0.6,
+    model: kenney('kitchenCabinet'),
+    height: 1.25,
     use: 'coffee',
+    onTop: ['kitchenCoffeeMachine'],
   },
   'premium-coffee-machine': {
     category: 'kitchen',
-    model: kenney('kitchenBar'),
-    height: 1,
+    model: kenney('kitchenCabinetDrawer'),
+    height: 1.25,
     use: 'coffee',
+    onTop: ['kitchenCoffeeMachine', 'kitchenBlender'],
   },
-  fridge: { category: 'kitchen', model: kenney('kitchenFridge'), height: 1.9, use: 'coffee' },
-  microwave: { category: 'kitchen', model: kenney('kitchenMicrowave'), height: 0.4 },
+  fridge: { category: 'kitchen', model: kenney('kitchenFridge'), height: 1.85, use: 'coffee' },
+  microwave: {
+    category: 'kitchen',
+    model: kenney('kitchenCabinet'),
+    height: 1.25,
+    onTop: ['kitchenMicrowave'],
+  },
   'canteen-table': {
     category: 'kitchen',
-    model: kenney('tableCloth'),
-    height: 0.75,
+    model: kenney('tableCrossCloth'),
+    height: 0.7,
     use: 'meeting',
+    scale: [1.6, 1, 2],
   },
   babyfoot: { category: 'fun', model: primitive('babyfoot'), height: 0.9, use: 'babyfoot' },
-  speaker: { category: 'fun', model: kenney('speaker'), height: 1 },
+  speaker: { category: 'fun', model: kenney('speaker'), height: 1.25 },
   slide: { category: 'fun', model: primitive('slide'), height: 2 },
-  sofa: { category: 'comfort', model: kenney('loungeSofa'), height: 0.8, use: 'rest' },
+  sofa: { category: 'comfort', model: kenney('loungeSofa'), height: 0.9, use: 'rest' },
   'nap-pod': { category: 'comfort', model: primitive('napPod'), height: 1.2, use: 'rest' },
-  plant: { category: 'decor', model: kenney('pottedPlant'), height: 1.1 },
-  'small-plant': { category: 'decor', model: kenney('plantSmall2'), height: 0.5 },
-  rug: { category: 'decor', model: kenney('rugRounded'), height: 0.05 },
-  trashcan: { category: 'decor', model: kenney('trashcan'), height: 0.6 },
+  plant: { category: 'decor', model: kenney('pottedPlant'), height: 1.3 },
+  'small-plant': {
+    category: 'decor',
+    model: kenney('plantSmall2'),
+    height: 0.55,
+    scale: [2, 2, 2],
+  },
+  rug: { category: 'decor', model: kenney('rugRound'), height: 0.02 },
+  trashcan: { category: 'decor', model: kenney('trashcan'), height: 0.85 },
 };
 
 export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => ({

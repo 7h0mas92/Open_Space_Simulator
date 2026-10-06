@@ -184,7 +184,7 @@ génère que des messages Slack.
 ## Crédits
 
 - Modèles 3D : [Kenney](https://kenney.nl) (licence CC0), packs Furniture Kit et Blocky
-  Characters, déposés dans `packages/client/public/assets/kenney/` (voir le README de ce dossier).
+  Characters, inclus dans `packages/client/public/assets/kenney/` (voir le README de ce dossier).
   Le manifeste typé `render/assetManifest.ts` liste exactement les fichiers des packs.
 - Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
   sieste-pod, standing desk, casque antibruit, pack UI (interface en CSS), packs sons (audio à
