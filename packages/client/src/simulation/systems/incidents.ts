@@ -1,0 +1,95 @@
+import { BALANCE, type EntityId, type GameState, type LocalizedText } from '@oss/shared';
+import { forceCard } from '../../events/draw';
+import { addGauge, addUsers, devsWithRole, notify, text, type SimContext } from '../helpers';
+import type { SimClock } from '../time';
+
+/** Identifiant de la carte « Vendredi 17h04, la prod est down ». */
+export const FRIDAY_CARD_ID = 'friday-prod-down';
+
+/** La prod tombe : stabilité, utilisateurs et hype en prennent un coup. */
+export function prodDown(
+  state: GameState,
+  ctx: SimContext,
+  cause: LocalizedText,
+  devId: EntityId | null = null,
+): void {
+  const { stability, hype } = BALANCE;
+  addGauge(state, 'stability', -stability.outageLoss);
+  addGauge(state, 'hype', -hype.outageLoss);
+  addUsers(state, -state.gauges.users * stability.outageUserLoss);
+  state.tracker.incidents += 1;
+  state.stats.prodOutages += 1;
+  notify(state, ctx, 'PROD_DOWN', cause, devId);
+}
+
+/**
+ * Système « incidents » : le stagiaire casse la prod (5 % par jour), la dette
+ * provoque des bugs graves, et le vendredi à 17h la prod a une fâcheuse tendance à tomber.
+ */
+export function incidentSystem(state: GameState, ctx: SimContext, clock: SimClock): void {
+  if (state.stage !== 'EXECUTION' || clock.isWeekend) return;
+  const { rng } = ctx;
+
+  if (clock.hour === 12) {
+    for (const internId of devsWithRole(state, 'INTERN')) {
+      if (state.components.activity[internId]?.kind === 'GONE') continue;
+      if (!rng.chance(BALANCE.roles.internBreakProdDaily)) continue;
+      const name = state.components.identity[internId]?.name ?? '?';
+      prodDown(
+        state,
+        ctx,
+        text(
+          [
+            '{name} a cassé la prod. « Mais ça marchait en local ! »',
+            '{name} broke prod. "But it worked on my machine!"',
+          ],
+          { name },
+        ),
+        internId,
+      );
+    }
+  }
+
+  if (clock.hour === 15) {
+    const debt = state.gauges.debt / 100;
+    if (rng.chance(BALANCE.stability.debtOutageMax * debt * debt)) {
+      prodDown(
+        state,
+        ctx,
+        text([
+          'Bug critique en prod : la dette technique a fini par céder.',
+          'Critical bug in prod: technical debt finally gave way.',
+        ]),
+      );
+    }
+  }
+
+  if (clock.dayOfWeek === 5 && clock.hour === 17) {
+    notify(
+      state,
+      ctx,
+      'FRIDAY_17H',
+      text([
+        'Vendredi, 17h. Personne ne déploie. Personne.',
+        'Friday, 5pm. Nobody deploys. Nobody.',
+      ]),
+    );
+    const odds = BALANCE.stability.fridayOutageMax * (1 - state.gauges.stability / 100);
+    if (rng.chance(odds)) {
+      state.stats.fridayOutages += 1;
+      state.stats.fridayOutageStreak += 1;
+      state.stats.maxFridayOutageStreak = Math.max(
+        state.stats.maxFridayOutageStreak,
+        state.stats.fridayOutageStreak,
+      );
+      prodDown(
+        state,
+        ctx,
+        text(['Vendredi 17h04 : la prod est down.', 'Friday 5:04pm: prod is down.']),
+      );
+      forceCard(state, ctx, FRIDAY_CARD_ID);
+    } else {
+      state.stats.fridayOutageStreak = 0;
+    }
+  }
+}

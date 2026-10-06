@@ -1,0 +1,138 @@
+import {
+  CommandSchema,
+  TIME,
+  type Command,
+  type CommandResult,
+  type GameState,
+  type LoggedCommand,
+  type Notification,
+} from '@oss/shared';
+import { eventSystem } from '../events/draw';
+import type { CardLibrary } from '../events/library';
+import { applyCommand } from './commands';
+import { endGame } from './endings';
+import { computeOfficeEffects, type OfficeEffects } from './furniture';
+import type { SimContext } from './helpers';
+import { Rng } from './rng';
+import { endSprint } from './sprint';
+import { createEmptyState, setupNewGame, type GameConfig } from './state';
+import { activitySystem } from './systems/activity';
+import { dailySystem } from './systems/daily';
+import { incidentSystem } from './systems/incidents';
+import { coffeeSystem, energySystem } from './systems/needs';
+import { workSystem } from './systems/work';
+import { getClock, type SimClock } from './time';
+
+/** Un système = une fonction qui fait évoluer l'état pendant un tick. */
+export type System = (state: GameState, ctx: SimContext, clock: SimClock) => void;
+
+/** Ordre d'exécution des systèmes à chaque tick (l'ordre compte pour le déterminisme). */
+export const SYSTEMS: readonly System[] = [
+  activitySystem,
+  workSystem,
+  coffeeSystem,
+  (state, ctx) => energySystem(state, ctx),
+  incidentSystem,
+  eventSystem,
+  dailySystem,
+];
+
+export interface DispatchResult {
+  result: CommandResult;
+  notifications: Notification[];
+}
+
+/**
+ * La simulation d'une partie. Elle ne connaît ni l'écran, ni l'horloge réelle :
+ * on l'avance tick par tick avec `step()` et on la pilote avec `dispatch(commande)`.
+ * Le Web Worker, le script d'équilibrage et le serveur l'utilisent de la même façon.
+ */
+export class Simulation {
+  /** Commandes acceptées, avec leur tick : de quoi rejouer la partie. */
+  readonly commands: LoggedCommand[];
+
+  /** Cache des effets du mobilier (recalculés seulement quand le bureau ou l'équipe change). */
+  private officeCache: { key: string; effects: OfficeEffects } | null = null;
+
+  private constructor(
+    readonly state: GameState,
+    private readonly cards: CardLibrary,
+    commands: LoggedCommand[],
+  ) {
+    this.commands = commands;
+  }
+
+  /** Nouvelle partie à partir d'une graine. */
+  static create(config: GameConfig, cards: CardLibrary): Simulation {
+    const simulation = new Simulation(createEmptyState(config), cards, []);
+    setupNewGame(simulation.state, simulation.context());
+    return simulation;
+  }
+
+  /** Reprend une partie sauvegardée (l'état doit avoir été validé par le schéma Zod). */
+  static restore(state: GameState, cards: CardLibrary, commands: LoggedCommand[] = []): Simulation {
+    return new Simulation(state, cards, commands);
+  }
+
+  /**
+   * Toute modification du mobilier ou de l'équipe ajoute une entité (nextEntityId change)
+   * ou en retire une (un des deux compteurs change) : la clé suffit à détecter un changement.
+   */
+  private officeEffects(): OfficeEffects {
+    const { state } = this;
+    const key = `${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}`;
+    if (this.officeCache?.key !== key)
+      this.officeCache = { key, effects: computeOfficeEffects(state) };
+    return this.officeCache.effects;
+  }
+
+  private context(): SimContext {
+    return {
+      rng: new Rng(this.state.rng),
+      cards: this.cards,
+      outbox: [],
+      office: this.officeEffects(),
+    };
+  }
+
+  /** La simulation avance-t-elle ? (Non en planification, en démo, ou face à une carte.) */
+  get isRunning(): boolean {
+    const { stage, events, mode } = this.state;
+    return stage === 'EXECUTION' && (events.pending === null || mode === 'HARDCORE');
+  }
+
+  /** Avance d'un tick (30 minutes simulées). Renvoie les notifications émises. */
+  step(): Notification[] {
+    if (!this.isRunning) return [];
+    const state = this.state;
+    const ctx = this.context();
+    const clock = getClock(state);
+    for (const system of SYSTEMS) {
+      system(state, ctx, clock);
+      if (state.stage === 'ENDED') return ctx.outbox;
+    }
+    state.tick += 1;
+    state.sprintTick += 1;
+    if (state.gauges.treasury < 0) endGame(state, ctx, 'BANKRUPTCY');
+    else if (state.sprintTick >= TIME.ticksPerSprint) endSprint(state, ctx);
+    return ctx.outbox;
+  }
+
+  /** Avance jusqu'à un blocage (planification, carte, démo, fin) ou `maxTicks`. */
+  runUntilBlocked(maxTicks = TIME.ticksPerSprint): Notification[] {
+    const notifications: Notification[] = [];
+    for (let i = 0; i < maxTicks && this.isRunning; i++) notifications.push(...this.step());
+    return notifications;
+  }
+
+  /** Applique une commande du joueur. Les commandes acceptées sont journalisées. */
+  dispatch(input: Command): DispatchResult {
+    const parsed = CommandSchema.safeParse(input);
+    if (!parsed.success)
+      return { result: { ok: false, error: 'INVALID_COMMAND' }, notifications: [] };
+    const ctx = this.context();
+    const result = applyCommand(this.state, ctx, parsed.data);
+    if (result.ok) this.commands.push({ tick: this.state.tick, command: parsed.data });
+    return { result, notifications: ctx.outbox };
+  }
+}
