@@ -4,6 +4,9 @@
   "private": true,
   "description": "Client web d'Open Space Simulator : Vite, React, Three.js.",
   "type": "module",
+  "exports": {
+    "./simulation": "./src/simulation/index.ts"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",

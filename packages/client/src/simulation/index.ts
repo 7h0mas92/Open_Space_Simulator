@@ -3,6 +3,7 @@
  * plus tard, le serveur (vérification des scores) n'importent que depuis ce fichier.
  */
 export { Simulation, SYSTEMS, type DispatchResult, type System } from './simulation';
+export { checkAchievements, unlockAchievement } from './achievements';
 export { replay, ReplayError, type ReplayOptions } from './replay';
 export { createEmptyState, type GameConfig } from './state';
 export { Rng, seedToState, type RngState } from './rng';

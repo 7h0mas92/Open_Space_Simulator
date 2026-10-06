@@ -7,6 +7,9 @@ export const errorResponses = {
   403: ApiErrorSchema,
   404: ApiErrorSchema,
   409: ApiErrorSchema,
+  413: ApiErrorSchema,
+  422: ApiErrorSchema,
   429: ApiErrorSchema,
   500: ApiErrorSchema,
+  503: ApiErrorSchema,
 } as const;

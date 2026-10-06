@@ -11,3 +11,5 @@ export * from './sim/furniture.js';
 export * from './sim/pitch.js';
 export * from './sim/state.js';
 export * from './data/cards/index.js';
+export * from './meta/achievements.js';
+export * from './meta/api.js';

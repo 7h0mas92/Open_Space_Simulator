@@ -189,6 +189,7 @@ export const NOTIFICATION_KINDS = [
   'ACQUISITION_OFFER',
   'SPRINT_LOST',
   'GAME_OVER',
+  'ACHIEVEMENT_UNLOCKED',
 ] as const;
 export const NotificationKindSchema = z.enum(NOTIFICATION_KINDS);
 export type NotificationKind = z.infer<typeof NotificationKindSchema>;

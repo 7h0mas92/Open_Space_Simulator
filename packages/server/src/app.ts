@@ -11,11 +11,20 @@ import { errorsPlugin } from './plugins/errors.js';
 import { prismaPlugin } from './plugins/prisma.js';
 import { securityPlugin } from './plugins/security.js';
 import { swaggerPlugin } from './plugins/swagger.js';
+import { achievementsRoutes } from './routes/achievements.js';
 import { adminRoutes } from './routes/admin.js';
 import { authRoutes } from './routes/auth.js';
+import { dailyRoutes } from './routes/daily.js';
+import { eventsRoutes } from './routes/events.js';
 import { healthRoutes } from './routes/health.js';
 import { meRoutes } from './routes/me.js';
+import { savesRoutes } from './routes/saves.js';
+import { scoresRoutes } from './routes/scores.js';
+import { slackAiRoutes } from './routes/slack-ai.js';
+import { syncAchievementCatalog } from './services/achievement.service.js';
+import { ensureBuiltinCardSet } from './services/cards.service.js';
 import { GithubService } from './services/github.service.js';
+import { createClaudeGenerator, type SlackAiGenerator } from './services/slack-ai.service.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -28,6 +37,8 @@ export interface AppDependencies {
   prisma?: PrismaClient;
   /** Implémentation de fetch utilisée pour GitHub (simulée dans les tests). */
   fetch?: typeof fetch;
+  /** Générateur du Slack IA (simulé dans les tests). Par défaut : l'API Claude si une clé existe. */
+  slackAi?: SlackAiGenerator | null;
 }
 
 /**
@@ -62,6 +73,24 @@ export async function buildApp(env: Env, deps: AppDependencies = {}): Promise<Fa
   await app.register(authRoutes, { prefix: '/api/auth', github });
   await app.register(meRoutes, { prefix: '/api/me' });
   await app.register(adminRoutes, { prefix: '/api/admin' });
+  await app.register(eventsRoutes, { prefix: '/api/events' });
+  await app.register(savesRoutes, { prefix: '/api/saves' });
+  await app.register(scoresRoutes, { prefix: '/api/scores' });
+  await app.register(dailyRoutes, { prefix: '/api/daily' });
+  await app.register(achievementsRoutes, { prefix: '/api/achievements' });
+  const slackAi =
+    deps.slackAi !== undefined
+      ? deps.slackAi
+      : env.ANTHROPIC_API_KEY
+        ? createClaudeGenerator(env.ANTHROPIC_API_KEY, env.ANTHROPIC_MODEL)
+        : null;
+  await app.register(slackAiRoutes, { prefix: '/api/slack-ai', generator: slackAi });
+
+  // La base suit le code : catalogue des succès et cartes intégrées (version « builtin »).
+  app.addHook('onReady', async () => {
+    await syncAchievementCatalog(app.prisma);
+    await ensureBuiltinCardSet(app.prisma);
+  });
 
   return app;
 }

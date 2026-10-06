@@ -30,6 +30,14 @@ enum GameMode {
   DAILY
 }
 
+enum Phase {
+  GARAGE
+  SEED
+  SERIES_A
+  UNICORN
+  END
+}
+
 enum Outcome {
   BANKRUPTCY
   IPO
@@ -77,8 +85,12 @@ model Save {
   /// Emplacement de 1 à 5.
   slot      Int
   state     Json
+  /// Journal des commandes depuis le début de la partie (replays, publication du score).
+  commandsLog Json @default("[]")
   seed      String
   mode      GameMode
+  /// Version du jeu de cartes avec lequel la partie a commencé (voir CardSet).
+  cardsVersion String @default("builtin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -108,16 +120,36 @@ model Score {
   /// Valorisation finale en euros (peut dépasser la capacité d'un Int 32 bits).
   valuation     Float
   outcome       Outcome
+  /// Phase atteinte avant la fin : alimente le « taux de faillite par phase » du back-office.
+  phaseReached  Phase
   sprintsPlayed Int
   seed          String
   /// Liste des commandes du joueur : permet le rejeu côté serveur (anti-triche) et les replays.
   commandsLog   Json
+  /// Jeu de cartes utilisé (indispensable pour rejouer la partie à l'identique).
+  cardsVersion  String
+  cardSet       CardSet   @relation(fields: [cardsVersion], references: [version])
+  /// Statistiques de fin de partie (GameStats) : profil et statistiques cumulées.
+  stats         Json
   dailyDate     DateTime? @db.Date
   createdAt     DateTime  @default(now())
 
+  /// Un seul essai par jour au Daily (les NULL des autres modes ne se gênent pas).
+  @@unique([userId, dailyDate])
   @@index([mode, valuation])
   @@index([dailyDate, valuation])
   @@index([userId])
+}
+
+/// Instantané d'un jeu de cartes, identifié par l'empreinte de son contenu. Une partie ne
+/// retient que l'identifiant de cette version : le serveur peut la rejouer même si un
+/// administrateur a modifié les cartes depuis.
+model CardSet {
+  version   String   @id
+  cards     Json
+  createdAt DateTime @default(now())
+
+  scores Score[]
 }
 
 model Achievement {

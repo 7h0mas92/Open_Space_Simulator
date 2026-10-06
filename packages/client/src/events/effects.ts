@@ -1,4 +1,5 @@
 import { BALANCE, DEV_ROLES, type CardEffects, type EventCard, type GameState } from '@oss/shared';
+import { unlockAchievement } from '../simulation/achievements';
 import { fireDev, spawnDev } from '../simulation/devs';
 import {
   addGauge,
@@ -78,7 +79,5 @@ export function applyEffects(
       effects.fireDev === 'RANDOM' ? devIds(state) : devsWithRole(state, effects.fireDev);
     if (pool.length > 0) fireDev(state, ctx, ctx.rng.pick(pool));
   }
-  if (effects.unlockAchievement && !state.achievements.includes(effects.unlockAchievement)) {
-    state.achievements.push(effects.unlockAchievement);
-  }
+  if (effects.unlockAchievement) unlockAchievement(state, ctx, effects.unlockAchievement);
 }
