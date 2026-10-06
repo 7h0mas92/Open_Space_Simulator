@@ -68,6 +68,25 @@ export default tseslint.config(
         'error',
         { object: 'Math', property: 'random', message: 'Utiliser le RNG seedable.' },
         { object: 'Date', property: 'now', message: 'Utiliser l’horloge de la simulation.' },
+        // Ces fonctions peuvent différer au dernier bit selon le moteur JS : le rejeu côté
+        // serveur divergerait. Voir simulation/math.ts pour les remplaçants déterministes.
+        ...[
+          'log',
+          'log10',
+          'log2',
+          'exp',
+          'pow',
+          'sin',
+          'cos',
+          'tan',
+          'atan2',
+          'cbrt',
+          'hypot',
+        ].map((property) => ({
+          object: 'Math',
+          property,
+          message: 'Non déterministe d’un moteur JS à l’autre : utiliser simulation/math.ts.',
+        })),
       ],
     },
   },

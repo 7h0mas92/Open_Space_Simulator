@@ -1,0 +1,391 @@
+import {
+  FURNITURE_CATALOG,
+  INVESTORS,
+  getPitchArgument,
+  type CardEffects,
+  type Command,
+  type DevRole,
+  type EventCard,
+  type GameState,
+  type TaskType,
+} from '@oss/shared';
+import type { CardLibrary } from '../events/library';
+import { runwayMonths } from './economy';
+import { canPlace, phaseIndex } from './furniture';
+import { devIds, teamMax, teamMoral, teamSize } from './helpers';
+import { log10Approx } from './math';
+import { Rng } from './rng';
+import type { Simulation } from './simulation';
+import { tasksInColumn } from './tasks';
+
+/**
+ * Joueurs automatiques (« bots »), utilisés par `pnpm balance` pour simuler des milliers
+ * de parties sans navigateur, et par les tests. Un bot ne lit que l'état et n'agit que
+ * par des commandes, exactement comme un humain. Il a son propre générateur aléatoire,
+ * pour ne pas perturber celui de la partie.
+ */
+export interface Bot {
+  readonly name: string;
+  /** Commandes à envoyer maintenant (la partie est bloquée : planification, carte, démo...). */
+  decide(state: Readonly<GameState>, cards: CardLibrary): Command[];
+}
+
+/** Valeur approximative d'un choix de carte, du point de vue d'un joueur raisonnable. */
+export function scoreEffects(effects: CardEffects, state: Readonly<GameState>): number {
+  let score = 0;
+  score += (effects.treasury ?? 0) / Math.max(20_000, state.gauges.treasury / 20);
+  score += (effects.hype ?? 0) / 4;
+  score += (effects.users ?? 0) / 2;
+  score -= (effects.debt ?? 0) / (state.gauges.debt > 50 ? 2 : 4);
+  score += (effects.stability ?? 0) / (state.gauges.stability < 40 ? 2 : 4);
+  score += (effects.moral ?? 0) / (teamMoral(state) < 40 ? 2 : 4);
+  score += (effects.coffee ?? 0) / 10;
+  score -= (effects.sprintsLost ?? 0) * 6;
+  if (effects.fireDev) score -= 3;
+  if (effects.spawnDev) score += teamSize(state) < teamMax(state) ? 1 : 0;
+  if (effects.requeue) score -= 1.5;
+  return score;
+}
+
+function bestChoice(card: EventCard, state: Readonly<GameState>): number {
+  let best = 0;
+  let bestScore = Number.NEGATIVE_INFINITY;
+  card.choices.forEach((choice, index) => {
+    const score = scoreEffects(choice.effects, state);
+    if (score > bestScore) {
+      bestScore = score;
+      best = index;
+    }
+  });
+  return best;
+}
+
+/** Première position libre pour un objet (balayage de la grille). */
+export function findFreeSpot(
+  state: Readonly<GameState>,
+  itemId: string,
+): { x: number; y: number } | null {
+  const item = FURNITURE_CATALOG.find((candidate) => candidate.id === itemId);
+  if (!item) return null;
+  for (let y = 0; y < 30; y++) {
+    for (let x = 0; x < 30; x++) {
+      if (canPlace(state as GameState, item, x, y, 0)) return { x, y };
+    }
+  }
+  return null;
+}
+
+function countFurniture(state: Readonly<GameState>, itemId: string): number {
+  return Object.values(state.components.furniture).filter((f) => f.itemId === itemId).length;
+}
+
+/** Estimation de la force d'un argument, sans tirage au sort (le bot ne triche pas). */
+function expectedStrength(state: Readonly<GameState>, argumentId: string): number {
+  const argument = getPitchArgument(argumentId);
+  if (!argument) return 0;
+  const { users, debt, stability, hype } = state.gauges;
+  if (argumentId === 'retention') return (stability - 50) / 25;
+  if (argumentId === 'uptime') return (stability - 60) / 20;
+  if (argumentId === 'live-demo') return (stability / 100) * 3.5 - 1.5;
+  switch (argument.category) {
+    case 'TRACTION':
+      return log10Approx(users) / 2 - 1;
+    case 'TECH':
+      return (60 - debt) / 30;
+    case 'TEAM':
+      return (teamMoral(state) - 50) / 25 + teamSize(state) / 10;
+    case 'VISION':
+      return (hype - 40) / 30;
+    case 'BUZZWORD':
+      return 0.5;
+  }
+}
+
+interface PlanningStyle {
+  /** Priorité de chaque type de tâche (plus haut = d'abord). */
+  priority: (type: TaskType, state: Readonly<GameState>) => number;
+  /** Profils évités au recrutement. */
+  avoidRoles: readonly DevRole[];
+  /** Mois de trésorerie minimum pour embaucher. */
+  hireRunway: number;
+  /** Ratio de l'offre par rapport au salaire demandé. */
+  offerRatio: number;
+  /** Lever des fonds sous ce nombre de mois de trésorerie. */
+  pitchRunway: number;
+  buysFurniture: boolean;
+}
+
+/** Bot « raisonnable », paramétré par un style de jeu. */
+class PlannerBot implements Bot {
+  constructor(
+    readonly name: string,
+    private readonly style: PlanningStyle,
+  ) {}
+
+  decide(state: Readonly<GameState>, cards: CardLibrary): Command[] {
+    const pending = state.events.pending;
+    if (pending) {
+      const card = cards.get(pending.cardId);
+      return [{ type: 'RESOLVE_EVENT', choiceIndex: card ? bestChoice(card, state) : 0 }];
+    }
+    switch (state.stage) {
+      case 'PITCH':
+        return this.pitch(state);
+      case 'DEMO':
+        return [...this.endgame(state), { type: 'END_DEMO' }];
+      case 'PLANNING':
+        return this.plan(state);
+      default:
+        return [];
+    }
+  }
+
+  private pitch(state: Readonly<GameState>): Command[] {
+    const pitch = state.pitch;
+    if (!pitch || pitch.result) return [{ type: 'CLOSE_PITCH' }];
+    const investor = INVESTORS.find((i) => i.archetype === pitch.investor);
+    let best = pitch.options[0] ?? '';
+    let bestValue = Number.NEGATIVE_INFINITY;
+    for (const id of pitch.options) {
+      const argument = getPitchArgument(id);
+      const like = argument && investor ? investor.likes[argument.category] : 1;
+      const value = expectedStrength(state, id) * like;
+      if (value > bestValue) {
+        bestValue = value;
+        best = id;
+      }
+    }
+    return [{ type: 'PITCH_ARGUMENT', argumentId: best }];
+  }
+
+  private endgame(state: Readonly<GameState>): Command[] {
+    const offer = state.acquisitionOffer;
+    if (
+      offer &&
+      (offer.amount > state.valuation * 1.1 ||
+        (state.sprint >= state.totalSprints - 3 && state.phase !== 'UNICORN'))
+    ) {
+      return [{ type: 'ANSWER_ACQUISITION', accept: true }];
+    }
+    if (
+      state.phase === 'UNICORN' &&
+      state.gauges.stability >= 50 &&
+      state.sprint >= state.totalSprints - 6
+    ) {
+      return [{ type: 'LAUNCH_IPO' }];
+    }
+    return [];
+  }
+
+  private plan(state: Readonly<GameState>): Command[] {
+    const commands: Command[] = [];
+    const { style } = this;
+    const runway = runwayMonths(state as GameState);
+
+    // 1. Levée de fonds quand la trésorerie baisse (ou pour sortir du garage).
+    const cooldownOk = state.lastPitchSprint === null || state.sprint - state.lastPitchSprint >= 3;
+    // On lève aussi pour passer à la phase suivante quand l'équipe est au complet.
+    const blockedByPhase =
+      teamSize(state) >= teamMax(state) && (state.phase === 'GARAGE' || state.phase === 'SEED');
+    const wantsMoney = runway < style.pitchRunway || blockedByPhase;
+    if (cooldownOk && wantsMoney && state.gauges.hype > 15) return [{ type: 'START_PITCH' }];
+
+    // 2. Recrutement.
+    if (teamSize(state) < teamMax(state) && runway > style.hireRunway) {
+      const candidate = state.candidates
+        .filter(
+          (c) =>
+            c.status === 'OPEN' &&
+            (state.mode === 'INTERNS_ONLY' || !style.avoidRoles.includes(c.identity.role)),
+        )
+        .sort((a, b) => b.stats.speed + b.stats.quality - (a.stats.speed + a.stats.quality))[0];
+      if (candidate)
+        commands.push({
+          type: 'MAKE_OFFER',
+          candidateId: candidate.id,
+          salary: Math.round(candidate.askingSalary * style.offerRatio),
+        });
+    }
+
+    // 3. Mobilier utile.
+    if (style.buysFurniture) commands.push(...this.furniture(state));
+
+    // 4. Kanban : on remplit TODO selon la capacité estimée de l'équipe.
+    const capacity = devIds(state).length * 9;
+    let planned = [
+      ...tasksInColumn(state as GameState, 'TODO'),
+      ...tasksInColumn(state as GameState, 'IN_PROGRESS'),
+    ].reduce((total, id) => total + (state.components.task[id]?.size ?? 0), 0);
+    const backlog = tasksInColumn(state as GameState, 'BACKLOG').sort((a, b) => {
+      const ta = state.components.task[a];
+      const tb = state.components.task[b];
+      if (!ta || !tb) return 0;
+      return style.priority(tb.type, state) - style.priority(ta.type, state) || ta.size - tb.size;
+    });
+    for (const id of backlog) {
+      if (planned >= capacity) break;
+      const task = state.components.task[id];
+      if (!task || style.priority(task.type, state) < 0) continue;
+      commands.push({ type: 'MOVE_TASK', taskId: id, column: 'TODO' });
+      planned += task.size;
+    }
+    commands.push({ type: 'START_SPRINT' });
+    return commands;
+  }
+
+  private furniture(state: Readonly<GameState>): Command[] {
+    const commands: Command[] = [];
+    let budget = state.gauges.treasury * 0.02;
+    const buy = (itemId: string) => {
+      const item = FURNITURE_CATALOG.find((i) => i.id === itemId);
+      if (!item || item.price > budget || phaseIndex(state.phase) < phaseIndex(item.minPhase))
+        return;
+      if (countFurniture(state, itemId) >= item.maxCount) return;
+      const spot = findFreeSpot(state, itemId);
+      if (!spot) return;
+      budget -= item.price;
+      commands.push({ type: 'BUY_FURNITURE', itemId, x: spot.x, y: spot.y, rotation: 0 });
+    };
+    const team = teamSize(state);
+    if (team >= 3 && countFurniture(state, 'premium-coffee-machine') < Math.ceil(team / 6))
+      buy('premium-coffee-machine');
+    if (team > countFurniture(state, 'desk') + countFurniture(state, 'ikea-desk')) buy('desk');
+    if (Object.values(state.components.identity).some((i) => i.role === 'PRODUCT_OWNER'))
+      buy('noise-headsets');
+    if (state.gauges.debt > 30) buy('trashcan');
+    if (teamMoral(state) < 60) buy('plant');
+    if (state.gauges.stability < 70) buy('server-rack');
+    return commands;
+  }
+}
+
+/** Bot qui joue au hasard : la référence « joueur qui découvre le jeu ». */
+class RandomBot implements Bot {
+  readonly name = 'random';
+  private readonly rng: Rng;
+
+  constructor(seed: string) {
+    this.rng = Rng.fromSeed(`bot:${seed}`);
+  }
+
+  decide(state: Readonly<GameState>, cards: CardLibrary): Command[] {
+    const rng = this.rng;
+    const pending = state.events.pending;
+    if (pending) {
+      const card = cards.get(pending.cardId);
+      return [{ type: 'RESOLVE_EVENT', choiceIndex: rng.int(0, (card?.choices.length ?? 1) - 1) }];
+    }
+    switch (state.stage) {
+      case 'PITCH':
+        return state.pitch && !state.pitch.result
+          ? [{ type: 'PITCH_ARGUMENT', argumentId: rng.pick(state.pitch.options) }]
+          : [{ type: 'CLOSE_PITCH' }];
+      case 'DEMO':
+        if (state.acquisitionOffer && rng.chance(0.3))
+          return [{ type: 'ANSWER_ACQUISITION', accept: true }];
+        return [{ type: 'END_DEMO' }];
+      case 'PLANNING': {
+        if (rng.chance(0.15)) return [{ type: 'START_PITCH' }, { type: 'START_SPRINT' }];
+        const commands: Command[] = [];
+        const open = state.candidates.filter((c) => c.status === 'OPEN');
+        if (open.length > 0 && rng.chance(0.5)) {
+          const candidate = rng.pick(open);
+          commands.push({
+            type: 'MAKE_OFFER',
+            candidateId: candidate.id,
+            salary: Math.round(candidate.askingSalary * rng.range(0.8, 1.2)),
+          });
+        }
+        for (const id of tasksInColumn(state as GameState, 'BACKLOG')) {
+          if (rng.chance(0.4)) commands.push({ type: 'MOVE_TASK', taskId: id, column: 'TODO' });
+        }
+        commands.push({ type: 'START_SPRINT' });
+        return commands;
+      }
+      default:
+        return [];
+    }
+  }
+}
+
+const fixPriority = (state: Readonly<GameState>) => state.gauges.stability < 60;
+
+export const BOT_NAMES = ['random', 'shipper', 'balanced', 'cautious'] as const;
+export type BotName = (typeof BOT_NAMES)[number];
+
+/** Crée un bot par son nom. `seed` ne sert qu'au bot aléatoire. */
+export function createBot(name: BotName, seed: string): Bot {
+  switch (name) {
+    case 'random':
+      return new RandomBot(seed);
+    case 'shipper':
+      // « Move fast and break things » : que des features, le plus vite possible.
+      return new PlannerBot(name, {
+        priority: (type) => (type === 'FEATURE' ? 3 : type === 'BUGFIX' ? 0 : -1),
+        avoidRoles: ['DESIGNER', 'PRODUCT_OWNER'],
+        hireRunway: 6,
+        offerRatio: 1.1,
+        pitchRunway: 8,
+        buysFurniture: false,
+      });
+    case 'balanced':
+      // Garde la dette sous contrôle et répare la prod quand elle vacille.
+      return new PlannerBot(name, {
+        priority: (type, state) => {
+          if (type === 'REFACTO') return state.gauges.debt > 35 ? 4 : 1;
+          if (type === 'BUGFIX' || type === 'INFRA') return fixPriority(state) ? 4 : 1;
+          return 3;
+        },
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+      });
+    case 'cautious':
+      // Code propre, petite équipe, levées tardives.
+      return new PlannerBot(name, {
+        priority: (type) => (type === 'REFACTO' ? 4 : type === 'FEATURE' ? 2 : 3),
+        avoidRoles: ['INTERN', 'TEN_X', 'AI_AGENT'],
+        hireRunway: 18,
+        offerRatio: 1,
+        pitchRunway: 6,
+        buysFurniture: true,
+      });
+  }
+}
+
+/** Joue une partie entière avec un bot (ou jusqu'à ce que `until` soit vrai). */
+export function playWithBot(
+  simulation: Simulation,
+  bot: Bot,
+  cards: CardLibrary,
+  until: (state: Readonly<GameState>) => boolean = () => false,
+  maxDecisions = 5000,
+): void {
+  for (
+    let i = 0;
+    i < maxDecisions && simulation.state.stage !== 'ENDED' && !until(simulation.state);
+    i++
+  ) {
+    if (simulation.isRunning) {
+      simulation.runUntilBlocked();
+      continue;
+    }
+    const commands = bot.decide(simulation.state, cards);
+    let progressed = false;
+    for (const command of commands)
+      progressed = simulation.dispatch(command).result.ok || progressed;
+    // Sécurité : si toutes les commandes du bot sont refusées, on force la suite.
+    if (!progressed) {
+      const fallback: Command = simulation.state.events.pending
+        ? { type: 'RESOLVE_EVENT', choiceIndex: 0 }
+        : simulation.state.stage === 'PITCH'
+          ? { type: 'CLOSE_PITCH' }
+          : simulation.state.stage === 'DEMO'
+            ? { type: 'END_DEMO' }
+            : { type: 'START_SPRINT' };
+      simulation.dispatch(fallback);
+    }
+  }
+}
