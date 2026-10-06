@@ -1,6 +1,7 @@
 import { SPEEDS, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView } from '../../view/types';
+import { useSlack } from '../../slack/store';
 import { PANELS, useGame, type PanelId } from '../store/game';
 import { formatClock, formatGauge, gaugeRatio, isGaugeCritical } from './format';
 import { Tooltip } from './Tooltip';
@@ -11,6 +12,8 @@ const PANEL_ICONS: Record<PanelId, string> = {
   hiring: '✚',
   build: '⚒',
   dashboard: '📈',
+  slack: '#',
+  saves: '💾',
   settings: '⚙',
   credits: '©',
 };
@@ -100,11 +103,15 @@ export function TimeControls({ view }: { view: GameView }) {
 export function ActionBar() {
   const { t } = useTranslation();
   const panel = useGame((s) => s.panel);
+  const replay = useGame((s) => s.replayOf !== null);
+  const unread = useSlack((s) => s.unread.general + s.unread.random + s.unread.incidents);
+  // En replay, seuls les panneaux de consultation restent utiles.
+  const hidden = new Set<PanelId>(replay ? ['credits', 'hiring', 'build', 'saves'] : ['credits']);
   const openPanel = useGame((s) => s.openPanel);
   const setBuild = useGame((s) => s.setBuild);
   return (
     <nav className="action-bar" aria-label={t('panels.actions')}>
-      {PANELS.filter((id) => id !== 'credits').map((id) => (
+      {PANELS.filter((id) => !hidden.has(id)).map((id) => (
         <button
           key={id}
           type="button"
@@ -119,6 +126,11 @@ export function ActionBar() {
             {PANEL_ICONS[id]}
           </span>
           <span className="label">{t(`panels.${id}`)}</span>
+          {id === 'slack' && unread > 0 && (
+            <span className="unread" aria-label={t('slack.unread', { count: unread })}>
+              {unread}
+            </span>
+          )}
         </button>
       ))}
     </nav>

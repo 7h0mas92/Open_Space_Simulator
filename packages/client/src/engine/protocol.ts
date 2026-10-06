@@ -1,5 +1,6 @@
 import type {
   Command,
+  LoggedCommand,
   CommandResult,
   EventCard,
   GameMode,
@@ -15,7 +16,10 @@ import type {
  */
 
 export type GameStart =
-  { kind: 'new'; seed: string; mode: GameMode } | { kind: 'load'; save: SaveData };
+  | { kind: 'new'; seed: string; mode: GameMode }
+  | { kind: 'load'; save: SaveData }
+  /** Revoir une partie : la simulation rejoue elle-même les commandes à leur tick. */
+  | { kind: 'replay'; seed: string; mode: GameMode; commands: readonly LoggedCommand[] };
 
 export type MainToWorker =
   | { type: 'init'; cards: readonly EventCard[]; game: GameStart }
@@ -33,6 +37,8 @@ export interface EngineSnapshot {
   running: boolean;
   /** Durée réelle d'un tick à la vitesse actuelle, pour interpoler les positions. */
   tickDurationMs: number;
+  /** Replay en cours : commandes déjà rejouées sur le total (null hors replay). */
+  replay: { played: number; total: number } | null;
 }
 
 export type WorkerToMain =

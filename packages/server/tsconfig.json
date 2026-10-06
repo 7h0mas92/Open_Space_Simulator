@@ -1,8 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
+    // Le serveur est empaqueté par esbuild (scripts/build.mjs) : il peut ainsi importer la
+    // simulation du client (`@oss/client/simulation`, rejeu anti-triche) écrite en TypeScript.
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "tests", "prisma", "prisma.config.ts", "vitest.config.ts"]
+  "include": ["src", "tests", "prisma", "scripts", "prisma.config.ts", "vitest.config.ts"]
 }

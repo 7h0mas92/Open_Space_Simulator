@@ -33,7 +33,7 @@ test('navigation complète au clavier', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Pas de clavier physique sur mobile');
   await expect(page.getByRole('button', { name: /Se connecter|Log in/ })).toBeVisible();
   const focused: string[] = [];
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 20; i++) {
     await page.keyboard.press('Tab');
     focused.push(await page.evaluate(() => document.activeElement?.tagName ?? ''));
   }

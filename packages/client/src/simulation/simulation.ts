@@ -9,6 +9,7 @@ import {
 } from '@oss/shared';
 import { eventSystem } from '../events/draw';
 import type { CardLibrary } from '../events/library';
+import { checkAchievements } from './achievements';
 import { applyCommand } from './commands';
 import { endGame } from './endings';
 import { computeOfficeEffects, type OfficeEffects } from './furniture';
@@ -109,12 +110,15 @@ export class Simulation {
     const clock = getClock(state);
     for (const system of SYSTEMS) {
       system(state, ctx, clock);
-      if (state.stage === 'ENDED') return ctx.outbox;
+      if (state.stage === 'ENDED') break;
     }
-    state.tick += 1;
-    state.sprintTick += 1;
-    if (state.gauges.treasury < 0) endGame(state, ctx, 'BANKRUPTCY');
-    else if (state.sprintTick >= TIME.ticksPerSprint) endSprint(state, ctx);
+    if (state.stage !== 'ENDED') {
+      state.tick += 1;
+      state.sprintTick += 1;
+      if (state.gauges.treasury < 0) endGame(state, ctx, 'BANKRUPTCY');
+      else if (state.sprintTick >= TIME.ticksPerSprint) endSprint(state, ctx);
+    }
+    checkAchievements(state, ctx);
     return ctx.outbox;
   }
 
@@ -132,7 +136,10 @@ export class Simulation {
       return { result: { ok: false, error: 'INVALID_COMMAND' }, notifications: [] };
     const ctx = this.context();
     const result = applyCommand(this.state, ctx, parsed.data);
-    if (result.ok) this.commands.push({ tick: this.state.tick, command: parsed.data });
+    if (result.ok) {
+      this.commands.push({ tick: this.state.tick, command: parsed.data });
+      checkAchievements(this.state, ctx);
+    }
     return { result, notifications: ctx.outbox };
   }
 }

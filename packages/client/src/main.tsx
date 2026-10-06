@@ -4,6 +4,7 @@ import './i18n';
 import { App } from './ui/App';
 import './ui/styles.css';
 import './ui/game.css';
+import './ui/meta.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Élément #root introuvable');

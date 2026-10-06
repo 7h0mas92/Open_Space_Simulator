@@ -206,6 +206,10 @@ export interface GameView {
   readonly acquisitionOffer: AcquisitionOffer | null;
   readonly canIpo: boolean;
   readonly result: GameResult | null;
+  /** Succès débloqués pendant cette partie (identifiants du catalogue). */
+  readonly achievements: readonly string[];
+  /** Replay d'une partie du classement : commandes rejouées sur le total. */
+  readonly replay: { readonly played: number; readonly total: number } | null;
   /** Vrai si la simulation avance (faux en planification, en démo, face à une carte). */
   readonly running: boolean;
 }

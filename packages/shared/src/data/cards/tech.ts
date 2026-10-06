@@ -38,7 +38,7 @@ export const TECH_CARDS: EventCard[] = [
     choices: [
       {
         label: t('Tout migrer, on n’a qu’une vie', 'Migrate everything, YOLO'),
-        effects: { sprintsLost: 2, hype: 15, stability: -20, treasury: -40000 },
+        effects: { sprintsLost: 1, hype: 20, stability: -15, treasury: -40000 },
       },
       {
         label: t(
@@ -282,7 +282,7 @@ export const TECH_CARDS: EventCard[] = [
     ),
     weight: 6,
     choices: [
-      { label: t('Le réécrire', 'Rewrite it'), effects: { sprintsLost: 1, debt: -12 } },
+      { label: t('Le réécrire', 'Rewrite it'), effects: { sprintsLost: 1, debt: -8, hype: -4 } },
       {
         label: t('Ne surtout pas y toucher', 'Never, ever touch it'),
         effects: { debt: 4, 'moral.SENIOR_BEARD': 5 },

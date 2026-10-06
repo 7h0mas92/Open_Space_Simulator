@@ -1,6 +1,7 @@
 import {
   FURNITURE_CATALOG,
   INVESTORS,
+  ROLE_PROFILES,
   getPitchArgument,
   type CardEffects,
   type Command,
@@ -210,8 +211,12 @@ class PlannerBot implements Bot {
     // 3. Mobilier utile.
     if (style.buysFurniture) commands.push(...this.furniture(state));
 
-    // 4. Kanban : on remplit TODO selon la capacité estimée de l'équipe.
-    const capacity = devIds(state).length * 9;
+    // 4. Kanban : on remplit TODO selon la capacité estimée de l'équipe (un 10x ou une IA
+    // abattent plus de travail qu'un dev moyen).
+    const capacity = devIds(state).reduce((total, id) => {
+      const role = state.components.identity[id]?.role;
+      return total + 9 * (role ? ROLE_PROFILES[role].speedMultiplier : 1);
+    }, 0);
     let planned = [
       ...tasksInColumn(state as GameState, 'TODO'),
       ...tasksInColumn(state as GameState, 'IN_PROGRESS'),

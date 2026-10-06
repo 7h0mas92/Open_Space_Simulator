@@ -25,6 +25,8 @@ declare module 'fastify' {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
     /** preHandler : exige un rôle (ADMIN inclut tous les droits). */
     requireRole: (role: Role) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    /** Utilisateur connecté s'il y en a un, sans exiger de session (routes publiques). */
+    optionalUser: (request: FastifyRequest) => Promise<AccessTokenPayload | null>;
   }
 }
 
@@ -41,6 +43,14 @@ export const authPlugin = fp(async (app: FastifyInstance, { env }: { env: Env })
       await request.jwtVerify();
     } catch {
       throw unauthorized();
+    }
+  });
+
+  app.decorate('optionalUser', async (request: FastifyRequest) => {
+    try {
+      return await request.jwtVerify<AccessTokenPayload>();
+    } catch {
+      return null;
     }
   });
 

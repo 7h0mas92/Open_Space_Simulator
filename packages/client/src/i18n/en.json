@@ -4,14 +4,13 @@
     "pitch": "Your startup just raised 2 million. You have 18 months before everything blows up. Good luck."
   },
   "menu": {
-    "newGame": "New game",
-    "guest": "Play as guest",
-    "comingSoon": "Your game is saved in this browser for now; cloud sync is coming soon.",
     "welcome": "Welcome, {{pseudo}}!",
     "admin": "Administrator",
     "logout": "Log out",
-    "credits": "Credits",
-    "guestHint": "No account, no leaderboard. Prod still goes down, though."
+    "guestHint": "No account, no leaderboard. Prod still goes down, though.",
+    "continue": "Load a game",
+    "more": "More",
+    "startFailed": "Could not start the game. Try again."
   },
   "language": {
     "label": "Language",
@@ -47,7 +46,16 @@
     "OAUTH_NOT_CONFIGURED": "GitHub login is not configured on this server.",
     "RATE_LIMITED": "Too many attempts, wait a minute.",
     "INTERNAL_ERROR": "The server crashed. Like prod on a Friday at 5pm.",
-    "NETWORK_ERROR": "Server unreachable. Check your connection."
+    "NETWORK_ERROR": "Server unreachable. Check your connection.",
+    "PAYLOAD_TOO_LARGE": "Data too large.",
+    "GAME_NOT_FINISHED": "The game is not finished.",
+    "REPLAY_REJECTED": "The server could not replay this game.",
+    "SCORE_MISMATCH": "The score does not match the server replay.",
+    "UNKNOWN_CARDS_VERSION": "Card version unknown to the server.",
+    "DAILY_INVALID": "This Daily is closed.",
+    "DAILY_ALREADY_PLAYED": "You already posted a score for this Daily.",
+    "AI_UNAVAILABLE": "AI Slack is unavailable.",
+    "AI_QUOTA_EXCEEDED": "Daily AI quota reached."
   },
   "thoughts": {
     "whyWorks": "Why does it work??",
@@ -199,7 +207,9 @@
     "credits": "Credits",
     "close": "Close",
     "menu": "Menu",
-    "actions": "Game actions"
+    "actions": "Game actions",
+    "slack": "Slack",
+    "saves": "Saves"
   },
   "kanban": {
     "columns": {
@@ -305,7 +315,15 @@
     "language": "Language",
     "tutorial": "Replay tutorial",
     "quit": "Quit game",
-    "fps": "{{fps}} FPS"
+    "fps": "{{fps}} FPS",
+    "audio": "Audio",
+    "volumes": {
+      "musicVolume": "Music",
+      "sfxVolume": "Effects",
+      "ambienceVolume": "Ambience"
+    },
+    "slackAi": "AI-driven Slack",
+    "slackAiHint": "Devs react live (account required, daily quota)."
   },
   "credits": {
     "title": "Credits",
@@ -385,6 +403,147 @@
     "ownership": "Your stake",
     "sprints": "Sprints played",
     "again": "Play again",
-    "menu": "Main menu"
+    "menu": "Main menu",
+    "share": "Share",
+    "shareAchievements": "{{count}} achievements unlocked",
+    "downloaded": "Image downloaded.",
+    "shareFailed": "Could not create the image.",
+    "submitting": "The server is replaying your game to validate the score…",
+    "guest": "Log in to post your scores.",
+    "rank": "Score validated: rank {{rank}}!",
+    "submitFailed": "Score not posted"
+  },
+  "modes": {
+    "title": "Pick your mode",
+    "NORMAL": {
+      "name": "Normal",
+      "rule": "18 months to become a unicorn."
+    },
+    "HARDCORE": {
+      "name": "Hardcore",
+      "rule": "No pause. Ever."
+    },
+    "INTERNS_ONLY": {
+      "name": "Interns Only",
+      "rule": "Interns only. Good luck with production."
+    },
+    "SHIP_IN_3": {
+      "name": "3-sprint challenge",
+      "rule": "This app must ship in 3 sprints."
+    },
+    "DAILY": {
+      "name": "Daily",
+      "rule": "The same game for everyone today."
+    }
+  },
+  "saves": {
+    "title": "Saves",
+    "slot": "Slot {{slot}}",
+    "autoSlot": "Autosave",
+    "empty": "Empty",
+    "sprint": "sprint {{sprint}}",
+    "save": "Save",
+    "load": "Load",
+    "delete": "Delete slot {{slot}}",
+    "confirmDelete": "Delete the save in slot {{slot}}?",
+    "saved": "Game saved (slot {{slot}}).",
+    "savedOffline": "Saved on this device; it will reach the server when you are back online.",
+    "failed": "Saving failed.",
+    "offlineHint": "As a guest, saves stay on this device. Log in to find them everywhere."
+  },
+  "meta": {
+    "back": "Back"
+  },
+  "leaderboard": {
+    "title": "Leaderboards",
+    "boards": "Available leaderboards",
+    "global": "Global",
+    "daily": "Today's Daily",
+    "player": "Player",
+    "outcome": "Ending",
+    "valuation": "Valuation",
+    "sprints": "Sprints",
+    "replay": "Watch",
+    "watch": "Watch {{pseudo}}'s game",
+    "empty": "Nobody has posted a score here yet.",
+    "error": "Could not reach the server.",
+    "replayError": "Could not load this replay."
+  },
+  "replay": {
+    "banner": "{{pseudo}}'s replay: command {{played}}/{{total}}",
+    "endOf": "{{pseudo}}'s replay"
+  },
+  "profile": {
+    "title": "Profile",
+    "games": "Games posted",
+    "best": "Best valuation",
+    "bestGames": "Best games",
+    "noGames": "No game posted yet.",
+    "guestHint": "As a guest, your achievements stay on this device. Create an account to keep them and enter the leaderboard.",
+    "stats": {
+      "featuresShipped": "Features shipped",
+      "prodOutages": "Production outages",
+      "burnouts": "Burnouts",
+      "resignations": "Resignations",
+      "hired": "Hires",
+      "fired": "Layoffs",
+      "meetings": "Meetings",
+      "cardsResolved": "Crises handled"
+    }
+  },
+  "achievements": {
+    "title": "Achievements",
+    "progress": "{{unlocked}} of {{total}} achievements unlocked",
+    "locked": "Not unlocked yet",
+    "unlockedOn": "Unlocked on {{date}}"
+  },
+  "slack": {
+    "channels": "Channels",
+    "unread": "{{count}} unread",
+    "empty": "Nothing yet. Enjoy the quiet.",
+    "aiBadge": "AI",
+    "ai": {
+      "off": "Log in to enable AI Slack.",
+      "unavailable": "AI Slack unavailable: classic messages.",
+      "quota": "Daily AI quota reached: classic messages."
+    }
+  },
+  "admin": {
+    "heading": "Back office",
+    "tabs": {
+      "cards": "Cards",
+      "stats": "Statistics"
+    },
+    "search": "Search a card",
+    "newCard": "New card",
+    "count": "{{shown}} of {{total}} cards shown",
+    "cardTitle": "Title",
+    "weight": "Weight",
+    "state": "State",
+    "actions": "Actions",
+    "on": "Active",
+    "off": "Disabled",
+    "edit": "Edit",
+    "disable": "Disable",
+    "confirmDisable": "Disable the card \"{{title}}\"?",
+    "saved": "Card saved.",
+    "json": "Card (JSON)",
+    "valid": "Valid card.",
+    "invalid": "Invalid card: {{error}}",
+    "idLocked": "An existing card's id cannot change.",
+    "active": "Active card",
+    "save": "Save",
+    "cancel": "Cancel",
+    "preview": "Preview",
+    "users": "Players",
+    "games": "Games",
+    "cards": "Active cards",
+    "bankruptcy": "Bankruptcies by phase",
+    "phase": "Phase",
+    "bankruptcies": "Bankruptcies",
+    "rate": "Rate",
+    "topCards": "Most drawn cards",
+    "topChoices": "Most frequent choices",
+    "noData": "No data yet."
   }
 }

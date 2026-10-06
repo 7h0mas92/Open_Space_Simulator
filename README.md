@@ -5,8 +5,13 @@
 Jeu de gestion de startup jouable dans le navigateur, en 3D low-poly isométrique.
 Le cahier des charges complet est dans [`CLAUDE.md`](./CLAUDE.md).
 
-**État actuel : étape 1, le socle** (monorepo, serveur, base de données, authentification
-complète, i18n FR/EN, CI). Le jeu lui-même arrive dans les étapes suivantes.
+**État actuel : jeu complet, prêt à déployer.** Socle, simulation, rendu 3D, interface,
+événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),
+Slack simulé (templates ou IA), back-office, PWA hors ligne et configuration de déploiement.
+
+| Menu                               | Partie (ordinateur)                                         | Partie (mobile)                                        |
+| ---------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
+| ![Menu](docs/screenshots/menu.png) | ![Partie sur ordinateur](docs/screenshots/game-desktop.png) | ![Partie sur mobile](docs/screenshots/game-mobile.png) |
 
 ## Démarrage rapide
 
@@ -35,17 +40,18 @@ Sans ces variables, le bouton « Continuer avec GitHub » est simplement masqué
 
 ### Scripts utiles
 
-| Commande                                         | Effet                                                            |
-| ------------------------------------------------ | ---------------------------------------------------------------- |
-| `pnpm dev`                                       | Lance shared (watch), le serveur et le client                    |
-| `pnpm test`                                      | Tests Vitest de tous les paquets (le serveur utilise `oss_test`) |
-| `pnpm test:e2e`                                  | Tests Playwright sur 5 viewports (serveur + client réels)        |
-| `pnpm lint`                                      | ESLint                                                           |
-| `pnpm format`                                    | Prettier                                                         |
-| `pnpm typecheck`                                 | TypeScript strict sur tout le monorepo                           |
-| `pnpm build`                                     | Build de production des trois paquets                            |
-| `pnpm db:migrate`                                | Crée / applique une migration Prisma                             |
-| `pnpm --filter @oss/server user:promote <email>` | Donne le rôle ADMIN                                              |
+| Commande                                         | Effet                                                               |
+| ------------------------------------------------ | ------------------------------------------------------------------- |
+| `pnpm dev`                                       | Lance shared (watch), le serveur et le client                       |
+| `pnpm test`                                      | Tests Vitest de tous les paquets (le serveur utilise `oss_test`)    |
+| `pnpm test:e2e`                                  | Tests Playwright sur 5 viewports (serveur + client réels)           |
+| `pnpm lint`                                      | ESLint                                                              |
+| `pnpm format`                                    | Prettier                                                            |
+| `pnpm typecheck`                                 | TypeScript strict sur tout le monorepo                              |
+| `pnpm build`                                     | Build de production des trois paquets                               |
+| `pnpm balance`                                   | Simule 10 000 parties et écrit `packages/client/reports/balance.md` |
+| `pnpm db:migrate`                                | Crée / applique une migration Prisma                                |
+| `pnpm --filter @oss/server user:promote <email>` | Donne le rôle ADMIN                                                 |
 
 Les messages de commit suivent les [commits conventionnels](https://www.conventionalcommits.org/fr/)
 (`feat:`, `fix:`, `docs:`...), vérifiés par un hook `commit-msg` (husky + commitlint).
@@ -77,10 +83,12 @@ packages/
 │   ├── prisma/          schema.prisma, migrations, seed
 │   ├── src/config/      variables d'environnement validées par Zod
 │   ├── src/plugins/     sécurité, erreurs, JWT, Prisma, Swagger
-│   ├── src/routes/      auth, me, admin, health
-│   ├── src/services/    sessions, mots de passe, GitHub OAuth, utilisateurs
+│   ├── src/routes/      auth, me, saves, events, scores, daily, achievements,
+│   │                    slack-ai, admin, health
+│   ├── src/services/    sessions, GitHub OAuth, cartes, rejeu anti-triche, scores,
+│   │                    succès, Slack IA (Claude)
 │   └── tests/           tests d'intégration (vraie base PostgreSQL)
-└── client/   Vite + React + i18next (Three.js à l'étape 2)
+└── client/   Vite + React + Three.js + i18next, PWA
     ├── src/             voir src/README.md pour le rôle de chaque dossier
     └── tests/           unit/ (Vitest) et e2e/ (Playwright)
 ```
@@ -159,6 +167,44 @@ flowchart LR
   mode construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
   sur ordinateur, bottom sheets plein écran sur mobile.
 
+### Méta-jeu et anti-triche
+
+```mermaid
+sequenceDiagram
+  participant J as Navigateur
+  participant S as Serveur
+  participant DB as PostgreSQL
+  J->>S: GET /api/events → {version, cards}
+  Note over J: la partie tourne dans le Web Worker<br/>chaque commande est journalisée avec son tick
+  J->>S: POST /api/scores {mode, graine, commandes, version des cartes}
+  S->>DB: jeu de cartes de cette version
+  S->>S: rejoue la partie (même code de simulation que le client)
+  S->>DB: score calculé par le serveur, succès, statistiques des cartes
+  S-->>J: {score, rang, nouveaux succès}
+```
+
+- **Anti-triche** : le serveur ne croit que la graine et la liste des commandes. Il importe la
+  simulation du client (`@oss/client/simulation`, TypeScript pur) et rejoue la partie : issue,
+  valorisation et succès viennent de ce rejeu. Un score « annoncé » différent est refusé
+  (`SCORE_MISMATCH`), une partie inachevée aussi (`GAME_NOT_FINISHED`).
+- **Versions des cartes** : l'ordre et le contenu des cartes changent le tirage. Chaque jeu de
+  cartes servi par `GET /api/events` porte une empreinte (`version`) gardée en base : une partie
+  se rejoue toujours avec les cartes qu'elle a connues, même après une modification dans le
+  back-office. Hors ligne, le jeu utilise le cache ou les 100 cartes intégrées (`builtin`).
+- **Replays** : `GET /api/scores/:id/replay` renvoie graine, commandes et cartes ; le moteur les
+  rejoue en accéléré (les commandes du joueur sont bloquées).
+- **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
+- **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
+  gardés dans IndexedDB puis synchronisés avec le serveur à la connexion.
+- **Succès** : 32 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
+  débloqués par des cartes.
+- **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
+  complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
+  et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le
+  jeu retombe sur ses 256 templates. L'IA n'écrit que des messages.
+- **PWA** : `vite-plugin-pwa` met en cache le code, les modèles Kenney et les icônes ; une
+  partie en invité se lance sans réseau (testé par Playwright).
+
 ### Choix techniques
 
 | Choix                                                                                                    | Pourquoi                                                                                                                                                 |
@@ -171,11 +217,43 @@ flowchart LR
 | Règle ESLint sur `simulation/` et `events/`                                                              | Interdit d'y importer Three.js, React ou le DOM, ainsi que `Math.random` et `Date.now` : la simulation reste déterministe et exécutable sans navigateur. |
 | IA des personnages **hors** de la simulation (`ai/`)                                                     | La simulation dit _ce que_ fait un dev ; l'IA visuelle décide _comment on le voit_. Elle est déterministe mais ne touche jamais l'état du jeu.           |
 | Glisser-déposer maison (Pointer Events) plutôt qu'une bibliothèque                                       | Un seul code pour la souris, le doigt et le stylet, sans dépendance ; alternative clavier par des boutons fléchés.                                       |
+| Le serveur **réutilise la simulation du client**                                                         | Une seule implémentation des règles : le rejeu anti-triche ne peut pas diverger du jeu. Le build serveur (esbuild) l'embarque dans `dist/server.js`.     |
+| Éditeur de cartes en **JSON validé par Zod**                                                             | Toutes les conditions et tous les effets restent éditables sans formulaire géant ; le schéma partagé donne les mêmes erreurs que le serveur.             |
+
+## Équilibrage
+
+`pnpm balance` joue 10 000 parties avec quatre stratégies automatiques (aléatoire, « ship it »,
+équilibrée, prudente) et produit un rapport : taux de faillite (global et par phase),
+valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Le dernier rapport
+est dans [`docs/balance.md`](docs/balance.md).
+
+## Déploiement
+
+Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prêts :
+[`render.yaml`](render.yaml) et [`packages/client/vercel.json`](packages/client/vercel.json)).
+
+1. **Render** → _New_ → _Blueprint_ → ce dépôt. Render crée la base `oss-db` et le service
+   `oss-server` (build, migrations, seed puis démarrage). Il demande :
+   - `CLIENT_URL` : l'URL Vercel du client (par exemple `https://open-space-simulator.vercel.app`) ;
+   - `SEED_ADMIN_EMAIL` et `SEED_ADMIN_PASSWORD` : le compte administrateur ;
+   - facultatif : `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` (OAuth App GitHub, callback
+     `${CLIENT_URL}/api/auth/github/callback`) et `ANTHROPIC_API_KEY` (Slack IA).
+     `JWT_SECRET` est généré par Render.
+2. Dans `packages/client/vercel.json`, remplacer `REMPLACER-PAR-L-URL-RENDER` par l'URL du
+   service Render (par exemple `oss-server.onrender.com`).
+3. **Vercel** → _Add New Project_ → ce dépôt, _Root Directory_ `packages/client`. Les
+   commandes d'installation et de build sont dans `vercel.json`.
+
+Les secrets ne vont jamais dans le dépôt : ils se saisissent dans les tableaux de bord de
+Render et Vercel. Toutes les variables sont décrites dans
+[`packages/server/.env.example`](packages/server/.env.example).
 
 ## Ce que l'application fait et ne fait pas
 
-Elle fera : un jeu de gestion solo complet, jouable hors ligne en invité, avec classements en
-ligne, replays et un Slack optionnellement animé par l'IA.
+Elle fait : un jeu de gestion solo complet (5 modes, 39 sprints, 100 cartes, 8 profils de
+devs, 4 phases et 4 fins), jouable hors ligne en invité, avec classements en ligne (global,
+Daily, par mode), replays vérifiés par le serveur, 32 succès, un back-office et un Slack
+optionnellement animé par l'IA.
 
 Elle ne fait pas : de multijoueur en temps réel, d'achats intégrés ni de publicité, de chat
 entre joueurs, d'application mobile native (PWA uniquement), ni d'assets payants. L'IA ne
@@ -187,5 +265,9 @@ génère que des messages Slack.
   Characters, inclus dans `packages/client/public/assets/kenney/` (voir le README de ce dossier).
   Le manifeste typé `render/assetManifest.ts` liste exactement les fichiers des packs.
 - Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
-  sieste-pod, standing desk, casque antibruit, pack UI (interface en CSS), packs sons (audio à
-  l'étape 11). Liste aussi visible dans la page Crédits du jeu.
+  sieste-pod, standing desk, casque antibruit, pack UI (interface en CSS), packs sons. Le
+  lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
+  sons Kenney et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans
+  la page Crédits du jeu.
+- Rendu : [Three.js](https://threejs.org). Interface : React, Zustand, i18next. Audio :
+  Howler.js. Slack IA : API Claude d'Anthropic.

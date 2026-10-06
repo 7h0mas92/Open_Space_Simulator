@@ -179,6 +179,7 @@ describe('Interpolation', () => {
     speed: 1,
     running,
     tickDurationMs,
+    replay: null,
   });
 
   it('calcule la progression entre deux ticks', () => {

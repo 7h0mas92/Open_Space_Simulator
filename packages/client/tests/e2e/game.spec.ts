@@ -20,7 +20,7 @@ async function startAsGuest(page: Page) {
     localStorage.setItem('oss.settings', JSON.stringify({ tutorialDone: true }));
   });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Jouer en invité' }).click();
+  await page.getByTestId('mode-NORMAL').click();
   await expect(page.getByTestId('game')).toBeVisible();
 }
 

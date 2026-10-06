@@ -211,9 +211,9 @@ export const BUSINESS_CARDS: EventCard[] = [
     choices: [
       {
         label: t('Pivoter vers les chiens', 'Pivot to dogs'),
-        effects: { users: -40, hype: 20, debt: -10 },
+        effects: { users: -20, hype: 25, debt: -15 },
       },
-      { label: t('Garder le cap', 'Stay the course'), effects: { moral: 2, hype: -4 } },
+      { label: t('Garder le cap', 'Stay the course'), effects: { moral: 2, hype: -8 } },
     ],
   }),
   card({

@@ -1,9 +1,56 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // PWA : installable, et jouable hors ligne en invité. Tout le jeu (code, modèles Kenney,
+    // icônes) est mis en cache à l'installation ; les cartes d'événements suivent le réseau
+    // en priorité et retombent sur le cache (puis sur les 100 cartes intégrées au jeu).
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'Open Space Simulator 2026',
+        short_name: 'Open Space',
+        description:
+          'Ta startup a levé 2 millions. Tu as 18 mois avant que tout explose. Bonne chance.',
+        lang: 'fr',
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        orientation: 'any',
+        background_color: '#1b1f2e',
+        theme_color: '#1b1f2e',
+        categories: ['games', 'entertainment'],
+        icons: [
+          { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'pwa-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,glb,gltf,ogg,mp3,woff2}'],
+        // Le chunk Three.js et certains modèles dépassent la limite par défaut (2 Mo).
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // Les routes de l'API ne doivent jamais recevoir index.html.
+        navigateFallbackDenylist: [/^\/api\//, /^\/docs/],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname === '/api/events',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'oss-events',
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 8 },
+            },
+          },
+        ],
+      },
+    }),
+  ],
   server: {
     port: 5173,
     // En développement, le client et l'API partagent la même origine grâce à ce proxy :

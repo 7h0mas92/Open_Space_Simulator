@@ -4,14 +4,13 @@
     "pitch": "Ta startup a levé 2 millions. Tu as 18 mois avant que tout explose. Bonne chance."
   },
   "menu": {
-    "newGame": "Nouvelle partie",
-    "guest": "Jouer en invité",
-    "comingSoon": "Ta partie est sauvegardée sur ce navigateur pour l'instant ; la synchronisation arrive bientôt.",
     "welcome": "Bienvenue, {{pseudo}} !",
     "admin": "Administrateur",
     "logout": "Se déconnecter",
-    "credits": "Crédits",
-    "guestHint": "Sans compte, pas de classement. Mais la prod tombe quand même."
+    "guestHint": "Sans compte, pas de classement. Mais la prod tombe quand même.",
+    "continue": "Charger une partie",
+    "more": "Plus",
+    "startFailed": "Impossible de lancer la partie. Réessaie."
   },
   "language": {
     "label": "Langue",
@@ -47,7 +46,16 @@
     "OAUTH_NOT_CONFIGURED": "La connexion GitHub n'est pas configurée sur ce serveur.",
     "RATE_LIMITED": "Trop de tentatives, patiente une minute.",
     "INTERNAL_ERROR": "Le serveur a planté. Comme la prod un vendredi à 17h.",
-    "NETWORK_ERROR": "Serveur injoignable. Vérifie ta connexion."
+    "NETWORK_ERROR": "Serveur injoignable. Vérifie ta connexion.",
+    "PAYLOAD_TOO_LARGE": "Données trop volumineuses.",
+    "GAME_NOT_FINISHED": "La partie n'est pas terminée.",
+    "REPLAY_REJECTED": "Le serveur n'a pas pu rejouer cette partie.",
+    "SCORE_MISMATCH": "Le score ne correspond pas au rejeu du serveur.",
+    "UNKNOWN_CARDS_VERSION": "Version des cartes inconnue du serveur.",
+    "DAILY_INVALID": "Ce Daily n'est plus ouvert.",
+    "DAILY_ALREADY_PLAYED": "Tu as déjà publié un score pour ce Daily.",
+    "AI_UNAVAILABLE": "Le Slack IA est indisponible.",
+    "AI_QUOTA_EXCEEDED": "Quota IA du jour atteint."
   },
   "thoughts": {
     "whyWorks": "Pourquoi ça marche ??",
@@ -199,7 +207,9 @@
     "credits": "Crédits",
     "close": "Fermer",
     "menu": "Menu",
-    "actions": "Actions du jeu"
+    "actions": "Actions du jeu",
+    "slack": "Slack",
+    "saves": "Sauvegardes"
   },
   "kanban": {
     "columns": {
@@ -305,7 +315,15 @@
     "language": "Langue",
     "tutorial": "Revoir le tutoriel",
     "quit": "Quitter la partie",
-    "fps": "{{fps}} FPS"
+    "fps": "{{fps}} FPS",
+    "audio": "Audio",
+    "volumes": {
+      "musicVolume": "Musique",
+      "sfxVolume": "Effets",
+      "ambienceVolume": "Ambiance"
+    },
+    "slackAi": "Slack piloté par l'IA",
+    "slackAiHint": "Les devs réagissent en direct (compte requis, quota quotidien)."
   },
   "credits": {
     "title": "Crédits",
@@ -385,6 +403,147 @@
     "ownership": "Ta part du capital",
     "sprints": "Sprints joués",
     "again": "Rejouer",
-    "menu": "Menu principal"
+    "menu": "Menu principal",
+    "share": "Partager",
+    "shareAchievements": "{{count}} succès débloqués",
+    "downloaded": "Image téléchargée.",
+    "shareFailed": "Impossible de créer l'image.",
+    "submitting": "Le serveur rejoue ta partie pour valider le score…",
+    "guest": "Connecte-toi pour publier tes scores.",
+    "rank": "Score validé : {{rank}}e au classement !",
+    "submitFailed": "Score non publié"
+  },
+  "modes": {
+    "title": "Choisis ton mode",
+    "NORMAL": {
+      "name": "Normal",
+      "rule": "18 mois pour devenir une licorne."
+    },
+    "HARDCORE": {
+      "name": "Hardcore",
+      "rule": "Pas de pause. Jamais."
+    },
+    "INTERNS_ONLY": {
+      "name": "Stagiaires Only",
+      "rule": "Que des stagiaires. Bon courage pour la prod."
+    },
+    "SHIP_IN_3": {
+      "name": "Défi 3 sprints",
+      "rule": "Cette app doit sortir en 3 sprints."
+    },
+    "DAILY": {
+      "name": "Daily",
+      "rule": "La même partie pour tout le monde aujourd'hui."
+    }
+  },
+  "saves": {
+    "title": "Sauvegardes",
+    "slot": "Emplacement {{slot}}",
+    "autoSlot": "Sauvegarde auto",
+    "empty": "Vide",
+    "sprint": "sprint {{sprint}}",
+    "save": "Sauvegarder",
+    "load": "Charger",
+    "delete": "Supprimer l'emplacement {{slot}}",
+    "confirmDelete": "Supprimer la sauvegarde de l'emplacement {{slot}} ?",
+    "saved": "Partie sauvegardée (emplacement {{slot}}).",
+    "savedOffline": "Sauvegardée sur cet appareil ; envoi au serveur dès le retour du réseau.",
+    "failed": "La sauvegarde a échoué.",
+    "offlineHint": "En invité, les sauvegardes restent sur cet appareil. Connecte-toi pour les retrouver partout."
+  },
+  "meta": {
+    "back": "Retour"
+  },
+  "leaderboard": {
+    "title": "Classements",
+    "boards": "Classements disponibles",
+    "global": "Global",
+    "daily": "Daily du jour",
+    "player": "Joueur",
+    "outcome": "Fin",
+    "valuation": "Valorisation",
+    "sprints": "Sprints",
+    "replay": "Revoir",
+    "watch": "Revoir la partie de {{pseudo}}",
+    "empty": "Personne n'a encore publié de score ici.",
+    "error": "Impossible de joindre le serveur.",
+    "replayError": "Impossible de charger ce replay."
+  },
+  "replay": {
+    "banner": "Replay de {{pseudo}} : commande {{played}}/{{total}}",
+    "endOf": "Replay de {{pseudo}}"
+  },
+  "profile": {
+    "title": "Profil",
+    "games": "Parties publiées",
+    "best": "Meilleure valorisation",
+    "bestGames": "Meilleures parties",
+    "noGames": "Aucune partie publiée pour l'instant.",
+    "guestHint": "En invité, tes succès restent sur cet appareil. Crée un compte pour les garder et entrer au classement.",
+    "stats": {
+      "featuresShipped": "Features livrées",
+      "prodOutages": "Pannes de prod",
+      "burnouts": "Burn-out",
+      "resignations": "Démissions",
+      "hired": "Recrutements",
+      "fired": "Licenciements",
+      "meetings": "Réunions",
+      "cardsResolved": "Crises gérées"
+    }
+  },
+  "achievements": {
+    "title": "Succès",
+    "progress": "{{unlocked}} succès débloqués sur {{total}}",
+    "locked": "Pas encore débloqué",
+    "unlockedOn": "Débloqué le {{date}}"
+  },
+  "slack": {
+    "channels": "Canaux",
+    "unread": "{{count}} non lus",
+    "empty": "Rien pour l'instant. Profite du calme.",
+    "aiBadge": "IA",
+    "ai": {
+      "off": "Connecte-toi pour activer le Slack IA.",
+      "unavailable": "Slack IA indisponible : messages classiques.",
+      "quota": "Quota IA du jour atteint : messages classiques."
+    }
+  },
+  "admin": {
+    "heading": "Back-office",
+    "tabs": {
+      "cards": "Cartes",
+      "stats": "Statistiques"
+    },
+    "search": "Rechercher une carte",
+    "newCard": "Nouvelle carte",
+    "count": "{{shown}} cartes affichées sur {{total}}",
+    "cardTitle": "Titre",
+    "weight": "Poids",
+    "state": "État",
+    "actions": "Actions",
+    "on": "Active",
+    "off": "Désactivée",
+    "edit": "Modifier",
+    "disable": "Désactiver",
+    "confirmDisable": "Désactiver la carte « {{title}} » ?",
+    "saved": "Carte enregistrée.",
+    "json": "Carte (JSON)",
+    "valid": "Carte valide.",
+    "invalid": "Carte invalide : {{error}}",
+    "idLocked": "L'identifiant d'une carte existante ne peut pas changer.",
+    "active": "Carte active",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "preview": "Aperçu",
+    "users": "Joueurs",
+    "games": "Parties",
+    "cards": "Cartes actives",
+    "bankruptcy": "Faillites par phase",
+    "phase": "Phase",
+    "bankruptcies": "Faillites",
+    "rate": "Taux",
+    "topCards": "Cartes les plus tirées",
+    "topChoices": "Choix les plus fréquents",
+    "noData": "Pas encore de données."
   }
 }

@@ -11,8 +11,9 @@
 | `ai/`         | A* sur grille, behavior trees, bulles de pensée (IA visuelle, déterministe)   | 3 ✅  |
 | `render/`     | Scène Three.js : lit des instantanés, interpole, ne modifie jamais l'état     | 3 ✅  |
 | `ui/`         | React + Zustand : menus, HUD, Kanban, équipe, construction, options, tutoriel | 3 ✅  |
-| `save/`       | Synchronisation serveur + cache IndexedDB hors ligne                          | 8     |
-| `audio/`      | Howler.js : musique, effets, ambiance                                         | 11    |
+| `save/`       | Sauvegardes, succès et cartes : IndexedDB hors ligne + synchronisation        | 4 ✅  |
+| `slack/`      | Slack simulé : 256 templates, mode IA via le serveur, repli automatique       | 4 ✅  |
+| `audio/`      | Howler.js : musique, effets, ambiance (en attente des packs sons Kenney)      | 4 ✅  |
 
 Règles :
 

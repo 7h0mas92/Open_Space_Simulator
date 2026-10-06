@@ -1,0 +1,58 @@
+# Blueprint Render : base PostgreSQL + serveur Fastify.
+# Render → New → Blueprint → choisir ce dépôt. Les valeurs marquées `sync: false` sont
+# demandées au moment de la création et ne sont jamais écrites dans le dépôt.
+databases:
+  - name: oss-db
+    databaseName: oss
+    user: oss
+    plan: free
+
+services:
+  - type: web
+    name: oss-server
+    runtime: node
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    buildCommand: >-
+      corepack enable &&
+      pnpm install --frozen-lockfile --prod=false &&
+      pnpm --filter @oss/shared build &&
+      pnpm --filter @oss/server build
+    # Migrations puis seed (idempotent : 100 cartes, succès, compte admin) avant de démarrer.
+    startCommand: >-
+      pnpm --filter @oss/server db:deploy &&
+      pnpm --filter @oss/server db:seed &&
+      pnpm --filter @oss/server start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '22'
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        fromDatabase:
+          name: oss-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      # URL du client Vercel, par exemple https://open-space-simulator.vercel.app
+      - key: CLIENT_URL
+        sync: false
+      - key: SEED_ADMIN_EMAIL
+        sync: false
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      # Facultatif : connexion GitHub (OAuth App, callback ${CLIENT_URL}/api/auth/github/callback)
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      # Facultatif : Slack piloté par l'IA. Sans clé, le jeu utilise les templates.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-opus-5-5
+      - key: AI_DAILY_QUOTA
+        value: '40'

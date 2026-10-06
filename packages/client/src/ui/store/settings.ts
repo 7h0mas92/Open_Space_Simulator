@@ -12,7 +12,17 @@ export interface Settings {
   readonly textScale: number;
   readonly showFps: boolean;
   readonly tutorialDone: boolean;
+  /** Slack animé par l'IA du serveur (sinon : templates). */
+  readonly slackAi: boolean;
+  /** Volumes séparés, de 0 à 1. */
+  readonly musicVolume: number;
+  readonly sfxVolume: number;
+  readonly ambienceVolume: number;
 }
+
+export const VOLUME_KEYS = ['musicVolume', 'sfxVolume', 'ambienceVolume'] as const;
+const volume = (value: unknown, fallback: number) =>
+  typeof value === 'number' && value >= 0 && value <= 1 ? value : fallback;
 
 interface SettingsStore extends Settings {
   update(patch: Partial<Settings>): void;
@@ -33,6 +43,10 @@ function detectDefaults(): Settings {
     textScale: 1,
     showFps: false,
     tutorialDone: false,
+    slackAi: false,
+    musicVolume: 0.5,
+    sfxVolume: 0.7,
+    ambienceVolume: 0.4,
   };
 }
 
@@ -51,6 +65,10 @@ function load(): Settings {
         : 1,
       showFps: raw.showFps === true,
       tutorialDone: raw.tutorialDone === true,
+      slackAi: raw.slackAi === true,
+      musicVolume: volume(raw.musicVolume, defaults.musicVolume),
+      sfxVolume: volume(raw.sfxVolume, defaults.sfxVolume),
+      ambienceVolume: volume(raw.ambienceVolume, defaults.ambienceVolume),
     };
   } catch {
     return defaults;
@@ -61,12 +79,9 @@ export const useSettings = create<SettingsStore>((set, get) => ({
   ...load(),
   update(patch) {
     set(patch);
-    const { quality, reducedMotion, textScale, showFps, tutorialDone } = get();
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ quality, reducedMotion, textScale, showFps, tutorialDone }),
-      );
+      // JSON.stringify ignore la fonction `update` : seuls les réglages sont gardés.
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(get()));
     } catch {
       // Stockage indisponible (navigation privée) : les réglages restent pour la session.
     }

@@ -19,6 +19,9 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'retain-on-failure',
+    // Le service worker de la PWA est testé à part (pwa.spec.ts) : ailleurs il est bloqué pour
+    // que chaque test parte d'un état propre.
+    serviceWorkers: 'block',
     // WebGL logiciel (SwiftShader) : la scène Three.js s'affiche aussi sur les runners sans GPU.
     launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },
   },
