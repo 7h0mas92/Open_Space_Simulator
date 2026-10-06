@@ -34,7 +34,7 @@ export function isStepDone(step: TutorialStep, s: Snapshot): boolean {
     case 'kanban':
       return s.view.tasks.some((task) => task.column !== 'BACKLOG');
     case 'assign':
-      return s.view.tasks.some((task) => task.column === 'DOING' && task.assigneeId !== null);
+      return s.view.tasks.some((task) => task.assigneeId !== null);
     case 'start':
       return s.view.step === 'EXECUTION';
     case 'speed':

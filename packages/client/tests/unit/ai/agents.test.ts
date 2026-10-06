@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { AgentWorld } from '../../../src/ai/agents';
 import { ALL_THOUGHTS, pickThought } from '../../../src/ai/thoughts';
 import { Random } from '../../../src/ai/random';
-import { MockGame } from '../../../src/view/mock';
 import type { DevActivity, GameView } from '../../../src/view/types';
 import fr from '../../../src/i18n/fr.json';
 import en from '../../../src/i18n/en.json';
+import { officeSimulation, SEED_OFFICE, viewOf } from '../fixtures/game';
 
 function withActivity(view: GameView, activity: DevActivity): GameView {
   return {
@@ -24,7 +24,7 @@ function run(world: AgentWorld, view: GameView, steps: number) {
 }
 
 describe('IA des personnages', () => {
-  const view = new MockGame(42).view;
+  const view = viewOf(officeSimulation(SEED_OFFICE));
 
   it('est déterministe : même graine, mêmes positions', () => {
     const a = run(new AgentWorld(7), view, 200);
@@ -44,6 +44,7 @@ describe('IA des personnages', () => {
   it('le Dev Fantôme est invisible', () => {
     const snapshot = run(new AgentWorld(1), view, 10);
     const ghost = view.devs.find((dev) => dev.role === 'GHOST')!;
+    expect(ghost.activity).toBe('REMOTE');
     expect(snapshot.find((a) => a.id === ghost.id)?.visible).toBe(false);
   });
 
@@ -52,8 +53,6 @@ describe('IA des personnages', () => {
     const visible = snapshot.filter((agent) => agent.visible);
     expect(visible.every((a) => a.pose === 'drink')).toBe(true);
     expect(new Set(visible.map((a) => `${a.x},${a.z}`)).size).toBe(visible.length);
-    // La machine à café est dans la cuisine (x > 10 en phase Seed).
-    expect(visible.some((a) => a.x > 10)).toBe(true);
   });
 
   it('les devs qui partent le soir disparaissent par l’entrée', () => {
@@ -82,9 +81,8 @@ describe('IA des personnages', () => {
   it('suit les changements de bureau et de phase', () => {
     const world = new AgentWorld(9);
     run(world, view, 50);
-    const game = new MockGame(42);
-    game.setPhase('SERIES_A');
-    const snapshot = run(world, withActivity(game.view, 'WORKING'), 600);
+    const bigger = viewOf(officeSimulation({ ...SEED_OFFICE, phase: 'SERIES_A' }));
+    const snapshot = run(world, withActivity(bigger, 'WORKING'), 600);
     expect(snapshot.filter((a) => a.visible).every((a) => a.pose === 'work')).toBe(true);
   });
 });

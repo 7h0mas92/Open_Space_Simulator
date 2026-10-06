@@ -1,4 +1,4 @@
-import { GAME, SPEEDS, type Speed } from '@oss/shared';
+import { SPEEDS, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView } from '../../view/types';
 import { PANELS, useGame, type PanelId } from '../store/game';
@@ -47,25 +47,35 @@ export function TimeControls({ view }: { view: GameView }) {
   const dispatch = useGame((s) => s.dispatch);
   const days = t('time.days', { returnObjects: true }) as unknown as string[];
   const { time } = view;
-  const setSpeed = (speed: Speed) => dispatch({ type: 'setSpeed', speed });
+  const setSpeed = (speed: Speed) => void dispatch({ type: 'setSpeed', speed });
   return (
     <div className="time-controls" data-tutorial="speed">
       <p className="clock" aria-live="off">
-        <strong>{t('time.sprint', { sprint: time.sprint, total: GAME.totalSprints })}</strong>
+        <strong>{t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}</strong>
         <span>
           {t('time.day', { day: days[weekday(time.day)] ?? '', time: formatClock(time.minute) })}
         </span>
         <span className="step">{t(`steps.${view.step}`)}</span>
       </p>
       {view.step === 'PLANNING' ? (
-        <button
-          type="button"
-          className="primary"
-          onClick={() => dispatch({ type: 'startSprint' })}
-          data-tutorial="start"
-        >
-          ▶ {t('time.startSprint')}
-        </button>
+        <div className="planning-actions">
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void dispatch({ type: 'startSprint' })}
+            data-tutorial="start"
+          >
+            ▶ {t('time.startSprint')}
+          </button>
+          <button
+            type="button"
+            disabled={view.pitchBlocker !== null}
+            title={view.pitchBlocker ? t(`results.${view.pitchBlocker}`) : undefined}
+            onClick={() => void dispatch({ type: 'startPitch' })}
+          >
+            💼 {t('pitch.open')}
+          </button>
+        </div>
       ) : (
         <div className="speeds" role="group" aria-label={t('time.speeds')}>
           {SPEEDS.map((speed) => (
@@ -74,6 +84,7 @@ export function TimeControls({ view }: { view: GameView }) {
               type="button"
               aria-pressed={time.speed === speed}
               aria-label={speed === 0 ? t('time.pause') : t('time.speed', { speed })}
+              disabled={speed === 0 && view.mode === 'HARDCORE'}
               onClick={() => setSpeed(speed)}
             >
               {speed === 0 ? '❚❚' : `x${speed}`}

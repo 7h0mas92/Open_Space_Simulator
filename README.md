@@ -126,18 +126,24 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-  V[GameView<br/>instantané en lecture seule] --> AI[ai/ IA visuelle<br/>A* + behavior trees<br/>pas fixe 0,1 s, RNG seedé]
+  W[Web Worker<br/>simulation] -- snapshot GameState --> AD[view/adapter<br/>GameState → GameView]
+  AD --> V[GameView<br/>instantané en lecture seule]
+  V --> AI[ai/ IA visuelle<br/>A* + behavior trees<br/>pas fixe 0,1 s, RNG seedé]
   AI -- 2 derniers pas --> R[render/ GameRenderer<br/>interpolation]
   V --> R
   V --> UI[ui/ HUD, Kanban, fiches]
-  UI -- GameCommand --> SRC[source de partie<br/>mock aujourd'hui, Web Worker demain]
-  SRC --> V
+  UI -- GameCommand --> AD2[view/adapter<br/>GameCommand → Command]
+  AD2 --> W
   R -- clic, appui long --> UI
 ```
 
 - **Frontière unique** : `view/types.ts` décrit ce que le rendu et l'interface lisent (`GameView`)
-  et les commandes qu'ils envoient (`GameCommand`). En attendant la simulation (étape 3),
-  `view/mock.ts` fournit une fausse partie déterministe ; un adaptateur la remplacera.
+  et les commandes qu'ils envoient (`GameCommand`). `view/adapter.ts` traduit l'état de la
+  simulation dans ce modèle (fonctions pures, testées) et `view/source.ts` le relie au moteur
+  qui tourne dans le Web Worker. Les règles (prix, emprise, effets des objets) restent dans la
+  simulation ; `view/catalog.ts` n'ajoute que l'habillage (modèle 3D, catégorie).
+- **Étapes du sprint** : planification (Kanban, recrutement, levée de fonds), exécution, cartes
+  d'événements avec effets affichés, démo de fin de sprint, mini-jeu de pitch, fin de partie.
 - **Scène** : caméra orthographique isométrique (35,26°, rotation par quarts de tour), sol et
   murs par phase (Garage, Seed, Série A, Licorne), mobilier en `InstancedMesh`, cycle jour/nuit,
   ombres, contour de sélection et léger bloom (post-processing).

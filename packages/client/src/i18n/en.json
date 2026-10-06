@@ -113,48 +113,14 @@
     "REMOTE": "Working remotely"
   },
   "traits": {
-    "perfectionist": "Perfectionist",
-    "nightOwl": "Night owl",
-    "optimist": "Optimist",
-    "grumpy": "Grumpy",
-    "meetingLover": "Loves meetings",
-    "caffeineAddict": "Caffeine addict",
-    "minimalist": "Minimalist",
-    "hypeBeast": "Hype beast"
-  },
-  "bios": {
-    "ninja": "put \"ninja\" in their LinkedIn title.",
-    "tabs": "quit their last job over tabs.",
-    "vim": "still can't exit Vim.",
-    "nft": "still owns 3 monkey NFTs.",
-    "coffee": "drinks from a \"Works on my machine\" mug.",
-    "linkedin": "posts \"I'm thrilled to announce\" every Monday.",
-    "darkmode": "refuses any website without dark mode.",
-    "regex": "writes regexes nobody reviews.",
-    "podcast": "starts a tech podcast every 6 months.",
-    "keyboard": "owns 7 mechanical keyboards.",
-    "crossfit": "talks about CrossFit during retros.",
-    "jira": "dreams in Jira tickets."
-  },
-  "history": {
-    "hired": "Hired",
-    "colleagueFired": "A colleague was fired"
-  },
-  "tasks": {
-    "login": "Sign in with Google",
-    "darkMode": "Dark mode",
-    "paymentApi": "Payment API",
-    "onboarding": "12-step onboarding",
-    "flakyTests": "Fix flaky tests",
-    "migrateDb": "Migrate the database",
-    "k8s": "Move to Kubernetes",
-    "fixSafari": "Fix the Safari bug",
-    "aiChatbot": "AI chatbot (mandatory in 2026)",
-    "exportCsv": "CSV export",
-    "refactorAuth": "Refactor authentication",
-    "monitoring": "Add monitoring",
-    "notifications": "Push notifications",
-    "i18n": "Translate the app"
+    "COFFEE_ADDICT": "Caffeine addict",
+    "NIGHT_OWL": "Night owl",
+    "WORKAHOLIC": "Workaholic",
+    "CHATTERBOX": "Chatterbox",
+    "PERFECTIONIST": "Perfectionist",
+    "GRUMPY": "Grumpy",
+    "ZEN": "Zen",
+    "GAMER": "Gamer"
   },
   "taskTypes": {
     "FEATURE": "Feature",
@@ -208,12 +174,14 @@
   "steps": {
     "PLANNING": "Planning",
     "EXECUTION": "Execution",
-    "DEMO": "Demo"
+    "DEMO": "Demo",
+    "PITCH": "Fundraising",
+    "ENDED": "Game over"
   },
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
     "day": "{{day}} {{time}}",
-    "days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     "pause": "Pause",
     "speed": "Speed x{{speed}}",
     "speeds": "Game speed",
@@ -245,10 +213,11 @@
     "nobody": "Nobody",
     "moveLeft": "Move to {{column}}",
     "moveRight": "Move to {{column}}",
-    "dragHint": "Drag a card to a column, or use the arrows.",
+    "dragHint": "Drag a card between Backlog and To do, or use the arrows. Devs pick up \"To do\" tasks on their own.",
     "impact": "Impact",
     "empty": "Nothing here. Enjoy.",
-    "moved": "\"{{task}}\" moved to {{column}}"
+    "moved": "\"{{task}}\" moved to {{column}}",
+    "hallucinated": "hallucinated"
   },
   "team": {
     "age": "{{age}} y/o",
@@ -267,7 +236,10 @@
     "friend": "Friends",
     "enemy": "Conflict",
     "neutral": "Neutral",
-    "empty": "Nobody. Not even an intern."
+    "empty": "Nobody. Not even an intern.",
+    "energy": "Energy",
+    "noHistory": "Nothing to report yet.",
+    "sprint": "Sprint {{sprint}}"
   },
   "hiring": {
     "intro": "3 candidates this sprint. Make an offer: too low and they refuse.",
@@ -294,59 +266,27 @@
     "cancel": "Done",
     "placing": "Placing: {{item}}",
     "selected": "Selected item: {{item}}",
-    "effects": {
-      "coffee": "Coffee",
-      "morale": "Morale",
-      "productivity": "Productivity",
-      "endurance": "Endurance",
-      "quality": "Quality",
-      "hype": "Hype",
-      "stability": "Stability",
-      "meetingShield": "Cancels meeting penalty"
-    }
-  },
-  "items": {
-    "desk": "Desk",
-    "deskCorner": "Corner desk",
-    "standingDesk": "Standing desk",
-    "ergoChair": "Ergonomic chair",
-    "headphones": "Noise-cancelling headphones",
-    "bookcase": "Bookcase",
-    "meetingTable": "Meeting table",
-    "tv": "Monitoring screen",
-    "coffeeMachine": "Coffee machine",
-    "coffeePremium": "Premium coffee bar",
-    "fridge": "Snack fridge",
-    "microwave": "Microwave",
-    "toaster": "Toaster",
-    "babyfoot": "Foosball table",
-    "sofa": "Sofa",
-    "napPod": "Nap pod",
-    "slide": "Slide",
-    "speaker": "Speaker",
-    "radio": "Radio",
-    "plant": "Plant",
-    "plantSmall": "Small plant",
-    "lamp": "Floor lamp",
-    "rug": "Rug",
-    "trashcan": "Trash can"
+    "soldOut": "Limit reached ({{max}})"
   },
   "results": {
-    "ok": "Done.",
-    "refused": "The candidate turned down your offer and joined your competitor.",
-    "teamFull": "Team is full for this phase.",
-    "tooExpensive": "Not enough cash.",
-    "locked": "Not unlocked yet.",
+    "INVALID_COMMAND": "That can't be done.",
+    "WRONG_STAGE": "Not now: wrong step of the sprint.",
+    "NOT_FOUND": "Not found (already gone?).",
+    "INVALID_CHOICE": "Invalid choice.",
+    "TEAM_FULL": "Team is full for this stage.",
+    "NOT_ENOUGH_MONEY": "Not enough cash.",
+    "INVALID_PLACEMENT": "This item can't go there.",
+    "LOCKED": "Not unlocked yet.",
+    "COOLDOWN": "Investors want something new: wait a few sprints.",
+    "NO_HYPE": "Zero hype: no investor will take your call.",
+    "NOT_ELIGIBLE": "Requirements not met.",
+    "GAME_OVER": "The game is over.",
+    "noGame": "No game in progress.",
     "outOfBounds": "Outside the office.",
     "wall": "There's a wall here.",
     "overlap": "That spot is taken.",
     "entrance": "Don't block the entrance!",
-    "unknownItem": "Unknown item.",
-    "unknownTask": "Unknown task.",
-    "unknownCandidate": "Unknown candidate.",
-    "unknownDev": "Unknown dev.",
-    "hired": "{{name}} joins the team!",
-    "fired": "{{name}} was fired."
+    "unknownItem": "Unknown item."
   },
   "dashboard": {
     "intro": "Gauge history, one point per day.",
@@ -364,7 +304,6 @@
     "showFps": "Show FPS",
     "language": "Language",
     "tutorial": "Replay tutorial",
-    "demoPhase": "Demo phase (until the simulation lands)",
     "quit": "Quit game",
     "fps": "{{fps}} FPS"
   },
@@ -393,7 +332,7 @@
       "welcome": "Welcome, founder. You have €2M and 18 months. This is your open space.",
       "gauges": "At the top, your gauges. Hover or tap them to learn what they do.",
       "kanban": "Open the Kanban and drag a task from Backlog to \"To do\".",
-      "assign": "Assign a task to a dev, then move it to \"Doing\".",
+      "assign": "Assign a task to a dev: they will start on it when the sprint begins.",
       "start": "Start the sprint: the devs get to work.",
       "speed": "Change the speed: pause, x1, x2 or x4.",
       "select": "Click a dev (long press on mobile) to see their profile.",
@@ -404,5 +343,48 @@
     "sceneLabel": "3D open space. Drag to move, wheel or pinch to zoom, Q and E to rotate, arrow keys to pan.",
     "gauges": "Gauges",
     "openProfile": "View profile"
+  },
+  "event": {
+    "kicker": "Event",
+    "worse": "It got worse (level {{level}})",
+    "moral": "Morale"
+  },
+  "pitch": {
+    "open": "Raise funds",
+    "title": "Fundraising",
+    "round": "Argument {{round}} of {{total}}: what do you say?",
+    "success": "Signed! €{{amount}} raised for {{share}}% of the company.",
+    "failure": "The investor will \"circle back\". They won't.",
+    "close": "Back to the office"
+  },
+  "demo": {
+    "title": "Sprint {{sprint}} demo",
+    "lost": "Sprint lost: nothing shipped.",
+    "users": "Users",
+    "revenue": "Revenue",
+    "expenses": "Expenses",
+    "features": "Features shipped",
+    "incidents": "Incidents",
+    "valuation": "Valuation",
+    "feedback": "User feedback",
+    "next": "Next sprint",
+    "ipo": "Launch the IPO",
+    "offerTitle": "Acquisition offer",
+    "offer": "{{buyer}} offers to buy your startup for {{amount}}.",
+    "accept": "Accept",
+    "refuse": "Decline"
+  },
+  "end": {
+    "title": "Game over",
+    "outcomes": {
+      "BANKRUPTCY": "Bankruptcy",
+      "IPO": "IPO",
+      "ACQUISITION": "Acquired",
+      "ZOMBIE": "Zombie startup"
+    },
+    "ownership": "Your stake",
+    "sprints": "Sprints played",
+    "again": "Play again",
+    "menu": "Main menu"
   }
 }

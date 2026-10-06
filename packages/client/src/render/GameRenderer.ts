@@ -76,6 +76,8 @@ export class GameRenderer {
   private readonly raycaster = new THREE.Raycaster();
   private readonly smoke: SmokeEffect;
   private readonly confetti: ConfettiEffect;
+  /** Heure affichée par l'éclairage (lissée), en minutes. */
+  private displayMinute: number | null = null;
   private readonly selectionMarker: THREE.LineSegments;
   private readonly bubbles = new Map<string, HTMLDivElement>();
   private composer: EffectComposer | null = null;
@@ -277,7 +279,7 @@ export class GameRenderer {
       this.characters.get(agent.id)?.update(shown, delta * speed, this.reducedMotion);
     }
 
-    if (view) this.applyLighting(view.time.minute);
+    if (view) this.applyLighting(this.smoothMinute(view.time.minute, delta));
     this.smoke.update(delta);
     this.confetti.update(delta);
     for (const event of this.gestures.poll(now)) this.handleGesture(event);
@@ -383,6 +385,20 @@ export class GameRenderer {
     );
     this.camera.lookAt(targetX, 0, targetZ);
     this.camera.updateProjectionMatrix();
+  }
+
+  /**
+   * La simulation avance par pas de 30 minutes : l'éclairage rattrape l'heure cible en douceur
+   * (par le chemin le plus court sur le cadran, minuit compris).
+   */
+  private smoothMinute(target: number, delta: number): number {
+    if (this.displayMinute === null || this.reducedMotion) {
+      this.displayMinute = target;
+      return target;
+    }
+    const diff = ((target - this.displayMinute + 2160) % 1440) - 720;
+    this.displayMinute = (this.displayMinute + diff * Math.min(1, delta * 4) + 1440) % 1440;
+    return this.displayMinute;
   }
 
   private applyLighting(minute: number): void {

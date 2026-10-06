@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
 import type { GameView, Rotation } from '../../view/types';
-import { formatMoney } from '../game/format';
+import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { moodEmoji } from '../team/StatBars';
-import { EffectList } from './BuildPanel';
+import { ItemDescription } from './BuildPanel';
 
 /**
  * Barre contextuelle au-dessus de la barre d'actions :
@@ -21,15 +21,20 @@ export function SelectionBar({ view }: { view: GameView }) {
   const dispatch = useGame((s) => s.dispatch);
   const openPanel = useGame((s) => s.openPanel);
 
+  const itemName = (kind: string) => {
+    const def = catalogItem(kind);
+    return def ? localized(def.name, i18n.language) : kind;
+  };
+
   if (build?.kind) {
     const rotate = () => setBuild({ ...build, rotation: ((build.rotation + 1) % 4) as Rotation });
     return (
       <div
         className="selection-bar"
         role="region"
-        aria-label={t('build.placing', { item: t(`items.${build.kind}` as never) })}
+        aria-label={t('build.placing', { item: itemName(build.kind) })}
       >
-        <p>{t('build.placing', { item: t(`items.${build.kind}` as never) })}</p>
+        <p>{t('build.placing', { item: itemName(build.kind) })}</p>
         <button type="button" onClick={rotate} aria-keyshortcuts="R">
           ⟳ {t('build.rotate')}
         </button>
@@ -48,15 +53,18 @@ export function SelectionBar({ view }: { view: GameView }) {
       <div
         className="selection-bar"
         role="region"
-        aria-label={t('build.selected', { item: t(`items.${item.kind}` as never) })}
+        aria-label={t('build.selected', { item: itemName(item.kind) })}
       >
         <div>
           <p>
-            <strong>{t(`items.${item.kind}` as never)}</strong>
+            <strong>{itemName(item.kind)}</strong>
           </p>
-          <EffectList item={def} />
+          <ItemDescription item={def} />
         </div>
-        <button type="button" onClick={() => dispatch({ type: 'rotateItem', itemId: item.id })}>
+        <button
+          type="button"
+          onClick={() => void dispatch({ type: 'rotateItem', itemId: item.id })}
+        >
           ⟳ {t('build.rotate')}
         </button>
         <button
@@ -71,10 +79,12 @@ export function SelectionBar({ view }: { view: GameView }) {
           type="button"
           className="danger"
           onClick={() => {
-            if (dispatch({ type: 'sellItem', itemId: item.id }).ok) select(null);
+            void dispatch({ type: 'sellItem', itemId: item.id }).then((result) => {
+              if (result.ok) select(null);
+            });
           }}
         >
-          {t('build.sell', { price: formatMoney(Math.round(def.price / 2), i18n.language) })}
+          {t('build.sell', { price: formatMoney(item.resale, i18n.language) })}
         </button>
         <button
           type="button"

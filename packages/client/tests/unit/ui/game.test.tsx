@@ -14,11 +14,25 @@ import { GameScreen } from '../../../src/ui/game/GameScreen';
 import { useGame } from '../../../src/ui/store/game';
 import { useSettings } from '../../../src/ui/store/settings';
 import { isStepDone } from '../../../src/ui/tutorial/Tutorial';
-import { MockGame } from '../../../src/view/mock';
+import type { Simulation } from '../../../src/simulation/simulation';
+import { officeSimulation, SEED_OFFICE, testSource, viewOf } from '../fixtures/game';
 
-function startGame() {
-  act(() => useGame.getState().start(42, 'SEED'));
-  return render(<GameScreen />);
+/** Lance l'écran de jeu sur une vraie simulation (moteur sans thread, temps arrêté). */
+async function startGame(simulation: Simulation = officeSimulation(SEED_OFFICE)) {
+  const { source, worker } = await testSource(simulation);
+  await act(() => useGame.getState().start({ source }));
+  render(<GameScreen />);
+  return { worker };
+}
+
+/** Joue un sprint entier en prenant le premier choix de chaque carte. */
+function playSprint(simulation: Simulation) {
+  simulation.dispatch({ type: 'START_SPRINT' });
+  while (simulation.state.stage === 'EXECUTION') {
+    simulation.runUntilBlocked();
+    if (simulation.state.events.pending)
+      simulation.dispatch({ type: 'RESOLVE_EVENT', choiceIndex: 0 });
+  }
 }
 
 beforeEach(async () => {
@@ -35,8 +49,8 @@ beforeEach(async () => {
 
 describe('HUD', () => {
   it('affiche les six jauges avec leur infobulle', async () => {
-    startGame();
-    expect(screen.getByTestId('gauge-treasury')).toHaveTextContent('2');
+    await startGame();
+    expect(screen.getByTestId('gauge-treasury')).toHaveTextContent(/2/);
     const coffee = screen.getByRole('button', { name: /Café/ });
     await userEvent.click(coffee);
     expect(screen.getByRole('tooltip', { hidden: false })).toHaveTextContent(
@@ -45,7 +59,7 @@ describe('HUD', () => {
   });
 
   it('lance le sprint puis change la vitesse', async () => {
-    startGame();
+    await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Lancer le sprint/ }));
     expect(useGame.getState().view?.step).toBe('EXECUTION');
     await userEvent.click(screen.getByRole('button', { name: 'Vitesse x4' }));
@@ -59,7 +73,7 @@ describe('HUD', () => {
   });
 
   it('ouvre et ferme un panneau au clavier (Échap)', async () => {
-    startGame();
+    await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Équipe/ }));
     expect(screen.getByRole('dialog', { name: 'Équipe' })).toBeInTheDocument();
     await userEvent.keyboard('{Escape}');
@@ -69,7 +83,7 @@ describe('HUD', () => {
 
 describe('Kanban', () => {
   it('déplace une carte avec les flèches et l’assigne à un dev', async () => {
-    startGame();
+    await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Kanban/ }));
     const backlog = screen.getByRole('region', { name: /Backlog/ });
     const first = within(backlog).getAllByRole('article')[0]!;
@@ -88,7 +102,7 @@ describe('Kanban', () => {
 
 describe('Équipe et recrutement', () => {
   it('affiche la fiche d’un dev puis le licencie après confirmation', async () => {
-    startGame();
+    await startGame();
     const dev = useGame.getState().view!.devs[0]!;
     await userEvent.click(screen.getByRole('button', { name: /Équipe/ }));
     await userEvent.click(screen.getByRole('button', { name: new RegExp(dev.name) }));
@@ -102,7 +116,7 @@ describe('Équipe et recrutement', () => {
   });
 
   it('fait une offre à un candidat', async () => {
-    startGame();
+    await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Recrutement/ }));
     const offers = screen.getAllByRole('button', { name: "Faire l'offre" });
     expect(offers).toHaveLength(3);
@@ -114,7 +128,7 @@ describe('Équipe et recrutement', () => {
 
 describe('Construction', () => {
   it('choisir un objet active l’aperçu, R le tourne, Échap quitte', async () => {
-    startGame();
+    await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Construction/ }));
     await userEvent.click(screen.getByRole('tab', { name: 'Déco' }));
     await userEvent.click(screen.getByRole('button', { name: /^Plante/ }));
@@ -129,7 +143,7 @@ describe('Construction', () => {
   });
 
   it('affiche les actions d’un objet sélectionné et le revend', async () => {
-    startGame();
+    await startGame();
     const item = useGame.getState().view!.items[0]!;
     act(() => useGame.getState().select({ type: 'item', id: item.id }));
     await userEvent.click(screen.getByRole('button', { name: /Revendre/ }));
@@ -137,7 +151,7 @@ describe('Construction', () => {
   });
 
   it('les objets verrouillés ne sont pas achetables', async () => {
-    startGame();
+    await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Construction/ }));
     await userEvent.click(screen.getByRole('tab', { name: 'Détente' }));
     expect(screen.getByRole('button', { name: /Toboggan/ })).toBeDisabled();
@@ -146,7 +160,7 @@ describe('Construction', () => {
 
 describe('Options et accessibilité', () => {
   it('change la qualité, la taille du texte et la réduction des animations', async () => {
-    startGame();
+    await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Options/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Haute' }));
     expect(useSettings.getState().quality).toBe('high');
@@ -160,18 +174,8 @@ describe('Options et accessibilité', () => {
     });
   });
 
-  it('change la phase de démo (le bureau s’agrandit)', async () => {
-    startGame();
-    await userEvent.click(screen.getByRole('button', { name: /Options/ }));
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: /Phase de démo/ }),
-      'UNICORN',
-    );
-    expect(useGame.getState().view!.phase).toBe('UNICORN');
-  });
-
   it('affiche les crédits Kenney et les assets manquants', async () => {
-    startGame();
+    await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Options/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Crédits' }));
     expect(screen.getByText(/licence CC0/)).toBeInTheDocument();
@@ -182,7 +186,7 @@ describe('Options et accessibilité', () => {
 describe('Tutoriel', () => {
   it('s’affiche au premier lancement et se passe', async () => {
     useSettings.setState({ tutorialDone: false });
-    startGame();
+    await startGame();
     expect(screen.getByText(/Bienvenue, fondateur/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Suivant' }));
     expect(screen.getByText(/tes jauges/)).toBeInTheDocument();
@@ -191,26 +195,82 @@ describe('Tutoriel', () => {
   });
 
   it('valide chaque étape quand l’action est faite', () => {
-    const game = new MockGame(1);
+    const simulation = officeSimulation(SEED_OFFICE);
+    const before = viewOf(simulation);
     const base = {
-      view: game.view,
+      view: before,
       panel: null,
       selectedDev: false,
       initialSpeed: 1,
-      initialItems: game.view.items.length,
+      initialItems: before.items.length,
     };
     expect(isStepDone('kanban', base)).toBe(false);
-    const taskId = game.view.tasks[0]!.id;
-    game.dispatch({ type: 'moveTask', taskId, column: 'DOING', index: 0 });
-    game.dispatch({ type: 'assignTask', taskId, devId: game.view.devs[0]!.id });
-    game.dispatch({ type: 'startSprint' });
-    game.dispatch({ type: 'setSpeed', speed: 2 });
-    game.dispatch({ type: 'placeItem', kind: 'plant', x: 5, z: 8, rotation: 0 });
-    const after = { ...base, view: game.view, selectedDev: true };
+    const taskId = before.tasks[0]!.id;
+    simulation.dispatch({ type: 'MOVE_TASK', taskId, column: 'TODO' });
+    simulation.dispatch({ type: 'ASSIGN_TASK', taskId, devId: before.devs[0]!.id });
+    simulation.dispatch({ type: 'START_SPRINT' });
+    simulation.dispatch({ type: 'BUY_FURNITURE', itemId: 'plant', x: 5, y: 8, rotation: 0 });
+    const view = { ...viewOf(simulation), time: { ...viewOf(simulation).time, speed: 2 as const } };
+    const after = { ...base, view, selectedDev: true };
     for (const step of ['kanban', 'assign', 'start', 'speed', 'select', 'build'] as const) {
       expect(isStepDone(step, after), step).toBe(true);
     }
     expect(isStepDone('welcome', after)).toBe(false);
+  });
+});
+
+describe('Étapes du sprint', () => {
+  it('affiche une carte d’événement et applique le choix', async () => {
+    const simulation = officeSimulation(SEED_OFFICE);
+    simulation.dispatch({ type: 'START_SPRINT' });
+    simulation.state.events.pending = { cardId: 'coffee-machine-broken', level: 0, drawnAtTick: 0 };
+    await startGame(simulation);
+    const card = screen.getByRole('dialog', { name: /machine à café/i });
+    const choices = within(card).getAllByRole('button');
+    expect(choices.length).toBeGreaterThanOrEqual(2);
+    expect(choices[0]).toHaveFocus();
+    await userEvent.click(choices[0]!);
+    expect(useGame.getState().view!.event).toBeNull();
+    expect(screen.queryByRole('dialog', { name: /machine à café/i })).not.toBeInTheDocument();
+  });
+
+  it('montre la démo de fin de sprint puis passe au sprint suivant', async () => {
+    const simulation = officeSimulation(SEED_OFFICE);
+    playSprint(simulation);
+    await startGame(simulation);
+    const demo = screen.getByRole('dialog', { name: /Démo du sprint 1/ });
+    expect(within(demo).getByText('Utilisateurs')).toBeInTheDocument();
+    await userEvent.click(within(demo).getByRole('button', { name: 'Sprint suivant' }));
+    expect(useGame.getState().view).toMatchObject({ step: 'PLANNING', time: { sprint: 2 } });
+  });
+
+  it('joue le mini-jeu de levée de fonds jusqu’à la décision', async () => {
+    await startGame();
+    await userEvent.click(screen.getByRole('button', { name: /Lever des fonds/ }));
+    for (let round = 0; round < 3; round++) {
+      const pitch = screen.getByRole('dialog', { name: 'Levée de fonds' });
+      const options = within(pitch).getAllByRole('button');
+      await userEvent.click(options[0]!);
+    }
+    const result = useGame.getState().view!.pitch!.result!;
+    const dialog = screen.getByRole('dialog', { name: 'Levée de fonds' });
+    expect(
+      within(dialog).getByText(result.success ? /Signé/ : /revenir vers toi/),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Retour au bureau' }));
+    expect(useGame.getState().view!.step).toBe('PLANNING');
+    // Une seule levée tous les 3 sprints.
+    expect(screen.getByRole('button', { name: /Lever des fonds/ })).toBeDisabled();
+  });
+
+  it('annonce la faillite et revient au menu', async () => {
+    const simulation = officeSimulation(SEED_OFFICE);
+    simulation.state.gauges.treasury = 1;
+    playSprint(simulation);
+    await startGame(simulation);
+    expect(screen.getByRole('dialog', { name: 'Faillite' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Menu principal' }));
+    expect(useGame.getState().view).toBeNull();
   });
 });
 

@@ -1,6 +1,7 @@
 /**
  * Règles de placement du mode construction (dans la grille, hors cloisons, sans chevauchement).
- * Utilisé par l'aperçu en temps réel dans la scène et par la validation des commandes.
+ * Utilisé par l'aperçu dans la scène et avant d'envoyer une commande. La simulation reste juge
+ * des bornes et des chevauchements ; les cloisons et l'entrée sont des contraintes du décor.
  */
 import { itemCells } from '../ai/grid';
 import { catalogItem, footprint } from './catalog';
@@ -42,11 +43,9 @@ export function checkPlacement(
     if (has(layout.partitions, cell.x, cell.z)) return 'wall';
     if (cell.x === layout.entrance.x && cell.z === layout.entrance.z) return 'entrance';
   }
-  // Les tapis se posent sous les meubles, et inversement.
-  const isRug = request.kind === 'rug';
+  // Même règle que la simulation : aucun chevauchement, tapis compris.
   for (const other of items) {
     if (other.id === request.ignoreId) continue;
-    if (isRug !== (other.kind === 'rug')) continue;
     const otherCells = itemCells(other);
     if (cells.some((cell) => has(otherCells, cell.x, cell.z))) return 'overlap';
   }

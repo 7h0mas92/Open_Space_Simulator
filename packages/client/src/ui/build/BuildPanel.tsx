@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CATALOG, ITEM_CATEGORIES, type CatalogItem, type ItemCategory } from '../../view/catalog';
 import type { GameView } from '../../view/types';
-import { formatMoney } from '../game/format';
+import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 
 /** Boutique du mode construction : choisir un objet, puis le poser dans la scène. */
@@ -51,21 +51,10 @@ export function BuildPanel({ view }: { view: GameView }) {
   );
 }
 
-export function EffectList({ item }: { item: CatalogItem }) {
-  const { t } = useTranslation();
-  return (
-    <ul className="effects">
-      {Object.entries(item.effects).map(([effect, value]) => (
-        <li
-          key={effect}
-          className={value === true || (typeof value === 'number' && value > 0) ? 'up' : 'down'}
-        >
-          {t(`build.effects.${effect}` as never)}
-          {typeof value === 'number' ? ` ${value > 0 ? '+' : ''}${value}` : ''}
-        </li>
-      ))}
-    </ul>
-  );
+/** Effet réel de l'objet, décrit par la simulation. */
+export function ItemDescription({ item }: { item: CatalogItem }) {
+  const { i18n } = useTranslation();
+  return <span className="item-description">{localized(item.description, i18n.language)}</span>;
 }
 
 function ShopItem({
@@ -82,22 +71,25 @@ function ShopItem({
   const { t, i18n } = useTranslation();
   const locked = PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase);
   const tooExpensive = view.gauges.treasury < item.price;
+  const soldOut = view.items.filter((placed) => placed.kind === item.kind).length >= item.maxCount;
   return (
     <button
       type="button"
       className={`shop-item ${active ? 'active' : ''}`}
-      disabled={locked || tooExpensive}
+      disabled={locked || tooExpensive || soldOut}
       aria-pressed={active}
       onClick={onPick}
     >
-      <span className="shop-item-name">{t(`items.${item.kind}` as never)}</span>
+      <span className="shop-item-name">{localized(item.name, i18n.language)}</span>
       <span className="shop-item-price">
         {t('build.price', { price: formatMoney(item.price, i18n.language) })}
       </span>
       {locked ? (
         <span className="locked">{t('build.locked', { phase: t(`phases.${item.minPhase}`) })}</span>
+      ) : soldOut ? (
+        <span className="locked">{t('build.soldOut', { max: item.maxCount })}</span>
       ) : (
-        <EffectList item={item} />
+        <ItemDescription item={item} />
       )}
     </button>
   );

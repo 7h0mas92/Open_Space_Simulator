@@ -1,3 +1,4 @@
+import type { LocalizedText } from '@oss/shared';
 import type { GaugeName } from '../../view/types';
 
 /**
@@ -57,4 +58,9 @@ export function formatClock(minute: number): string {
 
 export function formatMoney(value: number, locale: string): string {
   return new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 0 }).format(value);
+}
+
+/** Texte bilingue de la simulation (cartes, bios, notifications) dans la langue courante. */
+export function localized(text: LocalizedText, language: string): string {
+  return language.toLowerCase().startsWith('en') ? text.en : text.fr;
 }

@@ -1,17 +1,13 @@
-import { PHASES, type Phase } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { QUALITY_LEVELS } from '../../render/quality';
-import { MockGame } from '../../view/mock';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useGame } from '../store/game';
 import { TEXT_SCALES, useSettings } from '../store/settings';
 
-/** Options : qualité graphique, accessibilité, langue, et outils de démonstration. */
+/** Options : qualité graphique, accessibilité, langue. */
 export function SettingsPanel() {
   const { t } = useTranslation();
   const settings = useSettings();
-  const source = useGame((s) => s.source);
-  const view = useGame((s) => s.view);
   const quit = useGame((s) => s.quit);
   const openPanel = useGame((s) => s.openPanel);
 
@@ -68,24 +64,6 @@ export function SettingsPanel() {
         <legend>{t('settings.language')}</legend>
         <LanguageSwitcher />
       </fieldset>
-      {source instanceof MockGame && view && (
-        <label>
-          {t('settings.demoPhase')}
-          <select
-            value={view.phase}
-            onChange={(event) => {
-              source.setPhase(event.target.value as Phase);
-              useGame.setState({ view: source.view, selected: null });
-            }}
-          >
-            {PHASES.filter((phase) => phase !== 'END').map((phase) => (
-              <option key={phase} value={phase}>
-                {t(`phases.${phase}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
       <button
         type="button"
         onClick={() => {

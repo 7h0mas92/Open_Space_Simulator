@@ -14,6 +14,8 @@ import { Tutorial } from '../tutorial/Tutorial';
 import { ActionBar, Alerts, Gauges, TimeControls } from './Hud';
 import { Scene } from './Scene';
 import { Sheet } from './Sheet';
+import { StageScreens } from './StageScreens';
+import { localized } from './format';
 import type { GameView, Rotation } from '../../view/types';
 
 function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
@@ -35,22 +37,6 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
   }
 }
 
-/** Boucle d'avancement de la partie : le temps réel écoulé est transmis à la source. */
-function useGameLoop() {
-  const advance = useGame((s) => s.advance);
-  useEffect(() => {
-    let last = performance.now();
-    let handle = 0;
-    const loop = (now: number) => {
-      advance(Math.min(0.25, (now - last) / 1000));
-      last = now;
-      handle = requestAnimationFrame(loop);
-    };
-    handle = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(handle);
-  }, [advance]);
-}
-
 /** Raccourcis clavier globaux : Échap, espace (pause), R (tourner en construction). */
 function useShortcuts() {
   useEffect(() => {
@@ -67,10 +53,11 @@ function useShortcuts() {
       } else if (
         event.key === ' ' &&
         game.view?.step === 'EXECUTION' &&
+        game.view.mode !== 'HARDCORE' &&
         target?.tagName !== 'BUTTON'
       ) {
         event.preventDefault();
-        game.dispatch({ type: 'setSpeed', speed: game.view.time.speed === 0 ? 1 : 0 });
+        void game.dispatch({ type: 'setSpeed', speed: game.view.time.speed === 0 ? 1 : 0 });
       }
     };
     window.addEventListener('keydown', onKey);
@@ -79,14 +66,13 @@ function useShortcuts() {
 }
 
 export function GameScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const view = useGame((s) => s.view);
   const panel = useGame((s) => s.panel);
   const openPanel = useGame((s) => s.openPanel);
   const toast = useGame((s) => s.toast);
   const fps = useGame((s) => s.fps);
   const showFps = useSettings((s) => s.showFps);
-  useGameLoop();
   useShortcuts();
 
   // Les messages disparaissent seuls après quelques secondes.
@@ -115,10 +101,13 @@ export function GameScreen() {
       {showFps && <p className="fps">{t('settings.fps', { fps })}</p>}
       {toast && (
         <p key={toast.id} className={`toast toast-${toast.tone}`} role="status">
-          {String(t(toast.key as never, toast.params as never))}
+          {toast.text
+            ? localized(toast.text, i18n.language)
+            : String(t((toast.key ?? '') as never, toast.params as never))}
         </p>
       )}
       <Tutorial view={view} />
+      <StageScreens view={view} />
       {panel && (
         <Sheet title={t(`panels.${panel}`)} onClose={() => openPanel(null)}>
           <PanelContent panel={panel} view={view} />

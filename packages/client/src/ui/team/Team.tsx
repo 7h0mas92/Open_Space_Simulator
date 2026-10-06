@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DevView, GameView } from '../../view/types';
-import { formatMoney } from '../game/format';
+import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { moodEmoji, StatBars } from './StatBars';
 
@@ -42,7 +42,6 @@ export function Team({ view }: { view: GameView }) {
 function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack: () => void }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
-  const notify = useGame((s) => s.notify);
   const [confirming, setConfirming] = useState(false);
   const colleagues = view.devs.filter((other) => other.id !== dev.id);
 
@@ -58,9 +57,7 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
         <p className="role">
           {t(`roles.${dev.role}`)} · {t('team.level', { level: dev.level })}
         </p>
-        <p className="bio">
-          {dev.name} {t(`bios.${dev.bio}` as never)}
-        </p>
+        <p className="bio">{localized(dev.bio, i18n.language)}</p>
         <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
       </header>
       <dl className="facts">
@@ -77,6 +74,10 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
           <dd>
             {moodEmoji(dev.morale)} {Math.round(dev.morale)}/100
           </dd>
+        </div>
+        <div>
+          <dt>{t('team.energy')}</dt>
+          <dd>{Math.round(dev.energy)}/100</dd>
         </div>
         <div>
           <dt>{t('gauges.treasury.name')}</dt>
@@ -96,7 +97,7 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
                   <span>{other.name}</span>
                   <span>
                     {t(`team.${kind}`)} ({value > 0 ? '+' : ''}
-                    {value})
+                    {Math.round(value)})
                   </span>
                 </li>
               );
@@ -107,8 +108,12 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
       <section>
         <h4>{t('team.history')}</h4>
         <ul className="history">
+          {dev.history.length === 0 && <li>{t('team.noHistory')}</li>}
           {dev.history.map((entry, index) => (
-            <li key={index}>{t(`history.${entry}` as never)}</li>
+            <li key={index}>
+              <span className="tag">{t('team.sprint', { sprint: entry.sprint })}</span>{' '}
+              {localized(entry.text, i18n.language)}
+            </li>
           ))}
         </ul>
       </section>
@@ -123,10 +128,9 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
             type="button"
             className="danger"
             onClick={() => {
-              if (dispatch({ type: 'fire', devId: dev.id }).ok) {
-                notify('results.fired', 'info', { name: dev.name });
-                onBack();
-              }
+              void dispatch({ type: 'fire', devId: dev.id }).then((result) => {
+                if (result.ok) onBack();
+              });
             }}
           >
             {t('team.confirm')}

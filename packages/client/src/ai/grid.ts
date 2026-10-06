@@ -6,8 +6,11 @@ import { catalogItem, footprint } from '../view/catalog';
 import type { Cell, OfficeLayout } from '../view/layout';
 import type { PlacedItemView } from '../view/types';
 
+/** Ce qu'il faut savoir d'un objet pour connaître son emprise au sol. */
+export type ItemPlacement = Pick<PlacedItemView, 'id' | 'kind' | 'x' | 'z' | 'rotation'>;
+
 /** Objets qu'on peut traverser (tapis, casque posé sur un bureau…). */
-const WALKABLE_KINDS = new Set(['rug', 'headphones']);
+const WALKABLE_KINDS = new Set(['rug', 'noise-headsets']);
 
 export const NEIGHBORS_4 = [
   [1, 0],
@@ -58,7 +61,7 @@ export class NavGrid {
 }
 
 /** Cases couvertes par un objet posé. */
-export function itemCells(item: PlacedItemView): Cell[] {
+export function itemCells(item: ItemPlacement): Cell[] {
   const def = catalogItem(item.kind);
   const [w, d] = def ? footprint(def, item.rotation) : [1, 1];
   const cells: Cell[] = [];
@@ -80,7 +83,7 @@ export function frontDirection(rotation: number): readonly [number, number] {
 }
 
 /** Case où se tient un personnage qui utilise l'objet : devant son milieu. */
-export function accessCell(item: PlacedItemView): Cell {
+export function accessCell(item: ItemPlacement): Cell {
   const def = catalogItem(item.kind);
   const [w, d] = def ? footprint(def, item.rotation) : [1, 1];
   const [fx, fz] = frontDirection(item.rotation);
@@ -90,7 +93,7 @@ export function accessCell(item: PlacedItemView): Cell {
   return { x: fx > 0 ? item.x + w : item.x - 1, z: midZ };
 }
 
-export function buildNavGrid(layout: OfficeLayout, items: readonly PlacedItemView[]): NavGrid {
+export function buildNavGrid(layout: OfficeLayout, items: readonly ItemPlacement[]): NavGrid {
   const grid = new NavGrid(layout.width, layout.depth);
   for (const cell of layout.partitions) grid.block(cell.x, cell.z);
   for (const item of items) {

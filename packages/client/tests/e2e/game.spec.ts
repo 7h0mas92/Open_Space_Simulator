@@ -33,8 +33,9 @@ test('une partie en invité affiche la scène 3D, les personnages et le HUD', as
   await expect(page.getByTestId('gauge-treasury')).toContainText('2');
   await expect.poll(async () => (await debug(page))?.drawCalls ?? 0).toBeGreaterThan(5);
   const info = await debug(page);
-  expect(info?.characters).toBe(5);
-  expect(info?.visible).toBe(4); // le Dev Fantôme est en télétravail
+  // Une vraie partie commence au garage, avec un premier dev.
+  expect(info?.characters).toBe(1);
+  await expect.poll(async () => (await debug(page))?.visible ?? 0).toBe(1);
   expect(info?.pixelRatio).toBeLessThanOrEqual(2);
 
   await page.getByRole('button', { name: /Lancer le sprint/ }).click();

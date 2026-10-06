@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GameRenderer } from '../../render/GameRenderer';
-import { useGame } from '../store/game';
+import { officeLayout } from '../../view/layout';
+import { checkPlacement } from '../../view/placement';
+import { onGameNotifications, useGame } from '../store/game';
 import { useSettings } from '../store/settings';
 
 /**
@@ -36,18 +38,32 @@ export function Scene() {
           game.select(target && target.type !== 'cell' ? target : null);
         },
         onPlace: (cell) => {
-          const { build, dispatch, setBuild } = useGame.getState();
-          if (!build?.kind) return;
+          const { build, view, dispatch, setBuild, notify } = useGame.getState();
+          if (!build?.kind || !view) return;
+          // Cloisons et entrée sont des contraintes du décor : vérifiées avant d'envoyer.
+          const error = checkPlacement(officeLayout(view.phase), view.items, {
+            kind: build.kind,
+            x: cell.x,
+            z: cell.z,
+            rotation: build.rotation,
+            ignoreId: build.movingItemId ?? undefined,
+          });
+          if (error) {
+            notify(`results.${error}`, 'error');
+            return;
+          }
           if (build.movingItemId) {
-            const result = dispatch({
+            void dispatch({
               type: 'moveItem',
               itemId: build.movingItemId,
               x: cell.x,
               z: cell.z,
+              rotation: build.rotation,
+            }).then((result) => {
+              if (result.ok) setBuild(null);
             });
-            if (result.ok) setBuild(null);
           } else {
-            dispatch({
+            void dispatch({
               type: 'placeItem',
               kind: build.kind,
               x: cell.x,
@@ -81,6 +97,11 @@ export function Scene() {
         );
       }
     });
+    // Confettis quand une levée de fonds réussit ou que la startup change de phase.
+    const unsubscribeNotifications = onGameNotifications((notifications) => {
+      if (notifications.some((n) => n.kind === 'FUNDS_RAISED' || n.kind === 'PHASE_UP'))
+        renderer.celebrate();
+    });
     const unsubscribeSettings = useSettings.subscribe((state) => {
       renderer.setQuality(state.quality);
       renderer.setReducedMotion(state.reducedMotion);
@@ -90,6 +111,7 @@ export function Scene() {
 
     return () => {
       unsubscribeGame();
+      unsubscribeNotifications();
       unsubscribeSettings();
       renderer.dispose();
       rendererRef.current = null;

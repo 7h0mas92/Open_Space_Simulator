@@ -77,7 +77,7 @@ const LAYOUTS: Record<Phase, OfficeLayout> = {
     maxTeam: 2,
     rooms: [{ kind: 'open', x: 0, z: 0, width: 8, depth: 6 }],
     partitions: [],
-    entrance: { x: 7, z: 5 },
+    entrance: { x: 0, z: 5 },
   },
   SEED: {
     phase: 'SEED',

@@ -5,7 +5,7 @@
  * dessin par sous-maillage, quel que soit leur nombre (indispensable à 30 personnes en Licorne).
  */
 import * as THREE from 'three';
-import { accessCell } from '../ai/grid';
+import { accessCell, type ItemPlacement } from '../ai/grid';
 import { catalogItem, footprint } from '../view/catalog';
 import type { OfficeLayout, RoomKind } from '../view/layout';
 import type { PlacedItemView } from '../view/types';
@@ -30,14 +30,7 @@ interface TemplatePart {
 }
 
 /** Objets décoratifs masqués quand on dézoome (LOD). */
-const DECOR_KINDS = new Set([
-  'plantSmall',
-  'radio',
-  'toaster',
-  'microwave',
-  'trashcan',
-  'headphones',
-]);
+const DECOR_KINDS = new Set(['small-plant', 'microwave', 'trashcan', 'noise-headsets']);
 
 export interface ItemHit {
   readonly itemId: string;
@@ -59,7 +52,7 @@ function flatten(template: THREE.Object3D): TemplatePart[] {
 }
 
 /** Matrice monde d'un objet posé : centre de son emprise, rotation par quart de tour. */
-export function itemMatrix(item: PlacedItemView): THREE.Matrix4 {
+export function itemMatrix(item: ItemPlacement): THREE.Matrix4 {
   const def = catalogItem(item.kind);
   const [w, d] = def ? footprint(def, item.rotation) : [1, 1];
   const position = new THREE.Vector3(item.x + (w - 1) / 2, 0, item.z + (d - 1) / 2);
@@ -73,7 +66,7 @@ export function itemMatrix(item: PlacedItemView): THREE.Matrix4 {
 /** Objets ajoutés automatiquement autour de certains meubles (chaise et écran d'un bureau). */
 function extrasFor(item: PlacedItemView): { kind: string; matrix: THREE.Matrix4 }[] {
   const def = catalogItem(item.kind);
-  if (def?.use !== 'desk' || item.kind === 'standingDesk') return [];
+  if (def?.use !== 'desk' || item.kind === 'standing-desk') return [];
   const chairCell = accessCell(item);
   const facing = new THREE.Quaternion().setFromAxisAngle(
     new THREE.Vector3(0, 1, 0),

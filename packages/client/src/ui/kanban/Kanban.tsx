@@ -1,38 +1,45 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KANBAN_COLUMNS, type GameView, type KanbanColumn, type TaskView } from '../../view/types';
+import { localized } from '../game/format';
 import { useGame } from '../store/game';
-import { useDragAndDrop, type DropTarget } from './useDragAndDrop';
+import { PLAYER_COLUMNS, useDragAndDrop, type DropTarget } from './useDragAndDrop';
 
-const IMPACT_KEYS = ['users', 'hype', 'debt', 'stability', 'treasury'] as const;
+const IMPACT_KEYS = ['users', 'hype', 'debt', 'stability'] as const;
+
+/** Le joueur range les tâches entre Backlog et À faire ; les devs font le reste. */
+function isMovable(column: KanbanColumn): boolean {
+  return PLAYER_COLUMNS.includes(column);
+}
 
 /** Kanban de planification : glisser-déposer (souris et tactile) ou boutons fléchés au clavier. */
 export function Kanban({ view }: { view: GameView }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
   const notify = useGame((s) => s.notify);
 
   const move = useCallback(
-    (task: TaskView, target: DropTarget) => {
-      const result = dispatch({
+    async (task: TaskView, target: DropTarget) => {
+      if (!isMovable(task.column) || !isMovable(target.column)) return;
+      const result = await dispatch({
         type: 'moveTask',
         taskId: task.id,
         column: target.column,
-        index: target.index,
+        index: Math.min(target.index, 10_000),
       });
       if (result.ok) {
         notify('kanban.moved', 'success', {
-          task: t(`tasks.${task.title}` as never),
+          task: localized(task.title, i18n.language),
           column: t(`kanban.columns.${target.column}`),
         });
       }
     },
-    [dispatch, notify, t],
+    [dispatch, notify, t, i18n.language],
   );
 
   const { drag, handlers } = useDragAndDrop((taskId, target) => {
     const task = view.tasks.find((candidate) => candidate.id === taskId);
-    if (task) move(task, target);
+    if (task) void move(task, target);
   });
   const dragged = drag && view.tasks.find((task) => task.id === drag.taskId);
 
@@ -65,10 +72,10 @@ export function Kanban({ view }: { view: GameView }) {
                       view={view}
                       dragging={drag?.taskId === task.id}
                       onMove={(target: KanbanColumn) =>
-                        move(task, { column: target, index: Number.MAX_SAFE_INTEGER })
+                        void move(task, { column: target, index: Number.MAX_SAFE_INTEGER })
                       }
-                      previous={KANBAN_COLUMNS[columnIndex - 1]}
-                      next={KANBAN_COLUMNS[columnIndex + 1]}
+                      previous={movableNeighbour(column, columnIndex - 1)}
+                      next={movableNeighbour(column, columnIndex + 1)}
                       handlers={handlers}
                     />
                   </li>
@@ -90,11 +97,16 @@ export function Kanban({ view }: { view: GameView }) {
           style={{ transform: `translate(${drag.x}px, ${drag.y}px)` }}
           aria-hidden="true"
         >
-          {t(`tasks.${dragged.title}` as never)}
+          {localized(dragged.title, i18n.language)}
         </div>
       )}
     </div>
   );
+}
+
+function movableNeighbour(column: KanbanColumn, index: number): KanbanColumn | undefined {
+  const neighbour = KANBAN_COLUMNS[index];
+  return neighbour && isMovable(column) && isMovable(neighbour) ? neighbour : undefined;
 }
 
 interface TaskCardProps {
@@ -108,9 +120,10 @@ interface TaskCardProps {
 }
 
 function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: TaskCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
-  const title = t(`tasks.${task.title}` as never) as string;
+  const title = localized(task.title, i18n.language);
+  const movable = isMovable(task.column);
   return (
     <article
       className={`task-card task-${task.type.toLowerCase()} ${dragging ? 'dragging' : ''}`}
@@ -118,17 +131,24 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
       aria-label={title}
     >
       <div
-        className="task-drag"
-        onPointerDown={(event) => handlers.onPointerDown(task.id, event)}
+        className={movable ? 'task-drag' : 'task-body'}
+        onPointerDown={(event) => movable && handlers.onPointerDown(task.id, event)}
         onPointerMove={handlers.onPointerMove}
         onPointerUp={handlers.onPointerUp}
         onPointerCancel={handlers.onPointerCancel}
       >
-        <span className="grip" aria-hidden="true">
-          ⠿
-        </span>
+        {movable && (
+          <span className="grip" aria-hidden="true">
+            ⠿
+          </span>
+        )}
         <div className="task-main">
-          <h4>{title}</h4>
+          <h4>
+            {title}
+            {task.hallucinated && (
+              <span className="tag tag-warning"> {t('kanban.hallucinated')}</span>
+            )}
+          </h4>
           <p className="task-meta">
             <span className="tag">{t(`taskTypes.${task.type}`)}</span>
             <span>{t('kanban.size', { size: task.size })}</span>
@@ -138,10 +158,7 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
                   key={key}
                   className={(task.impact[key] ?? 0) > 0 === (key !== 'debt') ? 'up' : 'down'}
                 >
-                  {t(`gauges.${key}.name`)} {(task.impact[key] ?? 0) > 0 ? '+' : ''}
-                  {key === 'treasury'
-                    ? `${Math.round((task.impact[key] ?? 0) / 1000)}k`
-                    : task.impact[key]}
+                  {t(`gauges.${key}.name`)} {(task.impact[key] ?? 0) > 0 ? '▲' : '▼'}
                 </span>
               ))}
             </span>
@@ -161,13 +178,17 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
         </div>
       )}
       <div className="task-actions">
-        {task.column !== 'BACKLOG' && task.column !== 'DONE' && (
+        {task.column !== 'DONE' && (
           <label className="assignee">
             <span className="visually-hidden">{t('kanban.assignee')}</span>
             <select
               value={task.assigneeId ?? ''}
               onChange={(event) =>
-                dispatch({ type: 'assignTask', taskId: task.id, devId: event.target.value || null })
+                void dispatch({
+                  type: 'assignTask',
+                  taskId: task.id,
+                  devId: event.target.value || null,
+                })
               }
             >
               <option value="">{t('kanban.nobody')}</option>

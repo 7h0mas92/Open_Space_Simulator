@@ -20,7 +20,7 @@ import {
 } from '../view/types';
 import { findPath } from './astar';
 import { action, condition, selector, sequence, type BTNode, type Status } from './behaviorTree';
-import { accessCell, buildNavGrid, type NavGrid } from './grid';
+import { accessCell, buildNavGrid, type ItemPlacement, type NavGrid } from './grid';
 import { hashString, Random } from './random';
 import { pickThought } from './thoughts';
 
@@ -83,7 +83,7 @@ interface Agent {
 }
 
 interface PointOfInterest {
-  readonly item: PlacedItemView;
+  readonly item: ItemPlacement;
   readonly access: Cell;
   readonly center: { x: number; z: number };
 }
@@ -96,7 +96,7 @@ interface BrainContext {
 const cellOf = (agent: Agent): Cell => ({ x: Math.round(agent.x), z: Math.round(agent.z) });
 const sameCell = (a: Cell, b: Cell) => a.x === b.x && a.z === b.z;
 
-function itemCenter(item: PlacedItemView): { x: number; z: number } {
+function itemCenter(item: ItemPlacement): { x: number; z: number } {
   const def = catalogItem(item.kind);
   const [w, d] = def ? (item.rotation % 2 === 0 ? def.size : [def.size[1], def.size[0]]) : [1, 1];
   return { x: item.x + (w - 1) / 2, z: item.z + (d - 1) / 2 };
@@ -315,7 +315,7 @@ export class AgentWorld {
     const score = (other: Agent) => (relations[other.id] ?? 0) * (kind === 'friend' ? 1 : -1);
     const target = others.reduce((best, other) => (score(other) > score(best) ? other : best));
     const at = cellOf(target);
-    const fakeItem: PlacedItemView = {
+    const fakeItem: ItemPlacement = {
       id: target.id,
       kind: 'person',
       x: at.x,

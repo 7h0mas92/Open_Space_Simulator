@@ -7,7 +7,7 @@ import { itemMatrix, OfficeView } from '../../../src/render/office';
 import { buildPrimitive, fallbackBox, fallbackCharacter } from '../../../src/render/primitives';
 import { MISSING_ASSETS } from '../../../src/render/assetManifest';
 import { officeLayout } from '../../../src/view/layout';
-import { MockGame } from '../../../src/view/mock';
+import { officeSimulation, SEED_OFFICE, viewOf } from '../fixtures/game';
 
 /** Bibliothèque factice : aucun GLB (comme sans les packs Kenney), formes de secours partout. */
 const noAssets = {
@@ -31,7 +31,7 @@ describe('formes de remplacement', () => {
 describe('décor', () => {
   it('dessine le mobilier en InstancedMesh, un objet cliquable par instance', async () => {
     const office = new OfficeView(noAssets);
-    const view = new MockGame(1).view;
+    const view = viewOf(officeSimulation(SEED_OFFICE));
     office.setLayout(officeLayout(view.phase));
     await office.setItems(view.items);
     const meshes = office.pickables as THREE.InstancedMesh[];

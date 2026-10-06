@@ -1,0 +1,296 @@
+import { useEffect, useRef, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { EventView, GameView, GaugeName, PitchView } from '../../view/types';
+import { useGame } from '../store/game';
+import { formatGauge, formatMoney, localized } from './format';
+
+/**
+ * Écrans qui interrompent la partie : carte d'événement, levée de fonds, démo de fin de
+ * sprint et fin de partie. Ils dépendent seulement de l'étape de la simulation.
+ */
+export function StageScreens({ view }: { view: GameView }) {
+  if (view.step === 'ENDED') return <EndScreen view={view} />;
+  if (view.step === 'PITCH' && view.pitch) return <PitchScreen pitch={view.pitch} />;
+  if (view.step === 'DEMO') return <DemoScreen view={view} />;
+  if (view.event) return <EventCardScreen event={view.event} />;
+  return null;
+}
+
+/** Boîte de dialogue modale : le focus va sur le premier bouton pour jouer au clavier. */
+function Dialog({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className: string;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus();
+  }, [title]);
+  return (
+    <div className="stage-backdrop">
+      <div
+        ref={ref}
+        className={`stage-screen ${className}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+const EFFECT_ORDER: readonly (GaugeName | 'moral')[] = [
+  'treasury',
+  'users',
+  'hype',
+  'stability',
+  'debt',
+  'coffee',
+  'moral',
+];
+
+function EffectChips({ effects }: { effects: EventView['choices'][number]['effects'] }) {
+  const { t, i18n } = useTranslation();
+  const keys = EFFECT_ORDER.filter((key) => effects[key] !== undefined);
+  if (keys.length === 0) return null;
+  return (
+    <ul className="effects">
+      {keys.map((key) => {
+        const value = effects[key] ?? 0;
+        const good = key === 'debt' ? value < 0 : value > 0;
+        const sign = value > 0 ? '+' : '−';
+        const amount =
+          key === 'treasury'
+            ? formatGauge('treasury', Math.abs(value), i18n.language)
+            : key === 'users'
+              ? `${Math.abs(value)} %`
+              : String(Math.abs(value));
+        const label = key === 'moral' ? t('event.moral') : t(`gauges.${key}.name`);
+        return (
+          <li key={key} className={good ? 'up' : 'down'}>
+            {label} {sign}
+            {amount}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function EventCardScreen({ event }: { event: EventView }) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const title = localized(event.title, i18n.language);
+  return (
+    <Dialog title={title} className="event-card">
+      <p className="eyebrow">
+        {t('event.kicker')}
+        {event.level > 0 && (
+          <span className="badge"> {t('event.worse', { level: event.level })}</span>
+        )}
+      </p>
+      <h2>{title}</h2>
+      <p>{localized(event.description, i18n.language)}</p>
+      <ul className="choices">
+        {event.choices.map((choice, index) => (
+          <li key={index}>
+            <button
+              type="button"
+              className="choice"
+              onClick={() => void dispatch({ type: 'resolveEvent', choiceIndex: index })}
+            >
+              <strong>{localized(choice.label, i18n.language)}</strong>
+              <EffectChips effects={choice.effects} />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Dialog>
+  );
+}
+
+function PitchScreen({ pitch }: { pitch: PitchView }) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const name = localized(pitch.investor.name, i18n.language);
+  const result = pitch.result;
+  return (
+    <Dialog title={t('pitch.title')} className="pitch-screen">
+      <p className="eyebrow">{t('pitch.title')}</p>
+      <h2>{name}</h2>
+      <blockquote>{localized(pitch.investor.intro, i18n.language)}</blockquote>
+      {pitch.chosen.length > 0 && (
+        <ol className="pitch-chosen">
+          {pitch.chosen.map((argument, index) => (
+            <li key={index}>{localized(argument, i18n.language)}</li>
+          ))}
+        </ol>
+      )}
+      {result ? (
+        <>
+          <p className={`pitch-result ${result.success ? 'up' : 'down'}`} role="status">
+            {result.success
+              ? t('pitch.success', {
+                  amount: formatMoney(result.amount, i18n.language),
+                  share: Math.round(result.dilution * 1000) / 10,
+                })
+              : t('pitch.failure')}
+          </p>
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void dispatch({ type: 'closePitch' })}
+          >
+            {t('pitch.close')}
+          </button>
+        </>
+      ) : (
+        <>
+          <p>{t('pitch.round', { round: pitch.round + 1, total: pitch.rounds })}</p>
+          <ul className="choices">
+            {pitch.options.map((option) => (
+              <li key={option.id}>
+                <button
+                  type="button"
+                  className="choice"
+                  onClick={() => void dispatch({ type: 'pitchArgument', argumentId: option.id })}
+                >
+                  {localized(option.label, i18n.language)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </Dialog>
+  );
+}
+
+function DemoScreen({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const report = view.lastReport;
+  const money = (value: number) => `${formatMoney(Math.round(value), i18n.language)} €`;
+  const offer = view.acquisitionOffer;
+  return (
+    <Dialog title={t('demo.title', { sprint: view.time.sprint })} className="demo-screen">
+      <p className="eyebrow">{t('steps.DEMO')}</p>
+      <h2>{t('demo.title', { sprint: report?.sprint ?? view.time.sprint })}</h2>
+      {report && (
+        <>
+          {report.lost && <p className="down">{t('demo.lost')}</p>}
+          <dl className="demo-stats">
+            <dt>{t('demo.users')}</dt>
+            <dd>
+              <span className="up">+{formatGauge('users', report.usersGained, i18n.language)}</span>{' '}
+              <span className="down">−{formatGauge('users', report.usersLost, i18n.language)}</span>
+            </dd>
+            <dt>{t('demo.revenue')}</dt>
+            <dd>{money(report.revenue)}</dd>
+            <dt>{t('demo.expenses')}</dt>
+            <dd>{money(report.expenses)}</dd>
+            <dt>{t('gauges.hype.name')}</dt>
+            <dd className={report.hypeDelta >= 0 ? 'up' : 'down'}>
+              {report.hypeDelta >= 0 ? '+' : ''}
+              {Math.round(report.hypeDelta)}
+            </dd>
+            <dt>{t('demo.features')}</dt>
+            <dd>{report.featuresShipped}</dd>
+            <dt>{t('demo.incidents')}</dt>
+            <dd>{report.incidents}</dd>
+            <dt>{t('demo.valuation')}</dt>
+            <dd>{formatGauge('treasury', report.valuation, i18n.language)}</dd>
+          </dl>
+          {report.feedback.length > 0 && (
+            <>
+              <h3>{t('demo.feedback')}</h3>
+              <ul className="feedback">
+                {report.feedback.map((line, index) => (
+                  <li key={index}>{localized(line, i18n.language)}</li>
+                ))}
+              </ul>
+            </>
+          )}
+        </>
+      )}
+      <div className="stage-actions">
+        <button
+          type="button"
+          className="primary"
+          onClick={() => void dispatch({ type: 'endDemo' })}
+        >
+          {t('demo.next')}
+        </button>
+        {view.canIpo && (
+          <button type="button" onClick={() => void dispatch({ type: 'launchIpo' })}>
+            🔔 {t('demo.ipo')}
+          </button>
+        )}
+      </div>
+      {offer && (
+        <section className="acquisition" aria-label={t('demo.offerTitle')}>
+          <h3>{t('demo.offerTitle')}</h3>
+          <p>
+            {t('demo.offer', {
+              buyer: localized(offer.buyer, i18n.language),
+              amount: formatGauge('treasury', offer.amount, i18n.language),
+            })}
+          </p>
+          <div className="stage-actions">
+            <button
+              type="button"
+              onClick={() => void dispatch({ type: 'answerAcquisition', accept: true })}
+            >
+              {t('demo.accept')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void dispatch({ type: 'answerAcquisition', accept: false })}
+            >
+              {t('demo.refuse')}
+            </button>
+          </div>
+        </section>
+      )}
+    </Dialog>
+  );
+}
+
+function EndScreen({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const start = useGame((s) => s.start);
+  const quit = useGame((s) => s.quit);
+  const result = view.result;
+  if (!result) return null;
+  return (
+    <Dialog title={t(`end.outcomes.${result.outcome}`)} className="end-screen">
+      <p className="eyebrow">{t('end.title')}</p>
+      <h2>{t(`end.outcomes.${result.outcome}`)}</h2>
+      <p className="headline">{localized(result.headline, i18n.language)}</p>
+      <dl className="demo-stats">
+        <dt>{t('demo.valuation')}</dt>
+        <dd>{formatGauge('treasury', result.valuation, i18n.language)}</dd>
+        <dt>{t('end.ownership')}</dt>
+        <dd>{Math.round(result.ownership * 100)} %</dd>
+        <dt>{t('end.sprints')}</dt>
+        <dd>
+          {result.sprint}/{view.time.totalSprints}
+        </dd>
+      </dl>
+      <div className="stage-actions">
+        <button type="button" className="primary" onClick={() => void start({ mode: view.mode })}>
+          {t('end.again')}
+        </button>
+        <button type="button" onClick={quit}>
+          {t('end.menu')}
+        </button>
+      </div>
+    </Dialog>
+  );
+}

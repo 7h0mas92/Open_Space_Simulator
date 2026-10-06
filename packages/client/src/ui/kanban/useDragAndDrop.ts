@@ -1,5 +1,8 @@
 import { useCallback, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { KANBAN_COLUMNS, type KanbanColumn } from '../../view/types';
+import type { KanbanColumn } from '../../view/types';
+
+/** Colonnes où le joueur peut déposer une carte (les devs gèrent « En cours » et « Terminé »). */
+export const PLAYER_COLUMNS: readonly KanbanColumn[] = ['BACKLOG', 'TODO'];
 
 export interface DropTarget {
   readonly column: KanbanColumn;
@@ -26,7 +29,7 @@ export function dropTargetAt(x: number, y: number, draggedId: string): DropTarge
   const columnElement = elements.find((el) => el instanceof HTMLElement && el.dataset.column) as
     HTMLElement | undefined;
   const column = columnElement?.dataset.column as KanbanColumn | undefined;
-  if (!columnElement || !column || !KANBAN_COLUMNS.includes(column)) return null;
+  if (!columnElement || !column || !PLAYER_COLUMNS.includes(column)) return null;
   const cards = [...columnElement.querySelectorAll<HTMLElement>('[data-task-id]')].filter(
     (card) => card.dataset.taskId !== draggedId,
   );

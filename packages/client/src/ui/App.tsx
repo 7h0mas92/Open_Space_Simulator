@@ -36,6 +36,7 @@ export function App() {
   const { status, user, restore, logout, setError } = useSession();
   const inGame = useGame((s) => s.view !== null);
   const startGame = useGame((s) => s.start);
+  const loading = useGame((s) => s.loading);
   useTextScale();
 
   useEffect(() => {
@@ -67,7 +68,12 @@ export function App() {
             <p className="welcome">{t('menu.welcome', { pseudo: user.pseudo })}</p>
             {user.role === 'ADMIN' && <p className="badge">{t('menu.admin')}</p>}
             <p>{t('menu.comingSoon')}</p>
-            <button type="button" className="primary" onClick={() => startGame()}>
+            <button
+              type="button"
+              className="primary"
+              onClick={() => void startGame()}
+              disabled={loading}
+            >
               {t('menu.newGame')}
             </button>
             <button type="button" onClick={() => void logout()}>
@@ -79,7 +85,12 @@ export function App() {
         {status === 'guest' && (
           <>
             <section className="panel guest-panel">
-              <button type="button" className="primary" onClick={() => startGame()}>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => void startGame()}
+                disabled={loading}
+              >
                 {t('menu.guest')}
               </button>
               <small>{t('menu.guestHint')}</small>

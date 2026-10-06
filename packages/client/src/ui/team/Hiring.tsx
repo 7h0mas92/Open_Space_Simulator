@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { officeLayout } from '../../view/layout';
 import type { CandidateView, GameView } from '../../view/types';
-import { formatMoney } from '../game/format';
+import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { StatBars } from './StatBars';
 
 /** Recrutement : 3 candidats par sprint, offre de salaire négociée, risque de refus. */
 export function Hiring({ view }: { view: GameView }) {
   const { t } = useTranslation();
-  const max = officeLayout(view.phase).maxTeam;
+  const max = view.teamMax;
   return (
     <div className="hiring">
       <p className="hint">{t('hiring.intro')}</p>
@@ -32,7 +31,6 @@ export function Hiring({ view }: { view: GameView }) {
 function CandidateCard({ candidate, disabled }: { candidate: CandidateView; disabled: boolean }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
-  const notify = useGame((s) => s.notify);
   const [offer, setOffer] = useState(candidate.askingSalary);
   const { dev } = candidate;
   const min = Math.round(candidate.askingSalary * 0.6);
@@ -43,9 +41,7 @@ function CandidateCard({ candidate, disabled }: { candidate: CandidateView; disa
         {dev.name}, {t('team.age', { age: dev.age })}
       </h3>
       <p className="role">{t(`roles.${dev.role}`)}</p>
-      <p className="bio">
-        {dev.name} {t(`bios.${dev.bio}` as never)}
-      </p>
+      <p className="bio">{localized(dev.bio, i18n.language)}</p>
       <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
       <StatBars stats={dev.stats} />
       <p>{t('hiring.asking', { salary: formatMoney(candidate.askingSalary, i18n.language) })}</p>
@@ -64,11 +60,7 @@ function CandidateCard({ candidate, disabled }: { candidate: CandidateView; disa
         type="button"
         className="primary"
         disabled={disabled}
-        onClick={() => {
-          if (dispatch({ type: 'hire', candidateId: candidate.id, offer }).ok) {
-            notify('results.hired', 'success', { name: dev.name });
-          }
-        }}
+        onClick={() => void dispatch({ type: 'hire', candidateId: candidate.id, offer })}
       >
         {t('hiring.hire')}
       </button>
