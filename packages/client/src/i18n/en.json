@@ -6,10 +6,12 @@
   "menu": {
     "newGame": "New game",
     "guest": "Play as guest",
-    "comingSoon": "The game ships in the next milestones. For now, create your founder account.",
+    "comingSoon": "Your game is saved in this browser for now; cloud sync is coming soon.",
     "welcome": "Welcome, {{pseudo}}!",
     "admin": "Administrator",
-    "logout": "Log out"
+    "logout": "Log out",
+    "credits": "Credits",
+    "guestHint": "No account, no leaderboard. Prod still goes down, though."
   },
   "language": {
     "label": "Language",
@@ -46,5 +48,361 @@
     "RATE_LIMITED": "Too many attempts, wait a minute.",
     "INTERNAL_ERROR": "The server crashed. Like prod on a Friday at 5pm.",
     "NETWORK_ERROR": "Server unreachable. Check your connection."
+  },
+  "thoughts": {
+    "whyWorks": "Why does it work??",
+    "whyNotWorks": "Why doesn't it work?",
+    "worksOnMyMachine": "Works on my machine",
+    "stackOverflow": "Stack Overflow is down…",
+    "oneMoreTest": "Just one more test",
+    "coffeeFuel": "Coffee = code",
+    "thirdCup": "3rd cup, I'm fine",
+    "couldBeEmail": "This could have been an email",
+    "youAreMuted": "You're on mute",
+    "didYouSee": "Did you watch the keynote?",
+    "newFramework": "New JS framework!",
+    "tabsVsSpaces": "Tabs > spaces",
+    "yourCode": "It's YOUR code",
+    "zzz": "Zzz…",
+    "aaargh": "AAARGH",
+    "goal": "GOOOAL",
+    "gamelle": "Own goal!",
+    "seeYouTomorrow": "See you tomorrow!",
+    "tooYoungFramework": "This framework is 3 years old. No.",
+    "noComments": "Comments are for the weak",
+    "pushMain": "git push --force, should be fine?",
+    "rewriteInRust": "Rewrite it in Rust?",
+    "paddingWrong": "This padding is wrong",
+    "anotherMeeting": "Quick sync?",
+    "hallucination": "I coded a feature… I think",
+    "boo": "Boo",
+    "prodDown": "Prod is down!!",
+    "fridayDeploy": "Deploy on Friday 5pm?",
+    "quit": "I'm going to quit"
+  },
+  "roles": {
+    "SENIOR_BEARD": "Bearded Senior",
+    "TEN_X": "10x Developer",
+    "INTERN": "Intern",
+    "RUSTACEAN": "Rustacean",
+    "DESIGNER": "Designer",
+    "PRODUCT_OWNER": "Product Owner",
+    "AI_AGENT": "AI Agent",
+    "GHOST": "Ghost Dev"
+  },
+  "roleDescriptions": {
+    "SENIOR_BEARD": "+50% quality, refuses frameworks younger than 5 years.",
+    "TEN_X": "Very fast, but nobody understands their code: debt goes up.",
+    "INTERN": "5% chance per day to break prod.",
+    "RUSTACEAN": "Wants to rewrite everything in Rust and converts colleagues.",
+    "DESIGNER": "Blocks releases while the padding is wrong, +perceived quality at demos.",
+    "PRODUCT_OWNER": "4 meetings a day: -10% productivity for everyone, +hype.",
+    "AI_AGENT": "Ultra fast, 30% chance to hallucinate a feature.",
+    "GHOST": "Works remotely, invisible in the office, but tickets get closed."
+  },
+  "activities": {
+    "WORKING": "Working",
+    "COFFEE": "Getting coffee",
+    "MEETING": "In a meeting",
+    "CHATTING": "Chatting",
+    "ARGUING": "Arguing",
+    "SLEEPING": "Asleep on the keyboard",
+    "YELLING": "Yelling at the screen",
+    "BABYFOOT": "Playing foosball",
+    "LEAVING": "Heading home",
+    "REMOTE": "Working remotely"
+  },
+  "traits": {
+    "perfectionist": "Perfectionist",
+    "nightOwl": "Night owl",
+    "optimist": "Optimist",
+    "grumpy": "Grumpy",
+    "meetingLover": "Loves meetings",
+    "caffeineAddict": "Caffeine addict",
+    "minimalist": "Minimalist",
+    "hypeBeast": "Hype beast"
+  },
+  "bios": {
+    "ninja": "put \"ninja\" in their LinkedIn title.",
+    "tabs": "quit their last job over tabs.",
+    "vim": "still can't exit Vim.",
+    "nft": "still owns 3 monkey NFTs.",
+    "coffee": "drinks from a \"Works on my machine\" mug.",
+    "linkedin": "posts \"I'm thrilled to announce\" every Monday.",
+    "darkmode": "refuses any website without dark mode.",
+    "regex": "writes regexes nobody reviews.",
+    "podcast": "starts a tech podcast every 6 months.",
+    "keyboard": "owns 7 mechanical keyboards.",
+    "crossfit": "talks about CrossFit during retros.",
+    "jira": "dreams in Jira tickets."
+  },
+  "history": {
+    "hired": "Hired",
+    "colleagueFired": "A colleague was fired"
+  },
+  "tasks": {
+    "login": "Sign in with Google",
+    "darkMode": "Dark mode",
+    "paymentApi": "Payment API",
+    "onboarding": "12-step onboarding",
+    "flakyTests": "Fix flaky tests",
+    "migrateDb": "Migrate the database",
+    "k8s": "Move to Kubernetes",
+    "fixSafari": "Fix the Safari bug",
+    "aiChatbot": "AI chatbot (mandatory in 2026)",
+    "exportCsv": "CSV export",
+    "refactorAuth": "Refactor authentication",
+    "monitoring": "Add monitoring",
+    "notifications": "Push notifications",
+    "i18n": "Translate the app"
+  },
+  "taskTypes": {
+    "FEATURE": "Feature",
+    "REFACTOR": "Refactor",
+    "BUGFIX": "Bugfix",
+    "INFRA": "Infra"
+  },
+  "gauges": {
+    "treasury": {
+      "name": "Cash",
+      "help": "Pays the salaries. At 0: bankruptcy, game over."
+    },
+    "coffee": {
+      "name": "Coffee",
+      "help": "The team's fuel. At 0: productivity divided by 3."
+    },
+    "debt": {
+      "name": "Tech debt",
+      "help": "Goes up with every shortcut. Too high: bugs and unstable prod."
+    },
+    "stability": {
+      "name": "Prod stability",
+      "help": "Product reliability. At 0: users leave."
+    },
+    "hype": {
+      "name": "Hype",
+      "help": "Appeal to investors. At 0: no more fundraising."
+    },
+    "users": {
+      "name": "Users",
+      "help": "Your user base. Grows with features, leaks when prod goes down."
+    },
+    "morale": {
+      "name": "Morale",
+      "help": "A dev's motivation. At 0: resignation announced in a fake LinkedIn post."
+    }
+  },
+  "stats": {
+    "speed": "Speed",
+    "quality": "Quality",
+    "endurance": "Endurance",
+    "ego": "Ego"
+  },
+  "phases": {
+    "GARAGE": "Garage",
+    "SEED": "Seed",
+    "SERIES_A": "Series A",
+    "UNICORN": "Unicorn",
+    "END": "End"
+  },
+  "steps": {
+    "PLANNING": "Planning",
+    "EXECUTION": "Execution",
+    "DEMO": "Demo"
+  },
+  "time": {
+    "sprint": "Sprint {{sprint}}/{{total}}",
+    "day": "{{day}} {{time}}",
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "pause": "Pause",
+    "speed": "Speed x{{speed}}",
+    "speeds": "Game speed",
+    "startSprint": "Start sprint",
+    "friday": "Friday 5pm: do not deploy.",
+    "incident": "Production incident!"
+  },
+  "panels": {
+    "kanban": "Kanban",
+    "team": "Team",
+    "hiring": "Hiring",
+    "build": "Build",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "credits": "Credits",
+    "close": "Close",
+    "menu": "Menu",
+    "actions": "Game actions"
+  },
+  "kanban": {
+    "columns": {
+      "BACKLOG": "Backlog",
+      "TODO": "To do",
+      "DOING": "Doing",
+      "DONE": "Done"
+    },
+    "size": "{{size}} pts",
+    "assignee": "Assigned to",
+    "nobody": "Nobody",
+    "moveLeft": "Move to {{column}}",
+    "moveRight": "Move to {{column}}",
+    "dragHint": "Drag a card to a column, or use the arrows.",
+    "impact": "Impact",
+    "empty": "Nothing here. Enjoy.",
+    "moved": "\"{{task}}\" moved to {{column}}"
+  },
+  "team": {
+    "age": "{{age}} y/o",
+    "salary": "€{{salary}}/month",
+    "level": "Level {{level}}",
+    "mood": "Mood",
+    "relations": "Relationships",
+    "history": "History",
+    "fire": "Fire",
+    "confirmFire": "Fire {{name}}? Team morale will drop.",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "back": "Back",
+    "trait": "Trait",
+    "activity": "Right now",
+    "friend": "Friends",
+    "enemy": "Conflict",
+    "neutral": "Neutral",
+    "empty": "Nobody. Not even an intern."
+  },
+  "hiring": {
+    "intro": "3 candidates this sprint. Make an offer: too low and they refuse.",
+    "asking": "Asks €{{salary}}/month",
+    "offer": "Your offer: €{{salary}}/month",
+    "hire": "Make offer",
+    "none": "No more candidates this sprint.",
+    "teamFull": "Team is full for this phase ({{max}} max)."
+  },
+  "build": {
+    "intro": "Pick an item, then tap a tile to place it.",
+    "categories": {
+      "work": "Work",
+      "comfort": "Comfort",
+      "kitchen": "Kitchen",
+      "fun": "Fun",
+      "decor": "Decor"
+    },
+    "price": "€{{price}}",
+    "locked": "Unlocks at {{phase}}",
+    "rotate": "Rotate",
+    "sell": "Sell (€{{price}})",
+    "move": "Move",
+    "cancel": "Done",
+    "placing": "Placing: {{item}}",
+    "selected": "Selected item: {{item}}",
+    "effects": {
+      "coffee": "Coffee",
+      "morale": "Morale",
+      "productivity": "Productivity",
+      "endurance": "Endurance",
+      "quality": "Quality",
+      "hype": "Hype",
+      "stability": "Stability",
+      "meetingShield": "Cancels meeting penalty"
+    }
+  },
+  "items": {
+    "desk": "Desk",
+    "deskCorner": "Corner desk",
+    "standingDesk": "Standing desk",
+    "ergoChair": "Ergonomic chair",
+    "headphones": "Noise-cancelling headphones",
+    "bookcase": "Bookcase",
+    "meetingTable": "Meeting table",
+    "tv": "Monitoring screen",
+    "coffeeMachine": "Coffee machine",
+    "coffeePremium": "Premium coffee bar",
+    "fridge": "Snack fridge",
+    "microwave": "Microwave",
+    "toaster": "Toaster",
+    "babyfoot": "Foosball table",
+    "sofa": "Sofa",
+    "napPod": "Nap pod",
+    "slide": "Slide",
+    "speaker": "Speaker",
+    "radio": "Radio",
+    "plant": "Plant",
+    "plantSmall": "Small plant",
+    "lamp": "Floor lamp",
+    "rug": "Rug",
+    "trashcan": "Trash can"
+  },
+  "results": {
+    "ok": "Done.",
+    "refused": "The candidate turned down your offer and joined your competitor.",
+    "teamFull": "Team is full for this phase.",
+    "tooExpensive": "Not enough cash.",
+    "locked": "Not unlocked yet.",
+    "outOfBounds": "Outside the office.",
+    "wall": "There's a wall here.",
+    "overlap": "That spot is taken.",
+    "entrance": "Don't block the entrance!",
+    "unknownItem": "Unknown item.",
+    "unknownTask": "Unknown task.",
+    "unknownCandidate": "Unknown candidate.",
+    "unknownDev": "Unknown dev.",
+    "hired": "{{name}} joins the team!",
+    "fired": "{{name}} was fired."
+  },
+  "dashboard": {
+    "intro": "Gauge history, one point per day.",
+    "noData": "No history yet: start a sprint."
+  },
+  "settings": {
+    "quality": "Graphics quality",
+    "qualities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "reducedMotion": "Reduce motion",
+    "textSize": "Text size",
+    "showFps": "Show FPS",
+    "language": "Language",
+    "tutorial": "Replay tutorial",
+    "demoPhase": "Demo phase (until the simulation lands)",
+    "quit": "Quit game",
+    "fps": "{{fps}} FPS"
+  },
+  "credits": {
+    "title": "Credits",
+    "kenney": "3D models: Kenney (kenney.nl), Furniture Kit and Blocky Characters packs, CC0 license.",
+    "three": "Rendering: Three.js. UI: React. Translations: i18next.",
+    "missing": "Assets missing from the packs, replaced by Three.js shapes or CSS:",
+    "missingItems": {
+      "babyfoot": "Foosball table",
+      "slide": "Slide",
+      "napPod": "Nap pod",
+      "standingDesk": "Standing desk",
+      "headphones": "Noise-cancelling headphones",
+      "uiPack": "Kenney UI pack (CSS interface)",
+      "soundPacks": "Kenney sound packs (audio coming later)"
+    },
+    "back": "Back"
+  },
+  "tutorial": {
+    "skip": "Skip tutorial",
+    "next": "Next",
+    "done": "Let's go",
+    "progress": "Step {{step}} of {{total}}",
+    "steps": {
+      "welcome": "Welcome, founder. You have €2M and 18 months. This is your open space.",
+      "gauges": "At the top, your gauges. Hover or tap them to learn what they do.",
+      "kanban": "Open the Kanban and drag a task from Backlog to \"To do\".",
+      "assign": "Assign a task to a dev, then move it to \"Doing\".",
+      "start": "Start the sprint: the devs get to work.",
+      "speed": "Change the speed: pause, x1, x2 or x4.",
+      "select": "Click a dev (long press on mobile) to see their profile.",
+      "build": "Open build mode and buy a plant. They really help."
+    }
+  },
+  "game": {
+    "sceneLabel": "3D open space. Drag to move, wheel or pinch to zoom, Q and E to rotate, arrow keys to pan.",
+    "gauges": "Gauges",
+    "openProfile": "View profile"
   }
 }

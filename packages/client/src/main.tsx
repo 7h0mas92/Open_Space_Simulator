@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './i18n';
 import { App } from './ui/App';
 import './ui/styles.css';
+import './ui/game.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Élément #root introuvable');

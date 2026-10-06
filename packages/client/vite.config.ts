@@ -13,6 +13,11 @@ export default defineConfig({
     },
   },
   preview: { port: 4173 },
+  build: {
+    // Three.js pèse à lui seul ~600 ko minifié ; il est isolé dans le chunk de l'écran de jeu,
+    // chargé à la demande (le menu reste léger).
+    chunkSizeWarningLimit: 900,
+  },
   test: {
     environment: 'jsdom',
     include: ['tests/unit/**/*.test.{ts,tsx}'],

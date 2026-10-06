@@ -19,6 +19,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'retain-on-failure',
+    // WebGL logiciel (SwiftShader) : la scène Three.js s'affiche aussi sur les runners sans GPU.
+    launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },
   },
   projects: [
     {

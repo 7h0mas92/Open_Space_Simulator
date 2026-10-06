@@ -122,6 +122,37 @@ sequenceDiagram
   par minute sur la connexion), logs structurés pino sans cookies.
 - **Erreurs** : toujours `{ error: { code, message } }` ; le client traduit le `code`.
 
+### Rendu 3D et interface
+
+```mermaid
+flowchart LR
+  V[GameView<br/>instantané en lecture seule] --> AI[ai/ IA visuelle<br/>A* + behavior trees<br/>pas fixe 0,1 s, RNG seedé]
+  AI -- 2 derniers pas --> R[render/ GameRenderer<br/>interpolation]
+  V --> R
+  V --> UI[ui/ HUD, Kanban, fiches]
+  UI -- GameCommand --> SRC[source de partie<br/>mock aujourd'hui, Web Worker demain]
+  SRC --> V
+  R -- clic, appui long --> UI
+```
+
+- **Frontière unique** : `view/types.ts` décrit ce que le rendu et l'interface lisent (`GameView`)
+  et les commandes qu'ils envoient (`GameCommand`). En attendant la simulation (étape 3),
+  `view/mock.ts` fournit une fausse partie déterministe ; un adaptateur la remplacera.
+- **Scène** : caméra orthographique isométrique (35,26°, rotation par quarts de tour), sol et
+  murs par phase (Garage, Seed, Série A, Licorne), mobilier en `InstancedMesh`, cycle jour/nuit,
+  ombres, contour de sélection et léger bloom (post-processing).
+- **Personnages** : l'IA décide où chacun marche (A* 8 directions, évitement entre collègues)
+  et quelle posture il prend selon son activité ; le rendu joue le clip GLB correspondant ou une
+  animation procédurale, et affiche des bulles de pensée traduites.
+- **Contrôles** : glisser pour déplacer, molette ou pincer pour zoomer, appui long pour
+  sélectionner sur mobile, flèches, `+`/`-`, `Q`/`E` au clavier.
+- **Qualité réglable** (bas, moyen, haut) : devicePixelRatio plafonné à 2, ombres coupées en
+  bas (défaut sur mobile), petits objets masqués quand on dézoome (LOD).
+- **Interface** : jauges avec infobulles, vitesses, Kanban en glisser-déposer (souris et
+  tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, boutique et
+  mode construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
+  sur ordinateur, bottom sheets plein écran sur mobile.
+
 ### Choix techniques
 
 | Choix                                                                                                    | Pourquoi                                                                                                                                                 |
@@ -132,6 +163,8 @@ sequenceDiagram
 | **Zod 4** + `fastify-type-provider-zod`                                                                  | Un seul schéma sert à valider, typer et documenter (OpenAPI) chaque route.                                                                               |
 | Tests serveur sur une **vraie base**                                                                     | Les contraintes d'unicité et la rotation des jetons sont testées pour de vrai, pas simulées.                                                             |
 | Règle ESLint sur `simulation/` et `events/`                                                              | Interdit d'y importer Three.js, React ou le DOM, ainsi que `Math.random` et `Date.now` : la simulation reste déterministe et exécutable sans navigateur. |
+| IA des personnages **hors** de la simulation (`ai/`)                                                     | La simulation dit _ce que_ fait un dev ; l'IA visuelle décide _comment on le voit_. Elle est déterministe mais ne touche jamais l'état du jeu.           |
+| Glisser-déposer maison (Pointer Events) plutôt qu'une bibliothèque                                       | Un seul code pour la souris, le doigt et le stylet, sans dépendance ; alternative clavier par des boutons fléchés.                                       |
 
 ## Ce que l'application fait et ne fait pas
 
@@ -144,5 +177,9 @@ génère que des messages Slack.
 
 ## Crédits
 
-- Modèles 3D, UI et sons : [Kenney](https://kenney.nl) (licence CC0), intégrés à partir de
-  l'étape 2.
+- Modèles 3D : [Kenney](https://kenney.nl) (licence CC0), packs Furniture Kit et Blocky
+  Characters, déposés dans `packages/client/public/assets/kenney/` (voir le README de ce dossier).
+  Le manifeste typé `render/assetManifest.ts` liste exactement les fichiers des packs.
+- Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
+  sieste-pod, standing desk, casque antibruit, pack UI (interface en CSS), packs sons (audio à
+  l'étape 11). Liste aussi visible dans la page Crédits du jeu.
