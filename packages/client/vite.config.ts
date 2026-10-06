@@ -19,9 +19,38 @@ export default defineConfig({
     chunkSizeWarningLimit: 900,
   },
   test: {
-    environment: 'jsdom',
-    include: ['tests/unit/**/*.test.{ts,tsx}'],
-    setupFiles: ['tests/unit/setup.ts'],
-    coverage: { include: ['src/**/*.{ts,tsx}'] },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'ui',
+          environment: 'jsdom',
+          include: ['tests/unit/**/*.test.{ts,tsx}'],
+          setupFiles: ['tests/unit/setup.ts'],
+        },
+      },
+      {
+        // La simulation est du TypeScript pur : ses tests tournent dans Node, sans DOM.
+        extends: true,
+        test: {
+          name: 'simulation',
+          environment: 'node',
+          include: ['tests/simulation/**/*.test.ts'],
+        },
+      },
+    ],
+    coverage: {
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/engine/simulation.worker.ts'],
+      thresholds: {
+        // Exigence du cahier des charges : couverture de la simulation > 80 %.
+        'src/{simulation,events,engine}/**': {
+          statements: 80,
+          lines: 80,
+          functions: 80,
+          branches: 75,
+        },
+      },
+    },
   },
 });

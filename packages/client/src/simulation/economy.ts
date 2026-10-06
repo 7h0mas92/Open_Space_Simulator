@@ -1,0 +1,54 @@
+import { BALANCE, type GameState } from '@oss/shared';
+import { devIds, teamSize } from './helpers';
+
+/** Revenu récurrent annuel (ARR), en euros. */
+export function annualRevenue(state: GameState): number {
+  return state.gauges.users * BALANCE.economy.arpuMonthly * 12;
+}
+
+/** Masse salariale mensuelle chargée. */
+export function monthlyPayroll(state: GameState): number {
+  let total = 0;
+  for (const id of devIds(state)) total += state.components.employment[id]?.salary ?? 0;
+  return total;
+}
+
+/** Dépenses mensuelles totales : salaires, frais par dev, frais fixes, serveurs. */
+export function monthlyExpenses(state: GameState): number {
+  return (
+    monthlyPayroll(state) +
+    teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
+    BALANCE.economy.fixedCostsMonthly[state.phase] +
+    state.gauges.users * BALANCE.economy.serverCostPerUserMonthly
+  );
+}
+
+/** Revenus mensuels (abonnements des utilisateurs). */
+export function monthlyRevenue(state: GameState): number {
+  return state.gauges.users * BALANCE.economy.arpuMonthly;
+}
+
+/**
+ * Valorisation de la startup. Ce que regardent les investisseurs : les utilisateurs
+ * et le chiffre d'affaires, gonflés par la hype, plombés par la dette et l'instabilité.
+ */
+export function computeValuation(state: GameState): number {
+  const { valuation } = BALANCE;
+  const { users, hype, debt, stability } = state.gauges;
+  const raw =
+    valuation.base +
+    teamSize(state) * valuation.perDev +
+    users * valuation.perUser +
+    annualRevenue(state) * valuation.arrMultiple;
+  const hypeFactor = 0.4 + hype / 60;
+  const debtFactor = 1 - debt / 200;
+  const stabilityFactor = 0.75 + stability / 400;
+  return Math.round(raw * hypeFactor * debtFactor * stabilityFactor);
+}
+
+/** Nombre de mois de trésorerie restants au rythme actuel (Infinity si rentable). */
+export function runwayMonths(state: GameState): number {
+  const burn = monthlyExpenses(state) - monthlyRevenue(state);
+  if (burn <= 0) return Number.POSITIVE_INFINITY;
+  return state.gauges.treasury / burn;
+}
