@@ -1,0 +1,10 @@
+packages:
+  - packages/*
+
+# pnpm 10 n'exécute plus les scripts d'installation par défaut :
+# on autorise explicitement les paquets qui en ont besoin (binaires natifs).
+onlyBuiltDependencies:
+  - argon2
+  - esbuild
+  - prisma
+  - '@prisma/engines'

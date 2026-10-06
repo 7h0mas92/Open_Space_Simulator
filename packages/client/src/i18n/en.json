@@ -1,0 +1,50 @@
+{
+  "app": {
+    "title": "Open Space Simulator 2026",
+    "pitch": "Your startup just raised 2 million. You have 18 months before everything blows up. Good luck."
+  },
+  "menu": {
+    "newGame": "New game",
+    "guest": "Play as guest",
+    "comingSoon": "The game ships in the next milestones. For now, create your founder account.",
+    "welcome": "Welcome, {{pseudo}}!",
+    "admin": "Administrator",
+    "logout": "Log out"
+  },
+  "language": {
+    "label": "Language",
+    "fr": "Français",
+    "en": "English"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters",
+    "pseudo": "Username",
+    "pseudoHint": "3 to 24 characters: letters, digits, _ . -",
+    "submitLogin": "Log in",
+    "submitRegister": "Create my account",
+    "github": "Continue with GitHub",
+    "or": "or",
+    "loading": "Loading…",
+    "githubSuccess": "Logged in with GitHub."
+  },
+  "errors": {
+    "VALIDATION_ERROR": "Some fields are invalid.",
+    "UNAUTHORIZED": "You need to be logged in.",
+    "FORBIDDEN": "Access denied.",
+    "NOT_FOUND": "Not found.",
+    "CONFLICT": "Conflicts with existing data.",
+    "INVALID_CREDENTIALS": "Wrong email or password.",
+    "EMAIL_TAKEN": "An account already exists with this email.",
+    "PSEUDO_TAKEN": "This username is already taken.",
+    "INVALID_REFRESH_TOKEN": "Session expired, please log in again.",
+    "OAUTH_FAILED": "GitHub login failed.",
+    "OAUTH_NOT_CONFIGURED": "GitHub login is not configured on this server.",
+    "RATE_LIMITED": "Too many attempts, wait a minute.",
+    "INTERNAL_ERROR": "The server crashed. Like prod on a Friday at 5pm.",
+    "NETWORK_ERROR": "Server unreachable. Check your connection."
+  }
+}

@@ -1,0 +1,22 @@
+# Base PostgreSQL locale pour le développement et les tests.
+# Lancer : docker compose up -d db
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oss
+      POSTGRES_PASSWORD: oss
+      POSTGRES_DB: oss
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U oss -d oss']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

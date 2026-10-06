@@ -1,0 +1,225 @@
+/*
+ * Styles de base. Palette contrastée (WCAG AA), cibles tactiles de 44 px minimum,
+ * mise en page fluide de 320 px à l'écran large.
+ */
+:root {
+  --bg: #1b1f2e;
+  --bg-elevated: #262b3f;
+  --text: #f4f1ea;
+  --text-muted: #c4c0b6;
+  --accent: #f5b942;
+  --accent-text: #1b1f2e;
+  --danger: #ff8a80;
+  --border: #4a5170;
+  --radius: 12px;
+  --touch: 44px;
+  --font-scale: 1;
+
+  color-scheme: dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 6vw, 3rem);
+  line-height: 1.1;
+  color: var(--accent);
+}
+
+.pitch {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  text-align: left;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+small {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+input {
+  min-height: var(--touch);
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch);
+  min-width: var(--touch);
+  padding: 0 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.button.github {
+  background: #f4f1ea;
+  color: #1b1f2e;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tabs,
+.language-switcher {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tabs button {
+  flex: 1;
+}
+
+[aria-selected='true'],
+[aria-pressed='true'] {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+}
+
+.separator {
+  margin: 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.welcome {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.badge {
+  align-self: flex-start;
+  margin: 0;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
