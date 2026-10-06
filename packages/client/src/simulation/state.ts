@@ -22,6 +22,8 @@ export interface GameConfig {
 /** État vide, avant l'arrivée du premier dev. */
 export function createEmptyState(config: GameConfig): GameState {
   const { start } = BALANCE;
+  const treasury =
+    config.mode === 'EASY' ? start.treasury * BALANCE.easy.treasuryMultiplier : start.treasury;
   return {
     version: STATE_VERSION,
     seed: config.seed,
@@ -49,7 +51,7 @@ export function createEmptyState(config: GameConfig): GameState {
       rustConverted: {},
     },
     gauges: {
-      treasury: start.treasury,
+      treasury,
       coffee: start.coffee,
       debt: start.debt,
       stability: start.stability,
@@ -58,7 +60,7 @@ export function createEmptyState(config: GameConfig): GameState {
     },
     valuation: 0,
     ownership: 1,
-    totalRaised: start.treasury,
+    totalRaised: treasury,
     fundingRounds: 0,
     lastPitchSprint: null,
     pitch: null,

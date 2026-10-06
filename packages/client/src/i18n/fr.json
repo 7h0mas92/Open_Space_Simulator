@@ -415,6 +415,10 @@
   },
   "modes": {
     "title": "Choisis ton mode",
+    "EASY": {
+      "name": "Facile",
+      "rule": "Pour apprendre : tutoriel complet, plus d'argent, crises adoucies."
+    },
     "NORMAL": {
       "name": "Normal",
       "rule": "18 mois pour devenir une licorne."

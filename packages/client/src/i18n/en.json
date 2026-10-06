@@ -415,6 +415,10 @@
   },
   "modes": {
     "title": "Pick your mode",
+    "EASY": {
+      "name": "Easy",
+      "rule": "To learn: full tutorial, more money, softer crises."
+    },
     "NORMAL": {
       "name": "Normal",
       "rule": "18 months to become a unicorn."

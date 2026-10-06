@@ -65,6 +65,8 @@ export function eventSystem(state: GameState, ctx: SimContext, clock: SimClock):
   }
   const workHour =
     !clock.isWeekend && Number.isInteger(clock.hour) && clock.hour >= 9 && clock.hour < 19;
-  if (!workHour || state.events.drawnThisSprint >= BALANCE.events.maxPerSprint) return;
+  const maxPerSprint =
+    state.mode === 'EASY' ? BALANCE.easy.maxEventsPerSprint : BALANCE.events.maxPerSprint;
+  if (!workHour || state.events.drawnThisSprint >= maxPerSprint) return;
   drawCard(state, ctx, clock);
 }
