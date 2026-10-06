@@ -1,9 +1,11 @@
 import { ErrorCodeSchema } from '@oss/shared';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthPanel } from './components/AuthPanel';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { useGame } from './store/game';
 import { useSession } from './store/session';
+import { useSettings } from './store/settings';
 
 /** Lit et efface les paramètres laissés dans l'URL par le retour OAuth GitHub. */
 function consumeOAuthRedirect(setError: ReturnType<typeof useSession.getState>['setError']) {
@@ -15,18 +17,40 @@ function consumeOAuthRedirect(setError: ReturnType<typeof useSession.getState>['
   }
 }
 
-/**
- * Écran d'accueil du socle. Le canvas Three.js et le HUD viendront s'insérer
- * dans `<main>` aux étapes « Scène 3D » et « Interface ».
- */
+/** L'écran de jeu (Three.js compris) n'est téléchargé qu'au lancement d'une partie. */
+const GameScreen = lazy(() =>
+  import('./game/GameScreen').then((module) => ({ default: module.GameScreen })),
+);
+
+/** Applique la taille de texte choisie dans les options à toute l'interface. */
+function useTextScale() {
+  const textScale = useSettings((s) => s.textScale);
+  useEffect(() => {
+    document.documentElement.style.setProperty('--font-scale', String(textScale));
+  }, [textScale]);
+}
+
+/** Menu d'accueil (connexion ou invité), puis écran de jeu. */
 export function App() {
   const { t } = useTranslation();
   const { status, user, restore, logout, setError } = useSession();
+  const inGame = useGame((s) => s.view !== null);
+  const startGame = useGame((s) => s.start);
+  const loading = useGame((s) => s.loading);
+  useTextScale();
 
   useEffect(() => {
     consumeOAuthRedirect(setError);
     void restore();
   }, [restore, setError]);
+
+  if (inGame) {
+    return (
+      <Suspense fallback={<p className="loading">{t('auth.loading')}</p>}>
+        <GameScreen />
+      </Suspense>
+    );
+  }
 
   return (
     <div className="app">
@@ -44,7 +68,12 @@ export function App() {
             <p className="welcome">{t('menu.welcome', { pseudo: user.pseudo })}</p>
             {user.role === 'ADMIN' && <p className="badge">{t('menu.admin')}</p>}
             <p>{t('menu.comingSoon')}</p>
-            <button type="button" className="primary" disabled>
+            <button
+              type="button"
+              className="primary"
+              onClick={() => void startGame()}
+              disabled={loading}
+            >
               {t('menu.newGame')}
             </button>
             <button type="button" onClick={() => void logout()}>
@@ -53,7 +82,22 @@ export function App() {
           </section>
         )}
 
-        {status === 'guest' && <AuthPanel />}
+        {status === 'guest' && (
+          <>
+            <section className="panel guest-panel">
+              <button
+                type="button"
+                className="primary"
+                onClick={() => void startGame()}
+                disabled={loading}
+              >
+                {t('menu.guest')}
+              </button>
+              <small>{t('menu.guestHint')}</small>
+            </section>
+            <AuthPanel />
+          </>
+        )}
       </main>
     </div>
   );

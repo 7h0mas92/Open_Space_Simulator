@@ -6,10 +6,12 @@
   "menu": {
     "newGame": "Nouvelle partie",
     "guest": "Jouer en invité",
-    "comingSoon": "Le jeu arrive dans les prochaines étapes. Pour l'instant, crée ton compte de fondateur.",
+    "comingSoon": "Ta partie est sauvegardée sur ce navigateur pour l'instant ; la synchronisation arrive bientôt.",
     "welcome": "Bienvenue, {{pseudo}} !",
     "admin": "Administrateur",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "credits": "Crédits",
+    "guestHint": "Sans compte, pas de classement. Mais la prod tombe quand même."
   },
   "language": {
     "label": "Langue",
@@ -46,5 +48,343 @@
     "RATE_LIMITED": "Trop de tentatives, patiente une minute.",
     "INTERNAL_ERROR": "Le serveur a planté. Comme la prod un vendredi à 17h.",
     "NETWORK_ERROR": "Serveur injoignable. Vérifie ta connexion."
+  },
+  "thoughts": {
+    "whyWorks": "Pourquoi ça marche ??",
+    "whyNotWorks": "Pourquoi ça marche pas ?",
+    "worksOnMyMachine": "Ça marche sur ma machine",
+    "stackOverflow": "Stack Overflow est down…",
+    "oneMoreTest": "Encore un petit test",
+    "coffeeFuel": "Café = code",
+    "thirdCup": "3e tasse, ça va",
+    "couldBeEmail": "Ça aurait pu être un mail",
+    "youAreMuted": "Tu es en sourdine",
+    "didYouSee": "T'as vu la keynote ?",
+    "newFramework": "Nouveau framework JS !",
+    "tabsVsSpaces": "Tabs > espaces",
+    "yourCode": "C'est TON code",
+    "zzz": "Zzz…",
+    "aaargh": "AAARGH",
+    "goal": "GOOOAL",
+    "gamelle": "Gamelle !",
+    "seeYouTomorrow": "À demain !",
+    "tooYoungFramework": "Ce framework a 3 ans. Non.",
+    "noComments": "Les commentaires c'est pour les faibles",
+    "pushMain": "git push --force, ça passe ?",
+    "rewriteInRust": "On réécrit en Rust ?",
+    "paddingWrong": "Ce padding est faux",
+    "anotherMeeting": "Petite réu rapide ?",
+    "hallucination": "J'ai codé une feature… je crois",
+    "boo": "Bouh",
+    "prodDown": "La prod est down !!",
+    "fridayDeploy": "On déploie vendredi 17h ?",
+    "quit": "Je vais démissionner"
+  },
+  "roles": {
+    "SENIOR_BEARD": "Senior Barbu",
+    "TEN_X": "10x Developer",
+    "INTERN": "Stagiaire",
+    "RUSTACEAN": "Rustacé",
+    "DESIGNER": "Designeuse",
+    "PRODUCT_OWNER": "Product Owner",
+    "AI_AGENT": "IA Agent",
+    "GHOST": "Dev Fantôme"
+  },
+  "roleDescriptions": {
+    "SENIOR_BEARD": "+50 % de qualité, refuse les frameworks de moins de 5 ans.",
+    "TEN_X": "Très rapide, mais personne ne comprend son code : la dette monte.",
+    "INTERN": "5 % de chance par jour de casser la prod.",
+    "RUSTACEAN": "Veut tout réécrire en Rust et convertit ses collègues.",
+    "DESIGNER": "Bloque les releases si le padding est faux, +qualité perçue aux démos.",
+    "PRODUCT_OWNER": "4 réunions par jour : -10 % de productivité pour tous, +hype.",
+    "AI_AGENT": "Ultra rapide, 30 % de chance d'halluciner une feature.",
+    "GHOST": "En télétravail, invisible au bureau, mais ses tickets se ferment."
+  },
+  "activities": {
+    "WORKING": "Travaille",
+    "COFFEE": "Au café",
+    "MEETING": "En réunion",
+    "CHATTING": "Discute",
+    "ARGUING": "Se dispute",
+    "SLEEPING": "Dort sur le clavier",
+    "YELLING": "Crie sur l'écran",
+    "BABYFOOT": "Joue au babyfoot",
+    "LEAVING": "Rentre chez lui",
+    "REMOTE": "En télétravail"
+  },
+  "traits": {
+    "COFFEE_ADDICT": "Accro à la caféine",
+    "NIGHT_OWL": "Oiseau de nuit",
+    "WORKAHOLIC": "Bourreau de travail",
+    "CHATTERBOX": "Bavard",
+    "PERFECTIONIST": "Perfectionniste",
+    "GRUMPY": "Ronchon",
+    "ZEN": "Zen",
+    "GAMER": "Gamer"
+  },
+  "taskTypes": {
+    "FEATURE": "Feature",
+    "REFACTOR": "Refacto",
+    "BUGFIX": "Bugfix",
+    "INFRA": "Infra"
+  },
+  "gauges": {
+    "treasury": {
+      "name": "Trésorerie",
+      "help": "Sert à payer les salaires. À 0 : faillite, game over."
+    },
+    "coffee": {
+      "name": "Café",
+      "help": "Le carburant de l'équipe. À 0 : productivité divisée par 3."
+    },
+    "debt": {
+      "name": "Dette technique",
+      "help": "Monte à chaque raccourci. Trop haute : bugs et prod instable."
+    },
+    "stability": {
+      "name": "Stabilité prod",
+      "help": "Fiabilité du produit. À 0 : les utilisateurs fuient."
+    },
+    "hype": {
+      "name": "Hype",
+      "help": "Attractivité pour les investisseurs. À 0 : plus de levée de fonds."
+    },
+    "users": {
+      "name": "Utilisateurs",
+      "help": "Ta base d'utilisateurs. Elle grandit avec les features et fuit si la prod tombe."
+    },
+    "morale": {
+      "name": "Moral",
+      "help": "Motivation d'un dev. À 0 : démission annoncée par un faux post LinkedIn."
+    }
+  },
+  "stats": {
+    "speed": "Vitesse",
+    "quality": "Qualité",
+    "endurance": "Endurance",
+    "ego": "Ego"
+  },
+  "phases": {
+    "GARAGE": "Garage",
+    "SEED": "Seed",
+    "SERIES_A": "Série A",
+    "UNICORN": "Licorne",
+    "END": "Fin"
+  },
+  "steps": {
+    "PLANNING": "Planification",
+    "EXECUTION": "Exécution",
+    "DEMO": "Démo",
+    "PITCH": "Levée de fonds",
+    "ENDED": "Fin de partie"
+  },
+  "time": {
+    "sprint": "Sprint {{sprint}}/{{total}}",
+    "day": "{{day}} {{time}}",
+    "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+    "pause": "Pause",
+    "speed": "Vitesse x{{speed}}",
+    "speeds": "Vitesse du jeu",
+    "startSprint": "Lancer le sprint",
+    "friday": "Vendredi 17h : ne déploie pas.",
+    "incident": "Incident en production !"
+  },
+  "panels": {
+    "kanban": "Kanban",
+    "team": "Équipe",
+    "hiring": "Recrutement",
+    "build": "Construction",
+    "dashboard": "Dashboard",
+    "settings": "Options",
+    "credits": "Crédits",
+    "close": "Fermer",
+    "menu": "Menu",
+    "actions": "Actions du jeu"
+  },
+  "kanban": {
+    "columns": {
+      "BACKLOG": "Backlog",
+      "TODO": "À faire",
+      "DOING": "En cours",
+      "DONE": "Terminé"
+    },
+    "size": "{{size}} pts",
+    "assignee": "Assigné à",
+    "nobody": "Personne",
+    "moveLeft": "Déplacer vers {{column}}",
+    "moveRight": "Déplacer vers {{column}}",
+    "dragHint": "Glisse une carte entre Backlog et À faire, ou utilise les flèches. Les devs prennent les tâches « À faire » tout seuls.",
+    "impact": "Impact",
+    "empty": "Rien ici. Profite.",
+    "moved": "« {{task}} » déplacée vers {{column}}",
+    "hallucinated": "hallucinée"
+  },
+  "team": {
+    "age": "{{age}} ans",
+    "salary": "{{salary}} €/mois",
+    "level": "Niveau {{level}}",
+    "mood": "Humeur",
+    "relations": "Relations",
+    "history": "Historique",
+    "fire": "Licencier",
+    "confirmFire": "Licencier {{name}} ? Le moral de l'équipe va baisser.",
+    "confirm": "Confirmer",
+    "cancel": "Annuler",
+    "back": "Retour",
+    "trait": "Trait",
+    "activity": "En ce moment",
+    "friend": "Affinité",
+    "enemy": "Conflit",
+    "neutral": "Neutre",
+    "empty": "Personne. Même pas un stagiaire.",
+    "energy": "Énergie",
+    "noHistory": "Rien à signaler pour l'instant.",
+    "sprint": "Sprint {{sprint}}"
+  },
+  "hiring": {
+    "intro": "3 candidats ce sprint. Fais une offre : trop basse, ils refusent.",
+    "asking": "Demande {{salary}} €/mois",
+    "offer": "Ton offre : {{salary}} €/mois",
+    "hire": "Faire l'offre",
+    "none": "Plus de candidats ce sprint.",
+    "teamFull": "Équipe complète pour cette phase ({{max}} max)."
+  },
+  "build": {
+    "intro": "Choisis un objet puis touche une case du bureau pour le poser.",
+    "categories": {
+      "work": "Travail",
+      "comfort": "Confort",
+      "kitchen": "Cuisine",
+      "fun": "Détente",
+      "decor": "Déco"
+    },
+    "price": "{{price}} €",
+    "locked": "Débloqué en {{phase}}",
+    "rotate": "Tourner",
+    "sell": "Revendre ({{price}} €)",
+    "move": "Déplacer",
+    "cancel": "Terminer",
+    "placing": "Pose : {{item}}",
+    "selected": "Objet sélectionné : {{item}}",
+    "soldOut": "Maximum atteint ({{max}})"
+  },
+  "results": {
+    "INVALID_COMMAND": "Action impossible.",
+    "WRONG_STAGE": "Pas maintenant : ce n'est pas la bonne étape du sprint.",
+    "NOT_FOUND": "Introuvable (déjà parti ?).",
+    "INVALID_CHOICE": "Choix invalide.",
+    "TEAM_FULL": "Équipe complète pour cette phase.",
+    "NOT_ENOUGH_MONEY": "Pas assez de trésorerie.",
+    "INVALID_PLACEMENT": "Impossible de poser l'objet ici.",
+    "LOCKED": "Pas encore débloqué.",
+    "COOLDOWN": "Les investisseurs veulent du nouveau : attends quelques sprints.",
+    "NO_HYPE": "Plus aucune hype : aucun investisseur ne te répond.",
+    "NOT_ELIGIBLE": "Conditions non remplies.",
+    "GAME_OVER": "La partie est terminée.",
+    "noGame": "Aucune partie en cours.",
+    "outOfBounds": "Hors du bureau.",
+    "wall": "Il y a un mur ici.",
+    "overlap": "La place est déjà prise.",
+    "entrance": "Ne bloque pas l'entrée !",
+    "unknownItem": "Objet inconnu."
+  },
+  "dashboard": {
+    "intro": "Historique des jauges, un point par jour.",
+    "noData": "Pas encore d'historique : lance un sprint."
+  },
+  "settings": {
+    "quality": "Qualité graphique",
+    "qualities": {
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute"
+    },
+    "reducedMotion": "Réduire les animations",
+    "textSize": "Taille du texte",
+    "showFps": "Afficher les FPS",
+    "language": "Langue",
+    "tutorial": "Revoir le tutoriel",
+    "quit": "Quitter la partie",
+    "fps": "{{fps}} FPS"
+  },
+  "credits": {
+    "title": "Crédits",
+    "kenney": "Modèles 3D : Kenney (kenney.nl), packs Furniture Kit et Blocky Characters, licence CC0.",
+    "three": "Rendu : Three.js. Interface : React. Traductions : i18next.",
+    "missing": "Assets absents des packs, remplacés par des formes Three.js ou du CSS :",
+    "missingItems": {
+      "babyfoot": "Babyfoot",
+      "slide": "Toboggan",
+      "napPod": "Sieste-pod",
+      "standingDesk": "Standing desk",
+      "headphones": "Casque antibruit",
+      "uiPack": "Pack UI Kenney (interface en CSS)",
+      "soundPacks": "Packs sons Kenney (audio à venir)"
+    },
+    "back": "Retour"
+  },
+  "tutorial": {
+    "skip": "Passer le tutoriel",
+    "next": "Suivant",
+    "done": "C'est parti",
+    "progress": "Étape {{step}} sur {{total}}",
+    "steps": {
+      "welcome": "Bienvenue, fondateur. Tu as 2 M€ et 18 mois. Voici ton open space.",
+      "gauges": "En haut, tes jauges. Survole-les ou touche-les pour savoir à quoi elles servent.",
+      "kanban": "Ouvre le Kanban et glisse une tâche du Backlog vers « À faire ».",
+      "assign": "Assigne une tâche à un dev : il s'y mettra dès le lancement du sprint.",
+      "start": "Lance le sprint : les devs se mettent au travail.",
+      "speed": "Change la vitesse : pause, x1, x2 ou x4.",
+      "select": "Clique sur un dev (appui long sur mobile) pour voir sa fiche.",
+      "build": "Ouvre la construction pour acheter une plante. Elles aident vraiment."
+    }
+  },
+  "game": {
+    "sceneLabel": "Open space en 3D. Glisser pour déplacer, molette ou pincer pour zoomer, Q et E pour tourner, flèches pour se déplacer.",
+    "gauges": "Jauges",
+    "openProfile": "Voir la fiche"
+  },
+  "event": {
+    "kicker": "Événement",
+    "worse": "Ça s'aggrave (niveau {{level}})",
+    "moral": "Moral"
+  },
+  "pitch": {
+    "open": "Lever des fonds",
+    "title": "Levée de fonds",
+    "round": "Argument {{round}} sur {{total}} : que dis-tu ?",
+    "success": "Signé ! {{amount}} € levés contre {{share}} % du capital.",
+    "failure": "L'investisseur « va revenir vers toi ». Il ne reviendra pas.",
+    "close": "Retour au bureau"
+  },
+  "demo": {
+    "title": "Démo du sprint {{sprint}}",
+    "lost": "Sprint perdu : rien n'a été livré.",
+    "users": "Utilisateurs",
+    "revenue": "Chiffre d'affaires",
+    "expenses": "Dépenses",
+    "features": "Features livrées",
+    "incidents": "Incidents",
+    "valuation": "Valorisation",
+    "feedback": "Retours des utilisateurs",
+    "next": "Sprint suivant",
+    "ipo": "Lancer l'IPO",
+    "offerTitle": "Offre de rachat",
+    "offer": "{{buyer}} propose de racheter ta startup pour {{amount}}.",
+    "accept": "Accepter",
+    "refuse": "Refuser"
+  },
+  "end": {
+    "title": "Fin de partie",
+    "outcomes": {
+      "BANKRUPTCY": "Faillite",
+      "IPO": "Introduction en bourse",
+      "ACQUISITION": "Rachetée",
+      "ZOMBIE": "Startup zombie"
+    },
+    "ownership": "Ta part du capital",
+    "sprints": "Sprints joués",
+    "again": "Rejouer",
+    "menu": "Menu principal"
   }
 }
