@@ -20,7 +20,7 @@ import {
   type AchievementDto,
   type CardSetResponse,
   type DailyResponse,
-  type LeaderboardQuery,
+  type GameMode,
   type LeaderboardResponse,
   type ProfileResponse,
   type PutSaveBody,
@@ -68,7 +68,9 @@ export const metaApi = {
   submitScore: (body: SubmitScoreBody): Promise<SubmitScoreResponse> =>
     apiRequest('/scores', { method: 'POST', body, schema: SubmitScoreResponseSchema }),
 
-  leaderboard: (params: LeaderboardQuery = {}): Promise<LeaderboardResponse> =>
+  leaderboard: (
+    params: { mode?: GameMode; daily?: string; limit?: number } = {},
+  ): Promise<LeaderboardResponse> =>
     apiRequest(`/scores/top${query(params)}`, {
       schema: LeaderboardResponseSchema,
       retryOnUnauthorized: false,
@@ -111,7 +113,11 @@ export const metaApi = {
     create: (card: AdminCardBody): Promise<AdminCard> =>
       apiRequest('/admin/events', { method: 'POST', body: card, schema: AdminCardSchema }),
     update: (card: AdminCardBody): Promise<AdminCard> =>
-      apiRequest(`/admin/events/${card.id}`, { method: 'PUT', body: card, schema: AdminCardSchema }),
+      apiRequest(`/admin/events/${card.id}`, {
+        method: 'PUT',
+        body: card,
+        schema: AdminCardSchema,
+      }),
     disable: (id: string): Promise<AdminCard> =>
       apiRequest(`/admin/events/${id}`, { method: 'DELETE', schema: AdminCardSchema }),
     stats: (): Promise<AdminStatsResponse> =>

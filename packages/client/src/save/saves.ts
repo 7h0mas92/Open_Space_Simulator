@@ -1,9 +1,4 @@
-import {
-  GAME,
-  SaveDataSchema,
-  type SaveData,
-  type SaveSummary,
-} from '@oss/shared';
+import { GAME, SaveDataSchema, type SaveData, type SaveSummary } from '@oss/shared';
 import { metaApi } from '../api/meta';
 import { localStore } from './storage';
 
@@ -76,7 +71,12 @@ export const saves = {
   },
 
   /** Écrit une sauvegarde ; renvoie vrai si elle est aussi arrivée sur le serveur. */
-  async write(slot: number, data: SaveData, cardsVersion: string, online: boolean): Promise<boolean> {
+  async write(
+    slot: number,
+    data: SaveData,
+    cardsVersion: string,
+    online: boolean,
+  ): Promise<boolean> {
     const summary = summarize(slot, data, cardsVersion);
     let synced = false;
     if (online) {
@@ -103,7 +103,10 @@ export const saves = {
       const entry = await readLocal(slot);
       if (!entry || entry.synced) continue;
       try {
-        await metaApi.saves.write(slot, { data: entry.data, cardsVersion: entry.summary.cardsVersion });
+        await metaApi.saves.write(slot, {
+          data: entry.data,
+          cardsVersion: entry.summary.cardsVersion,
+        });
         await localStore().set(slotKey(slot), { ...entry, synced: true });
         sent += 1;
       } catch {

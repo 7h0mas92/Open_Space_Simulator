@@ -196,9 +196,7 @@ export class SimulationHost {
       tickDurationMs: this.replay
         ? this.clock.tickDuration / REPLAY_BOOST
         : this.clock.tickDuration,
-      replay: this.replay
-        ? { played: this.replay.next, total: this.replay.commands.length }
-        : null,
+      replay: this.replay ? { played: this.replay.next, total: this.replay.commands.length } : null,
     });
     this.pending = [];
   }

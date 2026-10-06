@@ -3,8 +3,15 @@
  * modèle de vue. Chaque snapshot du moteur devient un `GameView` ; chaque `GameCommand` de
  * l'interface devient une commande typée de la simulation.
  */
-import type { EventCard, GameMode, SaveData, Speed } from '@oss/shared';
-import { createGameEngine, type EngineSnapshot, type GameEngine } from '../engine';
+import {
+  BUILTIN_CARDS_VERSION,
+  type EventCard,
+  type GameMode,
+  type LoggedCommand,
+  type SaveData,
+  type Speed,
+} from '@oss/shared';
+import { createGameEngine, type EngineSnapshot, type GameEngine, type GameStart } from '../engine';
 import { DEFAULT_CARDS } from '../events/defaultCards';
 import { toCommand, toGameView } from './adapter';
 import type { CommandResult, GameCommand, GameNotification, GameView } from './types';
@@ -14,6 +21,8 @@ export type SourceListener = (view: GameView, notifications: readonly GameNotifi
 /** Ce dont l'interface a besoin d'une partie en cours. */
 export interface GameSource {
   readonly view: GameView;
+  /** Version du jeu de cartes de la partie (sauvegardes, publication du score). */
+  readonly cardsVersion: string;
   dispatch(command: GameCommand): Promise<CommandResult>;
   setSpeed(speed: Speed): void;
   save(): Promise<SaveData>;
@@ -26,6 +35,19 @@ export interface NewGame {
   readonly mode: GameMode;
 }
 
+/** Revoir une partie du classement à partir de sa graine et de ses commandes. */
+export interface ReplayGame extends NewGame {
+  readonly commands: readonly LoggedCommand[];
+}
+
+export type SourceStart = NewGame | ReplayGame | { readonly save: SaveData };
+
+function toGameStart(game: SourceStart): GameStart {
+  if ('save' in game) return { kind: 'load', save: game.save };
+  if ('commands' in game) return { kind: 'replay', ...game };
+  return { kind: 'new', ...game };
+}
+
 export class EngineSource implements GameSource {
   private current: GameView;
   private readonly listeners = new Set<SourceListener>();
@@ -36,6 +58,7 @@ export class EngineSource implements GameSource {
     private readonly engine: GameEngine,
     first: EngineSnapshot,
     cards: readonly EventCard[],
+    readonly cardsVersion: string,
   ) {
     this.cards = new Map(cards.map((card) => [card.id, card]));
     this.current = this.toView(first);
@@ -47,16 +70,13 @@ export class EngineSource implements GameSource {
 
   /** Démarre une partie. `engine` est injectable pour les tests. */
   static async start(
-    game: NewGame | { readonly save: SaveData },
-    options: { engine?: GameEngine; cards?: readonly EventCard[] } = {},
+    game: SourceStart,
+    options: { engine?: GameEngine; cards?: readonly EventCard[]; cardsVersion?: string } = {},
   ): Promise<EngineSource> {
     const engine = options.engine ?? createGameEngine();
     const cards = options.cards ?? DEFAULT_CARDS;
-    const first = await engine.start(
-      'save' in game ? { kind: 'load', save: game.save } : { kind: 'new', ...game },
-      cards,
-    );
-    return new EngineSource(engine, first, cards);
+    const first = await engine.start(toGameStart(game), cards);
+    return new EngineSource(engine, first, cards, options.cardsVersion ?? BUILTIN_CARDS_VERSION);
   }
 
   get view(): GameView {
@@ -68,6 +88,7 @@ export class EngineSource implements GameSource {
       speed: snapshot.speed,
       running: snapshot.running,
       card: (id) => this.cards.get(id),
+      replay: snapshot.replay,
     });
   }
 

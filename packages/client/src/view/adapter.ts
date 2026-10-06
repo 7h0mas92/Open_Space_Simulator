@@ -45,6 +45,8 @@ export interface ViewContext {
   readonly running: boolean;
   /** Texte des cartes d'événements (l'état ne garde que leur identifiant). */
   readonly card: (id: string) => EventCard | undefined;
+  /** Progression du replay (null pour une partie jouée). */
+  readonly replay?: { readonly played: number; readonly total: number } | null;
 }
 
 const COLUMNS: Record<TaskColumn, KanbanColumn> = {
@@ -283,6 +285,8 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       state.phase === 'UNICORN' &&
       state.gauges.stability >= BALANCE.phases.ipoMinStability,
     result: state.result,
+    achievements: [...state.achievements],
+    replay: context.replay ?? null,
     running: context.running,
   };
 }

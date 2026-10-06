@@ -262,31 +262,96 @@ function DemoScreen({ view }: { view: GameView }) {
   );
 }
 
+/** Où en est la publication du score (le serveur rejoue la partie pour la vérifier). */
+function SubmissionStatus() {
+  const { t } = useTranslation();
+  const submission = useGame((s) => s.submission);
+  switch (submission.status) {
+    case 'idle':
+    case 'replay':
+      return null;
+    case 'pending':
+      return <p aria-live="polite">{t('end.submitting')}</p>;
+    case 'guest':
+      return <p className="hint">{t('end.guest')}</p>;
+    case 'done':
+      return (
+        <p className="up" role="status">
+          {t('end.rank', { rank: submission.rank })}
+        </p>
+      );
+    case 'error':
+      return (
+        <p className="down" role="alert">
+          {t('end.submitFailed')} ({t(`errors.${submission.code}` as never)})
+        </p>
+      );
+  }
+}
+
 function EndScreen({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const start = useGame((s) => s.start);
   const quit = useGame((s) => s.quit);
+  const notify = useGame((s) => s.notify);
+  const replayOf = useGame((s) => s.replayOf);
   const result = view.result;
   if (!result) return null;
+  const headline = localized(result.headline, i18n.language);
+  const valuation = formatGauge('treasury', result.valuation, i18n.language);
+
+  async function share() {
+    if (!result) return;
+    try {
+      const { renderShareImage, shareImage } = await import('./shareImage');
+      const blob = await renderShareImage({
+        title: t('app.title'),
+        headline,
+        lines: [
+          `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
+          `${t(`modes.${view.mode}.name`)} · ${t('end.sprints')} ${result.sprint}/${view.time.totalSprints}`,
+          t('end.shareAchievements', { count: view.achievements.length }),
+        ],
+        footer: window.location.host,
+      });
+      const how = await shareImage(blob, `${headline} — ${t('app.title')}`);
+      if (how === 'downloaded') notify('end.downloaded', 'success');
+    } catch {
+      notify('end.shareFailed', 'error');
+    }
+  }
+
   return (
     <Dialog title={t(`end.outcomes.${result.outcome}`)} className="end-screen">
-      <p className="eyebrow">{t('end.title')}</p>
+      <p className="eyebrow">
+        {replayOf ? t('replay.endOf', { pseudo: replayOf }) : t('end.title')}
+      </p>
       <h2>{t(`end.outcomes.${result.outcome}`)}</h2>
-      <p className="headline">{localized(result.headline, i18n.language)}</p>
+      <p className="headline">{headline}</p>
       <dl className="demo-stats">
         <dt>{t('demo.valuation')}</dt>
-        <dd>{formatGauge('treasury', result.valuation, i18n.language)}</dd>
+        <dd>{valuation}</dd>
         <dt>{t('end.ownership')}</dt>
         <dd>{Math.round(result.ownership * 100)} %</dd>
         <dt>{t('end.sprints')}</dt>
         <dd>
           {result.sprint}/{view.time.totalSprints}
         </dd>
+        <dt>{t('achievements.title')}</dt>
+        <dd>{view.achievements.length}</dd>
       </dl>
+      <SubmissionStatus />
       <div className="stage-actions">
-        <button type="button" className="primary" onClick={() => void start({ mode: view.mode })}>
-          {t('end.again')}
-        </button>
+        {!replayOf && (
+          <button type="button" className="primary" onClick={() => void share()}>
+            📤 {t('end.share')}
+          </button>
+        )}
+        {!replayOf && view.mode !== 'DAILY' && (
+          <button type="button" onClick={() => void start({ mode: view.mode })}>
+            {t('end.again')}
+          </button>
+        )}
         <button type="button" onClick={quit}>
           {t('end.menu')}
         </button>

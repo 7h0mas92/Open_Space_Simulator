@@ -5,7 +5,16 @@
  * La partie tourne dans le Web Worker de la simulation ; `GameSource` (view/source.ts) fait le
  * lien et convertit chaque snapshot en `GameView`.
  */
-import type { GameMode, LocalizedText, NotificationKind } from '@oss/shared';
+import {
+  dailySeed,
+  utcDate,
+  type EventCard,
+  type GameMode,
+  type LocalizedText,
+  type LoggedCommand,
+  type NotificationKind,
+  type SaveData,
+} from '@oss/shared';
 import { create } from 'zustand';
 import type { PickTarget } from '../../render/GameRenderer';
 import type { GameSource } from '../../view/source';
@@ -25,6 +34,8 @@ export const PANELS = [
   'hiring',
   'build',
   'dashboard',
+  'slack',
+  'saves',
   'settings',
   'credits',
 ] as const;
@@ -64,9 +75,35 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   PHASE_UP: 'success',
   ACQUISITION_OFFER: 'info',
   SPRINT_LOST: 'error',
+  ACHIEVEMENT_UNLOCKED: 'success',
 };
 
 export type NotificationListener = (notifications: readonly GameNotification[]) => void;
+
+/** Comment démarrer une partie. */
+export interface StartOptions {
+  seed?: string;
+  mode?: GameMode;
+  /** Source déjà prête (tests). */
+  source?: GameSource;
+  /** Reprendre une sauvegarde. */
+  save?: { data: SaveData; cardsVersion: string };
+  /** Revoir une partie du classement. */
+  replay?: {
+    seed: string;
+    mode: GameMode;
+    commands: readonly LoggedCommand[];
+    cards: readonly EventCard[];
+    cardsVersion: string;
+    pseudo: string;
+  };
+}
+
+/** Publication du score de fin de partie. */
+export type Submission =
+  | { status: 'idle' | 'pending' | 'guest' | 'replay' }
+  | { status: 'done'; rank: number; newAchievements: readonly string[] }
+  | { status: 'error'; code: string };
 
 interface GameStore {
   source: GameSource | null;
@@ -78,7 +115,10 @@ interface GameStore {
   build: BuildState | null;
   toast: Toast | null;
   fps: number;
-  start(options?: { seed?: string; mode?: GameMode; source?: GameSource }): Promise<void>;
+  /** Pseudo du joueur dont on regarde le replay (null pour une partie jouée). */
+  replayOf: string | null;
+  submission: Submission;
+  start(options?: StartOptions): Promise<void>;
   quit(): void;
   dispatch(command: GameCommand): Promise<CommandResult>;
   openPanel(panel: PanelId | null): void;
@@ -98,9 +138,43 @@ export function onGameNotifications(listener: NotificationListener): () => void 
   return () => notificationListeners.delete(listener);
 }
 
-/** Graine aléatoire d'une partie normale (le mode Daily fournira la graine du jour). */
+/** Graine aléatoire d'une partie (le Daily utilise la graine du jour, la même pour tous). */
 function randomSeed(): string {
   return Math.floor(Math.random() * 2 ** 31).toString(36);
+}
+
+/** Graine du Daily : demandée au serveur, ou calculée localement hors ligne. */
+async function todaySeed(): Promise<string> {
+  try {
+    const { metaApi } = await import('../../api/meta');
+    return (await metaApi.daily()).seed;
+  } catch {
+    return dailySeed(utcDate(new Date()));
+  }
+}
+
+/** Crée la source de la partie (import dynamique : la simulation n'est chargée qu'ici). */
+async function createSource(options: StartOptions): Promise<GameSource> {
+  if (options.source) return options.source;
+  const [{ EngineSource }, cardsModule] = await Promise.all([
+    import('../../view/source'),
+    import('../../save/cards'),
+  ]);
+  if (options.replay) {
+    const { seed, mode, commands, cards, cardsVersion } = options.replay;
+    return EngineSource.start({ seed, mode, commands }, { cards, cardsVersion });
+  }
+  if (options.save) {
+    const set = await cardsModule.cardsForVersion(options.save.cardsVersion);
+    return EngineSource.start(
+      { save: options.save.data },
+      { cards: set.cards, cardsVersion: set.version },
+    );
+  }
+  const mode = options.mode ?? 'NORMAL';
+  const seed = options.seed ?? (mode === 'DAILY' ? await todaySeed() : randomSeed());
+  const set = await cardsModule.currentCards();
+  return EngineSource.start({ seed, mode }, { cards: set.cards, cardsVersion: set.version });
 }
 
 export const useGame = create<GameStore>((set, get) => ({
@@ -112,16 +186,20 @@ export const useGame = create<GameStore>((set, get) => ({
   build: null,
   toast: null,
   fps: 0,
+  replayOf: null,
+  submission: { status: 'idle' },
 
   async start(options = {}) {
     get().quit();
     set({ loading: true });
-    // Import dynamique : la simulation n'est chargée qu'au lancement d'une partie.
-    const source: GameSource =
-      options.source ??
-      (await import('../../view/source').then(({ EngineSource }) =>
-        EngineSource.start({ seed: options.seed ?? randomSeed(), mode: options.mode ?? 'NORMAL' }),
-      ));
+    let source: GameSource;
+    try {
+      source = await createSource(options);
+    } catch {
+      set({ loading: false });
+      get().notify('menu.startFailed', 'error');
+      return;
+    }
     unsubscribeSource = source.subscribe((view, notifications) => {
       set({ view });
       if (notifications.length === 0) return;
@@ -132,19 +210,39 @@ export const useGame = create<GameStore>((set, get) => ({
           toast: { id: ++toastId, text: shown.text, tone: TOAST_KINDS[shown.kind] ?? 'info' },
         });
     });
-    set({ source, view: source.view, loading: false, panel: null, selected: null, build: null });
+    set({
+      source,
+      view: source.view,
+      loading: false,
+      panel: null,
+      selected: null,
+      build: null,
+      replayOf: options.replay?.pseudo ?? null,
+      submission: { status: options.replay ? 'replay' : 'idle' },
+    });
   },
 
   quit() {
     unsubscribeSource?.();
     unsubscribeSource = null;
     get().source?.dispose();
-    set({ source: null, view: null, panel: null, selected: null, build: null, toast: null });
+    set({
+      source: null,
+      view: null,
+      panel: null,
+      selected: null,
+      build: null,
+      toast: null,
+      replayOf: null,
+      submission: { status: 'idle' },
+    });
   },
 
   async dispatch(command) {
-    const { source } = get();
+    const { source, replayOf } = get();
     if (!source) return { ok: false, reason: 'noGame' };
+    // Replay : on ne peut que changer la vitesse.
+    if (replayOf !== null && command.type !== 'setSpeed') return { ok: false, reason: 'LOCKED' };
     const result = await source.dispatch(command);
     if (!result.ok) get().notify(`results.${result.reason}`, 'error');
     return result;

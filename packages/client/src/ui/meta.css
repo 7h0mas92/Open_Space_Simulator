@@ -1,0 +1,475 @@
+/* --- Menu d'accueil : modes et liens ------------------------------------------------- */
+
+.menu h2 {
+  margin: 0.25rem 0 0;
+  font-size: 1.1rem;
+}
+
+.mode-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mode-button {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  text-align: left;
+}
+
+.mode-icon {
+  font-size: 1.5rem;
+}
+
+.mode-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.mode-button.primary small {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.menu-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.welcome .badge {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.toast-error {
+  color: var(--danger);
+}
+
+/* --- Pages du méta-jeu (classements, profil, admin) ---------------------------------- */
+
+.meta-page {
+  width: 100%;
+  max-width: 40rem;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.meta-page.meta-wide {
+  max-width: 64rem;
+}
+
+.meta-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.meta-header h1 {
+  font-size: clamp(1.4rem, 5vw, 2rem);
+}
+
+.meta-page h2 {
+  margin: 0.5rem 0 0;
+  font-size: 1.15rem;
+}
+
+.scroll-tabs {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.scroll-tabs button {
+  flex: 0 0 auto;
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.score-table th,
+.score-table td {
+  padding: 0.5rem 0.375rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.score-table thead th {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.score-table th small {
+  display: block;
+}
+
+.score-table tr.inactive {
+  opacity: 0.55;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 600px) {
+  .hide-narrow {
+    display: none;
+  }
+}
+
+/* Sauvegardes */
+.save-slots ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.save-slot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.save-slot > div:first-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.save-actions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+/* Profil et succès */
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.profile-stats > div {
+  padding: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.profile-stats dt {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.profile-stats dd {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.best-games {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.achievement-grid li {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.achievement-grid li > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.achievement-grid .locked {
+  opacity: 0.6;
+}
+
+.achievement-grid .locked .achievement-icon {
+  filter: grayscale(1);
+}
+
+.achievement-icon {
+  font-size: 1.75rem;
+}
+
+.achievement-status {
+  font-style: italic;
+}
+
+/* --- Back-office --------------------------------------------------------------------- */
+
+.admin {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-toolbar input {
+  flex: 1 1 12rem;
+}
+
+.card-editor {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .card-editor {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.card-editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card-editor textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font:
+    0.85rem/1.4 ui-monospace,
+    monospace;
+  resize: vertical;
+}
+
+.card-editor textarea[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.card-preview {
+  position: static;
+  max-width: none;
+  transform: none;
+}
+
+.card-preview .choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.card-preview code {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+.bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.bar-list li span {
+  margin-right: 0.5rem;
+}
+
+/* --- Slack ---------------------------------------------------------------------------- */
+
+.slack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.slack .tabs button {
+  gap: 0.375rem;
+}
+
+.unread {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.slack-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.slack-messages li {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.slack-messages p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.slack-avatar {
+  flex: 0 0 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+.slack-messages .bot .slack-avatar {
+  background: var(--border);
+}
+
+.slack-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.slack-meta time {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.slack-meta .badge {
+  padding: 0 0.375rem;
+  font-size: 0.7rem;
+}
+
+.slack-dock {
+  position: absolute;
+  z-index: 12;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 20rem;
+  max-height: min(26rem, 45vh);
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+}
+
+.slack-dock:not(.expanded) {
+  width: auto;
+}
+
+.slack-dock .slack {
+  flex: 1;
+  overflow: hidden;
+}
+
+.slack-dock-toggle {
+  gap: 0.5rem;
+}
+
+/* --- Replay et fin de partie ---------------------------------------------------------- */
+
+.replay-banner {
+  position: absolute;
+  z-index: 13;
+  top: max(8px, env(safe-area-inset-top));
+  left: 50%;
+  margin: 0;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.settings .slider {
+  display: grid;
+  grid-template-columns: 6rem 1fr 3.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--touch);
+}
+
+.settings .slider input {
+  min-height: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.settings .switch span {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hors partie, le message d'erreur reste dans le flux de la page. */
+.menu .toast,
+.meta-page .toast {
+  position: static;
+  transform: none;
+  padding: 0.5rem 0.75rem;
+}

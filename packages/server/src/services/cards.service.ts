@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
-import type {
-  AdminCardBodySchema} from '@oss/shared';
+import type { AdminCardBodySchema } from '@oss/shared';
 import {
   BUILTIN_CARDS_VERSION,
   CardConditionsSchema,

@@ -5,6 +5,9 @@ import { SelectionBar } from '../build/SelectionBar';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Kanban } from '../kanban/Kanban';
 import { Credits } from '../settings/Credits';
+import { SaveSlots } from '../menu/SaveSlots';
+import { SlackPanel } from '../slack/SlackPanel';
+import { SlackDock } from '../slack/SlackDock';
 import { SettingsPanel } from '../settings/SettingsPanel';
 import { useGame, type PanelId } from '../store/game';
 import { useSettings } from '../store/settings';
@@ -16,6 +19,7 @@ import { Scene } from './Scene';
 import { Sheet } from './Sheet';
 import { StageScreens } from './StageScreens';
 import { localized } from './format';
+import { useGameFeeds } from './useGameFeeds';
 import type { GameView, Rotation } from '../../view/types';
 
 function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
@@ -30,6 +34,10 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <BuildPanel view={view} />;
     case 'dashboard':
       return <Dashboard view={view} />;
+    case 'slack':
+      return <SlackPanel />;
+    case 'saves':
+      return <SaveSlots mode="save" />;
     case 'settings':
       return <SettingsPanel />;
     case 'credits':
@@ -73,7 +81,9 @@ export function GameScreen() {
   const toast = useGame((s) => s.toast);
   const fps = useGame((s) => s.fps);
   const showFps = useSettings((s) => s.showFps);
+  const replayOf = useGame((s) => s.replayOf);
   useShortcuts();
+  useGameFeeds();
 
   // Les messages disparaissent seuls après quelques secondes.
   useEffect(() => {
@@ -106,7 +116,18 @@ export function GameScreen() {
             : String(t((toast.key ?? '') as never, toast.params as never))}
         </p>
       )}
-      <Tutorial view={view} />
+      {replayOf && view.replay && (
+        <p className="replay-banner" role="status">
+          ▶{' '}
+          {t('replay.banner', {
+            pseudo: replayOf,
+            played: view.replay.played,
+            total: view.replay.total,
+          })}
+        </p>
+      )}
+      {panel !== 'slack' && <SlackDock />}
+      {!replayOf && <Tutorial view={view} />}
       <StageScreens view={view} />
       {panel && (
         <Sheet title={t(`panels.${panel}`)} onClose={() => openPanel(null)}>
