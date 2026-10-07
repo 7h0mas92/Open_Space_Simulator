@@ -73,6 +73,14 @@ export function SettingsPanel() {
       <label className="switch">
         <input
           type="checkbox"
+          checked={settings.edgePan}
+          onChange={(e) => settings.update({ edgePan: e.target.checked })}
+        />
+        {t('settings.edgePan')}
+      </label>
+      <label className="switch">
+        <input
+          type="checkbox"
           checked={settings.showFps}
           onChange={(e) => settings.update({ showFps: e.target.checked })}
         />

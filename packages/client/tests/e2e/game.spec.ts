@@ -6,6 +6,7 @@ interface DebugInfo {
   visible: number;
   drawCalls: number;
   zoom: number;
+  target: { x: number; z: number };
   pixelRatio: number;
 }
 
@@ -145,6 +146,41 @@ test('la caméra zoome à la molette et au clavier', async ({ page, isMobile }) 
   await page.keyboard.press('-');
   await page.keyboard.press('-');
   await expect.poll(async () => (await debug(page))!.zoom).toBeLessThan(before * 1.2);
+});
+
+test('la caméra défile quand la souris atteint le bord de l’écran', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Souris : ordinateur uniquement');
+  await startAsGuest(page);
+  await expect.poll(async () => (await debug(page))?.drawCalls ?? 0).toBeGreaterThan(5);
+  const target = async () => (await debug(page))!.target;
+  const viewport = page.viewportSize()!;
+  const center = { x: viewport.width / 2, y: viewport.height / 2 };
+
+  // Au bord haut : la vue défile, puis s'arrête dès que la souris revient au centre.
+  const start = await target();
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.move(center.x, 1, { steps: 5 });
+  await expect.poll(async () => (await target()).z).toBeLessThan(start.z - 0.5);
+  await page.mouse.move(center.x, center.y);
+  const stopped = await target();
+  await page.waitForTimeout(300);
+  expect(await target()).toEqual(stopped);
+
+  // Sortie de la fenêtre par la gauche : le défilement continue.
+  await page.mouse.move(30, center.y);
+  await page.evaluate(
+    ([y]) =>
+      document.querySelector('canvas')!.dispatchEvent(
+        new MouseEvent('mouseout', {
+          bubbles: true,
+          clientX: 0,
+          clientY: y,
+          relatedTarget: null,
+        }),
+      ),
+    [center.y],
+  );
+  await expect.poll(async () => (await target()).x).toBeLessThan(stopped.x - 0.5);
 });
 
 test('un panneau se ferme avec Échap et rend le focus', async ({ page, isMobile }) => {
