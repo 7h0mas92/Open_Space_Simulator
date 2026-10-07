@@ -260,7 +260,9 @@
     "teamFull": "Team is full for this phase ({{max}} max)."
   },
   "build": {
-    "intro": "Pick an item, then tap a tile to place it.",
+    "title": "Build mode",
+    "intro": "Pick an item to place, or tap a piece of furniture to move or sell it.",
+    "catalog": "Catalog",
     "categories": {
       "work": "Work",
       "comfort": "Comfort",
@@ -269,15 +271,29 @@
       "decor": "Decor"
     },
     "price": "€{{price}}",
+    "owned": "{{count}}/{{max}}",
     "locked": "Unlocks at {{phase}}",
+    "soldOut": "Limit reached ({{max}})",
+    "tooExpensive": "Not enough cash",
     "rotate": "Rotate",
     "sell": "Sell (€{{price}})",
     "move": "Move",
-    "cancel": "Done",
+    "cancel": "Cancel",
+    "done": "Done",
+    "confirm": "Place",
+    "confirmMove": "Move here",
+    "aim": "Aim at a tile of the office.",
+    "hintMouse": "Click to place. R to rotate, Esc to cancel.",
+    "hintTouch": "Tap a tile or drag the item, then \"Place\".",
     "placing": "Placing: {{item}}",
+    "moving": "Moving: {{item}}",
     "selected": "Selected item: {{item}}",
-    "soldOut": "Limit reached ({{max}})"
+    "placed": "{{item}}: placed!",
+    "moved": "{{item}}: moved.",
+    "pause": "Pause",
+    "resume": "Resume"
   },
+
   "results": {
     "INVALID_COMMAND": "That can't be done.",
     "WRONG_STAGE": "Not now: wrong step of the sprint.",

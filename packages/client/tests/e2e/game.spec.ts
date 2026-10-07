@@ -7,6 +7,7 @@ interface DebugInfo {
   drawCalls: number;
   zoom: number;
   pixelRatio: number;
+  ghost: { x: number; y: number } | null;
 }
 
 const debug = (page: Page) =>
@@ -99,22 +100,61 @@ test('glisser-déposer une tâche dans le Kanban', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('mode construction : poser une plante dans le bureau', async ({ page }) => {
+test('mode construction : le catalogue se replie quand on prend un objet', async ({ page }) => {
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();
-  await page.getByRole('tab', { name: 'Déco' }).click();
-  await page.getByRole('button', { name: /^Plante/ }).click();
-  // Sur ordinateur le panneau reste ouvert : on le ferme pour cliquer dans la scène.
-  if (await page.getByRole('dialog').isVisible())
-    await page.getByRole('button', { name: 'Fermer' }).click();
-  await expect(page.getByText(/Pose : Plante/)).toBeVisible();
+  // Le HUD habituel laisse la place au mode construction.
+  await expect(page.getByTestId('build-mode')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Actions du jeu' })).toBeHidden();
+
+  // Tout tient dans l'écran, avec des cibles tactiles de 44 px.
+  const tooSmall = await page.evaluate(() =>
+    [...document.querySelectorAll('.build-hud button')]
+      .map((element) => element.getBoundingClientRect())
+      .filter(({ width, height }) => width > 0 && (width < 44 || height < 44)),
+  );
+  expect(tooSmall).toEqual([]);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+
+  await page.getByRole('tab', { name: /Déco/ }).click();
+  await page.getByTestId('catalog-plant').click();
+  await expect(page.getByTestId('catalog')).toBeHidden();
+  await expect(page.getByTestId('placement-bar')).toContainText('Plante verte');
+  // L'aperçu démarre sur une case libre : on peut poser tout de suite.
+  const place = page.getByTestId('place');
+  await expect(place).toBeEnabled();
+
+  const count = async () => (await debug(page))!.items;
+  const items = await count();
+  await place.click();
+  await expect.poll(count).toBe(items + 1);
+  await expect(page.getByText('Plante verte : posé !')).toBeVisible();
+  await expect(page.getByTestId('catalog')).toBeVisible();
+
+  await page.getByRole('button', { name: /Terminer/ }).click();
+  await expect(page.getByTestId('build-mode')).toBeHidden();
+  await expect(page.getByRole('navigation', { name: 'Actions du jeu' })).toBeVisible();
+});
+
+test('mode construction : la souris pose au clic, le doigt vise au tap', async ({
+  page,
+  hasTouch,
+}) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: /Construction/ }).click();
+  await page.getByRole('tab', { name: /Déco/ }).click();
+  await page.getByTestId('catalog-plant').click();
+  await expect(page.getByTestId('place')).toBeEnabled();
 
   const count = async () => (await debug(page))!.items;
   const items = await count();
   const canvas = page.getByTestId('scene');
   const box = (await canvas.boundingBox())!;
-  // On essaie quelques points autour du centre jusqu'à trouver une case libre. L'achat passe
-  // par le worker de la simulation : on attend sa réponse avant d'essayer ailleurs.
+  const status = page.locator('.placement-status');
+  // On essaie quelques points autour du centre jusqu'à trouver une case libre.
   for (const [dx, dy] of [
     [0, 0],
     [30, 30],
@@ -123,12 +163,57 @@ test('mode construction : poser une plante dans le bureau', async ({ page }) => 
     [0, 60],
     [-60, -20],
   ] as const) {
-    await canvas.click({ position: { x: box.width / 2 + dx, y: box.height / 2 + dy } });
-    for (let wait = 0; wait < 10 && (await count()) === items; wait++)
-      await page.waitForTimeout(100);
-    if ((await count()) > items) break;
+    const position = { x: box.width / 2 + dx, y: box.height / 2 - 40 + dy };
+    if (hasTouch) {
+      await canvas.tap({ position });
+      // Le tap déplace seulement l'aperçu : rien n'est acheté sans « Poser ».
+      await page.waitForTimeout(150);
+      expect(await count()).toBe(items);
+      if (await page.getByTestId('place').isEnabled()) break;
+    } else {
+      await canvas.click({ position });
+      for (let wait = 0; wait < 10 && (await count()) === items; wait++)
+        await page.waitForTimeout(100);
+      if ((await count()) > items) break;
+    }
   }
-  expect(await count()).toBe(items + 1);
+  if (hasTouch) {
+    await expect(status).not.toHaveClass(/invalid/);
+    await page.getByTestId('place').click();
+  }
+  await expect.poll(count).toBe(items + 1);
+});
+
+test('mode construction : au doigt, on fait glisser l’aperçu sans bouger la caméra', async ({
+  page,
+  hasTouch,
+}) => {
+  test.skip(!hasTouch, 'Glisser au doigt : écrans tactiles uniquement');
+  await startAsGuest(page);
+  await page.getByRole('button', { name: /Construction/ }).click();
+  await page.getByRole('tab', { name: /Déco/ }).click();
+  await page.getByTestId('catalog-plant').click();
+  await expect.poll(async () => (await debug(page))?.ghost ?? null).not.toBeNull();
+  const start = (await debug(page))!.ghost!;
+  const zoom = (await debug(page))!.zoom;
+  const items = (await debug(page))!.items;
+  const box = (await page.getByTestId('scene').boundingBox())!;
+
+  // Glisser au doigt (événements tactiles bruts) depuis l'aperçu.
+  const client = await page.context().newCDPSession(page);
+  const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', x: number, y: number) =>
+    client.send('Input.dispatchTouchEvent', {
+      type,
+      touchPoints: type === 'touchEnd' ? [] : [{ x: box.x + x, y: box.y + y }],
+    });
+  await touch('touchStart', start.x, start.y);
+  for (let step = 1; step <= 6; step++) await touch('touchMove', start.x + step * 12, start.y);
+  await touch('touchEnd', start.x + 72, start.y);
+
+  await expect.poll(async () => (await debug(page))!.ghost!.x).toBeGreaterThan(start.x + 20);
+  const after = (await debug(page))!;
+  expect(after.items).toBe(items);
+  expect(after.zoom).toBe(zoom);
 });
 
 test('la caméra zoome à la molette et au clavier', async ({ page, isMobile }) => {

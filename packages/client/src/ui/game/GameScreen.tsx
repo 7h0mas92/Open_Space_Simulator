@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BuildPanel } from '../build/BuildPanel';
+import { BuildMode } from '../build/BuildMode';
 import { SelectionBar } from '../build/SelectionBar';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Kanban } from '../kanban/Kanban';
@@ -20,7 +20,7 @@ import { Sheet } from './Sheet';
 import { StageScreens } from './StageScreens';
 import { localized } from './format';
 import { useGameFeeds } from './useGameFeeds';
-import type { GameView, Rotation } from '../../view/types';
+import type { GameView } from '../../view/types';
 
 function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
   switch (panel) {
@@ -30,8 +30,6 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Team view={view} />;
     case 'hiring':
       return <Hiring view={view} />;
-    case 'build':
-      return <BuildPanel view={view} />;
     case 'dashboard':
       return <Dashboard view={view} />;
     case 'slack':
@@ -45,19 +43,44 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
   }
 }
 
-/** Raccourcis clavier globaux : Échap, espace (pause), R (tourner en construction). */
+/** Flèches du clavier → déplacement de l'aperçu sur la grille (objet en main). */
+const ARROWS: Record<string, readonly [number, number]> = {
+  ArrowLeft: [-1, 0],
+  ArrowRight: [1, 0],
+  ArrowUp: [0, -1],
+  ArrowDown: [0, 1],
+};
+
+/**
+ * Raccourcis clavier globaux : Échap, espace (pause), B (construction) et, objet en main,
+ * R (tourner), flèches (déplacer l'aperçu), Entrée (poser).
+ */
 function useShortcuts() {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) return;
       const game = useGame.getState();
+      const key = event.key.toLowerCase();
+      const arrow = ARROWS[event.key];
       if (event.key === 'Escape') {
-        if (game.build) game.setBuild(null);
+        // Échap recule d'un cran : objet en main → catalogue → jeu.
+        if (game.build?.kind) game.cancelPlacement();
+        else if (game.build) game.exitBuild();
         else if (game.panel) game.openPanel(null);
         else game.select(null);
-      } else if (event.key.toLowerCase() === 'r' && game.build?.kind) {
-        game.setBuild({ ...game.build, rotation: ((game.build.rotation + 1) % 4) as Rotation });
+      } else if (game.build?.kind && key === 'r') {
+        game.rotateBuild();
+      } else if (game.build?.kind && arrow && game.build.cell) {
+        event.preventDefault();
+        const { cell } = game.build;
+        game.setBuildCell({ x: cell.x + arrow[0], z: cell.z + arrow[1] });
+      } else if (game.build?.kind && event.key === 'Enter' && target?.tagName !== 'BUTTON') {
+        event.preventDefault();
+        void game.placeAt();
+      } else if (key === 'b' && !game.panel && game.view && !game.replayOf) {
+        if (game.build) game.exitBuild();
+        else game.enterBuild();
       } else if (
         event.key === ' ' &&
         game.view?.step === 'EXECUTION' &&
@@ -82,6 +105,7 @@ export function GameScreen() {
   const fps = useGame((s) => s.fps);
   const showFps = useSettings((s) => s.showFps);
   const replayOf = useGame((s) => s.replayOf);
+  const building = useGame((s) => s.build !== null);
   useShortcuts();
   useGameFeeds();
 
@@ -94,20 +118,28 @@ export function GameScreen() {
 
   if (!view) return null;
   return (
-    <div className={`game ${panel ? 'has-panel' : ''}`} data-testid="game">
+    <div
+      className={`game ${panel ? 'has-panel' : ''} ${building ? 'is-building' : ''}`}
+      data-testid="game"
+    >
       <Scene />
       <Alerts view={view} />
       <h1 className="visually-hidden">{t('app.title')}</h1>
-      <div className="hud">
-        <div className="hud-top">
-          <Gauges view={view} />
-          <TimeControls view={view} />
+      {building ? (
+        // Construction : le HUD habituel s'efface pour laisser la scène au joueur.
+        <BuildMode view={view} />
+      ) : (
+        <div className="hud">
+          <div className="hud-top">
+            <Gauges view={view} />
+            <TimeControls view={view} />
+          </div>
+          <div className="hud-bottom">
+            <SelectionBar view={view} />
+            <ActionBar />
+          </div>
         </div>
-        <div className="hud-bottom">
-          <SelectionBar view={view} />
-          <ActionBar />
-        </div>
-      </div>
+      )}
       {showFps && <p className="fps">{t('settings.fps', { fps })}</p>}
       {toast && (
         <p key={toast.id} className={`toast toast-${toast.tone}`} role="status">
@@ -126,7 +158,7 @@ export function GameScreen() {
           })}
         </p>
       )}
-      {panel !== 'slack' && <SlackDock />}
+      {panel !== 'slack' && !building && <SlackDock />}
       {!replayOf && <Tutorial view={view} />}
       <StageScreens view={view} />
       {panel && (

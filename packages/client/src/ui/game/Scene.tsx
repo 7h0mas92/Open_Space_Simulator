@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GameRenderer } from '../../render/GameRenderer';
-import { officeLayout } from '../../view/layout';
-import { checkPlacement } from '../../view/placement';
+import { setThumbnailSource } from '../build/thumbnails';
 import { onGameNotifications, useGame } from '../store/game';
 import { useSettings } from '../store/settings';
 
@@ -37,41 +36,8 @@ export function Scene() {
           const game = useGame.getState();
           game.select(target && target.type !== 'cell' ? target : null);
         },
-        onPlace: (cell) => {
-          const { build, view, dispatch, setBuild, notify } = useGame.getState();
-          if (!build?.kind || !view) return;
-          // Cloisons et entrée sont des contraintes du décor : vérifiées avant d'envoyer.
-          const error = checkPlacement(officeLayout(view.phase), view.items, {
-            kind: build.kind,
-            x: cell.x,
-            z: cell.z,
-            rotation: build.rotation,
-            ignoreId: build.movingItemId ?? undefined,
-          });
-          if (error) {
-            notify(`results.${error}`, 'error');
-            return;
-          }
-          if (build.movingItemId) {
-            void dispatch({
-              type: 'moveItem',
-              itemId: build.movingItemId,
-              x: cell.x,
-              z: cell.z,
-              rotation: build.rotation,
-            }).then((result) => {
-              if (result.ok) setBuild(null);
-            });
-          } else {
-            void dispatch({
-              type: 'placeItem',
-              kind: build.kind,
-              x: cell.x,
-              z: cell.z,
-              rotation: build.rotation,
-            });
-          }
-        },
+        onPlace: (cell) => void useGame.getState().placeAt(cell),
+        onBuildCell: (cell) => useGame.getState().setBuildCell(cell),
         onFps: (fps) => useGame.getState().setFps(fps),
       });
     } catch {
@@ -79,6 +45,7 @@ export function Scene() {
       return;
     }
     rendererRef.current = renderer;
+    setThumbnailSource((kind) => renderer.thumbnail(kind));
     (window as unknown as { __oss?: unknown }).__oss = { debug: () => renderer.debugInfo() };
 
     const unsubscribeGame = useGame.subscribe((state, previous) => {
@@ -87,11 +54,12 @@ export function Scene() {
       if (state.build !== previous.build) {
         const build = state.build;
         renderer.setBuildPreview(
-          build?.kind
+          build
             ? {
                 kind: build.kind,
                 rotation: build.rotation,
                 movingItemId: build.movingItemId ?? undefined,
+                cell: build.cell ?? null,
               }
             : null,
         );
@@ -113,6 +81,7 @@ export function Scene() {
       unsubscribeGame();
       unsubscribeNotifications();
       unsubscribeSettings();
+      setThumbnailSource(null);
       renderer.dispose();
       rendererRef.current = null;
     };

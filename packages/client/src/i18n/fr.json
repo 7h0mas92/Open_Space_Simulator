@@ -260,7 +260,9 @@
     "teamFull": "Équipe complète pour cette phase ({{max}} max)."
   },
   "build": {
-    "intro": "Choisis un objet puis touche une case du bureau pour le poser.",
+    "title": "Construction",
+    "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer ou le revendre.",
+    "catalog": "Catalogue",
     "categories": {
       "work": "Travail",
       "comfort": "Confort",
@@ -269,15 +271,29 @@
       "decor": "Déco"
     },
     "price": "{{price}} €",
+    "owned": "{{count}}/{{max}}",
     "locked": "Débloqué en {{phase}}",
+    "soldOut": "Maximum atteint ({{max}})",
+    "tooExpensive": "Pas assez de trésorerie",
     "rotate": "Tourner",
     "sell": "Revendre ({{price}} €)",
     "move": "Déplacer",
-    "cancel": "Terminer",
+    "cancel": "Annuler",
+    "done": "Terminer",
+    "confirm": "Poser",
+    "confirmMove": "Déplacer ici",
+    "aim": "Vise une case du bureau.",
+    "hintMouse": "Clic pour poser. R pour tourner, Échap pour annuler.",
+    "hintTouch": "Touche une case ou fais glisser l'objet, puis « Poser ».",
     "placing": "Pose : {{item}}",
+    "moving": "Déplacement : {{item}}",
     "selected": "Objet sélectionné : {{item}}",
-    "soldOut": "Maximum atteint ({{max}})"
+    "placed": "{{item}} : posé !",
+    "moved": "{{item}} : déplacé.",
+    "pause": "Mettre en pause",
+    "resume": "Reprendre"
   },
+
   "results": {
     "INVALID_COMMAND": "Action impossible.",
     "WRONG_STAGE": "Pas maintenant : ce n'est pas la bonne étape du sprint.",

@@ -14,7 +14,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents';
 import { catalogItem, footprint } from '../view/catalog';
 import { officeLayout, type Cell, type OfficeLayout } from '../view/layout';
-import { checkPlacement } from '../view/placement';
+import { checkPlacement, nearestValidCell } from '../view/placement';
 import type { GameView, Rotation } from '../view/types';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
@@ -39,11 +39,14 @@ export type PickTarget =
   | { readonly type: 'item'; readonly id: string }
   | { readonly type: 'cell'; readonly cell: Cell };
 
+/** Mode construction : `kind` à `null` quand le catalogue est ouvert (rien en main). */
 export interface BuildPreview {
-  readonly kind: string;
+  readonly kind: string | null;
   readonly rotation: Rotation;
   /** Objet déplacé (il ne se bloque pas lui-même). */
   readonly movingItemId?: string;
+  /** Case visée par l'aperçu, `null` tant qu'elle n'est pas connue. */
+  readonly cell: Cell | null;
 }
 
 export interface RendererOptions {
@@ -54,13 +57,20 @@ export interface RendererOptions {
   readonly reducedMotion: boolean;
   readonly translate: (key: string) => string;
   readonly onPick?: (target: PickTarget | null) => void;
-  /** Pose (clic, tap ou dépôt) en mode construction. */
+  /** Pose directe (clic de souris) en mode construction. */
   readonly onPlace?: (cell: Cell) => void;
+  /**
+   * L'aperçu change de case : survol de la souris, tap ou glisser du doigt, ou case de départ
+   * proposée quand on prend un objet en main.
+   */
+  readonly onBuildCell?: (cell: Cell) => void;
   readonly onFps?: (fps: number) => void;
 }
 
 const MAX_STEPS_PER_FRAME = 8;
 const SELECTION_COLOR = 0xf5b942;
+const VALID_COLOR = 0x4caf6e;
+const INVALID_COLOR = 0xe0584a;
 
 export class GameRenderer {
   private readonly renderer: THREE.WebGLRenderer;
@@ -99,7 +109,14 @@ export class GameRenderer {
   private build: BuildPreview | null = null;
   private ghost: THREE.Object3D | null = null;
   private ghostKey = '';
-  private hoverCell: Cell | null = null;
+  /** Grille et emprise visibles en mode construction. */
+  private readonly buildGrid = new THREE.Group();
+  private readonly footprintTile: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
+  private gridKey = '';
+  /** Le dernier appui vient-il d'un doigt (tap = viser) ou de la souris (clic = poser) ? */
+  private touchInput = false;
+  /** Un doigt fait glisser l'aperçu (au lieu de déplacer la caméra). */
+  private draggingGhost = false;
   private readonly resizeObserver: ResizeObserver;
   private readonly cleanup: (() => void)[] = [];
 
@@ -132,6 +149,19 @@ export class GameRenderer {
     );
     this.selectionMarker.visible = false;
     this.scene.add(this.selectionMarker);
+
+    this.footprintTile = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({
+        color: VALID_COLOR,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+      }),
+    );
+    this.footprintTile.visible = false;
+    this.buildGrid.visible = false;
+    this.scene.add(this.buildGrid, this.footprintTile);
 
     this.applyQuality();
     this.bindInput();
@@ -173,6 +203,8 @@ export class GameRenderer {
     this.smoke.active = view.incident && !this.reducedMotion;
     this.smoke.setSource(new THREE.Vector3(this.layout.width / 3, 0, this.layout.depth / 3));
     this.updateSelectionMarker();
+    this.refreshBuildGrid();
+    this.positionGhost();
   }
 
   setQuality(level: QualityLevel): void {
@@ -186,11 +218,69 @@ export class GameRenderer {
     this.reducedMotion = reduced;
   }
 
-  /** Mode construction : aperçu de l'objet sous le pointeur. `null` pour quitter. */
+  /** Mode construction : grille, aperçu de l'objet en main. `null` pour quitter. */
   setBuildPreview(preview: BuildPreview | null): void {
     this.build = preview;
-    this.gestures.panLocked = preview !== null;
+    if (!preview?.kind) this.draggingGhost = false;
+    this.gestures.panLocked = this.draggingGhost;
+    this.refreshBuildGrid();
     void this.refreshGhost();
+    if (preview?.kind && !preview.cell) {
+      // Objet pris en main : on le pose d'abord sur une case libre au centre de l'écran.
+      const start = this.startCell(preview);
+      if (start) queueMicrotask(() => this.options.onBuildCell?.(start));
+    }
+  }
+
+  /**
+   * Vignette 3D d'un objet du catalogue (image PNG en data URL), rendue hors écran avec le même
+   * modèle que la scène. `null` si le rendu échoue.
+   */
+  async thumbnail(kind: string, size = 128): Promise<string | null> {
+    const object = await this.office.single(kind);
+    const scene = new THREE.Scene();
+    const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+    sun.position.set(3, 6, 4);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x6b5a48, 1.4), sun, object);
+    const sphere = new THREE.Box3().setFromObject(object).getBoundingSphere(new THREE.Sphere());
+    const radius = Math.max(0.2, sphere.radius) * 0.85;
+    const camera = new THREE.OrthographicCamera(-radius, radius, radius, -radius, 0.1, 100);
+    camera.position
+      .copy(sphere.center)
+      .add(new THREE.Vector3(1, 0.85, 1).normalize().multiplyScalar(radius * 4));
+    camera.lookAt(sphere.center);
+
+    const target = new THREE.WebGLRenderTarget(size, size);
+    target.texture.colorSpace = THREE.SRGBColorSpace;
+    const clearColor = this.renderer.getClearColor(new THREE.Color());
+    const clearAlpha = this.renderer.getClearAlpha();
+    try {
+      this.renderer.setRenderTarget(target);
+      this.renderer.setClearColor(0x000000, 0);
+      this.renderer.clear();
+      this.renderer.render(scene, camera);
+      const pixels = new Uint8Array(size * size * 4);
+      this.renderer.readRenderTargetPixels(target, 0, 0, size, size, pixels);
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const context = canvas.getContext('2d');
+      if (!context) return null;
+      const image = context.createImageData(size, size);
+      // WebGL lit les lignes de bas en haut : on retourne l'image.
+      for (let row = 0; row < size; row++) {
+        const from = (size - 1 - row) * size * 4;
+        image.data.set(pixels.subarray(from, from + size * 4), row * size * 4);
+      }
+      context.putImageData(image, 0, 0);
+      return canvas.toDataURL('image/png');
+    } catch {
+      return null;
+    } finally {
+      this.renderer.setRenderTarget(null);
+      this.renderer.setClearColor(clearColor, clearAlpha);
+      target.dispose();
+    }
   }
 
   select(target: PickTarget | null): void {
@@ -225,7 +315,19 @@ export class GameRenderer {
     drawCalls: number;
     zoom: number;
     pixelRatio: number;
+    /** Position à l'écran (px) du centre de l'aperçu en mode construction. */
+    ghost: { x: number; y: number } | null;
   } {
+    const tile = this.footprintTile;
+    let ghost: { x: number; y: number } | null = null;
+    if (tile.visible) {
+      const projected = tile.position.clone().project(this.camera);
+      const canvas = this.options.canvas;
+      ghost = {
+        x: ((projected.x + 1) / 2) * canvas.clientWidth,
+        y: ((1 - projected.y) / 2) * canvas.clientHeight,
+      };
+    }
     return {
       items: this.view?.items.length ?? 0,
       characters: this.characters.size,
@@ -233,6 +335,7 @@ export class GameRenderer {
       drawCalls: this.renderer.info.render.calls,
       zoom: this.cameraState.zoom,
       pixelRatio: this.renderer.getPixelRatio(),
+      ghost,
     };
   }
 
@@ -481,18 +584,18 @@ export class GameRenderer {
   }
 
   private async refreshGhost(): Promise<void> {
-    const key = this.build ? `${this.build.kind}` : '';
+    const key = this.build?.kind ?? '';
     if (key !== this.ghostKey) {
       this.ghostKey = key;
       if (this.ghost) this.scene.remove(this.ghost);
       this.ghost = null;
-      if (this.build) {
+      if (this.build?.kind) {
         const ghost = await this.office.single(this.build.kind);
         if (this.ghostKey !== key) return;
         ghost.traverse((node) => {
           if (node instanceof THREE.Mesh) {
             node.material = new THREE.MeshBasicMaterial({
-              color: 0x4caf6e,
+              color: VALID_COLOR,
               transparent: true,
               opacity: 0.55,
               depthWrite: false,
@@ -506,24 +609,99 @@ export class GameRenderer {
     this.positionGhost();
   }
 
+  /** Case de départ d'un objet pris en main : la case libre la plus proche du centre de l'écran. */
+  private startCell(preview: BuildPreview): Cell | null {
+    if (!preview.kind || !this.view) return null;
+    const canvas = this.options.canvas;
+    const center = this.cellAt(canvas.clientWidth / 2, canvas.clientHeight / 2) ?? {
+      x: Math.floor(this.layout.width / 2),
+      z: Math.floor(this.layout.depth / 2),
+    };
+    return (
+      nearestValidCell(
+        this.layout,
+        this.view.items,
+        { kind: preview.kind, rotation: preview.rotation, ignoreId: preview.movingItemId },
+        center,
+      ) ?? center
+    );
+  }
+
+  /** Quadrillage du sol, visible seulement en mode construction (refait si le bureau grandit). */
+  private refreshBuildGrid(): void {
+    this.buildGrid.visible = this.build !== null;
+    const key = `${this.layout.width}x${this.layout.depth}`;
+    if (!this.build || key === this.gridKey) return;
+    this.gridKey = key;
+    for (const child of this.buildGrid.children) {
+      if (child instanceof THREE.LineSegments) {
+        child.geometry.dispose();
+        (child.material as THREE.Material).dispose();
+      }
+    }
+    this.buildGrid.clear();
+    const { width, depth } = this.layout;
+    const points: THREE.Vector3[] = [];
+    const y = 0.012;
+    for (let x = 0; x <= width; x++) {
+      points.push(new THREE.Vector3(x - 0.5, y, -0.5), new THREE.Vector3(x - 0.5, y, depth - 0.5));
+    }
+    for (let z = 0; z <= depth; z++) {
+      points.push(new THREE.Vector3(-0.5, y, z - 0.5), new THREE.Vector3(width - 0.5, y, z - 0.5));
+    }
+    this.buildGrid.add(
+      new THREE.LineSegments(
+        new THREE.BufferGeometry().setFromPoints(points),
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 }),
+      ),
+    );
+  }
+
+  /** La case est-elle sous l'aperçu de l'objet en main ? (pour le faire glisser au doigt) */
+  private onGhost(cell: Cell | null): boolean {
+    const build = this.build;
+    if (!cell || !build?.kind || !build.cell) return false;
+    const def = catalogItem(build.kind);
+    const [w, d] = def ? footprint(def, build.rotation) : [1, 1];
+    return (
+      cell.x >= build.cell.x &&
+      cell.x < build.cell.x + w &&
+      cell.z >= build.cell.z &&
+      cell.z < build.cell.z + d
+    );
+  }
+
+  private aimAt(x: number, y: number): void {
+    const cell = this.cellAt(x, y);
+    const current = this.build?.cell;
+    if (cell && (cell.x !== current?.x || cell.z !== current?.z)) this.options.onBuildCell?.(cell);
+  }
+
   private positionGhost(): void {
-    if (!this.ghost || !this.build || !this.view) return;
-    const cell = this.hoverCell;
-    this.ghost.visible = cell !== null;
-    if (!cell) return;
+    const build = this.build;
+    const cell = build?.kind ? build.cell : null;
+    this.footprintTile.visible = cell !== null && this.view !== null;
+    if (this.ghost) this.ghost.visible = cell !== null;
+    if (!build?.kind || !cell || !this.view) return;
     const request = {
-      kind: this.build.kind,
+      kind: build.kind,
       x: cell.x,
       z: cell.z,
-      rotation: this.build.rotation,
-      ignoreId: this.build.movingItemId,
+      rotation: build.rotation,
+      ignoreId: build.movingItemId,
     };
     const valid = checkPlacement(this.layout, this.view.items, request) === null;
+    const def = catalogItem(build.kind);
+    const [w, d] = def ? footprint(def, build.rotation) : [1, 1];
+    this.footprintTile.position.set(cell.x + (w - 1) / 2, 0.015, cell.z + (d - 1) / 2);
+    this.footprintTile.scale.set(w, 1, d);
+    this.footprintTile.material.color.setHex(valid ? VALID_COLOR : INVALID_COLOR);
+    if (!this.ghost) return;
     this.ghost.matrixAutoUpdate = false;
     this.ghost.matrix.copy(itemMatrix({ id: '', ...request }));
     this.ghost.traverse((node) => {
       if (node instanceof THREE.Mesh && node.material instanceof THREE.MeshBasicMaterial) {
-        node.material.color.setHex(valid ? 0x4caf6e : 0xe0584a);
+        node.material.color.setHex(valid ? VALID_COLOR : INVALID_COLOR);
       }
     });
   }
@@ -553,19 +731,27 @@ export class GameRenderer {
 
     on('pointerdown', (event) => {
       canvas.setPointerCapture?.(event.pointerId);
-      this.gestures.down(sample(event)).forEach((e) => this.handleGesture(e));
-      if (this.build) this.handleGesture({ type: 'hover', x: sample(event).x, y: sample(event).y });
+      const point = sample(event);
+      this.touchInput = point.touch;
+      // Au doigt, glisser depuis l'aperçu le déplace ; ailleurs, le glisser déplace la caméra.
+      if (event.isPrimary) {
+        this.draggingGhost = point.touch && this.onGhost(this.cellAt(point.x, point.y));
+        this.gestures.panLocked = this.draggingGhost;
+      }
+      this.gestures.down(point).forEach((e) => this.handleGesture(e));
     });
     on('pointermove', (event) =>
       this.gestures.move(sample(event)).forEach((e) => this.handleGesture(e)),
     );
-    on('pointerup', (event) =>
-      this.gestures.up(sample(event)).forEach((e) => this.handleGesture(e)),
-    );
-    on('pointercancel', (event) => this.gestures.cancel(event.pointerId));
-    on('pointerleave', () => {
-      this.hoverCell = null;
-      this.positionGhost();
+    on('pointerup', (event) => {
+      this.gestures.up(sample(event)).forEach((e) => this.handleGesture(e));
+      this.draggingGhost = false;
+      this.gestures.panLocked = false;
+    });
+    on('pointercancel', (event) => {
+      this.gestures.cancel(event.pointerId);
+      this.draggingGhost = false;
+      this.gestures.panLocked = false;
     });
     on(
       'wheel',
@@ -589,6 +775,8 @@ export class GameRenderer {
         q: () => this.rotateCamera(-1),
         e: () => this.rotateCamera(1),
       };
+      // Objet en main : les flèches déplacent l'aperçu (géré par l'interface), pas la caméra.
+      if (this.build?.kind && event.key.startsWith('Arrow')) return;
       const run = keys[event.key];
       if (run) {
         event.preventDefault();
@@ -617,17 +805,22 @@ export class GameRenderer {
         this.zoomBy(event.scale);
         break;
       case 'hover':
-        if (this.build) {
-          this.hoverCell = this.cellAt(event.x, event.y);
-          this.positionGhost();
+        // La souris vise en survolant ; le doigt seulement en faisant glisser l'aperçu.
+        if (this.build?.kind && (!this.touchInput || this.draggingGhost)) {
+          this.aimAt(event.x, event.y);
         }
         break;
       case 'drop':
+        if (this.build?.kind) this.aimAt(event.x, event.y);
+        break;
       case 'tap':
       case 'longPress': {
-        if (this.build) {
+        if (this.build?.kind) {
+          // Souris : le clic pose. Doigt : le tap vise, le bouton « Poser » confirme.
           const cell = this.cellAt(event.x, event.y);
-          if (cell && event.type !== 'longPress') this.options.onPlace?.(cell);
+          if (!cell || event.type === 'longPress') break;
+          if (this.touchInput) this.aimAt(event.x, event.y);
+          else this.options.onPlace?.(cell);
           break;
         }
         // Souris : clic = sélection. Tactile : appui long = sélection (le tap marche aussi).
