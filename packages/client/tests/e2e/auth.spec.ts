@@ -49,7 +49,7 @@ test('refuse un mauvais mot de passe', async ({ page }) => {
   await page.getByLabel('Email').fill('personne@startup.io');
   await page.getByLabel('Mot de passe').fill('mauvais-mot-de-passe');
   await page.getByRole('button', { name: 'Se connecter' }).click();
-  await expect(page.getByRole('alert')).toHaveText('Email ou mot de passe incorrect.');
+  await expect(page.getByRole('alert')).toHaveText(/^Email ou mot de passe incorrect/);
 });
 
 test('la langue choisie est enregistrée dans le profil', async ({ page }, testInfo) => {

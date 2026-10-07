@@ -64,6 +64,14 @@ describe('apiRequest', () => {
     await expect(apiRequest('/test', { schema })).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
   });
 
+  it('traite une réponse qui ne vient pas du serveur du jeu comme un serveur injoignable', async () => {
+    vi.stubGlobal('fetch', async () => new Response('<h1>404</h1>', { status: 404 }));
+    await expect(apiRequest('/test', { schema })).rejects.toMatchObject({
+      status: 404,
+      code: 'NETWORK_ERROR',
+    });
+  });
+
   it('refuse une réponse qui ne respecte pas le schéma', async () => {
     vi.stubGlobal('fetch', async () => json({ value: 'pas un nombre' }));
     await expect(apiRequest('/test', { schema })).rejects.toThrow();

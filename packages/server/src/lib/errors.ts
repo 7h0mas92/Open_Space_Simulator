@@ -15,7 +15,8 @@ export class AppError extends Error {
   }
 }
 
-export const unauthorized = (message = 'Authentification requise') =>
+export const unauthorized = (message = 'Connexion requise pour cette action') =>
   new AppError(401, 'UNAUTHORIZED', message);
 
-export const forbidden = (message = 'Accès refusé') => new AppError(403, 'FORBIDDEN', message);
+export const forbidden = (message = 'Accès refusé pour ce compte') =>
+  new AppError(403, 'FORBIDDEN', message);

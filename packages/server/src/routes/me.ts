@@ -41,7 +41,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request) => {
       const user = await app.prisma.user.findUnique({ where: { id: request.user.sub } });
-      if (!user) throw unauthorized('Compte introuvable');
+      if (!user) throw unauthorized('Compte introuvable, reconnecte-toi');
       return { user: toUserDto(user) };
     },
   );
@@ -66,7 +66,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         return { user: toUserDto(user) };
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-          throw new AppError(409, 'PSEUDO_TAKEN', 'Ce pseudo est déjà pris');
+          throw new AppError(409, 'PSEUDO_TAKEN', 'Ce pseudo est déjà pris, choisis-en un autre');
         }
         throw error;
       }
@@ -86,7 +86,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request): Promise<ProfileResponse> => {
       const userId = request.user.sub;
       const user = await app.prisma.user.findUnique({ where: { id: userId } });
-      if (!user) throw unauthorized('Compte introuvable');
+      if (!user) throw unauthorized('Compte introuvable, reconnecte-toi');
       const scores = await app.prisma.score.findMany({
         where: { userId },
         orderBy: { valuation: 'desc' },
