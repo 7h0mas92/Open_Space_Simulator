@@ -265,7 +265,27 @@
     "empty": "Personne. Même pas un stagiaire.",
     "energy": "Énergie",
     "noHistory": "Rien à signaler pour l'instant.",
-    "sprint": "Sprint {{sprint}}"
+    "sprint": "Sprint {{sprint}}",
+    "workplace": "Lieu de travail",
+    "atOffice": "🏢 Au bureau",
+    "remoteBadge": "🏠 Télétravail",
+    "officeSummary": "{{office}} au bureau · {{remote}} en télétravail · {{desks}} bureaux",
+    "noDeskHint": "Pas assez de bureaux : achète-en en mode construction pour faire revenir l’équipe.",
+    "remoteHint": "Le télétravail est automatique. À distance : pas de café ni de poste au bureau, moins de fatigue, mais −{{productivity}} % de productivité, −{{quality}} % de qualité et des liens qui s’effacent avec l’équipe."
+  },
+  "remoteReasons": {
+    "GHOST": "Toujours à distance, c’est un fantôme",
+    "FATIGUE": "Épuisé·e, récupère chez soi",
+    "CONFLICT": "Évite un collègue en conflit",
+    "NO_COFFEE": "Plus de café au bureau",
+    "NO_DESK": "Pas de bureau libre"
+  },
+  "remoteShort": {
+    "GHOST": "fantôme",
+    "FATIGUE": "fatigue",
+    "CONFLICT": "conflit",
+    "NO_COFFEE": "pas de café",
+    "NO_DESK": "pas de bureau"
   },
   "hiring": {
     "intro": "3 candidats ce sprint. Fais une offre : trop basse, ils refusent.",
@@ -805,7 +825,7 @@
           },
           "morale": {
             "title": "Le moral",
-            "body": "Chaque dev a son propre moral. Il baisse avec la dette, la fatigue, le manque de café et les conflits ; il remonte le week-end, avec les plantes, le babyfoot ou le canapé.\n\nÀ zéro, le dev démissionne, avec un faux post LinkedIn à la clé.\n\nTu peux licencier un dev depuis sa fiche : tu paies un mois de salaire et toute l'équipe perd du moral, surtout ses amis."
+            "body": "Chaque dev a son propre moral. Il baisse avec la dette, la fatigue, le manque de café et les conflits ; il remonte le week-end, avec les plantes, le babyfoot ou le canapé.\n\nÀ zéro, le dev démissionne, avec un faux post LinkedIn à la clé.\n\nTu peux licencier un dev depuis sa fiche : tu paies un mois de salaire et toute l'équipe perd du moral, surtout ses amis.\n\nLe télétravail est automatique : un dev épuisé, brouillé avec un collègue ou sans bureau libre reste chez lui. Il disparaît de l'open space, ne boit pas ton café, mais avance moins vite."
           },
           "openHiring": {
             "title": "Le recrutement",

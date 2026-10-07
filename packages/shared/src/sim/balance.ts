@@ -170,6 +170,28 @@ export const BALANCE = {
     startMin: 65,
     startMax: 85,
   },
+  /**
+   * Télétravail automatique : décidé chaque matin à `decisionHour` pour la journée.
+   * Un dev à distance ne boit pas le café du bureau, n'occupe pas de poste et ne
+   * participe pas à la vie de l'open space (ni discussion, ni dispute, ni babyfoot).
+   */
+  remote: {
+    decisionHour: 8,
+    /** Sous cette énergie, le dev reste chez lui ; il revient au-dessus de `fatigueRecovered`. */
+    fatigueEnergy: 30,
+    fatigueRecovered: 70,
+    /** Sous cette affinité avec un collègue, il évite le bureau ; il revient au-dessus de `conflictEased`. */
+    conflictAffinity: -60,
+    conflictEased: -40,
+    /** Moins de collaboration : productivité et qualité réduites à distance. */
+    productivityPenalty: 0.15,
+    qualityPenalty: 0.05,
+    /** Pas de transports : la fatigue du travail est réduite. */
+    energySaving: 0.25,
+    /** Moral quotidien gagné au calme... et perdu en s'éloignant de l'équipe (relations). */
+    dailyMoral: 0.3,
+    isolationDrift: 0.3,
+  },
   relations: {
     chatGain: 4,
     argueLoss: 8,

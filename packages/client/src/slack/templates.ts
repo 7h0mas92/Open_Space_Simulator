@@ -913,6 +913,59 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── DEV_REMOTE ───────────────────────────────────────────────────────────
+  {
+    trigger: 'DEV_REMOTE',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🏠 {event} Pensez à allumer vos caméras en visio.',
+      '🏠 {event} Please turn your cameras on in video calls.',
+    ),
+  },
+  {
+    trigger: 'DEV_REMOTE',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🏠 {event} Statut Slack : « 🟢 en ligne » depuis 7h, suspect.',
+      '🏠 {event} Slack status: "🟢 online" since 7am. Suspicious.',
+    ),
+  },
+  {
+    trigger: 'DEV_REMOTE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} J’entends un chat sur son micro, c’est normal ?',
+      '{event} I can hear a cat on their mic. Is that normal?',
+    ),
+  },
+  {
+    trigger: 'DEV_REMOTE',
+    channel: 'random',
+    author: dev(),
+    text: t('{event} Du coup qui arrose sa plante ?', '{event} So who’s watering their plant?'),
+  },
+  {
+    trigger: 'DEV_REMOTE',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} Pas grave, je cale 4 visios pour garder le lien.',
+      '{event} No problem, I’ll book 4 video calls to stay connected.',
+    ),
+  },
+  {
+    trigger: 'DEV_REMOTE',
+    channel: 'random',
+    author: dev('GHOST'),
+    text: t(
+      'Bienvenue au club du télétravail. On a des chaussons.',
+      'Welcome to the remote club. We have slippers.',
+    ),
+  },
+
   // ─── DEV_LEVEL_UP ─────────────────────────────────────────────────────────
   {
     trigger: 'DEV_LEVEL_UP',

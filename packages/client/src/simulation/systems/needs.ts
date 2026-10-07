@@ -20,7 +20,8 @@ export function coffeeSystem(state: GameState, ctx: SimContext, clock: SimClock)
   for (const id of devIds(state)) {
     const identity = state.components.identity[id];
     const kind = state.components.activity[id]?.kind;
-    if (!identity || identity.role === 'AI_AGENT' || identity.role === 'GHOST') continue;
+    // L'IA Agent et les télétravailleurs ne boivent pas le café du bureau.
+    if (!identity || identity.role === 'AI_AGENT' || id in state.components.remote) continue;
     const addict = identity.trait === 'COFFEE_ADDICT' ? BALANCE.coffee.addictMultiplier : 1;
     if (kind === 'WORKING' || kind === 'MEETING')
       consumption += BALANCE.coffee.consumptionPerWorkTick * addict;
@@ -62,7 +63,9 @@ export function energySystem(state: GameState, ctx: SimContext): void {
         const endurance = 1.35 - stats.endurance * energy.enduranceSaving;
         const saving = 1 - (ctx.office.seatEnergySaving[id] ?? 0);
         const workaholic = identity.trait === 'WORKAHOLIC' ? 1.2 : 1;
-        delta = -energy.drainPerWorkTick * endurance * saving * workaholic;
+        // Pas de transports pour les télétravailleurs : on se fatigue moins.
+        const home = id in state.components.remote ? 1 - BALANCE.remote.energySaving : 1;
+        delta = -energy.drainPerWorkTick * endurance * saving * workaholic * home;
         break;
       }
       case 'SLEEPING':
