@@ -530,8 +530,7 @@
     "unlockedOn": "Unlocked on {{date}}",
     "open": "See all achievements",
     "secret": "Secret",
-    "secretTitle": "???",
-    "secretHint": "Secret achievement: keep playing to find out how to unlock it.",
+    "secretHint": "??? Nobody knows how to unlock this one. Up to you to find out.",
     "guestHint": "As a guest, your achievements stay on this device. Log in to keep them on your account, on every device.",
     "filter": "Filter achievements",
     "filters": {

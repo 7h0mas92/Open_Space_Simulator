@@ -161,7 +161,7 @@ function pick(secret: boolean) {
 }
 
 describe('AchievementsPage', () => {
-  it('montre à un invité les succès de l’appareil, les secrets en « ??? »', async () => {
+  it('montre à un invité les succès de l’appareil, la condition des secrets en « ??? »', async () => {
     const visible = pick(false);
     const secrets = ACHIEVEMENTS.filter((a) => a.secret);
     const [found, hidden] = secrets;
@@ -177,10 +177,10 @@ describe('AchievementsPage', () => {
     expect(visibleCard).toHaveClass('locked');
     expect(visibleCard).toHaveTextContent(visible.title.fr);
     expect(visibleCard).toHaveTextContent(visible.description.fr);
-    // Secret verrouillé : rien ne fuite.
+    // Secret verrouillé : nom visible, condition remplacée par « ??? ».
     const hiddenCard = screen.getByTestId(`achievement-${hidden.id}`);
     expect(hiddenCard).toHaveTextContent('???');
-    expect(hiddenCard).not.toHaveTextContent(hidden.title.fr);
+    expect(hiddenCard).toHaveTextContent(hidden.title.fr);
     expect(hiddenCard).not.toHaveTextContent(hidden.description.fr);
     // Secret débloqué sur cet appareil : révélé.
     const foundCard = screen.getByTestId(`achievement-${found.id}`);
