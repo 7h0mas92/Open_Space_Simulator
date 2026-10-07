@@ -194,6 +194,8 @@ export interface GameView {
   /** Taille maximale de l'équipe à cette phase. */
   readonly teamMax: number;
   readonly valuation: number;
+  /** Mois de trésorerie restants au rythme actuel (dépenses moins revenus), `null` si rentable. */
+  readonly runwayMonths: number | null;
   /** Part du capital du fondateur (1 = 100 %). */
   readonly ownership: number;
   /** Carte d'événement en attente d'un choix, sinon null. */

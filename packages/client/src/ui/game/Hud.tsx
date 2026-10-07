@@ -1,28 +1,123 @@
-import { SPEEDS, type Speed } from '@oss/shared';
+import { SPEEDS, type Phase, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
-import { GAUGES, isFridayFive, weekday, type GameView } from '../../view/types';
+import { GAUGES, isFridayFive, weekday, type GameView, type GaugeName } from '../../view/types';
 import { useSlack } from '../../slack/store';
-import { PANELS, useGame, type PanelId } from '../store/game';
-
-/** Boutons de la barre d'actions : les panneaux, plus le mode construction (après Recrutement). */
-const ACTIONS = [...PANELS.slice(0, 3), 'build', ...PANELS.slice(3)] as const;
-type ActionId = PanelId | 'build';
-import { formatClock, formatGauge, gaugeRatio, isGaugeCritical } from './format';
+import { MODE_ICONS } from '../menu/ModePicker';
+import { useGame, type PanelId } from '../store/game';
+import {
+  formatClock,
+  formatGauge,
+  gaugeRatio,
+  gaugeTrend,
+  isGaugeCritical,
+  sprintProgress,
+} from './format';
 import { Tooltip } from './Tooltip';
 
-const PANEL_ICONS: Record<ActionId, string> = {
-  kanban: '▦',
-  team: '☺',
-  hiring: '✚',
-  build: '⚒',
+/*
+ * HUD de la partie, en deux bandes :
+ * - en haut, ce qu'on LIT : la startup (phase, équipe, autonomie), les six jauges, l'horloge
+ *   et les boutons système (sauvegardes, options) ;
+ * - en bas, ce qu'on FAIT : le dock d'actions (panneaux de jeu, construction) et la commande
+ *   de l'étape en cours (lancer le sprint, lever des fonds, vitesses).
+ * La disposition change avec la taille de l'écran (voir game.css), le contenu reste le même.
+ */
+
+/** Boutons du dock : le jeu lui-même. Sauvegardes et Options vont dans la barre du haut. */
+const GAME_ACTIONS = ['kanban', 'team', 'hiring', 'build', 'dashboard', 'slack'] as const;
+type GameAction = (typeof GAME_ACTIONS)[number];
+const SYSTEM_PANELS = ['saves', 'settings'] as const;
+
+/** Icône de chaque bouton du HUD, reprise dans l'en-tête du panneau ouvert. */
+export const PANEL_ICONS: Record<PanelId | 'build', string> = {
+  kanban: '🗂️',
+  team: '🧑‍💻',
+  hiring: '🤝',
+  build: '🛠️',
   dashboard: '📈',
-  slack: '#',
+  slack: '💬',
   saves: '💾',
-  settings: '⚙',
-  credits: '©',
+  settings: '⚙️',
+  credits: '©️',
 };
 
-/** Les six jauges, avec infobulle. Compactes en haut sur mobile, en colonne sur ordinateur. */
+export const GAUGE_ICONS: Record<GaugeName, string> = {
+  treasury: '💰',
+  coffee: '☕',
+  debt: '🧱',
+  stability: '🛡️',
+  hype: '🔥',
+  users: '👥',
+};
+
+const PHASE_ICONS: Record<Phase, string> = {
+  GARAGE: '🏚️',
+  SEED: '🌱',
+  SERIES_A: '🏢',
+  UNICORN: '🦄',
+  END: '🏁',
+};
+
+/** La startup : phase, mode de jeu, place dans l'équipe et mois de salaires en caisse. */
+export function Company({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const months = view.runwayMonths === null ? null : Math.floor(view.runwayMonths);
+  const phase = t(`phases.${view.phase}`);
+  const mode = t(`modes.${view.mode}.name`);
+  const valuation = formatGauge('treasury', view.valuation, i18n.language);
+  const short = months !== null && months < 3;
+  return (
+    <div className="hud-company">
+      <Tooltip
+        text={[
+          t('hud.phase', { phase }),
+          t('hud.mode', { mode }),
+          t('hud.team', { count: view.devs.length, max: view.teamMax }),
+          months === null ? t('hud.runwayNone') : t('hud.runwayLong', { months }),
+          t('hud.valuation', { value: valuation }),
+        ].join(' · ')}
+      >
+        <span className="company-phase" aria-hidden="true">
+          {PHASE_ICONS[view.phase]}
+        </span>
+        <span className="company-text">
+          <strong className="company-name" aria-hidden="true">
+            {phase}
+          </strong>
+          <span className="visually-hidden">{t('hud.phase', { phase })}</span>
+          {view.mode !== 'NORMAL' && (
+            <span className="company-mode" title={t('hud.mode', { mode })}>
+              {MODE_ICONS[view.mode]} <span className="company-mode-name">{mode}</span>
+            </span>
+          )}
+        </span>
+      </Tooltip>
+      <p className="company-facts">
+        <span
+          className={`company-team ${view.devs.length >= view.teamMax ? 'full' : ''}`}
+          title={t('hud.team', { count: view.devs.length, max: view.teamMax })}
+        >
+          <span aria-hidden="true">🧑‍💻 </span>
+          <span className="visually-hidden">
+            {t('hud.team', { count: view.devs.length, max: view.teamMax })}
+          </span>
+          <span aria-hidden="true">
+            {view.devs.length}/{view.teamMax}
+          </span>
+        </span>
+        <span
+          className={`company-runway ${short ? 'critical' : ''}`}
+          title={months === null ? t('hud.runwayNone') : t('hud.runwayHelp')}
+        >
+          <span aria-hidden="true">⏳ </span>
+          {months === null ? '∞' : t('hud.runway', { months })}
+        </span>
+      </p>
+    </div>
+  );
+}
+
+/** Les six jauges : icône, valeur, tendance et barre. Le nom complet est dans l'infobulle. */
 export function Gauges({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   return (
@@ -30,13 +125,30 @@ export function Gauges({ view }: { view: GameView }) {
       {GAUGES.map((name) => {
         const value = view.gauges[name];
         const critical = isGaugeCritical(name, value);
+        const trend = gaugeTrend(view, name);
+        // La dette qui monte est une mauvaise nouvelle : la couleur suit le sens du bien.
+        const good = trend === 0 ? null : name === 'debt' ? trend < 0 : trend > 0;
         return (
           <li key={name} className={`gauge gauge-${name} ${critical ? 'critical' : ''}`}>
             <Tooltip text={t(`gauges.${name}.help`)}>
-              <span className="gauge-label">{t(`gauges.${name}.name`)}</span>
+              <span className="gauge-icon" aria-hidden="true">
+                {GAUGE_ICONS[name]}
+              </span>
+              <span className="visually-hidden">{t(`gauges.${name}.name`)}</span>
+              <span className="gauge-label" aria-hidden="true">
+                {t(`gauges.${name}.short`)}
+              </span>
               <span className="gauge-value" data-testid={`gauge-${name}`}>
                 {formatGauge(name, value, i18n.language)}
               </span>
+              {good !== null && (
+                <span className={`gauge-trend ${good ? 'good' : 'bad'}`}>
+                  <span aria-hidden="true">{trend > 0 ? '▲' : '▼'}</span>
+                  <span className="visually-hidden">
+                    {t(trend > 0 ? 'hud.trendUp' : 'hud.trendDown')}
+                  </span>
+                </span>
+              )}
               <span className="gauge-bar" aria-hidden="true">
                 <span style={{ width: `${gaugeRatio(name, value) * 100}%` }} />
               </span>
@@ -48,75 +160,134 @@ export function Gauges({ view }: { view: GameView }) {
   );
 }
 
-/** Horloge, sprint et vitesses (pause, x1, x2, x4). */
-export function TimeControls({ view }: { view: GameView }) {
+/** Horloge : sprint, jour, heure, étape et avancement du sprint. */
+export function Clock({ view }: { view: GameView }) {
   const { t } = useTranslation();
-  const dispatch = useGame((s) => s.dispatch);
   const days = t('time.days', { returnObjects: true }) as unknown as string[];
   const { time } = view;
-  const setSpeed = (speed: Speed) => void dispatch({ type: 'setSpeed', speed });
+  const percent = Math.round(sprintProgress(time) * 100);
   return (
-    <div className="time-controls" data-tutorial="speed">
-      <p className="clock" aria-live="off">
+    <div className="clock" data-tutorial="clock" aria-live="off">
+      <p className="clock-line">
         <strong>{t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}</strong>
-        <span>
+        <span className={`clock-time ${isFridayFive(time) ? 'friday' : ''}`}>
           {t('time.day', { day: days[weekday(time.day)] ?? '', time: formatClock(time.minute) })}
         </span>
-        <span className="step">{t(`steps.${view.step}`)}</span>
       </p>
-      {view.step === 'PLANNING' ? (
-        <div className="planning-actions">
-          <button
-            type="button"
-            className="primary"
-            onClick={() => void dispatch({ type: 'startSprint' })}
-            data-tutorial="start"
-          >
-            ▶ {t('time.startSprint')}
-          </button>
-          <button
-            type="button"
-            disabled={view.pitchBlocker !== null}
-            title={view.pitchBlocker ? t(`results.${view.pitchBlocker}`) : undefined}
-            onClick={() => void dispatch({ type: 'startPitch' })}
-            data-tutorial="pitch"
-          >
-            💼 {t('pitch.open')}
-          </button>
-        </div>
-      ) : (
-        <div className="speeds" role="group" aria-label={t('time.speeds')}>
-          {SPEEDS.map((speed) => (
-            <button
-              key={speed}
-              type="button"
-              aria-pressed={time.speed === speed}
-              aria-label={speed === 0 ? t('time.pause') : t('time.speed', { speed })}
-              disabled={speed === 0 && view.mode === 'HARDCORE'}
-              onClick={() => setSpeed(speed)}
-            >
-              {speed === 0 ? '❚❚' : `x${speed}`}
-            </button>
-          ))}
-        </div>
-      )}
+      <p className="clock-line">
+        <span className={`step step-${view.step}`}>{t(`steps.${view.step}`)}</span>
+        <span
+          className="sprint-progress"
+          role="progressbar"
+          aria-label={t('hud.sprintProgress', { percent })}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={percent}
+        >
+          <span style={{ width: `${percent}%` }} />
+        </span>
+      </p>
     </div>
   );
 }
 
-/** Barre d'actions : en bas sur mobile, dans la colonne latérale sur ordinateur. */
+/** Sauvegardes et options : des boutons-icônes en haut, à l'écart des actions de jeu. */
+export function SystemButtons() {
+  const { t } = useTranslation();
+  const panel = useGame((s) => s.panel);
+  const openPanel = useGame((s) => s.openPanel);
+  const replay = useGame((s) => s.replayOf !== null);
+  const panels = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
+  return (
+    <div className="hud-system" role="group" aria-label={t('hud.system')}>
+      {panels.map((id) => (
+        <button
+          key={id}
+          type="button"
+          className="system-button"
+          aria-pressed={panel === id}
+          aria-label={t(`panels.${id}`)}
+          title={t(`panels.${id}`)}
+          data-tutorial={`panel-${id}`}
+          onClick={() => openPanel(panel === id ? null : id)}
+        >
+          <span aria-hidden="true">{PANEL_ICONS[id]}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Commande de l'étape : lancer le sprint et lever des fonds, ou les vitesses du temps. */
+export function StepControls({ view }: { view: GameView }) {
+  const { t } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const { time } = view;
+  const setSpeed = (speed: Speed) => void dispatch({ type: 'setSpeed', speed });
+  if (view.step === 'PLANNING') {
+    return (
+      <div className="step-controls planning-actions" data-tutorial="speed">
+        <button
+          type="button"
+          className="primary start-sprint"
+          onClick={() => void dispatch({ type: 'startSprint' })}
+          data-tutorial="start"
+        >
+          <span aria-hidden="true">▶</span> {t('time.startSprint')}
+        </button>
+        <button
+          type="button"
+          className="pitch-button"
+          disabled={view.pitchBlocker !== null}
+          title={view.pitchBlocker ? t(`results.${view.pitchBlocker}`) : undefined}
+          onClick={() => void dispatch({ type: 'startPitch' })}
+          data-tutorial="pitch"
+        >
+          <span aria-hidden="true">💼</span>
+          <span className="pitch-label">{t('pitch.open')}</span>
+          <span className="pitch-label-short" aria-hidden="true">
+            {t('pitch.short')}
+          </span>
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div
+      className="step-controls speeds"
+      role="group"
+      aria-label={t('time.speeds')}
+      data-tutorial="speed"
+    >
+      {SPEEDS.map((speed) => (
+        <button
+          key={speed}
+          type="button"
+          aria-pressed={time.speed === speed}
+          aria-label={speed === 0 ? t('time.pause') : t('time.speed', { speed })}
+          disabled={speed === 0 && view.mode === 'HARDCORE'}
+          onClick={() => setSpeed(speed)}
+        >
+          {speed === 0 ? '❚❚' : `x${speed}`}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Dock d'actions : les panneaux du jeu et la construction, icône et libellé court. */
 export function ActionBar() {
   const { t } = useTranslation();
   const panel = useGame((s) => s.panel);
   const replay = useGame((s) => s.replayOf !== null);
   const unread = useSlack((s) => s.unread.general + s.unread.random + s.unread.incidents);
   // En replay, seuls les panneaux de consultation restent utiles.
-  const hidden = new Set<ActionId>(replay ? ['credits', 'hiring', 'build', 'saves'] : ['credits']);
+  const hidden = new Set<GameAction>(replay ? ['hiring', 'build'] : []);
   const openPanel = useGame((s) => s.openPanel);
   const enterBuild = useGame((s) => s.enterBuild);
   return (
     <nav className="action-bar" aria-label={t('panels.actions')}>
-      {ACTIONS.filter((id) => !hidden.has(id)).map((id) => (
+      {GAME_ACTIONS.filter((id) => !hidden.has(id)).map((id) => (
         <button
           key={id}
           type="button"
@@ -125,13 +296,16 @@ export function ActionBar() {
           aria-keyshortcuts={id === 'build' ? 'B' : undefined}
           onClick={() => {
             if (id === 'build') enterBuild();
-            else openPanel(panel === id ? null : id);
+            else openPanel(panel === id ? null : (id satisfies PanelId));
           }}
         >
           <span className="icon" aria-hidden="true">
             {PANEL_ICONS[id]}
           </span>
-          <span className="label">{t(`panels.${id}`)}</span>
+          <span className="visually-hidden">{t(`panels.${id}`)}</span>
+          <span className="label" aria-hidden="true">
+            {t(`panels.short.${id}`)}
+          </span>
           {id === 'slack' && unread > 0 && (
             <span className="unread" aria-label={t('slack.unread', { count: unread })}>
               {unread}

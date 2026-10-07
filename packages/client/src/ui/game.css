@@ -66,7 +66,19 @@
   transform: translateX(-50%);
 }
 
-/* --- HUD ------------------------------------------------------------------------------ */
+/* --- HUD ------------------------------------------------------------------------------
+ * Deux bandes : en haut ce qu'on lit (startup, jauges, horloge, boutons système), en bas ce
+ * qu'on fait (dock d'actions et commande de l'étape). Les espaces réservés par ces bandes
+ * sont exposés en variables pour placer le reste (messages, tutoriel, panneaux).
+ */
+
+.game {
+  --hud-surface: rgb(20 24 38 / 90%);
+  --hud-shadow: 0 10px 28px rgb(0 0 0 / 35%);
+  /* Hauteur occupée par la bande du haut et par le dock, marges comprises. */
+  --hud-top-space: calc(env(safe-area-inset-top, 0px) + 168px);
+  --dock-space: calc(env(safe-area-inset-bottom, 0px) + 136px);
+}
 
 .hud {
   position: absolute;
@@ -74,47 +86,122 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  gap: 8px;
   padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
     max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
   pointer-events: none;
 }
 
-.hud > *,
-.hud-top > *,
+.hud-top,
 .hud-bottom > * {
   pointer-events: auto;
 }
 
-.hud-top,
 .hud-bottom {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
   pointer-events: none;
 }
 
-.hud-bottom {
-  align-items: stretch;
+.hud-bottom > * {
+  width: 100%;
 }
 
 .panel-surface,
-.gauges,
-.time-controls,
-.action-bar,
+.hud-top,
+.command-dock,
 .selection-bar,
 .toast {
-  background: rgb(27 31 46 / 92%);
+  background: var(--hud-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  box-shadow: var(--hud-shadow);
+  backdrop-filter: blur(8px);
 }
 
+/* Bande du haut. Téléphone : jauges sur deux lignes, puis startup | horloge | système. */
+.hud-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'gauges gauges gauges'
+    'company clock system';
+  align-items: center;
+  gap: 6px 10px;
+  padding: 6px;
+}
+
+/* La startup : phase (icône), puis équipe et autonomie en petit. */
+.hud-company {
+  grid-area: company;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hud-company .tooltip-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: var(--touch);
+  padding: 0 6px;
+  border: 0;
+  text-align: left;
+}
+
+.company-phase {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.company-text {
+  display: none;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.company-name {
+  font-size: 0.95rem;
+}
+
+.company-mode {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.company-facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.company-team.full {
+  color: var(--accent);
+}
+
+.company-runway.critical {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* Jauges : puces avec icône, valeur, tendance et barre. */
 .gauges {
+  grid-area: gauges;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
   margin: 0;
-  padding: 4px;
+  padding: 0;
   list-style: none;
 }
 
@@ -124,51 +211,113 @@
 
 .gauge .tooltip-trigger {
   display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas: 'label value' 'bar bar';
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'icon value trend'
+    'bar bar bar';
   align-items: center;
-  gap: 2px 6px;
+  gap: 3px 6px;
   width: 100%;
   min-height: var(--touch);
   padding: 4px 8px;
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 4%);
   text-align: left;
   font-weight: 500;
 }
 
+@media (hover: hover) {
+  .gauge .tooltip-trigger:hover {
+    border-color: var(--border);
+  }
+}
+
+.gauge-icon {
+  grid-area: icon;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Sur téléphone, l'icône suffit : le nom complet reste lu et s'affiche dans l'infobulle. */
 .gauge-label {
   grid-area: label;
+  display: none;
   overflow: hidden;
-  font-size: 0.75rem;
   color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .gauge-value {
   grid-area: value;
-  font-size: 0.875rem;
+  overflow: hidden;
+  font-size: 0.95rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.gauge-trend {
+  grid-area: trend;
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.gauge-trend.good {
+  color: #7ddc98;
+}
+
+.gauge-trend.bad {
+  color: var(--danger);
 }
 
 .gauge-bar {
   grid-area: bar;
   height: 4px;
   border-radius: 2px;
-  background: rgb(255 255 255 / 15%);
+  background: rgb(255 255 255 / 12%);
   overflow: hidden;
 }
 
 .gauge-bar > span {
   display: block;
   height: 100%;
-  background: var(--accent);
+  border-radius: inherit;
+  background: var(--gauge-color, var(--accent));
   transition: width 0.3s;
 }
 
-.gauge-debt .gauge-bar > span {
-  background: #c58bff;
+.gauge-treasury {
+  --gauge-color: #f5b942;
+}
+
+.gauge-coffee {
+  --gauge-color: #d39a6a;
+}
+
+.gauge-debt {
+  --gauge-color: #c58bff;
+}
+
+.gauge-stability {
+  --gauge-color: #6cc4ff;
+}
+
+.gauge-hype {
+  --gauge-color: #ff9f5a;
+}
+
+.gauge-users {
+  --gauge-color: #7ddc98;
+}
+
+.gauge.critical .tooltip-trigger {
+  border-color: rgb(255 138 128 / 55%);
+  background: rgb(255 138 128 / 12%);
 }
 
 .gauge.critical .gauge-value {
@@ -199,57 +348,199 @@
   box-shadow: 0 4px 16px rgb(0 0 0 / 35%);
 }
 
-.time-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  padding: 4px 4px 4px 12px;
+/* La dernière jauge d'une ligne ouvre son infobulle vers la gauche. */
+.gauge:nth-child(3n) .tooltip {
+  right: 0;
+  left: auto;
 }
 
+/* Horloge : sprint et heure, puis étape et avancement du sprint. */
 .clock {
+  grid-area: clock;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0 0.6rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.clock-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0;
   font-size: 0.85rem;
   font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.clock-time.friday {
+  color: var(--accent);
+  font-weight: 700;
 }
 
 .clock .step {
   color: var(--text-muted);
+  font-size: 0.75rem;
 }
 
-.speeds {
+.clock .step-EXECUTION {
+  color: #7ddc98;
+}
+
+.sprint-progress {
+  flex: 1;
+  min-width: 2.5rem;
+  max-width: 7rem;
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 12%);
+  overflow: hidden;
+}
+
+.sprint-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s;
+}
+
+/* Boutons système : sauvegardes et options. */
+.hud-system {
+  grid-area: system;
   display: flex;
   gap: 4px;
 }
 
+.system-button {
+  width: var(--touch);
+  padding: 0;
+  border-color: transparent;
+  border-radius: 10px;
+  font-size: 1.15rem;
+}
+
+.system-button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: rgb(245 185 66 / 16%);
+  color: var(--text);
+}
+
+@media (hover: hover) {
+  .system-button:hover {
+    border-color: var(--border);
+  }
+}
+
+/* Dock : commande de l'étape au-dessus des actions (téléphone), à côté (grand écran). */
+.command-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 44rem;
+  padding: 6px;
+}
+
+.step-controls {
+  order: -1;
+  display: flex;
+  gap: 6px;
+}
+
+.start-sprint {
+  flex: 1;
+  gap: 0.5rem;
+  min-height: 48px;
+  font-size: 1rem;
+  font-weight: 800;
+  box-shadow: 0 3px 0 rgb(0 0 0 / 30%);
+}
+
+.pitch-button {
+  flex: none;
+  gap: 0.4rem;
+  padding: 0 0.85rem;
+}
+
+/* Téléphone : « Lever » suffit, le libellé complet reste lu par les lecteurs d'écran. */
+.pitch-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (min-width: 480px) {
+  .pitch-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .pitch-label-short {
+    display: none;
+  }
+}
+
+/* Petit écran : l'équipe et l'autonomie sont dans l'infobulle de la startup. */
+@media (max-width: 767px) {
+  .company-facts {
+    display: none;
+  }
+}
+
 .speeds button {
+  flex: 1;
   padding: 0 0.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.speeds button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
 }
 
 .action-bar {
   display: flex;
-  justify-content: space-around;
   gap: 2px;
-  padding: 4px;
 }
 
 .action-bar button {
-  flex: 1;
+  flex: 1 1 0;
   flex-direction: column;
-  gap: 0;
+  gap: 2px;
   min-width: var(--touch);
-  padding: 2px 4px;
-  border: 0;
+  min-height: 52px;
+  padding: 4px 2px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   font-size: 0.7rem;
+  font-weight: 600;
   line-height: 1.1;
+  white-space: nowrap;
+}
+
+.action-bar button[aria-pressed='true'] {
+  border-color: rgb(245 185 66 / 60%);
+  background: rgb(245 185 66 / 16%);
+  color: var(--accent);
+}
+
+@media (hover: hover) {
+  .action-bar button:hover {
+    background: rgb(255 255 255 / 6%);
+  }
 }
 
 .action-bar .icon {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
+  line-height: 1;
 }
 
 .selection-bar {
@@ -257,6 +548,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+  max-width: 44rem;
   padding: 6px 8px;
 }
 
@@ -325,16 +617,33 @@ button.danger {
   }
 }
 
+/* Messages : en haut, sous la bande des jauges, avec une icône selon le ton. */
 .toast {
   position: absolute;
+  top: var(--hud-top-space);
   left: 50%;
-  bottom: 9rem;
   z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   max-width: min(28rem, calc(100vw - 32px));
   margin: 0;
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 1rem 0.6rem 0.8rem;
+  border-left: 4px solid var(--accent);
   transform: translateX(-50%);
   font-weight: 600;
+  animation: toast-in 0.25s ease-out;
+}
+
+.toast-icon {
+  flex: none;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
 }
 
 .toast-error {
@@ -373,6 +682,7 @@ button.danger {
   display: flex;
   flex-direction: column;
   background: var(--bg);
+  box-shadow: var(--hud-shadow);
   outline: none;
   animation: sheet-up 0.2s ease-out;
 }
@@ -386,11 +696,17 @@ button.danger {
 
 .sheet-header {
   position: relative;
+  background: linear-gradient(90deg, rgb(245 185 66 / 10%), transparent 60%);
   display: flex;
   align-items: center;
   gap: 8px;
   padding: max(10px, env(safe-area-inset-top)) 12px 8px 16px;
   border-bottom: 1px solid var(--border);
+}
+
+.sheet-icon {
+  font-size: 1.35rem;
+  line-height: 1;
 }
 
 .sheet-header h2 {
@@ -1139,13 +1455,13 @@ legend {
 
 /* --- Tutoriel (adapté à chaque mode) --------------------------------------------------- */
 
-/* Petits écrans : carte en bas, au-dessus de la barre d'actions (réductible). */
+/* Petits écrans : carte en bas, au-dessus du dock (réductible). */
 .guide {
   position: absolute;
   z-index: 45;
   left: 8px;
   right: 8px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+  bottom: var(--dock-space);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1250,7 +1566,7 @@ legend {
   position: absolute;
   z-index: 45;
   left: 8px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+  bottom: var(--dock-space);
   border-color: var(--accent);
   background: rgb(27 31 46 / 96%);
 }
@@ -1297,22 +1613,22 @@ legend {
   }
 }
 
-/* Ordinateur : sous l'horloge, entre la colonne des jauges et le panneau ouvert. */
+/* Ordinateur : à gauche, sous la bande des jauges, à l'écart du panneau ouvert à droite. */
 @media (min-width: 1024px) and (min-height: 501px) {
   .guide,
   .guide-pill {
-    top: 88px;
+    top: var(--hud-top-space);
     bottom: auto;
-    left: calc(15rem + 32px);
+    left: 16px;
   }
 
   .guide {
-    width: min(27rem, calc(100vw - 15rem - 64px));
-    max-height: calc(100dvh - 120px);
+    width: min(27rem, calc(100vw - 32px));
+    max-height: calc(100dvh - var(--hud-top-space) - var(--dock-space));
   }
 
   .game.has-panel .guide {
-    width: max(18rem, min(27rem, calc(100vw - var(--panel-width) - 15rem - 64px)));
+    width: max(18rem, min(27rem, calc(100vw - var(--panel-width) - 64px)));
   }
 }
 
@@ -1353,8 +1669,48 @@ legend {
 /* --- Tablette (≥ 768 px) : panneaux en grand bottom sheet ----------------------------- */
 
 @media (min-width: 768px) {
+  .game {
+    --hud-top-space: calc(env(safe-area-inset-top, 0px) + 128px);
+  }
+
   .gauges {
     grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  /* Assez de place pour les noms courts des jauges et le nom de la phase. */
+  .gauge .tooltip-trigger {
+    grid-template-areas:
+      'icon label label'
+      'icon value trend'
+      'bar bar bar';
+    gap: 1px 8px;
+  }
+
+  .gauge-icon {
+    font-size: 1.25rem;
+  }
+
+  .gauge-label {
+    display: block;
+  }
+
+  .gauge:nth-child(3n) .tooltip {
+    right: auto;
+    left: 0;
+  }
+
+  .gauge:nth-child(n + 5) .tooltip {
+    right: 0;
+    left: auto;
+  }
+
+  .company-text {
+    display: flex;
+  }
+
+  .command-dock,
+  .selection-bar {
+    width: min(44rem, 100%);
   }
 
   .sheet {
@@ -1372,48 +1728,83 @@ legend {
 /* --- Paysage bas (téléphone couché) : HUD sur les côtés pour garder la scène visible --- */
 
 @media (max-height: 500px) and (orientation: landscape) {
+  .game {
+    --hud-top-space: calc(env(safe-area-inset-top, 0px) + 72px);
+    --dock-space: calc(env(safe-area-inset-bottom, 0px) + 84px);
+  }
+
   .hud {
-    flex-direction: row;
+    padding-top: max(6px, env(safe-area-inset-top));
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
   }
 
-  .hud-top,
-  .hud-bottom {
-    width: 13rem;
-    justify-content: flex-start;
+  /* Une seule ligne en haut, une seule en bas : la scène garde toute la hauteur du milieu. */
+  .hud-top {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'company gauges clock system';
+    padding: 4px;
   }
 
-  .hud-bottom {
-    justify-content: flex-end;
-  }
-
+  /* La trésorerie (« 2 M € ») a besoin d'un peu plus de place que les autres. */
   .gauges {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.3fr) repeat(5, minmax(0, 1fr));
   }
 
   .gauge .tooltip-trigger {
-    padding: 2px 6px;
+    grid-template-areas:
+      'icon value trend'
+      'bar bar bar';
+    gap: 3px 4px;
+    padding: 4px 5px;
   }
 
-  .action-bar {
-    flex-wrap: wrap;
+  .gauge-value {
+    font-size: 0.85rem;
+  }
+
+  .gauge-icon {
+    font-size: 1rem;
+  }
+
+  .gauge-label,
+  .company-text,
+  .company-facts {
+    display: none;
+  }
+
+  .gauge:nth-child(3n) .tooltip {
+    right: auto;
+    left: 0;
+  }
+
+  .clock .sprint-progress {
+    max-width: 3.5rem;
+  }
+
+  .command-dock {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    max-width: 100%;
+    padding: 4px;
+  }
+
+  .step-controls {
+    order: 1;
   }
 
   .action-bar button {
-    flex: 1 1 30%;
+    min-width: 3.4rem;
+    min-height: var(--touch);
   }
 
-  /* Libellé masqué visuellement mais lu par les lecteurs d'écran. */
-  .action-bar .label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+  .start-sprint {
+    min-height: var(--touch);
+    padding: 0 0.85rem;
   }
 
-  .toast {
-    bottom: 1rem;
+  .selection-bar {
+    width: min(36rem, 100%);
   }
 
   .sheet {
@@ -1488,60 +1879,91 @@ legend {
     --panel-width: min(34rem, 42vw);
   }
 
+  .game {
+    --hud-top-h: 68px;
+    --dock-h: 72px;
+    --hud-top-space: calc(16px + var(--hud-top-h) + 12px);
+    --dock-space: calc(16px + var(--dock-h) + 12px);
+  }
+
   .hud {
-    flex-direction: row;
     padding: 16px;
   }
 
+  /* Une seule bande en haut : startup | jauges | horloge | système. */
   .hud-top {
-    width: 15rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: var(--hud-top-h);
+    padding: 6px 8px 6px 6px;
   }
 
   .gauges {
-    grid-template-columns: 1fr;
+    flex: 1;
+    min-width: 0;
   }
 
-  .hud-bottom {
-    position: absolute;
-    left: 16px;
-    bottom: 16px;
-    width: 15rem;
+  .hud-company {
+    flex: none;
+    padding-right: 12px;
+    border-right: 1px solid var(--border);
   }
 
-  .action-bar {
-    flex-direction: column;
+  .clock {
+    flex: none;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
+  }
+
+  /* Dock centré en bas : les actions, puis la commande de l'étape. */
+  .command-dock {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    max-width: none;
+    height: var(--dock-h);
+    padding: 6px;
+  }
+
+  .step-controls {
+    order: 1;
+    align-self: stretch;
+    align-items: center;
+    padding-left: 8px;
+    border-left: 1px solid var(--border);
   }
 
   .action-bar button {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 10px;
-    padding: 0 12px;
-    font-size: 0.9rem;
+    flex: none;
+    width: 5.25rem;
+    min-height: 58px;
+    font-size: 0.78rem;
+  }
+
+  .start-sprint {
+    padding: 0 1.25rem;
+  }
+
+  .speeds button {
+    min-width: 3rem;
+  }
+
+  .hud-bottom > * {
+    width: auto;
   }
 
   .selection-bar {
-    position: fixed;
-    left: 50%;
-    bottom: 16px;
-    width: min(40rem, calc(100vw - 34rem));
-    transform: translateX(-50%);
-  }
-
-  .time-controls {
-    position: absolute;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    flex-wrap: nowrap;
+    width: min(40rem, 100%);
   }
 
   .sheet-backdrop {
     display: none;
   }
 
+  /* Le panneau se glisse entre la bande des jauges et le dock : on garde un œil sur tout. */
   .sheet {
-    inset: 16px 16px 16px auto;
+    inset: var(--hud-top-space) 16px var(--dock-space) auto;
     width: var(--panel-width);
     height: auto;
     border: 1px solid var(--border);
@@ -1549,25 +1971,15 @@ legend {
     animation-name: sheet-left;
   }
 
-  /* Panneau ouvert à droite : les éléments centrés se recentrent sur la partie visible. */
+  /* Panneau ouvert à droite : les messages se recentrent sur la partie visible. */
   .game.has-panel .alerts,
-  .game.has-panel .selection-bar {
+  .game.has-panel .toast {
     left: calc((100vw - var(--panel-width) - 32px) / 2);
-  }
-
-  /* L'horloge se cale à droite de la colonne des jauges pour ne pas la chevaucher. */
-  .game.has-panel .time-controls {
-    left: calc(15rem + 32px);
-    transform: none;
   }
 
   .kanban-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     overflow: visible;
-  }
-
-  .toast {
-    bottom: 5rem;
   }
 
   .build-hud {
@@ -1620,6 +2032,24 @@ legend {
   }
 }
 
+/* Entre 1024 et 1280 px, la bande du haut est trop courte pour les noms des jauges. */
+@media (min-width: 1024px) and (max-width: 1279px) and (min-height: 501px) {
+  .gauge .tooltip-trigger {
+    grid-template-areas:
+      'icon value trend'
+      'bar bar bar';
+    gap: 3px 6px;
+  }
+
+  .gauge-label {
+    display: none;
+  }
+
+  .gauges {
+    grid-template-columns: minmax(0, 1.3fr) repeat(5, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 1440px) {
   .game {
     --panel-width: 40rem;
@@ -1644,14 +2074,31 @@ legend {
   background: rgb(0 0 0 / 55%);
 }
 
+/* Pendant une carte ou une démo, la bande des jauges reste lisible au-dessus du voile : on
+   décide en voyant les chiffres. Les boutons système, eux, attendent la fin de l'écran. */
+.game.has-stage .hud-top {
+  position: relative;
+  z-index: 36;
+}
+
+.game.has-stage .hud-system {
+  visibility: hidden;
+}
+
+.game.has-stage .stage-backdrop {
+  padding-top: var(--hud-top-space);
+}
+
 .stage-screen {
   width: min(560px, 100%);
   max-height: 100%;
   overflow: auto;
   padding: 20px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--bg);
+  border-top: 4px solid var(--accent);
+  border-radius: 16px;
+  background:
+    radial-gradient(30rem 12rem at 0% 0%, rgb(245 185 66 / 10%), transparent 70%), var(--bg);
   box-shadow: 0 18px 48px rgb(0 0 0 / 45%);
   animation: sheet-up 0.2s ease-out;
 }
@@ -1694,20 +2141,68 @@ legend {
 
 .choice {
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 12px;
   width: 100%;
   min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 3%);
   text-align: left;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+@media (hover: hover) {
+  .choice:hover {
+    border-color: var(--accent);
+    background: rgb(245 185 66 / 8%);
+  }
+}
+
+.choice-key {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .choice .effects {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 10px;
-  font-size: 0.85rem;
-  font-weight: 400;
+  gap: 4px 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.choice .effects li {
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
+.choice .effects .up {
+  background: rgb(125 220 152 / 14%);
+}
+
+.choice .effects .down {
+  background: rgb(255 138 128 / 14%);
 }
 
 .demo-stats {

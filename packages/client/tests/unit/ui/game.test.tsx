@@ -7,8 +7,10 @@ import {
   formatClock,
   formatGauge,
   gaugeRatio,
+  gaugeTrend,
   intlLocale,
   isGaugeCritical,
+  sprintProgress,
 } from '../../../src/ui/game/format';
 import { GameScreen } from '../../../src/ui/game/GameScreen';
 import { useGame } from '../../../src/ui/store/game';
@@ -71,6 +73,27 @@ describe('HUD', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'Pause' }));
     expect(useGame.getState().view?.time.speed).toBe(0);
+  });
+
+  it('montre la phase, l’équipe et les mois de trésorerie restants', async () => {
+    await startGame();
+    const view = useGame.getState().view!;
+    expect(view.runwayMonths).toBeGreaterThan(0);
+    const facts = screen.getByText(`${view.devs.length}/${view.teamMax}`).closest('p')!;
+    expect(facts).toHaveTextContent(`${Math.floor(view.runwayMonths!)} mois`);
+    expect(screen.getByRole('button', { name: /^Phase : / })).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: /Avancement du sprint/ })).toBeInTheDocument();
+  });
+
+  it('sépare le dock d’actions des boutons système (sauvegardes, options)', async () => {
+    await startGame();
+    const dock = screen.getByRole('navigation', { name: 'Actions du jeu' });
+    expect(within(dock).getAllByRole('button')).toHaveLength(6);
+    for (const name of ['Kanban', 'Équipe', 'Recrutement', 'Construction', 'Dashboard', 'Slack'])
+      expect(within(dock).getByRole('button', { name })).toBeInTheDocument();
+    const system = screen.getByRole('group', { name: 'Partie' });
+    await userEvent.click(within(system).getByRole('button', { name: 'Options' }));
+    expect(screen.getByRole('dialog', { name: 'Options' })).toBeInTheDocument();
   });
 
   it('ouvre et ferme un panneau au clavier (Échap)', async () => {
@@ -280,6 +303,17 @@ describe('Étapes du sprint', () => {
     expect(screen.queryByRole('dialog', { name: /machine à café/i })).not.toBeInTheDocument();
   });
 
+  it('choisit une réponse à une carte avec les touches 1, 2, 3', async () => {
+    const simulation = officeSimulation(SEED_OFFICE);
+    simulation.dispatch({ type: 'START_SPRINT' });
+    simulation.state.events.pending = { cardId: 'coffee-machine-broken', level: 0, drawnAtTick: 0 };
+    await startGame(simulation);
+    const card = screen.getByRole('dialog', { name: /machine à café/i });
+    expect(within(card).getAllByRole('button')[1]).toHaveAttribute('aria-keyshortcuts', '2');
+    await userEvent.keyboard('2');
+    expect(useGame.getState().view!.event).toBeNull();
+  });
+
   it('montre la démo de fin de sprint puis passe au sprint suivant', async () => {
     const simulation = officeSimulation(SEED_OFFICE);
     playSprint(simulation);
@@ -337,6 +371,21 @@ describe('formatage', () => {
     expect(isGaugeCritical('users', 0)).toBe(false);
     expect(gaugeRatio('treasury', 4_000_000)).toBe(1);
     expect(gaugeRatio('users', 1)).toBe(0);
+  });
+
+  it('donne la tendance des jauges et l’avancement du sprint', () => {
+    const gauges = { treasury: 1_000_000, coffee: 50, debt: 20, stability: 80, hype: 30, users: 0 };
+    const history = [
+      { ...gauges, treasury: 1_200_000, debt: 10 },
+      { ...gauges, treasury: 1_100_000 },
+    ];
+    expect(gaugeTrend({ gauges, history }, 'treasury')).toBe(-1);
+    expect(gaugeTrend({ gauges, history }, 'debt')).toBe(1);
+    expect(gaugeTrend({ gauges, history }, 'coffee')).toBe(0);
+    expect(gaugeTrend({ gauges, history: [] }, 'hype')).toBe(0);
+    expect(sprintProgress({ day: 0, minute: 0 })).toBe(0);
+    expect(sprintProgress({ day: 7, minute: 0 })).toBe(0.5);
+    expect(sprintProgress({ day: 14, minute: 600 })).toBe(1);
   });
 
   it('trace les courbes du dashboard', () => {

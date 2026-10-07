@@ -76,6 +76,29 @@ test('le HUD tient dans l’écran, sans défilement, avec des cibles de 44 px',
   expect(offscreen).toEqual([]);
 });
 
+test('la bande des jauges et le dock ne se chevauchent pas, même panneau ouvert', async ({
+  page,
+}) => {
+  await startAsGuest(page);
+  const top = (await page.locator('.hud-top').boundingBox())!;
+  const dock = (await page.locator('.command-dock').boundingBox())!;
+  expect(top.y + top.height).toBeLessThan(dock.y);
+  // Toutes les actions de jeu sont dans le dock, la commande de l'étape aussi.
+  await expect(page.locator('.command-dock button')).toHaveCount(8);
+
+  await page.locator('[data-tutorial="panel-team"]').click();
+  const sheet = page.getByRole('dialog', { name: 'Équipe' });
+  await expect(sheet).toBeVisible();
+  const viewport = page.viewportSize()!;
+  if (viewport.width >= 1024 && viewport.height > 500) {
+    // Sur ordinateur, le panneau se glisse entre les jauges et le dock : tout reste visible.
+    const box = (await sheet.boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(top.y + top.height);
+    expect(box.y + box.height).toBeLessThanOrEqual(dock.y);
+    await expect(page.getByTestId('gauge-treasury')).toBeVisible();
+  }
+});
+
 test('glisser-déposer une tâche dans le Kanban', async ({ page }) => {
   await startAsGuest(page);
   await page.getByRole('button', { name: /Kanban/ }).click();

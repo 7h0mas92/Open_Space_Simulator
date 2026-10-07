@@ -1,5 +1,5 @@
 import type { LocalizedText } from '@oss/shared';
-import type { GaugeName } from '../../view/types';
+import type { GameTime, GameView, GaugeName } from '../../view/types';
 
 /**
  * Locale Intl à partir de la langue i18next. Le navigateur peut annoncer des variantes exotiques
@@ -63,4 +63,21 @@ export function formatMoney(value: number, locale: string): string {
 /** Texte bilingue de la simulation (cartes, bios, notifications) dans la langue courante. */
 export function localized(text: LocalizedText, language: string): string {
   return language.toLowerCase().startsWith('en') ? text.en : text.fr;
+}
+
+/**
+ * Tendance d'une jauge : signe de l'écart avec l'avant-dernier point quotidien (environ un jour
+ * plus tôt). 0 quand l'écart est négligeable ou qu'il n'y a pas encore d'historique.
+ */
+export function gaugeTrend(view: Pick<GameView, 'gauges' | 'history'>, name: GaugeName): number {
+  const past = view.history.at(-2) ?? view.history.at(-1);
+  if (!past) return 0;
+  const delta = view.gauges[name] - past[name];
+  const threshold = name === 'treasury' ? 1_000 : name === 'users' ? 1 : 0.5;
+  return Math.abs(delta) < threshold ? 0 : Math.sign(delta);
+}
+
+/** Avancement du sprint en cours, de 0 à 1 (14 jours simulés). */
+export function sprintProgress(time: Pick<GameTime, 'day' | 'minute'>): number {
+  return Math.min(1, Math.max(0, (time.day * 1440 + time.minute) / (14 * 1440)));
 }
