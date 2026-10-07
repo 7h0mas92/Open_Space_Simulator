@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { QUALITY_LEVELS } from '../../render/quality';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useGame } from '../store/game';
+import { useGuide } from '../store/guide';
 import { TEXT_SCALES, useSettings, VOLUME_KEYS } from '../store/settings';
 import { GuideIndex } from '../tutorial/Guide';
 
@@ -97,6 +98,7 @@ export function SettingsPanel() {
         type="button"
         onClick={() => {
           settings.update({ tutorialDone: false });
+          useGuide.getState().restart();
           openPanel(null);
         }}
       >

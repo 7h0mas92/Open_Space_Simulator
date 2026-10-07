@@ -102,7 +102,6 @@
 .time-controls,
 .action-bar,
 .selection-bar,
-.tutorial,
 .toast {
   background: rgb(27 31 46 / 92%);
   border: 1px solid var(--border);
@@ -919,42 +918,7 @@ legend {
   color: var(--accent);
 }
 
-/* --- Tutoriel ------------------------------------------------------------------------- */
-
-.tutorial {
-  position: absolute;
-  z-index: 15;
-  left: 50%;
-  top: 30%;
-  width: min(24rem, calc(100vw - 32px));
-  padding: 12px 14px;
-  transform: translateX(-50%);
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
-}
-
-.tutorial-progress {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-.tutorial-text {
-  margin: 4px 0 10px;
-  font-weight: 600;
-}
-
-.tutorial-text.done {
-  color: #7ddc98;
-}
-
-.tutorial-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-/* --- Tutoriel complet (mode Facile) ---------------------------------------------------- */
+/* --- Tutoriel (adapté à chaque mode) --------------------------------------------------- */
 
 /* Petits écrans : carte en bas, au-dessus de la barre d'actions (réductible). */
 .guide {

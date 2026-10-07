@@ -341,22 +341,6 @@
     },
     "back": "Retour"
   },
-  "tutorial": {
-    "skip": "Passer le tutoriel",
-    "next": "Suivant",
-    "done": "C'est parti",
-    "progress": "Étape {{step}} sur {{total}}",
-    "steps": {
-      "welcome": "Bienvenue, fondateur. Tu as 2 M€ et 18 mois. Voici ton open space.",
-      "gauges": "En haut, tes jauges. Survole-les ou touche-les pour savoir à quoi elles servent.",
-      "kanban": "Ouvre le Kanban et glisse une tâche du Backlog vers « À faire ».",
-      "assign": "Assigne une tâche à un dev : il s'y mettra dès le lancement du sprint.",
-      "start": "Lance le sprint : les devs se mettent au travail.",
-      "speed": "Change la vitesse : pause, x1, x2 ou x4.",
-      "select": "Clique sur un dev (appui long sur mobile) pour voir sa fiche.",
-      "build": "Ouvre la construction pour acheter une plante. Elles aident vraiment."
-    }
-  },
   "game": {
     "sceneLabel": "Open space en 3D. Glisser pour déplacer, molette ou pincer pour zoomer, Q et E pour tourner, flèches pour se déplacer.",
     "gauges": "Jauges",
@@ -574,15 +558,20 @@
         "steps": {
           "welcome": {
             "title": "Bienvenue, fondateur",
-            "body": "Ta startup vient de lever des fonds. Tu as 18 mois, soit 39 sprints de deux semaines, pour en faire une réussite.\n\nCe tutoriel t'accompagne pendant toute la partie : chaque chapitre s'ouvre au moment où tu en as besoin. Pendant les explications, la partie est en pause : prends ton temps."
-          },
-          "easy": {
-            "title": "Le mode Facile",
-            "body": "Le mode Facile est fait pour apprendre :\n\n• tu démarres avec 3 M€ au lieu de 2 M€ ;\n• au plus 2 crises par sprint au lieu de 3 ;\n• les effets négatifs des crises sont divisés par deux.\n\nLes scores du mode Facile ont leur propre classement : ils ne comptent pas dans le classement global."
+            "body": "Ta startup vient de lever des fonds. Tu as 18 mois, soit 39 sprints de deux semaines, pour en faire une réussite.\n\nCe tutoriel t'accompagne pendant toute la partie : chaque chapitre s'ouvre au moment où tu en as besoin. Pendant les explications, la partie est en pause : prends ton temps.",
+            "HARDCORE": {
+              "body": "Ta startup vient de lever des fonds. Tu as 18 mois, soit 39 sprints de deux semaines, pour en faire une réussite.\n\nCe tutoriel t'accompagne pendant toute la partie : chaque chapitre s'ouvre au moment où tu en as besoin. Attention : en Hardcore, le temps ne s'arrête jamais pendant les sprints, même pendant les explications."
+            },
+            "SHIP_IN_3": {
+              "body": "Ta startup vient de lever des fonds. Tu n'as que 3 sprints de deux semaines pour sortir ton app.\n\nCe tutoriel t'accompagne pendant toute la partie : chaque chapitre s'ouvre au moment où tu en as besoin. Pendant les explications, la partie est en pause : prends ton temps."
+            }
           },
           "goal": {
             "title": "Comment gagner ?",
-            "body": "La partie se termine de quatre façons :\n\n• Faillite : la trésorerie tombe à zéro. C'est perdu.\n• IPO : tu entres en Bourse, la plus belle fin. Il faut être une Licorne (valorisation d'un milliard) avec une prod stable.\n• Rachat : une grande entreprise achète ta startup.\n• Zombie : au bout des 18 mois, tu survis sans avoir vraiment grandi.\n\nTon score, c'est la valorisation finale de ta startup."
+            "body": "La partie se termine de quatre façons :\n\n• Faillite : la trésorerie tombe à zéro. C'est perdu.\n• IPO : tu entres en Bourse, la plus belle fin. Il faut être une Licorne (valorisation d'un milliard) avec une prod stable.\n• Rachat : une grande entreprise achète ta startup.\n• Zombie : au bout des 18 mois, tu survis sans avoir vraiment grandi.\n\nTon score, c'est la valorisation finale de ta startup.",
+            "SHIP_IN_3": {
+              "body": "Dans le défi 3 sprints, la partie se termine de trois façons :\n\n• Faillite : la trésorerie tombe à zéro. C'est perdu.\n• Rachat : à la fin du 3e sprint, tu as livré au moins 5 features.\n• Zombie : à la fin du 3e sprint, tu en as livré moins de 5.\n\nTon score, c'est la valorisation finale de ta startup."
+            }
           },
           "gauges": {
             "title": "Les jauges",
@@ -607,6 +596,51 @@
           "dilemma": {
             "title": "Le grand dilemme",
             "body": "Tout le jeu tient en une phrase : livrer vite fait monter la dette, refactorer fait baisser la hype.\n\nSi tu ne fais que des features, la prod finit par s'écrouler. Si tu ne fais que du refacto, plus personne ne parle de toi. Le bon rythme alterne les deux.\n\nAstuce : garde la dette sous 40 et la stabilité au-dessus de 60."
+          }
+        }
+      },
+      "rules": {
+        "title": "Les règles du mode {{mode}}",
+        "steps": {
+          "easy": {
+            "title": "Le mode Facile",
+            "body": "Le mode Facile est fait pour apprendre :\n\n• tu démarres avec 3 M€ au lieu de 2 M€ ;\n• au plus 2 cartes tirées au hasard par sprint au lieu de 3 (la panne du vendredi 17h peut toujours en ajouter une) ;\n• les effets négatifs des crises sont divisés par deux.\n\nLes scores du mode Facile ont leur propre classement : ils ne comptent pas dans le classement global."
+          },
+          "normal": {
+            "title": "Le mode Normal",
+            "body": "C'est la partie classique, celle pour laquelle le jeu est équilibré :\n\n• 2 M€ au départ et 18 mois, soit 39 sprints ;\n• jusqu'à 3 cartes tirées au hasard par sprint, plus la panne du vendredi 17h si la prod tombe, avec leurs effets complets ;\n• la pause est autorisée à tout moment.\n\nTon score compte dans le classement global et dans celui du mode Normal."
+          },
+          "hardcore": {
+            "title": "Le mode Hardcore",
+            "body": "Pas de pause. Jamais. Le bouton pause et la barre d'espace ne répondent plus, et même ce tutoriel ne peut pas arrêter le temps : lis-le en gardant un œil sur le bureau.\n\nLe reste des règles est celui du mode Normal : 2 M€, 18 mois, 3 cartes tirées au hasard par sprint au maximum.\n\nAstuce : le temps reste arrêté pendant la planification et la démo. C'est là que tu réfléchis."
+          },
+          "hardcoreEvents": {
+            "title": "Les crises n’attendent pas",
+            "body": "En Hardcore, une carte d'événement n'arrête pas le temps. Si tu ne choisis pas dans les 2 heures de jeu (environ une seconde à x1), la dernière réponse est choisie pour toi : « tu n'as rien décidé, le problème a décidé pour toi ».\n\nCette dernière réponse est souvent la pire. Reste en x1 pendant les heures de bureau pour avoir le temps de lire, et garde x2 ou x4 pour les nuits et les week-ends."
+          },
+          "interns": {
+            "title": "Le mode Stagiaires Only",
+            "body": "Toute ton équipe est faite de stagiaires : ceux du départ et tous les candidats au recrutement.\n\n• Ils coûtent peu : environ 1 800 € par mois.\n• Ils sont lents et leur code produit 40 % de dette en plus.\n• Chacun a 5 % de chance par jour de casser la prod.\n\nAvec 6 stagiaires, une panne tous les trois jours est un rythme normal. Bon courage pour la prod."
+          },
+          "internsTips": {
+            "title": "Survivre aux stagiaires",
+            "body": "• Mets toujours du bugfix et de l'infra dans « À faire » : la stabilité est ta jauge la plus fragile.\n• Achète une baie de serveurs dès que tu peux : elle remonte la stabilité chaque jour.\n• Fais du refacto dès que la dette passe 40.\n• Bonne nouvelle : avec des salaires aussi bas, ta trésorerie tient longtemps. Profites-en pour recruter."
+          },
+          "ship": {
+            "title": "Le défi 3 sprints",
+            "body": "« Cette app doit sortir en 3 sprints. » La partie ne dure que 3 sprints au lieu de 39.\n\nÀ la fin du 3e sprint :\n\n• si tu as livré au moins 5 features, ta startup est rachetée ;\n• sinon, c'est la fin « zombie ».\n\nLa faillite reste possible, mais avec 2 M€ elle est peu probable en si peu de temps."
+          },
+          "shipTips": {
+            "title": "Livrer, livrer, livrer",
+            "body": "Seules les features comptent pour les 5 : le refacto, le bugfix et l'infra n'en font pas partie.\n\n• Remplis « À faire » de petites features dès le premier sprint.\n• Recrute dès le premier sprint : chaque dev en plus, ce sont des points livrés.\n• Ne t'inquiète pas trop de la dette : tu n'auras pas le temps d'en payer le prix.\n\nLe bilan de chaque démo indique combien de features le sprint a livrées."
+          },
+          "daily": {
+            "title": "Le Daily",
+            "body": "Le Daily est la même partie pour tout le monde, chaque jour, à la manière de Wordle. Tous les joueurs partent de la même graine : même équipe, mêmes candidats, mêmes tirages. Seuls tes choix font la différence.\n\nLes règles sont celles du mode Normal : 2 M€, 18 mois, 3 cartes tirées au hasard par sprint au maximum."
+          },
+          "dailyTips": {
+            "title": "Le classement du jour",
+            "body": "À la fin de la partie, ton score part dans le classement du jour, si tu es connecté. Le serveur rejoue toute ta partie à partir de la graine et de tes décisions pour vérifier le score : pas de triche possible.\n\nIl n'y a pas de bouton « Rejouer » à la fin : la partie du jour se joue une fois. Reviens demain pour une nouvelle graine."
           }
         }
       },
@@ -661,7 +695,11 @@
           "speed": {
             "title": "La vitesse du temps",
             "body": "En haut à droite, tu règles la vitesse : pause, x1, x2 ou x4. La barre d'espace met aussi en pause.\n\nLa partie est en pause pendant cette explication.",
-            "do": "Choisis une vitesse, par exemple x1."
+            "do": "Choisis une vitesse, par exemple x1.",
+            "HARDCORE": {
+              "body": "En haut à droite, tu règles la vitesse : x1, x2 ou x4. En Hardcore, la pause est désactivée.\n\nLe temps continue de passer pendant cette explication.",
+              "do": "Change de vitesse, par exemple x2."
+            }
           },
           "camera": {
             "title": "Se déplacer dans le bureau",
@@ -678,7 +716,10 @@
           },
           "roles": {
             "title": "Les 8 profils",
-            "body": "• Senior Barbu : +50 % de qualité, mais refuse les frameworks récents.\n• 10x Developer : très rapide, mais son code fait monter la dette.\n• Stagiaire : pas cher, mais 5 % de chance par jour de casser la prod.\n• Rustacé : veut tout réécrire en Rust et convertit ses collègues.\n• Designeuse : bloque les releases si le padding est faux, mais embellit les démos.\n• Product Owner : 4 réunions par jour (-10 % de productivité pour tous), mais +hype.\n• IA Agent : ultra rapide, mais 30 % de chance d'halluciner une feature.\n• Dev Fantôme : en télétravail, invisible au bureau, mais ses tickets se ferment."
+            "body": "• Senior Barbu : +50 % de qualité, mais refuse les frameworks récents.\n• 10x Developer : très rapide, mais son code fait monter la dette.\n• Stagiaire : pas cher, mais 5 % de chance par jour de casser la prod.\n• Rustacé : veut tout réécrire en Rust et convertit ses collègues.\n• Designeuse : bloque les releases si le padding est faux, mais embellit les démos.\n• Product Owner : 4 réunions par jour (-10 % de productivité pour tous), mais +hype.\n• IA Agent : ultra rapide, mais 30 % de chance d'halluciner une feature.\n• Dev Fantôme : en télétravail, invisible au bureau, mais ses tickets se ferment.",
+            "INTERNS_ONLY": {
+              "body": "Le jeu compte 8 profils : Senior Barbu, 10x Developer, Stagiaire, Rustacé, Designeuse, Product Owner, IA Agent et Dev Fantôme.\n\nDans ce mode, tu ne croiseras que des stagiaires : pas chers, motivés, et 5 % de chance par jour de casser la prod. Les 7 autres profils t'attendent dans les autres modes."
+            }
           },
           "clock": {
             "title": "Jour, nuit et vendredi 17h",
@@ -705,7 +746,10 @@
           },
           "hiring": {
             "title": "Faire une offre",
-            "body": "Chaque candidat annonce le salaire qu'il demande. Règle ton offre avant de l'envoyer :\n\n• sous 75 % de sa demande, il refuse toujours ;\n• à 110 % ou plus, il accepte toujours ;\n• entre les deux, c'est une négociation : plus ton offre est proche de sa demande, plus il a de chances d'accepter.\n\nL'équipe est limitée par la taille du bureau : 2 personnes dans le garage, 6 en Seed, 15 en Série A, 30 en Licorne. Un salaire, ça se paie tous les mois : recrute quand ta trésorerie peut suivre."
+            "body": "Chaque candidat annonce le salaire qu'il demande. Règle ton offre avant de l'envoyer :\n\n• sous 75 % de sa demande, il refuse toujours ;\n• à 110 % ou plus, il accepte toujours ;\n• entre les deux, c'est une négociation : plus ton offre est proche de sa demande, plus il a de chances d'accepter.\n\nL'équipe est limitée par la taille du bureau : 2 personnes dans le garage, 6 en Seed, 15 en Série A, 30 en Licorne. Un salaire, ça se paie tous les mois : recrute quand ta trésorerie peut suivre.",
+            "INTERNS_ONLY": {
+              "body": "Ici, tous les candidats sont des stagiaires. Chacun annonce le salaire qu'il demande. Règle ton offre avant de l'envoyer :\n\n• sous 75 % de sa demande, il refuse toujours ;\n• à 110 % ou plus, il accepte toujours ;\n• entre les deux, c'est une négociation.\n\nL'équipe est limitée par la taille du bureau : 2 personnes dans le garage, 6 en Seed, 15 en Série A, 30 en Licorne."
+            }
           }
         }
       },
@@ -714,7 +758,10 @@
         "steps": {
           "card": {
             "title": "Une carte d'événement",
-            "body": "Pendant l'exécution, des événements tombent : une panne de machine à café, un investisseur qui veut de la blockchain, un stagiaire qui a fait un git push --force…\n\nLe temps s'arrête jusqu'à ta décision. Lis la situation, puis choisis une réponse."
+            "body": "Pendant l'exécution, des événements tombent : une panne de machine à café, un investisseur qui veut de la blockchain, un stagiaire qui a fait un git push --force…\n\nLe temps s'arrête jusqu'à ta décision. Lis la situation, puis choisis une réponse.",
+            "HARDCORE": {
+              "body": "Pendant l'exécution, des événements tombent : une panne de machine à café, un investisseur qui veut de la blockchain, un stagiaire qui a fait un git push --force…\n\nEn Hardcore, le temps ne s'arrête pas : tu as 2 heures de jeu pour choisir, sinon la dernière réponse est choisie pour toi. Ce chapitre s'ouvre avant ta première carte pour te laisser le temps de le lire."
+            }
           },
           "effects": {
             "title": "Lire les effets",
@@ -726,7 +773,7 @@
           },
           "soft": {
             "title": "En mode Facile",
-            "body": "En mode Facile, les effets négatifs des cartes sont divisés par deux (les chiffres affichés en tiennent déjà compte) et il tombe au plus 2 cartes par sprint."
+            "body": "En mode Facile, les effets négatifs des cartes sont divisés par deux (les chiffres affichés en tiennent déjà compte) et il tombe au plus 2 cartes au hasard par sprint. Seule la panne du vendredi 17h peut s'y ajouter."
           }
         }
       },
@@ -827,7 +874,10 @@
         "steps": {
           "four": {
             "title": "Comment ça se termine",
-            "body": "Au bout des 18 mois, ta phase décide de la fin :\n\n• Licorne : IPO, la meilleure fin.\n• Série A : rachat, à prix cassé.\n• Seed : rachat si tu vaux plus de 100 M€, sinon zombie.\n• Garage : zombie.\n\nEt si la trésorerie tombe à zéro avant, c'est la faillite."
+            "body": "Au bout des 18 mois, ta phase décide de la fin :\n\n• Licorne : IPO, la meilleure fin.\n• Série A : rachat, à prix cassé.\n• Seed : rachat si tu vaux plus de 100 M€, sinon zombie.\n• Garage : zombie.\n\nEt si la trésorerie tombe à zéro avant, c'est la faillite.",
+            "SHIP_IN_3": {
+              "body": "Le défi s'arrête à la fin du 3e sprint :\n\n• au moins 5 features livrées : ta startup est rachetée ;\n• moins de 5 : c'est la fin « zombie ».\n\nEt si la trésorerie tombe à zéro avant, c'est la faillite. Les bilans des démos indiquent combien de features chaque sprint a livrées."
+            }
           },
           "offer": {
             "title": "Offres de rachat et IPO",
@@ -856,7 +906,13 @@
           },
           "bye": {
             "title": "Tu es prêt",
-            "body": "Tu connais maintenant tout le jeu. Le tutoriel s'arrête ici : à toi de mener ta startup jusqu'à l'IPO.\n\nQuand tu te sentiras à l'aise, essaie le mode Normal, puis le Daily pour te comparer aux autres joueurs."
+            "body": "Tu connais maintenant tout le jeu. Le tutoriel s'arrête ici : à toi de mener ta startup jusqu'au bout.\n\nTu peux relire chaque chapitre quand tu veux dans Options, Guide du jeu.",
+            "EASY": {
+              "body": "Tu connais maintenant tout le jeu. Le tutoriel s'arrête ici : à toi de mener ta startup jusqu'à l'IPO.\n\nQuand tu te sentiras à l'aise, essaie le mode Normal, puis le Daily pour te comparer aux autres joueurs."
+            },
+            "DAILY": {
+              "body": "Tu connais maintenant tout le jeu. Le tutoriel s'arrête ici : à toi de jouer la partie du jour.\n\nCompare ton score à celui des autres dans le classement du jour, et reviens demain pour une nouvelle graine."
+            }
           }
         }
       }

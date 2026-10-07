@@ -17,7 +17,7 @@ test('le mode Facile guide le joueur pas à pas, sur tous les écrans', async ({
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
   const next = guide.getByRole('button', { name: /^(Suivant|Terminer le chapitre)$/ });
-  for (let step = 0; step < 9; step++) await next.click();
+  for (let step = 0; step < 9; step++) await next.click(); // 8 étapes de bases, 1 de règles
   await expect(guide.getByRole('heading', { name: 'Un sprint en 4 temps' })).toBeVisible();
   await next.click();
 
@@ -26,4 +26,19 @@ test('le mode Facile guide le joueur pas à pas, sur tous les écrans', async ({
   await page.locator('[data-tutorial="panel-kanban"]').click();
   await expect(guide.getByRole('heading', { name: 'Les colonnes' })).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+test('un joueur qui connaît le jeu ne revoit que les règles de son mode', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('oss.language', 'fr');
+    localStorage.setItem('oss.settings', JSON.stringify({ tutorialDone: true }));
+  });
+  await page.goto('/');
+  await page.getByTestId('mode-HARDCORE').click();
+  const guide = page.getByTestId('guide');
+  await expect(guide.getByRole('heading', { name: 'Le mode Hardcore' })).toBeVisible();
+  await guide.getByRole('button', { name: 'Suivant' }).click();
+  await expect(guide.getByRole('heading', { name: 'Les crises n’attendent pas' })).toBeVisible();
+  await guide.getByRole('button', { name: 'Terminer le chapitre' }).click();
+  await expect(guide).toBeHidden();
 });

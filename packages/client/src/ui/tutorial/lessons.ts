@@ -1,3 +1,4 @@
+import type { GameMode } from '@oss/shared';
 import type { GameView } from '../../view/types';
 import type { PanelId } from '../store/game';
 
@@ -6,6 +7,10 @@ import type { PanelId } from '../store/game';
  * déclenche toute seule au bon moment de la partie (première carte, première démo...) et
  * se lit étape par étape. Certaines étapes attendent une action du joueur : elles se
  * valident dès qu'elle est faite. Les textes sont dans `guide.lessons.<leçon>` (i18n).
+ *
+ * Le tutoriel s'adapte au mode de jeu : le chapitre « Les règles du mode » change selon le
+ * mode, certaines étapes n'existent que dans certains modes (`modes`), et une étape peut
+ * avoir un texte propre à un mode (clé `steps.<étape>.<MODE>` dans les traductions).
  *
  * Ce fichier est pur (aucun React) : déclencheurs et objectifs sont testés directement.
  */
@@ -30,7 +35,15 @@ export interface LessonStep {
   readonly target?: string;
   /** Action attendue : l'étape se valide quand elle renvoie vrai. */
   readonly goal?: (context: GuideContext) => boolean;
+  /** Modes où l'étape existe (tous si absent). */
+  readonly modes?: readonly GameMode[];
 }
+
+/**
+ * Ce que le tutoriel lance tout seul : tout (`full`, en Facile ou pour un nouveau joueur),
+ * ou seulement les règles du mode (`mode`, pour un joueur qui connaît déjà le jeu).
+ */
+export type GuideScope = 'full' | 'mode';
 
 export interface Lesson {
   readonly id: LessonId;
@@ -41,6 +54,7 @@ export interface Lesson {
 
 export const LESSON_IDS = [
   'basics',
+  'rules',
   'planning',
   'execution',
   'team',
@@ -63,13 +77,20 @@ const panelOpen =
 const planningOfSprint = (view: GameView, sprint: number) =>
   view.step === 'PLANNING' && view.time.sprint >= sprint;
 
+/** Le défi « 3 sprints » n'attend pas le 5e sprint : la fin arrive au 3e. */
+const lateSprint = (view: GameView) => (view.mode === 'SHIP_IN_3' ? 3 : 5);
+
+const ALL_BUT = (...excluded: GameMode[]): readonly GameMode[] =>
+  (['EASY', 'NORMAL', 'HARDCORE', 'INTERNS_ONLY', 'SHIP_IN_3', 'DAILY'] as const).filter(
+    (mode) => !excluded.includes(mode),
+  );
+
 export const LESSONS: readonly Lesson[] = [
   {
     id: 'basics',
     trigger: () => true,
     steps: [
       { id: 'welcome' },
-      { id: 'easy' },
       { id: 'goal' },
       { id: 'gauges', target: 'gauges' },
       { id: 'treasury', target: 'gauges' },
@@ -80,8 +101,25 @@ export const LESSONS: readonly Lesson[] = [
     ],
   },
   {
+    // Le seul chapitre propre à chaque mode : ses étapes changent du tout au tout.
+    id: 'rules',
+    trigger: (_view, seen) => seen.has('basics'),
+    steps: [
+      { id: 'easy', modes: ['EASY'] },
+      { id: 'normal', modes: ['NORMAL'] },
+      { id: 'hardcore', modes: ['HARDCORE'] },
+      { id: 'hardcoreEvents', modes: ['HARDCORE'] },
+      { id: 'interns', modes: ['INTERNS_ONLY'] },
+      { id: 'internsTips', modes: ['INTERNS_ONLY'] },
+      { id: 'ship', modes: ['SHIP_IN_3'] },
+      { id: 'shipTips', modes: ['SHIP_IN_3'] },
+      { id: 'daily', modes: ['DAILY'] },
+      { id: 'dailyTips', modes: ['DAILY'] },
+    ],
+  },
+  {
     id: 'planning',
-    trigger: (view, seen) => seen.has('basics') && view.step === 'PLANNING',
+    trigger: (view, seen) => seen.has('rules') && view.step === 'PLANNING',
     steps: [
       { id: 'sprint' },
       { id: 'openKanban', target: 'panel-kanban', goal: panelOpen('kanban') },
@@ -128,8 +166,17 @@ export const LESSONS: readonly Lesson[] = [
   },
   {
     id: 'events',
-    trigger: (view, seen) => seen.has('basics') && view.event !== null,
-    steps: [{ id: 'card', target: 'event' }, { id: 'effects' }, { id: 'later' }, { id: 'soft' }],
+    // En Hardcore, une carte se résout seule au bout de 2 heures de jeu : le chapitre
+    // s'ouvre dès le début du sprint, avant la première carte, pour avoir le temps de le lire.
+    trigger: (view, seen) =>
+      seen.has('basics') &&
+      (view.event !== null || (view.mode === 'HARDCORE' && view.step === 'EXECUTION')),
+    steps: [
+      { id: 'card', target: 'event' },
+      { id: 'effects' },
+      { id: 'later' },
+      { id: 'soft', modes: ['EASY'] },
+    ],
   },
   {
     id: 'incident',
@@ -177,12 +224,12 @@ export const LESSONS: readonly Lesson[] = [
     id: 'endings',
     trigger: (view, seen) =>
       seen.has('funding') &&
-      (planningOfSprint(view, 5) || view.acquisitionOffer !== null || view.canIpo),
-    steps: [{ id: 'four' }, { id: 'offer' }, { id: 'share' }],
+      (planningOfSprint(view, lateSprint(view)) || view.acquisitionOffer !== null || view.canIpo),
+    steps: [{ id: 'four' }, { id: 'offer', modes: ALL_BUT('SHIP_IN_3') }, { id: 'share' }],
   },
   {
     id: 'tools',
-    trigger: (view, seen) => seen.has('endings') && planningOfSprint(view, 5),
+    trigger: (view, seen) => seen.has('endings') && planningOfSprint(view, lateSprint(view)),
     steps: [
       { id: 'slack', target: 'panel-slack' },
       { id: 'saves', target: 'panel-saves' },
@@ -194,17 +241,33 @@ export const LESSONS: readonly Lesson[] = [
 
 const MODAL_LESSONS: ReadonlySet<LessonId> = new Set(['events', 'demo']);
 
+/** Chapitres qui remplacent l'ancien tutoriel court : une fois lus, le jeu est connu. */
+export const CORE_LESSONS: readonly LessonId[] = ['basics', 'rules', 'planning', 'execution'];
+
 export function getLesson(id: LessonId): Lesson {
   const lesson = LESSONS.find((candidate) => candidate.id === id);
   if (!lesson) throw new Error(`Leçon inconnue : ${id}`);
   return lesson;
 }
 
+/** Les étapes de la leçon qui existent dans ce mode. */
+export function stepsOf(lesson: Lesson, mode: GameMode): readonly LessonStep[] {
+  return lesson.steps.filter((step) => !step.modes || step.modes.includes(mode));
+}
+
 /** Prochaine leçon à lancer automatiquement (dans l'ordre du sommaire), ou null. */
-export function nextLesson(view: GameView, seen: ReadonlySet<LessonId>): LessonId | null {
+export function nextLesson(
+  view: GameView,
+  seen: ReadonlySet<LessonId>,
+  scope: GuideScope = 'full',
+): LessonId | null {
   if (view.step === 'ENDED' || view.step === 'PITCH') return null;
-  // Face à une carte ou à la démo, seule la leçon qui l'explique peut s'ouvrir.
+  // Un joueur qui connaît le jeu ne revoit que ce qui change dans ce mode. Le mode Normal
+  // n'a rien de particulier : rien ne s'ouvre.
   const modal = view.event !== null || view.step === 'DEMO';
+  if (scope === 'mode')
+    return view.mode === 'NORMAL' || seen.has('rules') || modal ? null : 'rules';
+  // Face à une carte ou à la démo, seule la leçon qui l'explique peut s'ouvrir.
   const lesson = LESSONS.find(
     (candidate) =>
       !seen.has(candidate.id) &&

@@ -1,14 +1,18 @@
-import { useEffect, type ReactNode } from 'react';
+import type { GameMode } from '@oss/shared';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameView } from '../../view/types';
 import { useGame } from '../store/game';
 import { useGuide } from '../store/guide';
+import { useSettings } from '../store/settings';
 import {
+  CORE_LESSONS,
   LESSON_IDS,
   LESSONS,
   getLesson,
   isGoalMet,
   nextLesson,
+  stepsOf,
   type GuideBaseline,
   type LessonId,
 } from './lessons';
@@ -32,6 +36,17 @@ function finishLesson(): void {
     }
   }
   state.finish();
+  // Les chapitres essentiels sont lus : les prochaines parties ne montreront plus que les
+  // règles de leur mode.
+  const { seen } = useGuide.getState();
+  if (CORE_LESSONS.every((id) => seen.includes(id)))
+    useSettings.getState().update({ tutorialDone: true });
+}
+
+/** Le joueur arrête le tutoriel : il ne se relancera plus tout seul. */
+function stopGuide(): void {
+  useGuide.getState().stop();
+  useSettings.getState().update({ tutorialDone: true });
 }
 
 /** Étape suivante, ou fin du chapitre après la dernière. */
@@ -39,8 +54,8 @@ function advance(): void {
   const state = useGuide.getState();
   const view = useGame.getState().view;
   if (!state.active || !view) return;
-  const lesson = getLesson(state.active.lesson);
-  if (state.active.step + 1 >= lesson.steps.length) finishLesson();
+  const steps = stepsOf(getLesson(state.active.lesson), view.mode);
+  if (state.active.step + 1 >= steps.length) finishLesson();
   else state.goTo(state.active.step + 1, baselineOf(view));
 }
 
@@ -60,12 +75,30 @@ function Body({ text }: { text: string }) {
   );
 }
 
-/** Traduction d'une clé construite à l'exécution (les clés sont vérifiées par les tests). */
-function useText() {
+/** Ce que l'étape demande au joueur, puis « Bien joué ! » une fois l'action faite. */
+function Task({ done, text }: { done: boolean; text: string }) {
+  const { t } = useTranslation();
+  return (
+    <p className={done ? 'guide-task done' : 'guide-task'} role="status">
+      {done ? `✓ ${t('guide.doneTitle')}` : `👉 ${t('guide.yourTurn')} : ${text}`}
+    </p>
+  );
+}
+
+/**
+ * Traduction d'une clé construite à l'exécution (les clés sont vérifiées par les tests).
+ * `field` cherche d'abord le texte propre au mode (`<clé>.<MODE>.<champ>`), puis le texte commun.
+ */
+function useText(mode: GameMode | undefined) {
   const { t, i18n } = useTranslation();
+  const params = mode ? { mode: String(t(`modes.${mode}.name`)) } : {};
+  const text = (key: string): string => String(t(key as never, params as never));
   return {
-    text: (key: string): string => String(t(key as never)),
-    has: (key: string): boolean => i18n.exists(key),
+    text,
+    field: (key: string, name: 'title' | 'body' | 'do'): string | null => {
+      if (mode && i18n.exists(`${key}.${mode}.${name}`)) return text(`${key}.${mode}.${name}`);
+      return i18n.exists(`${key}.${name}`) ? text(`${key}.${name}`) : null;
+    },
   };
 }
 
@@ -76,20 +109,23 @@ function useText() {
  */
 export function Guide({ view }: { view: GameView }) {
   const { t } = useTranslation();
-  const { text, has } = useText();
+  const { text, field } = useText(view.mode);
   const guide = useGuide();
   const panel = useGame((s) => s.panel);
   const selected = useGame((s) => s.selected);
   const dispatch = useGame((s) => s.dispatch);
   const { active } = guide;
   const lesson = active ? getLesson(active.lesson) : null;
-  const step = lesson && active ? lesson.steps[active.step] : undefined;
+  const steps = lesson ? stepsOf(lesson, view.mode) : [];
+  const step = active ? steps[active.step] : undefined;
   const running = view.step === 'EXECUTION' && view.time.speed !== 0;
 
   // Suit la partie en cours : une nouvelle graine, c'est une nouvelle partie.
   useEffect(() => {
     if (useGuide.getState().seed !== view.seed) {
-      useGuide.getState().follow(view.seed, view.mode === 'EASY');
+      // Tout le tutoriel en Facile ou pour un nouveau joueur ; sinon, les règles du mode.
+      const full = view.mode === 'EASY' || !useSettings.getState().tutorialDone;
+      useGuide.getState().follow(view.seed, full ? 'full' : 'mode');
     }
   }, [view.seed, view.mode]);
 
@@ -97,14 +133,14 @@ export function Guide({ view }: { view: GameView }) {
   useEffect(() => {
     const state = useGuide.getState();
     if (state.seed !== view.seed || !state.autoplay || state.active) return;
-    const id = nextLesson(view, new Set(state.seen));
+    const id = nextLesson(view, new Set(state.seen), state.scope);
     if (id) state.open(id, baselineOf(view), false);
   });
 
-  // En Facile, la partie se met en pause à l'ouverture d'un chapitre.
+  // La partie se met en pause à l'ouverture d'un chapitre (sauf en Hardcore : jamais de pause).
   const lessonId = active?.lesson ?? null;
   useEffect(() => {
-    if (!lessonId || view.mode !== 'EASY' || !running) return;
+    if (!lessonId || view.mode === 'HARDCORE' || !running) return;
     useGuide.getState().setPausedByGuide(true);
     void dispatch({ type: 'setSpeed', speed: 0 });
     // Seule l'ouverture du chapitre compte : le joueur reste libre de relancer le temps.
@@ -154,17 +190,9 @@ export function Guide({ view }: { view: GameView }) {
     );
   }
 
-  const last = active.step + 1 >= lesson.steps.length;
+  const last = active.step + 1 >= steps.length;
+  const task = step.goal ? field(stepKey, 'do') : null;
   const chapter = LESSON_IDS.indexOf(lesson.id) + 1;
-  let task: ReactNode = null;
-  if (step.goal && has(`${stepKey}.do`)) {
-    task = (
-      <p className={accomplished ? 'guide-task done' : 'guide-task'} role="status">
-        {accomplished ? `✓ ${t('guide.doneTitle')}` : `👉 ${t('guide.yourTurn')} : `}
-        {!accomplished && text(`${stepKey}.do`)}
-      </p>
-    );
-  }
 
   return (
     <aside className="guide" aria-labelledby="guide-step-title" data-testid="guide">
@@ -183,18 +211,18 @@ export function Guide({ view }: { view: GameView }) {
           –
         </button>
       </header>
-      <h2 id="guide-step-title">{text(`${stepKey}.title`)}</h2>
+      <h2 id="guide-step-title">{field(stepKey, 'title')}</h2>
       <p className="guide-progress">
-        {t('guide.step', { n: active.step + 1, total: lesson.steps.length })}
+        {t('guide.step', { n: active.step + 1, total: steps.length })}
       </p>
-      <Body text={text(`${stepKey}.body`)} />
-      {task}
+      <Body text={field(stepKey, 'body') ?? ''} />
+      {task !== null && <Task done={accomplished} text={task} />}
       {guide.pausedByGuide && view.time.speed === 0 && (
         <p className="guide-paused">❚❚ {t('guide.paused')}</p>
       )}
       <div className="guide-actions">
         {!active.manual && guide.autoplay && (
-          <button type="button" className="guide-stop" onClick={() => guide.stop()}>
+          <button type="button" className="guide-stop" onClick={stopGuide}>
             {t('guide.stop')}
           </button>
         )}
@@ -212,10 +240,10 @@ export function Guide({ view }: { view: GameView }) {
 /** Sommaire du tutoriel, dans les Options : chaque chapitre peut être relu à tout moment. */
 export function GuideIndex() {
   const { t } = useTranslation();
-  const { text } = useText();
   const seen = useGuide((s) => s.seen);
   const open = useGuide((s) => s.open);
   const view = useGame((s) => s.view);
+  const { text } = useText(view?.mode);
   const openPanel = useGame((s) => s.openPanel);
   const read = (id: LessonId) => {
     if (!view) return;
