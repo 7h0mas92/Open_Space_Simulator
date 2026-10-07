@@ -1,7 +1,8 @@
 import { BALANCE, TEAM_MAX } from '@oss/shared';
 import { describe, expect, it } from 'vitest';
 import { acceptanceChance, makeOffer } from '../../src/simulation/devs';
-import { closePitch, pitchArgument, startPitch } from '../../src/simulation/fundraising';
+import { monthlyExpenses } from '../../src/simulation/economy';
+import { closePitch, maxRaise, pitchArgument, startPitch } from '../../src/simulation/fundraising';
 import { canPlace } from '../../src/simulation/furniture';
 import { teamSize } from '../../src/simulation/helpers';
 import { createTask, tasksInColumn } from '../../src/simulation/tasks';
@@ -217,6 +218,35 @@ describe('Aménagement', () => {
 });
 
 describe('Levée de fonds', () => {
+  it('plafonne le chèque à quelques mois de dépenses, trésorerie comprise', () => {
+    const { state } = stateWithTeam(['TEN_X', 'SENIOR_BEARD']);
+    state.phase = 'SERIES_A';
+    state.gauges.treasury = 0;
+    const empty = maxRaise(state);
+    expect(empty).toBeGreaterThan(monthlyExpenses(state) * 12);
+    state.gauges.treasury = empty;
+    // Déjà plein aux as : l'investisseur ne met plus que le minimum.
+    expect(maxRaise(state)).toBeLessThan(empty / 2);
+    expect(maxRaise(state)).toBeGreaterThan(0);
+  });
+
+  it('un chèque plafonné dilue quand même au moins le minimum', () => {
+    const { state } = stateWithTeam(['TEN_X']);
+    state.phase = 'SERIES_A';
+    state.gauges.hype = 95;
+    state.gauges.users = 5_000_000;
+    state.gauges.treasury = 50_000_000;
+    const cap = maxRaise(state);
+    const ctx = makeContext(state, { rng: new FixedRng(0.01) });
+    expect(startPitch(state, ctx).ok).toBe(true);
+    for (let round = 0; round < BALANCE.fundraising.rounds; round++)
+      pitchArgument(state, ctx, state.pitch!.options[0]!);
+    const result = state.pitch!.result!;
+    expect(result.success).toBe(true);
+    expect(result.amount).toBe(cap);
+    expect(result.dilution).toBeCloseTo(BALANCE.fundraising.minDilution, 5);
+  });
+
   it('déroule le pitch en 3 manches et calcule la dilution', () => {
     const { state } = stateWithTeam(['TEN_X']);
     state.phase = 'GARAGE';

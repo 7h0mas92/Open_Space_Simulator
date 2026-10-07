@@ -5,6 +5,7 @@ import {
   PHASES,
   type EventCard,
   type GameMode,
+  type GameState,
   type Outcome,
   type Phase,
 } from '@oss/shared';
@@ -18,9 +19,72 @@ import { Simulation } from './simulation';
  * Utilisé par `pnpm balance` (des milliers de parties, en parallèle) et par les tests.
  */
 
+/** Jauges suivies sur la durée d'une partie (rapport « Trajectoire des jauges »). */
+export const TRACKED_GAUGES = ['treasury', 'coffee', 'debt', 'stability', 'hype', 'users'] as const;
+export type TrackedGauge = (typeof TRACKED_GAUGES)[number];
+
+/** Sprints où l'on photographie les jauges : début, tiers, mi-parcours, fin. */
+export const CHECKPOINT_SPRINTS = [5, 13, 26, 39] as const;
+
+/** Une jauge est « collée » à son plancher ou à son plafond sous / au-delà de ces valeurs. */
+const FLOOR = 2;
+const CEILING = 98;
+
+/** Ce que la partie a fait des jauges, jour après jour. */
+export interface GaugeTrace {
+  /**
+   * Valeur des jauges à la fin de chaque sprint de référence (null si la partie était
+   * déjà finie). La trésorerie est exprimée en mois de dépenses : 24,1 M€ ne veut rien
+   * dire seul, mais « 40 mois de salaires d'avance » dit que l'argent ne compte plus.
+   */
+  checkpoints: (Record<TrackedGauge, number> | null)[];
+  /** Part des jours passés au plancher (≤ 2), par jauge (hors trésorerie et utilisateurs). */
+  floorShare: Record<'coffee' | 'debt' | 'stability' | 'hype', number>;
+  /** Part des jours passés au plafond (≥ 98). */
+  ceilingShare: Record<'coffee' | 'debt' | 'stability' | 'hype', number>;
+}
+
+const BOUNDED_GAUGES = ['coffee', 'debt', 'stability', 'hype'] as const;
+
+/** Mois de dépenses en caisse à la fin d'un sprint (dépenses du sprint ramenées au mois). */
+function cashMonths(treasury: number, sprintExpenses: number): number {
+  const monthly = (sprintExpenses * 30) / 14;
+  return monthly > 0 ? Math.max(0, treasury) / monthly : 99;
+}
+
+export function traceGauges(state: Readonly<GameState>): GaugeTrace {
+  const daily = state.history.daily;
+  const checkpoints = CHECKPOINT_SPRINTS.map((sprint) => {
+    const point = daily.filter((d) => d.sprint === sprint).at(-1);
+    const report = state.history.sprints.find((r) => r.sprint === sprint);
+    if (!point || !report) return null;
+    return {
+      treasury: cashMonths(point.treasury, report.expenses),
+      coffee: point.coffee,
+      debt: point.debt,
+      stability: point.stability,
+      hype: point.hype,
+      users: point.users,
+    };
+  });
+  const share = (test: (value: number) => boolean) =>
+    Object.fromEntries(
+      BOUNDED_GAUGES.map((gauge) => [
+        gauge,
+        daily.length > 0 ? daily.filter((d) => test(d[gauge])).length / daily.length : 0,
+      ]),
+    ) as GaugeTrace['floorShare'];
+  return {
+    checkpoints,
+    floorShare: share((value) => value <= FLOOR),
+    ceilingShare: share((value) => value >= CEILING),
+  };
+}
+
 /** Résumé d'une partie jouée par un bot. */
 export interface GameRecord {
   bot: BotName;
+  mode: GameMode;
   seed: string;
   outcome: Outcome;
   phaseReached: Phase;
@@ -31,6 +95,7 @@ export interface GameRecord {
   choices: [string, number][];
   /** Succès débloqués pendant la partie. */
   achievements: string[];
+  trace: GaugeTrace;
 }
 
 export function playBalanceGame(
@@ -50,6 +115,7 @@ export function playBalanceGame(
   };
   return {
     bot,
+    mode,
     seed,
     outcome: result.outcome,
     phaseReached: result.phaseReached,
@@ -58,6 +124,7 @@ export function playBalanceGame(
     maxUsers: state.stats.maxUsers,
     choices: state.events.choices.map((c) => [c.cardId, c.choiceIndex]),
     achievements: [...state.achievements],
+    trace: traceGauges(state),
   };
 }
 
@@ -88,9 +155,29 @@ export interface CardAlert {
   reason: string;
 }
 
+/** Comportement moyen des jauges pour un groupe de parties (un bot, ou un mode de jeu). */
+export interface GaugeSummary {
+  label: string;
+  games: number;
+  /** Médiane de chaque jauge aux sprints de référence, sur les parties encore en cours. */
+  checkpoints: ({ games: number; values: Record<TrackedGauge, number> } | null)[];
+  floorShare: GaugeTrace['floorShare'];
+  ceilingShare: GaugeTrace['ceilingShare'];
+}
+
+export interface ModeSummary extends GaugeSummary {
+  mode: GameMode;
+  bankruptcyRate: number;
+  medianValuation: number;
+}
+
 export interface BalanceReport {
   games: number;
   bots: BotSummary[];
+  /** Trajectoire des jauges de chaque bot, en mode Normal. */
+  gauges: GaugeSummary[];
+  /** Mêmes mesures pour chaque mode de jeu (tous bots confondus). */
+  modes: ModeSummary[];
   /** Nombre de tirages de chaque carte (les plus tirées d'abord). */
   draws: [string, number][];
   neverDrawn: string[];
@@ -141,6 +228,34 @@ function summarizeBot(bot: BotName, records: GameRecord[]): BotSummary {
   };
 }
 
+function summarizeGauges(label: string, records: GameRecord[]): GaugeSummary {
+  const checkpoints = CHECKPOINT_SPRINTS.map((_, index) => {
+    const points = records
+      .map((r) => r.trace.checkpoints[index])
+      .filter((p): p is Record<TrackedGauge, number> => p !== null && p !== undefined);
+    if (points.length === 0) return null;
+    const values = Object.fromEntries(
+      TRACKED_GAUGES.map((gauge) => [gauge, median(points.map((p) => p[gauge]))]),
+    ) as Record<TrackedGauge, number>;
+    return { games: points.length, values };
+  });
+  const n = Math.max(1, records.length);
+  const average = (pick: (trace: GaugeTrace) => GaugeTrace['floorShare']) =>
+    Object.fromEntries(
+      BOUNDED_GAUGES.map((gauge) => [
+        gauge,
+        records.reduce((total, r) => total + pick(r.trace)[gauge], 0) / n,
+      ]),
+    ) as GaugeTrace['floorShare'];
+  return {
+    label,
+    games: records.length,
+    checkpoints,
+    floorShare: average((t) => t.floorShare),
+    ceilingShare: average((t) => t.ceilingShare),
+  };
+}
+
 /**
  * Un choix est « dominé » si un autre choix de la même carte est au moins aussi bon
  * sur toutes les jauges et meilleur sur une : il n'y a alors pas de vrai dilemme.
@@ -175,13 +290,33 @@ export function dominatedChoices(card: EventCard): number[] {
   return dominated;
 }
 
-export function aggregate(records: GameRecord[], cards: CardLibrary): BalanceReport {
-  const bots = [...new Set(records.map((r) => r.bot))].map((bot) =>
+export function aggregate(allRecords: GameRecord[], cards: CardLibrary): BalanceReport {
+  // Les stratégies, les cartes et les succès se comparent en mode Normal ; les autres
+  // modes n'ont qu'une section à eux (jauges, faillites).
+  const records = allRecords.filter((r) => r.mode === 'NORMAL');
+  const botNames = [...new Set(records.map((r) => r.bot))];
+  const bots = botNames.map((bot) =>
     summarizeBot(
       bot,
       records.filter((r) => r.bot === bot),
     ),
   );
+  const gauges = botNames.map((bot) =>
+    summarizeGauges(
+      bot,
+      records.filter((r) => r.bot === bot),
+    ),
+  );
+  const modes = [...new Set(allRecords.map((r) => r.mode))].map((mode): ModeSummary => {
+    const games = allRecords.filter((r) => r.mode === mode);
+    return {
+      ...summarizeGauges(mode, games),
+      mode,
+      bankruptcyRate:
+        games.filter((r) => r.outcome === 'BANKRUPTCY').length / Math.max(1, games.length),
+      medianValuation: median(games.map((r) => r.valuation)),
+    };
+  });
 
   const draws = new Map<string, number>();
   const choiceStats = new Map<string, { picks: number; valuation: number; bankruptcies: number }>();
@@ -259,6 +394,8 @@ export function aggregate(records: GameRecord[], cards: CardLibrary): BalanceRep
   return {
     games: records.length,
     bots,
+    gauges,
+    modes,
     draws: sortedDraws,
     neverDrawn: cards.cards.filter((c) => !draws.has(c.id)).map((c) => c.id),
     choices,
@@ -269,6 +406,8 @@ export function aggregate(records: GameRecord[], cards: CardLibrary): BalanceRep
 
 const pct = (value: number) => `${(value * 100).toFixed(1)} %`;
 const money = (value: number) => `${(value / 1e6).toFixed(1)} M€`;
+const users = (value: number) =>
+  value >= 1e6 ? `${(value / 1e6).toFixed(2)} M` : `${Math.round(value / 1000)} k`;
 
 /** Rapport lisible en Markdown. */
 export function renderReport(report: BalanceReport): string {
@@ -297,6 +436,56 @@ export function renderReport(report: BalanceReport): string {
       pct((b.bankruptcyByPhase[p] ?? 0) / Math.max(1, b.games)),
     );
     lines.push(`| ${b.bot} | ${cells.join(' | ')} |`);
+  }
+  lines.push('', '## Trajectoire des jauges (mode Normal)', '');
+  lines.push(
+    'Médiane de chaque jauge à la fin des sprints 5, 13, 26 et 39, sur les parties encore en cours. La trésorerie est en mois de dépenses : au-delà de 24 mois, l’argent ne compte plus vraiment.',
+    '',
+  );
+  lines.push(
+    '| Bot | Sprint | Parties | Trésorerie (mois) | Café | Dette | Stabilité | Hype | Utilisateurs |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+  );
+  for (const g of report.gauges) {
+    g.checkpoints.forEach((checkpoint, index) => {
+      if (!checkpoint) return;
+      const v = checkpoint.values;
+      lines.push(
+        `| ${g.label} | ${CHECKPOINT_SPRINTS[index]} | ${checkpoint.games} | ${v.treasury.toFixed(1)} | ${v.coffee.toFixed(0)} | ${v.debt.toFixed(0)} | ${v.stability.toFixed(0)} | ${v.hype.toFixed(0)} | ${users(v.users)} |`,
+      );
+    });
+  }
+  lines.push('', '## Jauges bloquées', '');
+  lines.push(
+    'Part des jours passés au plancher (≤ 2) ou au plafond (≥ 98). Une jauge collée à 0 ou à 100 pendant des mois ne pose plus de choix au joueur.',
+    '',
+  );
+  lines.push(
+    '| Bot / mode | Café à 0 | Hype à 0 | Stabilité à 0 | Dette à 100 | Café à 100 | Hype à 100 | Stabilité à 100 | Dette à 0 |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+  );
+  for (const g of [...report.gauges, ...report.modes]) {
+    const f = g.floorShare;
+    const c = g.ceilingShare;
+    lines.push(
+      `| ${g.label} | ${pct(f.coffee)} | ${pct(f.hype)} | ${pct(f.stability)} | ${pct(c.debt)} | ${pct(c.coffee)} | ${pct(c.hype)} | ${pct(c.stability)} | ${pct(f.debt)} |`,
+    );
+  }
+  if (report.modes.length > 1) {
+    lines.push('', '## Par mode de jeu', '');
+    lines.push(
+      '| Mode | Parties | Faillite | Valo. médiane | Trésorerie S13 (mois) | Hype S13 | Café S13 | Hype S39 |',
+      '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+    );
+    for (const m of report.modes) {
+      const mid = m.checkpoints[1]?.values;
+      const end = m.checkpoints[3]?.values;
+      const cell = (value: number | undefined, digits = 0) =>
+        value === undefined ? '—' : value.toFixed(digits);
+      lines.push(
+        `| ${m.mode} | ${m.games} | ${pct(m.bankruptcyRate)} | ${money(m.medianValuation)} | ${cell(mid?.treasury, 1)} | ${cell(mid?.hype)} | ${cell(mid?.coffee)} | ${cell(end?.hype)} |`,
+      );
+    }
   }
   lines.push('', '## Cartes les plus tirées', '');
   for (const [cardId, count] of report.draws.slice(0, 15)) lines.push(`- \`${cardId}\` : ${count}`);

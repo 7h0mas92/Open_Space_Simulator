@@ -445,8 +445,8 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     icon: '💰',
     difficulty: 'MEDIUM',
     title: t('Trésor de guerre', 'War Chest'),
-    description: t('Avoir 10 M€ en banque.', 'Have €10M in the bank.'),
-    check: (state) => state.gauges.treasury >= 10_000_000,
+    description: t('Avoir 6 M€ en banque.', 'Have €6M in the bank.'),
+    check: (state) => state.gauges.treasury >= 6_000_000,
   },
   {
     id: 'great-place',

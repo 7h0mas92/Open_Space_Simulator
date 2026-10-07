@@ -651,15 +651,15 @@
           },
           "coffee": {
             "title": "Café",
-            "body": "Le café est le carburant de l'équipe. Les devs en boivent en travaillant et pendant leurs pauses.\n\nChaque matin à 8h, les machines à café remettent du café (c'est payant). Plus tu as de machines, plus le stock remonte.\n\nÀ zéro, la productivité est divisée par 3 et le moral baisse. Une deuxième machine à café est souvent un excellent achat."
+            "body": "Le café est le carburant de l'équipe. Les devs en boivent en travaillant et pendant leurs pauses.\n\nChaque matin à 8h, les machines à café remettent du café (c'est payant). Plus tu as de machines, plus le stock remonte. À partir de la phase Seed, la cuisine en livre aussi, puis la cantine stocke plus grand ; une grande équipe a quand même besoin de machines.\n\nÀ zéro, la productivité est divisée par 3 et le moral baisse. Une deuxième machine à café est souvent un excellent achat."
           },
           "debt": {
             "title": "Dette technique et stabilité",
-            "body": "La dette technique monte quand tu livres des features à la va-vite. Elle ralentit les devs, use la prod et peut provoquer de gros bugs.\n\nLa stabilité mesure la fiabilité de la prod. Quand elle baisse, les pannes arrivent, surtout le vendredi à 17h, et les utilisateurs s'en vont.\n\nLes tâches de refacto font baisser la dette ; les bugfix et l'infra font remonter la stabilité."
+            "body": "La dette technique monte quand tu livres des features à la va-vite. Elle ralentit les devs, use la prod et peut provoquer de gros bugs.\n\nLa stabilité mesure la fiabilité de la prod. Quand elle baisse, les pannes arrivent, surtout le vendredi à 17h, et les utilisateurs s'en vont.\n\nMême sans raccourci, le code vieillit : la dette monte un peu chaque jour, plus vite avec une grande équipe, et plus tu as d'utilisateurs, plus la prod s'use.\n\nLes tâches de refacto font baisser la dette ; les bugfix et l'infra font remonter la stabilité."
           },
           "hype": {
             "title": "Hype et utilisateurs",
-            "body": "La hype, c'est l'envie que ta startup donne aux investisseurs et au public. Elle monte quand tu livres des features et baisse doucement chaque jour. À zéro, plus aucune levée de fonds n'est possible.\n\nLes utilisateurs arrivent avec chaque feature livrée, et un peu tout seuls quand la hype est haute. Ils partent quand la prod est instable. Ce sont eux qui rapportent de l'argent."
+            "body": "La hype, c'est l'envie que ta startup donne aux investisseurs et au public. Elle monte quand tu livres des features et revient chaque jour vers 15 : très haute, elle retombe vite ; à zéro, elle remonte doucement. À zéro, plus aucune levée de fonds n'est possible.\n\nLes utilisateurs arrivent avec chaque feature livrée, et un peu tout seuls quand la hype est haute. Ils partent quand la prod est instable. Ce sont eux qui rapportent de l'argent."
           },
           "dilemma": {
             "title": "Le grand dilemme",

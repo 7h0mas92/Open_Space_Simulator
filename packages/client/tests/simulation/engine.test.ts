@@ -231,5 +231,25 @@ describe('Analyse d’équilibrage', () => {
     const markdown = renderReport(report);
     expect(markdown).toContain('#');
     expect(markdown.length).toBeGreaterThan(200);
+    expect(markdown).toContain('## Trajectoire des jauges');
+    expect(markdown).toContain('## Jauges bloquées');
+  });
+
+  it('suit la trajectoire des jauges, mode par mode', () => {
+    const cards = defaultCardLibrary();
+    const normal = playBalanceGame('trace', 'balanced', cards);
+    const easy = playBalanceGame('trace', 'balanced', cards, 'EASY');
+    expect(normal.mode).toBe('NORMAL');
+    const firstCheckpoint = normal.trace.checkpoints[0];
+    expect(firstCheckpoint?.treasury).toBeGreaterThan(0);
+    for (const share of Object.values(normal.trace.floorShare)) {
+      expect(share).toBeGreaterThanOrEqual(0);
+      expect(share).toBeLessThanOrEqual(1);
+    }
+    const report = aggregate([normal, easy], cards);
+    // Les stratégies se comparent en mode Normal ; chaque mode a sa ligne.
+    expect(report.games).toBe(1);
+    expect(report.modes.map((m) => m.mode)).toEqual(['NORMAL', 'EASY']);
+    expect(renderReport(report)).toContain('## Par mode de jeu');
   });
 });
