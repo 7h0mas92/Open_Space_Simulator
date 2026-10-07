@@ -35,6 +35,6 @@ export const securityPlugin = fp(async (app: FastifyInstance, { env }: { env: En
     max: env.RATE_LIMIT_MAX,
     timeWindow: '1 minute',
     errorResponseBuilder: (_request, context) =>
-      new AppError(429, 'RATE_LIMITED', `Trop de requêtes, réessaie dans ${context.after}`),
+      new AppError(429, 'RATE_LIMITED', `Trop de tentatives, réessaie dans ${context.after}`),
   });
 });

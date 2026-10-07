@@ -32,7 +32,13 @@ function mockApi(routes: Record<string, Handler>) {
 }
 
 beforeEach(async () => {
-  useSession.setState({ status: 'loading', user: null, error: null, githubEnabled: false });
+  useSession.setState({
+    status: 'loading',
+    user: null,
+    error: null,
+    githubEnabled: false,
+    serverAvailable: true,
+  });
   await i18n.changeLanguage('fr');
 });
 
@@ -93,7 +99,7 @@ describe('App', () => {
     await userEvent.type(screen.getByLabelText('Mot de passe'), 'mauvais');
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Email ou mot de passe incorrect.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Email ou mot de passe incorrect');
   });
 
   it('inscrit un joueur avec la langue courante', async () => {
@@ -114,6 +120,38 @@ describe('App', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     const call = fetchMock.mock.calls.find(([url]) => url === '/api/auth/register');
     expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ locale: 'fr' });
+  });
+
+  it('explique pourquoi le pseudo est refusé, sans appeler le serveur', async () => {
+    const fetchMock = mockApi({});
+    render(<App />);
+
+    await openAccount();
+    await userEvent.click(screen.getByRole('tab', { name: 'Inscription' }));
+    await userEvent.type(screen.getByLabelText('Email'), 'kevin@startup.io');
+    await userEvent.type(screen.getByLabelText(/Pseudo/), 'Kevin Ninja');
+    await userEvent.type(screen.getByLabelText(/Mot de passe/), 'ninja-du-code');
+    await userEvent.click(screen.getByRole('button', { name: 'Créer mon compte' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent("Pas d'espace.");
+    expect(screen.getByLabelText(/Pseudo/)).toHaveAttribute('aria-invalid', 'true');
+    expect(fetchMock.mock.calls.some(([url]) => url === '/api/auth/register')).toBe(false);
+  });
+
+  it('dit clairement que les comptes sont indisponibles quand aucun serveur ne répond', async () => {
+    // Version en ligne hébergée sans serveur : l'hébergeur renvoie sa propre page 404 en HTML.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('<!doctype html><h1>404</h1>', { status: 404 })),
+    );
+    render(<App />);
+
+    await openAccount();
+    expect(
+      await screen.findByRole('heading', { name: 'Comptes indisponibles sur cette version' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Se connecter' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Réessayer' })).toBeInTheDocument();
   });
 
   it('restaure une session existante et permet de se déconnecter', async () => {
@@ -163,7 +201,9 @@ describe('App', () => {
     render(<App />);
 
     // L'erreur ouvre d'elle-même la fenêtre de connexion.
-    expect(await screen.findByRole('alert')).toHaveTextContent('La connexion GitHub a échoué.');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'GitHub ne nous a pas laissés entrer',
+    );
     expect(screen.getByRole('dialog', { name: 'Compte' })).toBeInTheDocument();
     expect(window.location.search).toBe('');
   });
