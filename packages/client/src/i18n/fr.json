@@ -10,7 +10,23 @@
     "guestHint": "Sans compte, pas de classement. Mais la prod tombe quand même.",
     "continue": "Charger une partie",
     "more": "Plus",
-    "startFailed": "Impossible de lancer la partie. Réessaie."
+    "startFailed": "Impossible de lancer la partie. Réessaie.",
+    "play": "Jouer",
+    "playHint": "Nouvelle partie en mode {{mode}}",
+    "resume": "Continuer",
+    "resumeHint": "{{mode}} · {{phase}} · sprint {{sprint}} · {{valuation}}",
+    "signIn": "Connexion",
+    "account": "Compte",
+    "nav": "Menu principal",
+    "modesHint": "Chaque mode a son tutoriel. Tu peux le relire à tout moment depuis les options en partie.",
+    "ticker": [
+      "#incidents · La prod est tombée. On est vendredi, 17h04.",
+      "#general · Le stagiaire a découvert git push --force.",
+      "#random · Quelqu'un a mis du ketchup dans la machine à café.",
+      "#general · Réunion de 2h pour choisir la couleur d'un bouton.",
+      "#incidents · « Ça marche sur ma machine. »",
+      "#random · Le Rustacé propose de tout réécrire. Encore."
+    ]
   },
   "language": {
     "label": "Langue",
@@ -423,27 +439,33 @@
     "title": "Choisis ton mode",
     "EASY": {
       "name": "Facile",
-      "rule": "Pour apprendre : tutoriel complet, plus d'argent, crises adoucies."
+      "rule": "Pour apprendre : tutoriel complet, plus d'argent, crises adoucies.",
+      "tag": "Débutant"
     },
     "NORMAL": {
       "name": "Normal",
-      "rule": "18 mois pour devenir une licorne."
+      "rule": "18 mois pour devenir une licorne.",
+      "tag": "Recommandé"
     },
     "HARDCORE": {
       "name": "Hardcore",
-      "rule": "Pas de pause. Jamais."
+      "rule": "Pas de pause. Jamais.",
+      "tag": "Expert"
     },
     "INTERNS_ONLY": {
       "name": "Stagiaires Only",
-      "rule": "Que des stagiaires. Bon courage pour la prod."
+      "rule": "Que des stagiaires. Bon courage pour la prod.",
+      "tag": "Chaos"
     },
     "SHIP_IN_3": {
       "name": "Défi 3 sprints",
-      "rule": "Cette app doit sortir en 3 sprints."
+      "rule": "Cette app doit sortir en 3 sprints.",
+      "tag": "Partie courte"
     },
     "DAILY": {
       "name": "Daily",
-      "rule": "La même partie pour tout le monde aujourd'hui."
+      "rule": "La même partie pour tout le monde aujourd'hui.",
+      "tag": "Classement du jour"
     }
   },
   "saves": {

@@ -11,6 +11,7 @@ function uniqueAccount(testId: string) {
 }
 
 async function register(page: Page, account: ReturnType<typeof uniqueAccount>) {
+  await page.getByRole('button', { name: /Connexion/ }).click();
   await page.getByRole('tab', { name: 'Inscription' }).click();
   await page.getByLabel('Email').fill(account.email);
   await page.getByLabel(/Pseudo/).fill(account.pseudo);
@@ -34,6 +35,7 @@ test('inscription, déconnexion puis reconnexion', async ({ page }, testInfo) =>
   await expect(page.getByText(`Bienvenue, ${account.pseudo} !`)).toBeVisible();
 
   await page.getByRole('button', { name: 'Se déconnecter' }).click();
+  await page.getByRole('button', { name: /Connexion/ }).click();
   await expect(page.getByRole('button', { name: 'Se connecter' })).toBeVisible();
 
   await page.getByLabel('Email').fill(account.email);
@@ -43,6 +45,7 @@ test('inscription, déconnexion puis reconnexion', async ({ page }, testInfo) =>
 });
 
 test('refuse un mauvais mot de passe', async ({ page }) => {
+  await page.getByRole('button', { name: /Connexion/ }).click();
   await page.getByLabel('Email').fill('personne@startup.io');
   await page.getByLabel('Mot de passe').fill('mauvais-mot-de-passe');
   await page.getByRole('button', { name: 'Se connecter' }).click();
