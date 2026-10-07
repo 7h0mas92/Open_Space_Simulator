@@ -1,5 +1,7 @@
 import {
+  ACHIEVEMENTS,
   OUTCOMES,
+  type AchievementDifficulty,
   PHASES,
   type EventCard,
   type GameMode,
@@ -27,6 +29,8 @@ export interface GameRecord {
   maxUsers: number;
   /** Cartes tirées et choix faits : [identifiant, index du choix]. */
   choices: [string, number][];
+  /** Succès débloqués pendant la partie. */
+  achievements: string[];
 }
 
 export function playBalanceGame(
@@ -53,6 +57,7 @@ export function playBalanceGame(
     valuation: result.valuation,
     maxUsers: state.stats.maxUsers,
     choices: state.events.choices.map((c) => [c.cardId, c.choiceIndex]),
+    achievements: [...state.achievements],
   };
 }
 
@@ -91,6 +96,16 @@ export interface BalanceReport {
   neverDrawn: string[];
   choices: ChoiceStat[];
   alerts: CardAlert[];
+  /** Part des parties qui débloquent chaque succès (vérifie que la difficulté annoncée est juste). */
+  achievements: AchievementRate[];
+}
+
+export interface AchievementRate {
+  id: string;
+  difficulty: AchievementDifficulty;
+  secret: boolean;
+  /** Part des parties (0 à 1) où le succès a été débloqué. */
+  rate: number;
 }
 
 function median(values: number[]): number {
@@ -230,6 +245,16 @@ export function aggregate(records: GameRecord[], cards: CardLibrary): BalanceRep
     }
   }
 
+  const unlocks = new Map<string, number>();
+  for (const record of records)
+    for (const id of record.achievements) unlocks.set(id, (unlocks.get(id) ?? 0) + 1);
+  const achievements = ACHIEVEMENTS.map(({ id, difficulty, secret = false }) => ({
+    id,
+    difficulty,
+    secret,
+    rate: (unlocks.get(id) ?? 0) / Math.max(1, records.length),
+  }));
+
   const sortedDraws = [...draws.entries()].sort((a, b) => b[1] - a[1]);
   return {
     games: records.length,
@@ -238,6 +263,7 @@ export function aggregate(records: GameRecord[], cards: CardLibrary): BalanceRep
     neverDrawn: cards.cards.filter((c) => !draws.has(c.id)).map((c) => c.id),
     choices,
     alerts,
+    achievements,
   };
 }
 
@@ -282,6 +308,14 @@ export function renderReport(report: BalanceReport): string {
   );
   lines.push('', `## Cartes à surveiller (${report.alerts.length})`, '');
   for (const alert of report.alerts) lines.push(`- \`${alert.cardId}\` : ${alert.reason}`);
+  lines.push('', '## Succès débloqués par les bots', '');
+  lines.push(
+    'Les bots ne jouent pas comme un humain : ce taux sert à repérer un succès impossible (0 %) ou trop facile pour sa difficulté.',
+    '',
+  );
+  lines.push('| Succès | Difficulté | Secret | Parties |', '| --- | --- | --- | ---: |');
+  for (const a of report.achievements)
+    lines.push(`| \`${a.id}\` | ${a.difficulty} | ${a.secret ? 'oui' : ''} | ${pct(a.rate)} |`);
   lines.push('');
   return lines.join('\n');
 }

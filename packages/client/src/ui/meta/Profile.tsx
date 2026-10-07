@@ -1,30 +1,32 @@
-import { ACHIEVEMENTS, OUTCOMES, type AchievementDto, type ProfileResponse } from '@oss/shared';
+import { OUTCOMES, type AchievementDto, type ProfileResponse } from '@oss/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { metaApi } from '../../api/meta';
-import { pendingAchievements } from '../../save/achievements';
 import { formatGauge } from '../game/format';
 import { useSession } from '../store/session';
-import { AchievementGrid } from './Achievements';
+import { AchievementProgress, loadAchievements } from './Achievements';
 
-/** Catalogue des succès pour un invité : ceux débloqués sur cet appareil sont marqués. */
-async function guestAchievements(): Promise<AchievementDto[]> {
-  const local = new Set(await pendingAchievements.all().catch(() => []));
-  const catalog = await metaApi.achievements().catch(() =>
-    ACHIEVEMENTS.map(({ id, title, description, icon }) => ({
-      id,
-      title,
-      description,
-      icon,
-      unlockedAt: null,
-    })),
+/** Résumé des succès, avec un lien vers l'écran complet. */
+function AchievementSummary({
+  achievements,
+  onOpen,
+}: {
+  achievements: readonly AchievementDto[];
+  onOpen: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <AchievementProgress achievements={achievements} />
+      <button type="button" onClick={onOpen}>
+        🏅 {t('achievements.open')}
+      </button>
+    </>
   );
-  const now = new Date().toISOString();
-  return catalog.map((a) => (local.has(a.id) && !a.unlockedAt ? { ...a, unlockedAt: now } : a));
 }
 
-/** Profil : statistiques cumulées, meilleures parties et succès. Invité : succès locaux. */
-export function Profile() {
+/** Profil : statistiques cumulées, meilleures parties et résumé des succès. */
+export function Profile({ onOpenAchievements }: { onOpenAchievements: () => void }) {
   const { t, i18n } = useTranslation();
   const online = useSession((s) => s.status === 'authenticated');
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
@@ -33,7 +35,7 @@ export function Profile() {
 
   useEffect(() => {
     if (online) metaApi.profile().then(setProfile, () => setError(true));
-    else void guestAchievements().then(setGuest);
+    else void loadAchievements().then(setGuest);
   }, [online]);
 
   if (error)
@@ -46,7 +48,7 @@ export function Profile() {
     return (
       <>
         <p className="hint">{t('profile.guestHint')}</p>
-        {guest && <AchievementGrid achievements={guest} />}
+        {guest && <AchievementSummary achievements={guest} onOpen={onOpenAchievements} />}
       </>
     );
   if (!profile) return <p aria-live="polite">{t('auth.loading')}</p>;
@@ -91,7 +93,7 @@ export function Profile() {
         </ol>
       )}
       <h2>{t('achievements.title')}</h2>
-      <AchievementGrid achievements={profile.achievements} />
+      <AchievementSummary achievements={profile.achievements} onOpen={onOpenAchievements} />
     </div>
   );
 }

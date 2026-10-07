@@ -48,11 +48,13 @@ export async function achievementsFor(
 ): Promise<AchievementDto[]> {
   const unlocked = userId ? await prisma.userAchievement.findMany({ where: { userId } }) : [];
   const dates = new Map(unlocked.map((row) => [row.achievementId, row.unlockedAt]));
-  return ACHIEVEMENTS.map(({ id, title, description, icon }) => ({
+  return ACHIEVEMENTS.map(({ id, title, description, icon, difficulty, secret = false }) => ({
     id,
     title,
     description,
     icon,
+    difficulty,
+    secret,
     unlockedAt: dates.get(id)?.toISOString() ?? null,
   }));
 }

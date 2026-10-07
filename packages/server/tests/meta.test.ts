@@ -297,6 +297,15 @@ describe('succès et profil', () => {
     const catalog = (await app.inject({ url: '/api/achievements' })).json().achievements;
     expect(catalog.length).toBeGreaterThanOrEqual(25);
     expect(catalog.every((a: { unlockedAt: unknown }) => a.unlockedAt === null)).toBe(true);
+    // Difficulté et succès secrets : l'interface affiche « ??? » tant qu'ils sont verrouillés.
+    expect(catalog.find((a: { id: string }) => a.id === 'skynet')).toMatchObject({
+      difficulty: 'MEDIUM',
+      secret: true,
+    });
+    expect(catalog.find((a: { id: string }) => a.id === 'hello-world')).toMatchObject({
+      difficulty: 'EASY',
+      secret: false,
+    });
 
     const cookies = await player('collector');
     const unlock = await app.inject({

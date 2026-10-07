@@ -293,7 +293,6 @@
     "pause": "Pause",
     "resume": "Resume"
   },
-
   "results": {
     "INVALID_COMMAND": "That can't be done.",
     "WRONG_STAGE": "Not now: wrong step of the sprint.",
@@ -506,7 +505,25 @@
     "title": "Achievements",
     "progress": "{{unlocked}} of {{total}} achievements unlocked",
     "locked": "Not unlocked yet",
-    "unlockedOn": "Unlocked on {{date}}"
+    "unlockedOn": "Unlocked on {{date}}",
+    "open": "See all achievements",
+    "secret": "Secret",
+    "secretTitle": "???",
+    "secretHint": "Secret achievement: keep playing to find out how to unlock it.",
+    "guestHint": "As a guest, your achievements stay on this device. Log in to keep them on your account, on every device.",
+    "filter": "Filter achievements",
+    "filters": {
+      "all": "All",
+      "unlocked": "Unlocked",
+      "locked": "To unlock"
+    },
+    "difficulty": {
+      "EASY": "Easy",
+      "MEDIUM": "Intermediate",
+      "HARD": "Hard",
+      "LEGENDARY": "Legendary"
+    },
+    "empty": "No achievements here yet."
   },
   "slack": {
     "channels": "Channels",

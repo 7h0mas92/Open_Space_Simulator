@@ -5,6 +5,7 @@ import { AuthPanel } from './components/AuthPanel';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { ModePicker } from './menu/ModePicker';
 import { SaveSlots } from './menu/SaveSlots';
+import { AchievementsPage } from './meta/Achievements';
 import { Leaderboard } from './meta/Leaderboard';
 import { MetaPage } from './meta/MetaPage';
 import { Profile } from './meta/Profile';
@@ -42,7 +43,7 @@ function useTextScale() {
 }
 
 /** Écrans du menu (hors partie). */
-type Screen = 'home' | 'load' | 'leaderboard' | 'profile' | 'admin' | 'credits';
+type Screen = 'home' | 'load' | 'leaderboard' | 'achievements' | 'profile' | 'admin' | 'credits';
 
 /** Menu d'accueil (connexion ou invité, choix du mode), pages du méta-jeu, puis la partie. */
 export function App() {
@@ -102,7 +103,13 @@ export function App() {
     case 'profile':
       return (
         <MetaPage title={t('profile.title')} onBack={back} wide>
-          <Profile />
+          <Profile onOpenAchievements={() => setScreen('achievements')} />
+        </MetaPage>
+      );
+    case 'achievements':
+      return (
+        <MetaPage title={t('achievements.title')} onBack={back} wide>
+          <AchievementsPage />
         </MetaPage>
       );
     case 'admin':
@@ -158,6 +165,9 @@ export function App() {
               </button>
               <button type="button" onClick={() => setScreen('leaderboard')}>
                 🏆 {t('leaderboard.title')}
+              </button>
+              <button type="button" onClick={() => setScreen('achievements')}>
+                🏅 {t('achievements.title')}
               </button>
               <button type="button" onClick={() => setScreen('profile')}>
                 👤 {t('profile.title')}

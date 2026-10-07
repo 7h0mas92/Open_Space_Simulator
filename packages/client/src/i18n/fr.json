@@ -293,7 +293,6 @@
     "pause": "Mettre en pause",
     "resume": "Reprendre"
   },
-
   "results": {
     "INVALID_COMMAND": "Action impossible.",
     "WRONG_STAGE": "Pas maintenant : ce n'est pas la bonne étape du sprint.",
@@ -506,7 +505,25 @@
     "title": "Succès",
     "progress": "{{unlocked}} succès débloqués sur {{total}}",
     "locked": "Pas encore débloqué",
-    "unlockedOn": "Débloqué le {{date}}"
+    "unlockedOn": "Débloqué le {{date}}",
+    "open": "Voir tous les succès",
+    "secret": "Secret",
+    "secretTitle": "???",
+    "secretHint": "Succès secret : continue à jouer pour découvrir comment le débloquer.",
+    "guestHint": "En invité, tes succès restent sur cet appareil. Connecte-toi pour les garder sur ton compte, sur tous tes appareils.",
+    "filter": "Filtrer les succès",
+    "filters": {
+      "all": "Tous",
+      "unlocked": "Débloqués",
+      "locked": "À débloquer"
+    },
+    "difficulty": {
+      "EASY": "Faciles",
+      "MEDIUM": "Intermédiaires",
+      "HARD": "Difficiles",
+      "LEGENDARY": "Légendaires"
+    },
+    "empty": "Aucun succès ici pour l'instant."
   },
   "slack": {
     "channels": "Canaux",
