@@ -1,0 +1,332 @@
+/*
+ * Menu principal : écran titre, bouton Jouer / Continuer, modes en cartes, navigation.
+ * Une colonne sur téléphone, deux colonnes (titre | modes) à partir de 1024 px.
+ */
+
+.home {
+  --mode-color: var(--accent);
+
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  /* Sol isométrique discret et halo chaud derrière le titre. */
+  background:
+    radial-gradient(60rem 30rem at 15% 20%, rgb(245 185 66 / 12%), transparent 70%),
+    radial-gradient(40rem 30rem at 90% 90%, rgb(108 196 255 / 8%), transparent 70%),
+    repeating-linear-gradient(30deg, rgb(255 255 255 / 3%) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(150deg, rgb(255 255 255 / 3%) 0 1px, transparent 1px 48px), var(--bg);
+}
+
+.home-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.account-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.account-bar .welcome {
+  font-size: 1rem;
+}
+
+.home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* --- Titre, pitch et bouton principal ------------------------------------------------- */
+
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.home-hero h1 {
+  font-size: clamp(2.25rem, 9vw, 3.75rem);
+  letter-spacing: -0.02em;
+  text-shadow: 3px 3px 0 rgb(0 0 0 / 35%);
+}
+
+.home-hero .pitch {
+  font-size: 1.1rem;
+}
+
+.home-kicker {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+.home-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff7a59;
+  animation: home-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes home-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.home-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+button.cta {
+  width: 100%;
+  min-height: 4rem;
+  justify-content: flex-start;
+  gap: 0.875rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 12px;
+  font-size: 1.25rem;
+  text-align: left;
+  box-shadow: 0 4px 0 #a8761c;
+  transition:
+    transform 0.1s ease-out,
+    box-shadow 0.1s ease-out;
+}
+
+button.cta:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #a8761c;
+}
+
+.cta-text {
+  display: flex;
+  flex-direction: column;
+}
+
+button.cta small {
+  color: inherit;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+/* --- Navigation : charger, classements, succès, profil, options, crédits ---------------- */
+
+.home-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.home-nav button {
+  justify-content: flex-start;
+  gap: 0.5rem;
+  background: rgb(38 43 63 / 80%);
+  text-align: left;
+}
+
+.home-nav button:hover {
+  border-color: var(--accent);
+}
+
+/* --- Modes de jeu en cartes ------------------------------------------------------------- */
+
+.home-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgb(38 43 63 / 85%);
+}
+
+.home-modes h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.home-modes .hint {
+  margin: 0 0 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mode-card {
+  width: 100%;
+  height: 100%;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-left: 4px solid var(--mode-color);
+  border-radius: 12px;
+  background: var(--bg);
+  text-align: left;
+  transition:
+    transform 0.15s ease-out,
+    border-color 0.15s ease-out;
+}
+
+.mode-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--mode-color);
+}
+
+.mode-easy {
+  --mode-color: #7bd88f;
+}
+
+.mode-normal {
+  --mode-color: #f5b942;
+}
+
+.mode-hardcore {
+  --mode-color: #ff8a70;
+}
+
+.mode-interns_only {
+  --mode-color: #6cc4ff;
+}
+
+.mode-ship_in_3 {
+  --mode-color: #c9a8ff;
+}
+
+.mode-daily {
+  --mode-color: #ffd966;
+}
+
+.mode-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 6%);
+  font-size: 1.5rem;
+}
+
+.mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.mode-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+}
+
+.mode-tag {
+  padding: 0 0.5rem;
+  border: 1px solid var(--mode-color);
+  border-radius: 999px;
+  color: var(--mode-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* --- Fenêtre de connexion : bottom sheet sur téléphone, fenêtre centrée au-delà ---------- */
+
+.home-sheet .sheet-backdrop,
+.home-sheet .sheet {
+  position: fixed;
+}
+
+.home-sheet .sheet {
+  inset: auto 0 0;
+  height: auto;
+  max-height: 92dvh;
+  border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+}
+
+.home-sheet .sheet-body {
+  min-height: 0;
+}
+
+.home-sheet .auth-panel {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+@media (min-width: 768px) {
+  .home-sheet .sheet {
+    inset: 0;
+    width: min(28rem, calc(100vw - 32px));
+    height: fit-content;
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .home-sheet .sheet-grip {
+    display: none;
+  }
+
+  .home-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* --- Ordinateur : titre à gauche, modes à droite ---------------------------------------- */
+
+@media (min-width: 1024px) {
+  .home-main {
+    display: grid;
+    grid-template-columns: minmax(20rem, 26rem) minmax(0, 1fr);
+    align-items: center;
+    gap: 3rem;
+  }
+
+  .home-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-modes {
+    padding: 1.75rem;
+  }
+}

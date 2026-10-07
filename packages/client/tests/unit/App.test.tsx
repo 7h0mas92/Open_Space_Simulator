@@ -40,6 +40,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+/** Ouvre la fenêtre de connexion depuis le coin du compte. */
+async function openAccount() {
+  await userEvent.click(await screen.findByRole('button', { name: /Connexion/ }));
+}
+
 describe('App', () => {
   it('affiche le formulaire de connexion à un visiteur', async () => {
     mockApi({
@@ -47,7 +52,9 @@ describe('App', () => {
     });
     render(<App />);
 
-    expect(await screen.findByRole('button', { name: 'Se connecter' })).toBeInTheDocument();
+    await openAccount();
+    expect(screen.getByRole('dialog', { name: 'Compte' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Se connecter' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Open Space Simulator 2026' })).toBeInTheDocument();
     expect(await screen.findByRole('link', { name: 'Continuer avec GitHub' })).toHaveAttribute(
       'href',
@@ -61,7 +68,8 @@ describe('App', () => {
     });
     render(<App />);
 
-    await userEvent.type(await screen.findByLabelText('Email'), 'kevin@startup.io');
+    await openAccount();
+    await userEvent.type(screen.getByLabelText('Email'), 'kevin@startup.io');
     await userEvent.type(screen.getByLabelText('Mot de passe'), 'ninja-du-code');
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }));
 
@@ -80,7 +88,8 @@ describe('App', () => {
     });
     render(<App />);
 
-    await userEvent.type(await screen.findByLabelText('Email'), 'kevin@startup.io');
+    await openAccount();
+    await userEvent.type(screen.getByLabelText('Email'), 'kevin@startup.io');
     await userEvent.type(screen.getByLabelText('Mot de passe'), 'mauvais');
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }));
 
@@ -93,13 +102,16 @@ describe('App', () => {
     });
     render(<App />);
 
-    await userEvent.click(await screen.findByRole('tab', { name: 'Inscription' }));
+    await openAccount();
+    await userEvent.click(screen.getByRole('tab', { name: 'Inscription' }));
     await userEvent.type(screen.getByLabelText('Email'), 'kevin@startup.io');
     await userEvent.type(screen.getByLabelText(/Pseudo/), 'kevin_ninja');
     await userEvent.type(screen.getByLabelText(/Mot de passe/), 'ninja-du-code');
     await userEvent.click(screen.getByRole('button', { name: 'Créer mon compte' }));
 
     expect(await screen.findByText('Bienvenue, kevin_ninja !')).toBeInTheDocument();
+    // Connecté : la fenêtre se ferme toute seule.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     const call = fetchMock.mock.calls.find(([url]) => url === '/api/auth/register');
     expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ locale: 'fr' });
   });
@@ -112,7 +124,7 @@ describe('App', () => {
     render(<App />);
 
     await userEvent.click(await screen.findByRole('button', { name: 'Se déconnecter' }));
-    expect(await screen.findByRole('button', { name: 'Se connecter' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Connexion/ })).toBeInTheDocument();
   });
 
   it('change de langue', async () => {
@@ -120,9 +132,29 @@ describe('App', () => {
     render(<App />);
 
     await userEvent.click(await screen.findByRole('button', { name: 'English' }));
-    expect(await screen.findByRole('button', { name: 'Log in' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Sign in/ })).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('en');
     expect(screen.getByRole('button', { name: 'English' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('propose de jouer en Facile au premier lancement', async () => {
+    mockApi({});
+    render(<App />);
+    expect(
+      await screen.findByRole('button', { name: /Jouer.*Nouvelle partie en mode Facile/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole('button', { name: /Facile|Normal|Hardcore/ }).length,
+    ).toBeGreaterThan(3);
+  });
+
+  it('ouvre les options depuis le menu, sans les actions de partie', async () => {
+    mockApi({});
+    render(<App />);
+    await userEvent.click(await screen.findByRole('button', { name: /Options/ }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Options' })).toBeInTheDocument();
+    expect(screen.getByText('Qualité graphique')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Quitter la partie' })).not.toBeInTheDocument();
   });
 
   it('affiche l’erreur renvoyée par le retour GitHub', async () => {
@@ -130,7 +162,9 @@ describe('App', () => {
     mockApi({});
     render(<App />);
 
+    // L'erreur ouvre d'elle-même la fenêtre de connexion.
     expect(await screen.findByRole('alert')).toHaveTextContent('La connexion GitHub a échoué.');
+    expect(screen.getByRole('dialog', { name: 'Compte' })).toBeInTheDocument();
     expect(window.location.search).toBe('');
   });
 });

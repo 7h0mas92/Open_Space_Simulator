@@ -5,6 +5,7 @@ import { App } from './ui/App';
 import './ui/styles.css';
 import './ui/game.css';
 import './ui/meta.css';
+import './ui/menu.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Élément #root introuvable');
