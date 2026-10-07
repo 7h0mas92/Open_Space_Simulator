@@ -2,6 +2,7 @@
  * Préférences du joueur (qualité graphique, accessibilité), gardées dans le navigateur.
  */
 import { create } from 'zustand';
+import { ZOOM_SPEEDS, type ZoomSpeed } from '../../render/isoCamera';
 import { defaultQuality, QUALITY_LEVELS, type QualityLevel } from '../../render/quality';
 
 export const TEXT_SCALES = [0.875, 1, 1.125, 1.25] as const;
@@ -9,6 +10,8 @@ export const TEXT_SCALES = [0.875, 1, 1.125, 1.25] as const;
 export interface Settings {
   readonly quality: QualityLevel;
   readonly reducedMotion: boolean;
+  /** Vitesse du zoom caméra (molette, trackpad, pincement). */
+  readonly zoomSpeed: ZoomSpeed;
   readonly textScale: number;
   readonly showFps: boolean;
   readonly tutorialDone: boolean;
@@ -40,6 +43,7 @@ function detectDefaults(): Settings {
       hardwareConcurrency: navigator.hardwareConcurrency,
     }),
     reducedMotion: media('(prefers-reduced-motion: reduce)'),
+    zoomSpeed: 'normal',
     textScale: 1,
     showFps: false,
     tutorialDone: false,
@@ -60,6 +64,9 @@ function load(): Settings {
         : defaults.quality,
       reducedMotion:
         typeof raw.reducedMotion === 'boolean' ? raw.reducedMotion : defaults.reducedMotion,
+      zoomSpeed: ZOOM_SPEEDS.includes(raw.zoomSpeed as ZoomSpeed)
+        ? (raw.zoomSpeed as ZoomSpeed)
+        : defaults.zoomSpeed,
       textScale: TEXT_SCALES.includes(raw.textScale as (typeof TEXT_SCALES)[number])
         ? (raw.textScale as number)
         : 1,

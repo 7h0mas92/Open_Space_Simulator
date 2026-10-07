@@ -25,6 +25,9 @@ import {
   cameraDirection,
   clampTarget,
   clampZoom,
+  scaleZoomFactor,
+  wheelZoomFactor,
+  type ZoomSpeed,
   fitZoom,
   frustum,
   panDelta,
@@ -52,6 +55,7 @@ export interface RendererOptions {
   readonly overlay: HTMLElement;
   readonly quality: QualityLevel;
   readonly reducedMotion: boolean;
+  readonly zoomSpeed?: ZoomSpeed;
   readonly translate: (key: string) => string;
   readonly onPick?: (target: PickTarget | null) => void;
   /** Pose (clic, tap ou dépôt) en mode construction. */
@@ -87,6 +91,7 @@ export class GameRenderer {
   private layout: OfficeLayout = officeLayout('GARAGE');
   private quality: QualityLevel;
   private reducedMotion: boolean;
+  private zoomSpeed: ZoomSpeed;
   private cameraState: IsoCameraState = { targetX: 4, targetZ: 3, zoom: 1, quarter: 0 };
   private previous = new Map<string, AgentSnapshot>();
   private current: AgentSnapshot[] = [];
@@ -106,6 +111,7 @@ export class GameRenderer {
   constructor(private readonly options: RendererOptions) {
     this.quality = options.quality;
     this.reducedMotion = options.reducedMotion;
+    this.zoomSpeed = options.zoomSpeed ?? 'normal';
     this.world = new AgentWorld(1);
     const preset = QUALITY_PRESETS[this.quality];
     this.renderer = new THREE.WebGLRenderer({
@@ -184,6 +190,10 @@ export class GameRenderer {
 
   setReducedMotion(reduced: boolean): void {
     this.reducedMotion = reduced;
+  }
+
+  setZoomSpeed(speed: ZoomSpeed): void {
+    this.zoomSpeed = speed;
   }
 
   /** Mode construction : aperçu de l'objet sous le pointeur. `null` pour quitter. */
@@ -571,7 +581,7 @@ export class GameRenderer {
       'wheel',
       (event) => {
         event.preventDefault();
-        this.zoomBy(event.deltaY < 0 ? 1.12 : 1 / 1.12);
+        this.zoomBy(wheelZoomFactor(event, this.zoomSpeed));
       },
       { passive: false },
     );
@@ -614,7 +624,7 @@ export class GameRenderer {
         this.pan(event.dx, event.dy);
         break;
       case 'pinch':
-        this.zoomBy(event.scale);
+        this.zoomBy(scaleZoomFactor(event.scale, this.zoomSpeed));
         break;
       case 'hover':
         if (this.build) {

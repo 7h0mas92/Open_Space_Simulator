@@ -32,6 +32,7 @@ export function Scene() {
         overlay,
         quality: settings.quality,
         reducedMotion: settings.reducedMotion,
+        zoomSpeed: settings.zoomSpeed,
         translate: (key) => translateRef.current(key as never) as string,
         onPick: (target) => {
           const game = useGame.getState();
@@ -105,6 +106,7 @@ export function Scene() {
     const unsubscribeSettings = useSettings.subscribe((state) => {
       renderer.setQuality(state.quality);
       renderer.setReducedMotion(state.reducedMotion);
+      renderer.setZoomSpeed(state.zoomSpeed);
     });
     const initial = useGame.getState();
     if (initial.view) renderer.setView(initial.view);
