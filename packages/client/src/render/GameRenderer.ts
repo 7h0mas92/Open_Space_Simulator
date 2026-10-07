@@ -19,6 +19,7 @@ import type { GameView, Rotation } from '../view/types';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
 import { ConfettiEffect, SmokeEffect } from './effects';
+import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
 import { interpolateAgent } from './interpolation';
 import {
@@ -52,6 +53,8 @@ export interface RendererOptions {
   readonly overlay: HTMLElement;
   readonly quality: QualityLevel;
   readonly reducedMotion: boolean;
+  /** Défilement de la caméra quand la souris atteint ou quitte un bord de l'écran. */
+  readonly edgePan: boolean;
   readonly translate: (key: string) => string;
   readonly onPick?: (target: PickTarget | null) => void;
   /** Pose (clic, tap ou dépôt) en mode construction. */
@@ -87,6 +90,9 @@ export class GameRenderer {
   private layout: OfficeLayout = officeLayout('GARAGE');
   private quality: QualityLevel;
   private reducedMotion: boolean;
+  private edgePan: boolean;
+  /** Souris au repos au-dessus de la scène (px relatifs au canvas), ou `null`. */
+  private edgePointer: { x: number; y: number } | null = null;
   private cameraState: IsoCameraState = { targetX: 4, targetZ: 3, zoom: 1, quarter: 0 };
   private previous = new Map<string, AgentSnapshot>();
   private current: AgentSnapshot[] = [];
@@ -106,6 +112,7 @@ export class GameRenderer {
   constructor(private readonly options: RendererOptions) {
     this.quality = options.quality;
     this.reducedMotion = options.reducedMotion;
+    this.edgePan = options.edgePan;
     this.world = new AgentWorld(1);
     const preset = QUALITY_PRESETS[this.quality];
     this.renderer = new THREE.WebGLRenderer({
@@ -186,6 +193,10 @@ export class GameRenderer {
     this.reducedMotion = reduced;
   }
 
+  setEdgePan(enabled: boolean): void {
+    this.edgePan = enabled;
+  }
+
   /** Mode construction : aperçu de l'objet sous le pointeur. `null` pour quitter. */
   setBuildPreview(preview: BuildPreview | null): void {
     this.build = preview;
@@ -224,6 +235,7 @@ export class GameRenderer {
     visible: number;
     drawCalls: number;
     zoom: number;
+    target: { x: number; z: number };
     pixelRatio: number;
   } {
     return {
@@ -232,6 +244,7 @@ export class GameRenderer {
       visible: [...this.characters.values()].filter((c) => c.root.visible).length,
       drawCalls: this.renderer.info.render.calls,
       zoom: this.cameraState.zoom,
+      target: { x: this.cameraState.targetX, z: this.cameraState.targetZ },
       pixelRatio: this.renderer.getPixelRatio(),
     };
   }
@@ -283,6 +296,7 @@ export class GameRenderer {
     this.smoke.update(delta);
     this.confetti.update(delta);
     for (const event of this.gestures.poll(now)) this.handleGesture(event);
+    this.applyEdgePan(delta);
     this.office.setDetail(this.cameraState.zoom, QUALITY_PRESETS[this.quality].decorLodZoom);
     this.updateSelectionMarker();
 
@@ -576,6 +590,7 @@ export class GameRenderer {
       { passive: false },
     );
     on('contextmenu', (event) => event.preventDefault());
+    this.bindEdgePan();
     on('keydown', (event) => {
       const step = 40;
       const keys: Record<string, () => void> = {
@@ -595,6 +610,60 @@ export class GameRenderer {
         run();
       }
     });
+  }
+
+  /**
+   * Suit la souris sur toute la page : seule une souris sans bouton enfoncé, au-dessus de la
+   * scène (pas d'un panneau de l'interface), fait défiler la vue près d'un bord.
+   */
+  private bindEdgePan(): void {
+    const canvas = this.options.canvas;
+    const listen = <T extends Event>(
+      target: Window | Document,
+      type: string,
+      handler: (event: T) => void,
+    ) => {
+      const listener = handler as EventListener;
+      target.addEventListener(type, listener);
+      this.cleanup.push(() => target.removeEventListener(type, listener));
+    };
+    listen<PointerEvent>(window, 'pointermove', (event) => {
+      if (event.pointerType !== 'mouse' || event.buttons !== 0 || event.target !== canvas) {
+        this.edgePointer = null;
+        return;
+      }
+      const rect = canvas.getBoundingClientRect();
+      this.edgePointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    });
+    // La souris sort de la fenêtre (relatedTarget nul) depuis la scène : on continue de défiler.
+    listen<MouseEvent>(document, 'mouseout', (event) => {
+      if (event.relatedTarget !== null || !this.edgePointer) return;
+      const rect = canvas.getBoundingClientRect();
+      this.edgePointer = exitPoint(
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+        rect.width,
+        rect.height,
+      );
+    });
+    const stop = () => {
+      this.edgePointer = null;
+    };
+    listen(window, 'blur', stop);
+    listen(document, 'visibilitychange', stop);
+    listen(window, 'pointerdown', stop);
+  }
+
+  private applyEdgePan(delta: number): void {
+    if (!this.edgePan || !this.edgePointer || delta === 0) return;
+    const size = this.renderer.getSize(new THREE.Vector2());
+    const { x, y } = this.edgePointer;
+    const { vx, vy } = edgePanVelocity(x, y, size.x, size.y);
+    if (vx === 0 && vy === 0) return;
+    // Souris à droite : la vue part à droite, donc le sol glisse vers la gauche.
+    this.pan(-vx * EDGE_PAN_SPEED * delta, -vy * EDGE_PAN_SPEED * delta);
+    // En construction, l'objet fantôme reste sous la souris pendant que la vue défile.
+    if (this.build) this.handleGesture({ type: 'hover', x, y });
   }
 
   private pan(dx: number, dy: number): void {

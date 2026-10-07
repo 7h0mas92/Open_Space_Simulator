@@ -11,6 +11,8 @@ export interface Settings {
   readonly reducedMotion: boolean;
   readonly textScale: number;
   readonly showFps: boolean;
+  /** Défilement de la caméra quand la souris touche un bord de l'écran (desktop). */
+  readonly edgePan: boolean;
   readonly tutorialDone: boolean;
   /** Slack animé par l'IA du serveur (sinon : templates). */
   readonly slackAi: boolean;
@@ -42,6 +44,7 @@ function detectDefaults(): Settings {
     reducedMotion: media('(prefers-reduced-motion: reduce)'),
     textScale: 1,
     showFps: false,
+    edgePan: true,
     tutorialDone: false,
     slackAi: false,
     musicVolume: 0.5,
@@ -64,6 +67,7 @@ function load(): Settings {
         ? (raw.textScale as number)
         : 1,
       showFps: raw.showFps === true,
+      edgePan: raw.edgePan !== false,
       tutorialDone: raw.tutorialDone === true,
       slackAi: raw.slackAi === true,
       musicVolume: volume(raw.musicVolume, defaults.musicVolume),

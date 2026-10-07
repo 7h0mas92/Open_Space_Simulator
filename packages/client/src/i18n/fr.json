@@ -310,6 +310,7 @@
       "high": "Haute"
     },
     "reducedMotion": "Réduire les animations",
+    "edgePan": "Défiler en approchant la souris du bord de l'écran",
     "textSize": "Taille du texte",
     "showFps": "Afficher les FPS",
     "language": "Langue",
