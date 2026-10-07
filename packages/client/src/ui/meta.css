@@ -276,8 +276,9 @@
   opacity: 0.6;
 }
 
-.achievement-grid .secret strong {
-  letter-spacing: 0.2em;
+/* Condition d'un succès secret : « ??? » en italique. */
+.achievement-grid .secret .achievement-condition {
+  font-style: italic;
 }
 
 .achievement-icon {

@@ -51,7 +51,10 @@ export function AchievementProgress({ achievements }: { achievements: readonly A
   );
 }
 
-/** Une carte de succès. Un succès secret pas encore débloqué ne montre que « ??? ». */
+/**
+ * Une carte de succès. Un succès secret pas encore débloqué montre son nom et son icône,
+ * mais pas sa condition : sa description est remplacée par « ??? ».
+ */
 function AchievementCard({ achievement }: { achievement: AchievementDto }) {
   const { t, i18n } = useTranslation();
   const unlocked = achievement.unlockedAt !== null;
@@ -62,13 +65,11 @@ function AchievementCard({ achievement }: { achievement: AchievementDto }) {
       data-testid={`achievement-${achievement.id}`}
     >
       <span className="achievement-icon" aria-hidden="true">
-        {hidden ? '❓' : achievement.icon}
+        {achievement.icon}
       </span>
       <div>
-        <strong>
-          {hidden ? t('achievements.secretTitle') : localized(achievement.title, i18n.language)}
-        </strong>
-        <small>
+        <strong>{localized(achievement.title, i18n.language)}</strong>
+        <small className="achievement-condition">
           {hidden
             ? t('achievements.secretHint')
             : localized(achievement.description, i18n.language)}
@@ -86,7 +87,7 @@ function AchievementCard({ achievement }: { achievement: AchievementDto }) {
   );
 }
 
-/** Grille des succès : débloqués en couleur, les autres grisés, les secrets en « ??? ». */
+/** Grille des succès : débloqués en couleur, les autres grisés, conditions secrètes en « ??? ». */
 export function AchievementGrid({ achievements }: { achievements: readonly AchievementDto[] }) {
   return (
     <ul className="achievement-grid">
@@ -97,9 +98,8 @@ export function AchievementGrid({ achievements }: { achievements: readonly Achie
   );
 }
 
-/** Ordre d'affichage : débloqués, puis à débloquer, puis secrets (« ??? ») en dernier. */
-const rank = (achievement: AchievementDto) =>
-  achievement.unlockedAt !== null ? 0 : achievement.secret ? 2 : 1;
+/** Ordre d'affichage : débloqués d'abord, secrets mêlés aux autres. */
+const rank = (achievement: AchievementDto) => (achievement.unlockedAt !== null ? 0 : 1);
 
 const FILTERS = ['all', 'unlocked', 'locked'] as const;
 type Filter = (typeof FILTERS)[number];

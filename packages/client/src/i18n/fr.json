@@ -508,8 +508,7 @@
     "unlockedOn": "Débloqué le {{date}}",
     "open": "Voir tous les succès",
     "secret": "Secret",
-    "secretTitle": "???",
-    "secretHint": "Succès secret : continue à jouer pour découvrir comment le débloquer.",
+    "secretHint": "??? Personne ne sait comment débloquer celui-là. À toi de trouver.",
     "guestHint": "En invité, tes succès restent sur cet appareil. Connecte-toi pour les garder sur ton compte, sur tous tes appareils.",
     "filter": "Filtrer les succès",
     "filters": {

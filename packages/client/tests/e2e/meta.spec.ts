@@ -79,10 +79,13 @@ test('sauvegarder une partie puis la recharger depuis le menu', async ({ page })
   await expect(page.getByTestId('game')).toBeVisible();
 });
 
-test('l’écran Succès montre les succès à débloquer et cache les secrets', async ({ page }) => {
+test('l’écran Succès montre les succès à débloquer et cache la condition des secrets', async ({
+  page,
+}) => {
   await page.getByRole('button', { name: /Succès/ }).click();
   await expect(page.getByRole('heading', { name: 'Succès', level: 1 })).toBeVisible();
   await expect(page.getByTestId('achievement-black-friday')).toContainText('Vendredi Noir');
   await expect(page.getByTestId('achievement-skynet')).toContainText('???');
-  await expect(page.getByTestId('achievement-skynet')).not.toContainText('Skynet');
+  await expect(page.getByTestId('achievement-skynet')).toContainText('Skynet');
+  await expect(page.getByTestId('achievement-skynet')).not.toContainText('3 IA Agents');
 });
