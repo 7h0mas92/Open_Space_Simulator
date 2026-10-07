@@ -19,7 +19,7 @@ import {
   type Speed,
   type TaskColumn,
 } from '@oss/shared';
-import { escalate } from '../events/effects';
+import { badEffectFactor, escalate } from '../events/effects';
 import { RESALE_RATIO } from '../simulation/furniture';
 import { devIds } from '../simulation/helpers';
 import { tasksInColumn } from '../simulation/tasks';
@@ -199,7 +199,9 @@ function eventView(state: GameState, context: ViewContext): EventView | null {
       for (const key of EFFECT_KEYS) {
         const value = choice.effects[key];
         if (value !== undefined && value !== 0)
-          effects[key] = Math.round(escalate(value, BAD_DIRECTION[key], pending.level));
+          effects[key] = Math.round(
+            escalate(value, BAD_DIRECTION[key], pending.level, badEffectFactor(state.mode)),
+          );
       }
       return { label: choice.label, effects };
     }),

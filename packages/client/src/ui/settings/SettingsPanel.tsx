@@ -3,7 +3,9 @@ import { ZOOM_SPEEDS } from '../../render/isoCamera';
 import { QUALITY_LEVELS } from '../../render/quality';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useGame } from '../store/game';
+import { useGuide } from '../store/guide';
 import { TEXT_SCALES, useSettings, VOLUME_KEYS } from '../store/settings';
+import { GuideIndex } from '../tutorial/Guide';
 
 /** Options : qualité graphique, vitesse du zoom, audio, Slack IA, accessibilité, langue. */
 export function SettingsPanel() {
@@ -112,11 +114,13 @@ export function SettingsPanel() {
         type="button"
         onClick={() => {
           settings.update({ tutorialDone: false });
+          useGuide.getState().restart();
           openPanel(null);
         }}
       >
         {t('settings.tutorial')}
       </button>
+      <GuideIndex />
       <button type="button" onClick={() => openPanel('credits')}>
         {t('panels.credits')}
       </button>

@@ -17,7 +17,14 @@ export const GAME = {
   saveSlots: 5,
 } as const;
 
-export const GAME_MODES = ['NORMAL', 'HARDCORE', 'INTERNS_ONLY', 'SHIP_IN_3', 'DAILY'] as const;
+export const GAME_MODES = [
+  'EASY',
+  'NORMAL',
+  'HARDCORE',
+  'INTERNS_ONLY',
+  'SHIP_IN_3',
+  'DAILY',
+] as const;
 export const GameModeSchema = z.enum(GAME_MODES);
 export type GameMode = z.infer<typeof GameModeSchema>;
 

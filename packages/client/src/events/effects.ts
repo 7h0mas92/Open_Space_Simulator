@@ -25,10 +25,23 @@ const BAD_DIRECTION: Record<
   moral: -1,
 };
 
-/** Multiplie un effet par l'aggravation s'il va dans le mauvais sens. */
-export function escalate(value: number, badDirection: 1 | -1, level: number): number {
+/**
+ * Multiplie un effet par l'aggravation s'il va dans le mauvais sens. `softening` adoucit
+ * les seuls effets négatifs (mode Facile).
+ */
+export function escalate(
+  value: number,
+  badDirection: 1 | -1,
+  level: number,
+  softening = 1,
+): number {
   const isBad = Math.sign(value) === badDirection;
-  return isBad ? value * (1 + BALANCE.events.escalation * level) : value;
+  return isBad ? value * (1 + BALANCE.events.escalation * level) * softening : value;
+}
+
+/** Part des effets négatifs conservée selon le mode : moitié moins en Facile. */
+export function badEffectFactor(mode: GameState['mode']): number {
+  return mode === 'EASY' ? BALANCE.easy.badEffectMultiplier : 1;
 }
 
 /**
@@ -42,9 +55,10 @@ export function applyEffects(
   effects: CardEffects,
   level: number,
 ): void {
+  const softening = badEffectFactor(state.mode);
   const scaled = (key: keyof typeof BAD_DIRECTION): number => {
     const value = effects[key];
-    return value === undefined ? 0 : escalate(value, BAD_DIRECTION[key], level);
+    return value === undefined ? 0 : escalate(value, BAD_DIRECTION[key], level, softening);
   };
 
   if (effects.treasury !== undefined) addMoney(state, scaled('treasury'));
@@ -60,7 +74,7 @@ export function applyEffects(
   for (const role of DEV_ROLES) {
     const value = effects[`moral.${role}`];
     if (value === undefined) continue;
-    const delta = escalate(value, -1, level);
+    const delta = escalate(value, -1, level, softening);
     for (const id of devsWithRole(state, role)) changeMoral(state, id, delta);
   }
 

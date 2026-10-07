@@ -1,4 +1,4 @@
-import type { DevRole, Phase } from '@oss/shared';
+import type { DevRole, GameMode, Phase } from '@oss/shared';
 import { createGameEngine, InlineWorker } from '../../../src/engine';
 import { DEFAULT_CARDS, defaultCardLibrary } from '../../../src/events/defaultCards';
 import { generateDev, hireDev } from '../../../src/simulation/devs';
@@ -11,6 +11,7 @@ import type { GameView } from '../../../src/view/types';
 
 export interface OfficeOptions {
   readonly seed?: string;
+  readonly mode?: GameMode;
   readonly phase?: Phase;
   /** Devs ajoutés à l'équipe de départ (un premier dev au garage). */
   readonly extraRoles?: readonly DevRole[];
@@ -24,7 +25,7 @@ export interface OfficeOptions {
  */
 export function officeSimulation(options: OfficeOptions = {}): Simulation {
   const simulation = Simulation.create(
-    { seed: options.seed ?? 'tests', mode: 'NORMAL' },
+    { seed: options.seed ?? 'tests', mode: options.mode ?? 'NORMAL' },
     defaultCardLibrary(),
   );
   const { state } = simulation;

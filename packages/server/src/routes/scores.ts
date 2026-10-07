@@ -34,6 +34,8 @@ function scopeSql({ mode, dailyDate }: Scope): Prisma.Sql {
   const conditions: Prisma.Sql[] = [Prisma.sql`TRUE`];
   if (mode) conditions.push(Prisma.sql`s."mode" = ${mode}::"GameMode"`);
   if (dailyDate) conditions.push(Prisma.sql`s."dailyDate" = ${dailyDate}::date`);
+  // Le classement global ne compte pas le mode Facile (il a son propre onglet).
+  if (!mode && !dailyDate) conditions.push(Prisma.sql`s."mode" <> 'EASY'::"GameMode"`);
   return Prisma.join(conditions, ' AND ');
 }
 

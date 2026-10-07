@@ -263,6 +263,35 @@ describe('POST /api/scores (anti-triche)', () => {
   }, 60_000);
 });
 
+describe('mode Facile', () => {
+  const submit = (cookies: Record<string, string>, payload: object) =>
+    app.inject({ method: 'POST', url: '/api/scores', cookies, payload });
+
+  it('a son propre classement et ne compte pas dans le classement global', async () => {
+    const carol = await player('carol');
+    const easy = playGame('easy-seed', 'EASY');
+    const challenge = playGame('challenge-seed', 'SHIP_IN_3');
+    for (const [mode, seed, game] of [
+      ['EASY', 'easy-seed', easy],
+      ['SHIP_IN_3', 'challenge-seed', challenge],
+    ] as const) {
+      const response = await submit(carol, {
+        mode,
+        seed,
+        commands: game.commands,
+        cardsVersion: BUILTIN_CARDS_VERSION,
+      });
+      expect(response.statusCode).toBe(201);
+    }
+    const easyBoard = (await app.inject({ url: '/api/scores/top?mode=EASY' })).json();
+    expect(easyBoard.entries).toHaveLength(1);
+    expect(easyBoard.entries[0]).toMatchObject({ pseudo: 'carol', mode: 'EASY' });
+    const global = (await app.inject({ url: '/api/scores/top' })).json();
+    expect(global.entries).toHaveLength(1);
+    expect(global.entries[0]).toMatchObject({ mode: 'SHIP_IN_3' });
+  }, 60_000);
+});
+
 describe('succès et profil', () => {
   it('catalogue public, déblocage et profil cumulé', async () => {
     const catalog = (await app.inject({ url: '/api/achievements' })).json().achievements;

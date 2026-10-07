@@ -20,10 +20,13 @@ export function StageScreens({ view }: { view: GameView }) {
 function Dialog({
   title,
   className,
+  tutorial,
   children,
 }: {
   title: string;
   className: string;
+  /** Repère pour le tutoriel (attribut `data-tutorial`). */
+  tutorial?: string;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -38,6 +41,7 @@ function Dialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        data-tutorial={tutorial}
       >
         {children}
       </div>
@@ -88,7 +92,7 @@ function EventCardScreen({ event }: { event: EventView }) {
   const dispatch = useGame((s) => s.dispatch);
   const title = localized(event.title, i18n.language);
   return (
-    <Dialog title={title} className="event-card">
+    <Dialog title={title} className="event-card" tutorial="event">
       <p className="eyebrow">
         {t('event.kicker')}
         {event.level > 0 && (
@@ -179,7 +183,11 @@ function DemoScreen({ view }: { view: GameView }) {
   const money = (value: number) => `${formatMoney(Math.round(value), i18n.language)} €`;
   const offer = view.acquisitionOffer;
   return (
-    <Dialog title={t('demo.title', { sprint: view.time.sprint })} className="demo-screen">
+    <Dialog
+      title={t('demo.title', { sprint: view.time.sprint })}
+      className="demo-screen"
+      tutorial="demo"
+    >
       <p className="eyebrow">{t('steps.DEMO')}</p>
       <h2>{t('demo.title', { sprint: report?.sprint ?? view.time.sprint })}</h2>
       {report && (

@@ -23,6 +23,7 @@ enum Locale {
 }
 
 enum GameMode {
+  EASY
   NORMAL
   HARDCORE
   INTERNS_ONLY
