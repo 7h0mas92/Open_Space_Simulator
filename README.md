@@ -176,9 +176,16 @@ flowchart LR
 - **Qualité réglable** (bas, moyen, haut) : devicePixelRatio plafonné à 2, ombres coupées en
   bas (défaut sur mobile), petits objets masqués quand on dézoome (LOD).
 - **Interface** : jauges avec infobulles, vitesses, Kanban en glisser-déposer (souris et
-  tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, boutique et
-  mode construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
+  tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
+  construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
   sur ordinateur, bottom sheets plein écran sur mobile.
+- **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
+  3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
+  un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une
+  grille, vert ou rouge selon la case. Souris : l'aperçu suit le pointeur, clic pour poser.
+  Doigt : tap ou glisser de l'aperçu pour viser, bouton « Poser » pour confirmer (pas d'achat
+  par erreur). Clavier : `B` ouvre et ferme, flèches pour viser, `R` pour tourner, Entrée pour
+  poser, Échap pour reculer d'un cran.
 
 ### Méta-jeu et anti-triche
 

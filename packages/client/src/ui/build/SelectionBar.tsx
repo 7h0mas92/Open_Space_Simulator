@@ -1,22 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
-import type { GameView, Rotation } from '../../view/types';
+import type { GameView } from '../../view/types';
 import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { moodEmoji } from '../team/StatBars';
-import { ItemDescription } from './BuildPanel';
+import { ItemThumbnail } from './Catalog';
 
 /**
- * Barre contextuelle au-dessus de la barre d'actions :
- * - en mode construction : objet en cours de pose, tourner, terminer ;
+ * Barre contextuelle au-dessus de la barre d'actions (ou du catalogue en construction) :
  * - objet sélectionné : tourner, déplacer, revendre ;
  * - dev sélectionné : aperçu et accès à sa fiche.
  */
 export function SelectionBar({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
-  const build = useGame((s) => s.build);
   const selected = useGame((s) => s.selected);
-  const setBuild = useGame((s) => s.setBuild);
+  const startMove = useGame((s) => s.startMove);
   const select = useGame((s) => s.select);
   const dispatch = useGame((s) => s.dispatch);
   const openPanel = useGame((s) => s.openPanel);
@@ -25,25 +23,6 @@ export function SelectionBar({ view }: { view: GameView }) {
     const def = catalogItem(kind);
     return def ? localized(def.name, i18n.language) : kind;
   };
-
-  if (build?.kind) {
-    const rotate = () => setBuild({ ...build, rotation: ((build.rotation + 1) % 4) as Rotation });
-    return (
-      <div
-        className="selection-bar"
-        role="region"
-        aria-label={t('build.placing', { item: itemName(build.kind) })}
-      >
-        <p>{t('build.placing', { item: itemName(build.kind) })}</p>
-        <button type="button" onClick={rotate} aria-keyshortcuts="R">
-          ⟳ {t('build.rotate')}
-        </button>
-        <button type="button" className="primary" onClick={() => setBuild(null)}>
-          ✓ {t('build.cancel')}
-        </button>
-      </div>
-    );
-  }
 
   if (selected?.type === 'item') {
     const item = view.items.find((i) => i.id === selected.id);
@@ -55,11 +34,12 @@ export function SelectionBar({ view }: { view: GameView }) {
         role="region"
         aria-label={t('build.selected', { item: itemName(item.kind) })}
       >
+        <ItemThumbnail item={def} />
         <div>
           <p>
             <strong>{itemName(item.kind)}</strong>
           </p>
-          <ItemDescription item={def} />
+          <span className="item-description">{localized(def.description, i18n.language)}</span>
         </div>
         <button
           type="button"
@@ -67,12 +47,7 @@ export function SelectionBar({ view }: { view: GameView }) {
         >
           ⟳ {t('build.rotate')}
         </button>
-        <button
-          type="button"
-          onClick={() =>
-            setBuild({ kind: item.kind, rotation: item.rotation, movingItemId: item.id })
-          }
-        >
+        <button type="button" onClick={() => startMove(item.id)}>
           ✥ {t('build.move')}
         </button>
         <button

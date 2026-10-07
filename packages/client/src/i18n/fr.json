@@ -260,7 +260,9 @@
     "teamFull": "Équipe complète pour cette phase ({{max}} max)."
   },
   "build": {
-    "intro": "Choisis un objet puis touche une case du bureau pour le poser.",
+    "title": "Construction",
+    "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer ou le revendre.",
+    "catalog": "Catalogue",
     "categories": {
       "work": "Travail",
       "comfort": "Confort",
@@ -269,15 +271,29 @@
       "decor": "Déco"
     },
     "price": "{{price}} €",
+    "owned": "{{count}}/{{max}}",
     "locked": "Débloqué en {{phase}}",
+    "soldOut": "Maximum atteint ({{max}})",
+    "tooExpensive": "Pas assez de trésorerie",
     "rotate": "Tourner",
     "sell": "Revendre ({{price}} €)",
     "move": "Déplacer",
-    "cancel": "Terminer",
+    "cancel": "Annuler",
+    "done": "Terminer",
+    "confirm": "Poser",
+    "confirmMove": "Déplacer ici",
+    "aim": "Vise une case du bureau.",
+    "hintMouse": "Clic pour poser. R pour tourner, Échap pour annuler.",
+    "hintTouch": "Touche une case ou fais glisser l'objet, puis « Poser ».",
     "placing": "Pose : {{item}}",
+    "moving": "Déplacement : {{item}}",
     "selected": "Objet sélectionné : {{item}}",
-    "soldOut": "Maximum atteint ({{max}})"
+    "placed": "{{item}} : posé !",
+    "moved": "{{item}} : déplacé.",
+    "pause": "Mettre en pause",
+    "resume": "Reprendre"
   },
+
   "results": {
     "INVALID_COMMAND": "Action impossible.",
     "WRONG_STAGE": "Pas maintenant : ce n'est pas la bonne étape du sprint.",
@@ -824,12 +840,12 @@
           },
           "place": {
             "title": "Poser un objet",
-            "body": "Choisis un objet dans la liste, puis touche une case libre du bureau pour le poser. Une plante à 60 € est un bon début.",
+            "body": "Choisis un objet dans le catalogue en bas de l'écran : il se replie et l'objet apparaît sur une case libre, en vert. Clique sur une case pour le poser (au doigt : touche une case ou fais glisser l'objet, puis « Poser »). Une plante à 60 € est un bon début.",
             "do": "Achète et pose un objet."
           },
           "manage": {
             "title": "Tourner, déplacer, revendre",
-            "body": "Clique sur un objet déjà posé pour le tourner (touche R), le déplacer ou le revendre. La revente rapporte la moitié du prix d'achat.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
+            "body": "En construction, touche un objet déjà posé pour le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
           },
           "items": {
             "title": "Les objets utiles",

@@ -616,7 +616,6 @@ select {
 
 .team-list,
 .candidates,
-.shop,
 .relations,
 .history,
 .charts,
@@ -788,41 +787,261 @@ input[type='range'] {
   background: transparent;
 }
 
-/* --- Construction --------------------------------------------------------------------- */
+/* --- Mode construction ----------------------------------------------------------------
+ * Le HUD habituel s'efface : un bandeau en haut, et en bas soit le catalogue, soit la barre
+ * de pose quand un objet est en main (le catalogue est alors entièrement replié).
+ */
 
-.build-panel .tabs {
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-
-.shop {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+.build-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  pointer-events: none;
 }
 
-.shop-item {
+.build-top,
+.build-bottom > * {
+  pointer-events: auto;
+}
+
+.build-top,
+.build-hint,
+.catalog,
+.placement-bar {
+  background: rgb(27 31 46 / 92%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(6px);
+}
+
+.build-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 12px;
+}
+
+.build-top p {
+  margin: 0;
+}
+
+.build-title {
+  flex: 1;
+  font-weight: 700;
+}
+
+.build-money {
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.build-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.build-hint {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.build-bottom .selection-bar {
+  position: static;
+  width: auto;
+  transform: none;
+}
+
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 8px;
+}
+
+.catalog-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.catalog-tabs button {
+  flex: 1;
+  flex-direction: column;
+  gap: 0;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.catalog-items {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 9.5rem;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 4px;
+  overflow-x: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: x mandatory;
+  list-style: none;
+}
+
+.catalog-items > li {
+  scroll-snap-align: start;
+}
+
+.catalog-card {
   flex-direction: column;
   align-items: flex-start;
+  justify-content: flex-start;
   gap: 2px;
   width: 100%;
   height: 100%;
-  padding: 8px 10px;
+  padding: 6px 8px 8px;
   text-align: left;
+  background: rgb(255 255 255 / 4%);
 }
 
-.shop-item.active {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 2px var(--accent);
+@media (hover: hover) {
+  .catalog-card:not(:disabled):hover {
+    border-color: var(--accent);
+  }
 }
 
-.shop-item-price {
+.catalog-card-name {
+  line-height: 1.2;
+}
+
+.catalog-card-meta {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.catalog-card-price {
   color: var(--accent);
 }
 
-.shop-item .locked {
+.catalog-card-owned {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.catalog-card-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.catalog-card-text.locked {
+  color: var(--danger);
+}
+
+.item-thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 100%;
+  position: relative;
+  height: 4.5rem;
+  overflow: hidden;
+  border-radius: 8px;
+  background: radial-gradient(circle at 50% 60%, rgb(255 255 255 / 14%), rgb(255 255 255 / 3%));
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.item-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.placement-bar .item-thumb,
+.selection-bar .item-thumb {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+}
+
+.placement-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  animation: rise 0.18s ease-out;
+}
+
+.placement-info {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.placement-info p {
+  margin: 0;
+}
+
+.placement-status {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.placement-status.invalid {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.placement-actions {
+  display: flex;
+  flex: 1 1 100%;
+  gap: 6px;
+}
+
+.placement-actions button {
+  flex: 1;
+  gap: 4px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.game.is-building .toast {
+  top: 4.5rem;
+  bottom: auto;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .placement-bar {
+    animation: none;
+  }
 }
 
 .effects {
@@ -1097,6 +1316,35 @@ legend {
   }
 }
 
+/* Construction : le guide monte sous le bandeau pour laisser le catalogue et la scène libres. */
+.game.is-building .guide,
+.game.is-building .guide-pill {
+  top: calc(env(safe-area-inset-top, 0px) + 68px);
+  bottom: auto;
+}
+
+.game.is-building .guide {
+  max-height: 42dvh;
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .game.is-building .guide {
+    max-height: calc(100dvh - 80px);
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 501px) {
+  .game.is-building .guide,
+  .game.is-building .guide-pill {
+    top: 88px;
+    left: 16px;
+  }
+
+  .game.is-building .guide {
+    max-height: calc(100dvh - 88px - min(17rem, 40vh) - 120px);
+  }
+}
+
 .guest-panel {
   align-items: stretch;
   text-align: center;
@@ -1172,6 +1420,64 @@ legend {
     inset: 0;
     height: auto;
     border-radius: 0;
+  }
+
+  /* Construction : le catalogue passe en colonne à droite, la scène garde la largeur. */
+  .build-top {
+    align-self: flex-start;
+    width: min(24rem, 50vw);
+  }
+
+  .build-bottom {
+    position: absolute;
+    top: 64px;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: 17rem;
+    justify-content: flex-end;
+  }
+
+  .catalog {
+    flex: 1;
+  }
+
+  .catalog-tabs .catalog-tab-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .catalog-items {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-columns: auto;
+    overflow: hidden auto;
+    scroll-snap-type: none;
+  }
+
+  .catalog-card .item-thumb {
+    height: 3rem;
+    font-size: 1.5rem;
+  }
+
+  .catalog-card-text {
+    display: none;
+  }
+
+  .build-hint {
+    display: none;
+  }
+
+  .placement-actions .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
@@ -1262,6 +1568,48 @@ legend {
 
   .toast {
     bottom: 5rem;
+  }
+
+  .build-hud {
+    align-items: center;
+    padding: 16px;
+  }
+
+  .build-top {
+    width: min(30rem, 100%);
+  }
+
+  .build-bottom {
+    width: min(64rem, 100%);
+  }
+
+  .build-hint {
+    align-self: center;
+  }
+
+  .catalog-tabs button {
+    flex-direction: row;
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+
+  .catalog-items {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    grid-auto-columns: auto;
+    max-height: min(17rem, 40vh);
+    overflow: hidden auto;
+    scroll-snap-type: none;
+  }
+
+  .placement-bar {
+    flex-wrap: nowrap;
+    width: min(46rem, 100%);
+    align-self: center;
+  }
+
+  .placement-actions {
+    flex: none;
   }
 
   @keyframes sheet-left {

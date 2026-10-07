@@ -42,6 +42,7 @@ function context(view: GameView, patch: Partial<GuideContext> = {}): GuideContex
   return {
     view,
     panel: null,
+    building: false,
     selectedDev: false,
     baseline: { speed: view.time.speed, items: view.items.length },
     ...patch,
@@ -189,6 +190,8 @@ describe('Actions attendues', () => {
       true,
     );
     expect(isGoalMet(step('planning', 'move'), context(before))).toBe(false);
+    expect(isGoalMet(step('build', 'openBuild'), context(before))).toBe(false);
+    expect(isGoalMet(step('build', 'openBuild'), context(before, { building: true }))).toBe(true);
     expect(isGoalMet(step('execution', 'select'), context(before, { selectedDev: true }))).toBe(
       true,
     );
