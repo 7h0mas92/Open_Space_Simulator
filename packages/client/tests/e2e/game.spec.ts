@@ -170,16 +170,14 @@ test('la caméra défile quand la souris atteint le bord de l’écran', async (
   await page.mouse.move(30, center.y);
   await page.evaluate(
     ([y]) =>
-      document
-        .querySelector('canvas')!
-        .dispatchEvent(
-          new MouseEvent('mouseout', {
-            bubbles: true,
-            clientX: 0,
-            clientY: y,
-            relatedTarget: null,
-          }),
-        ),
+      document.querySelector('canvas')!.dispatchEvent(
+        new MouseEvent('mouseout', {
+          bubbles: true,
+          clientX: 0,
+          clientY: y,
+          relatedTarget: null,
+        }),
+      ),
     [center.y],
   );
   await expect.poll(async () => (await target()).x).toBeLessThan(stopped.x - 0.5);
