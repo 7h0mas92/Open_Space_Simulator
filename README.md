@@ -216,8 +216,11 @@ sequenceDiagram
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion.
-- **Succès** : 32 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
-  débloqués par des cartes.
+- **Succès** : 61 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
+  débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
+  légendaire) ; 21 sont secrets et s'affichent « ??? » tant qu'ils ne sont pas débloqués. Un
+  écran « Succès » est accessible depuis le menu principal ; `pnpm balance` mesure le taux de
+  déblocage de chacun par les bots pour vérifier la difficulté annoncée.
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le
@@ -280,7 +283,7 @@ Render et Vercel. Toutes les variables sont décrites dans
 
 Elle fait : un jeu de gestion solo complet (5 modes, 39 sprints, 100 cartes, 8 profils de
 devs, 4 phases et 4 fins), jouable hors ligne en invité, avec classements en ligne (global,
-Daily, par mode), replays vérifiés par le serveur, 32 succès, un back-office et un Slack
+Daily, par mode), replays vérifiés par le serveur, 61 succès (dont 21 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 
 Elle ne fait pas : de multijoueur en temps réel, d'achats intégrés ni de publicité, de chat

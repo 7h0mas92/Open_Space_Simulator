@@ -1,11 +1,12 @@
 import { ACHIEVEMENTS, type LeaderboardEntry, type ProfileResponse } from '@oss/shared';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../../src/i18n';
 import { pendingAchievements } from '../../../src/save/achievements';
 import { MemoryStore, setLocalStore } from '../../../src/save/storage';
 import { App } from '../../../src/ui/App';
+import { AchievementsPage } from '../../../src/ui/meta/Achievements';
 import { Leaderboard } from '../../../src/ui/meta/Leaderboard';
 import { Profile } from '../../../src/ui/meta/Profile';
 import { useGame } from '../../../src/ui/store/game';
@@ -61,6 +62,8 @@ const PROFILE: ProfileResponse = {
     title,
     description,
     icon,
+    difficulty: 'EASY' as const,
+    secret: false,
     unlockedAt: index === 0 ? '2026-10-01T10:00:00.000Z' : null,
   })),
 };
@@ -150,38 +153,102 @@ describe('Leaderboard', () => {
   });
 });
 
+/** Un succès du catalogue, choisi par sa visibilité. */
+function pick(secret: boolean) {
+  const found = ACHIEVEMENTS.find((a) => (a.secret ?? false) === secret);
+  if (!found) throw new Error('catalogue incomplet');
+  return found;
+}
+
+describe('AchievementsPage', () => {
+  it('montre à un invité les succès de l’appareil, les secrets en « ??? »', async () => {
+    const visible = pick(false);
+    const secrets = ACHIEVEMENTS.filter((a) => a.secret);
+    const [found, hidden] = secrets;
+    if (!found || !hidden) throw new Error('il faut au moins deux succès secrets');
+    await pendingAchievements.add([found.id]);
+    mockApi({});
+    render(<AchievementsPage />);
+
+    expect(await screen.findByText(/Connecte-toi pour les garder/)).toBeInTheDocument();
+    expect(screen.getByText(`1 succès débloqués sur ${ACHIEVEMENTS.length}`)).toBeInTheDocument();
+    // Succès visible verrouillé : titre et condition affichés.
+    const visibleCard = screen.getByTestId(`achievement-${visible.id}`);
+    expect(visibleCard).toHaveClass('locked');
+    expect(visibleCard).toHaveTextContent(visible.title.fr);
+    expect(visibleCard).toHaveTextContent(visible.description.fr);
+    // Secret verrouillé : rien ne fuite.
+    const hiddenCard = screen.getByTestId(`achievement-${hidden.id}`);
+    expect(hiddenCard).toHaveTextContent('???');
+    expect(hiddenCard).not.toHaveTextContent(hidden.title.fr);
+    expect(hiddenCard).not.toHaveTextContent(hidden.description.fr);
+    // Secret débloqué sur cet appareil : révélé.
+    const foundCard = screen.getByTestId(`achievement-${found.id}`);
+    expect(foundCard).toHaveClass('unlocked');
+    expect(foundCard).toHaveTextContent(found.title.fr);
+  });
+
+  it('range les succès par difficulté et filtre les débloqués', async () => {
+    const first = pick(false);
+    mockApi({
+      'GET /api/achievements': () =>
+        Response.json({
+          achievements: ACHIEVEMENTS.map(({ check: _check, secret = false, ...a }) => ({
+            ...a,
+            secret,
+            unlockedAt: a.id === first.id ? '2026-10-01T10:00:00.000Z' : null,
+          })),
+        }),
+    });
+    render(<AchievementsPage />);
+
+    for (const name of ['Faciles', 'Intermédiaires', 'Difficiles', 'Légendaires'])
+      expect(await screen.findByRole('heading', { name: new RegExp(name) })).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(ACHIEVEMENTS.length);
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Débloqués' }));
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByTestId(`achievement-${first.id}`)).toHaveTextContent('Débloqué le');
+
+    await userEvent.click(screen.getByRole('tab', { name: 'À débloquer' }));
+    expect(screen.getAllByRole('listitem')).toHaveLength(ACHIEVEMENTS.length - 1);
+  });
+});
+
 describe('Profile', () => {
-  it('montre à un invité le catalogue des succès, avec ceux de l’appareil', async () => {
+  it('montre à un invité un résumé des succès de l’appareil', async () => {
     const first = ACHIEVEMENTS[0];
-    const second = ACHIEVEMENTS[1];
-    if (!first || !second) throw new Error('catalogue vide');
+    if (!first) throw new Error('catalogue vide');
     await pendingAchievements.add([first.id]);
     mockApi({});
-    render(<Profile />);
+    const open = vi.fn();
+    render(<Profile onOpenAchievements={open} />);
 
     expect(screen.getByText(/En invité, tes succès restent sur cet appareil/)).toBeInTheDocument();
-    expect(await screen.findByTestId(`achievement-${first.id}`)).toHaveClass('unlocked');
-    expect(screen.getByTestId(`achievement-${second.id}`)).toHaveClass('locked');
-    expect(screen.getByText(`1 succès débloqués sur ${ACHIEVEMENTS.length}`)).toBeInTheDocument();
+    expect(
+      await screen.findByText(`1 succès débloqués sur ${ACHIEVEMENTS.length}`),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Voir tous les succès/ }));
+    expect(open).toHaveBeenCalled();
   });
 
   it('montre au joueur connecté ses statistiques et ses succès', async () => {
     useSession.setState({ status: 'authenticated', user: USER });
     mockApi({ 'GET /api/me/profile': () => Response.json(PROFILE) });
-    render(<Profile />);
+    render(<Profile onOpenAchievements={() => undefined} />);
 
     expect(await screen.findByRole('heading', { name: 'kevin_ninja' })).toBeInTheDocument();
     const games = screen.getByText('Parties publiées').parentElement;
     expect(games).toHaveTextContent('12');
     expect(screen.getByText('Réunions').parentElement).toHaveTextContent('512');
     expect(screen.getByText('1 succès débloqués sur 3')).toBeInTheDocument();
-    expect(screen.getAllByRole('listitem').length).toBeGreaterThan(3);
+    expect(screen.getByRole('button', { name: /Voir tous les succès/ })).toBeInTheDocument();
   });
 
   it('affiche une erreur si le profil ne se charge pas', async () => {
     useSession.setState({ status: 'authenticated', user: USER });
     mockApi({});
-    render(<Profile />);
+    render(<Profile onOpenAchievements={() => undefined} />);
     expect(await screen.findByRole('alert')).toHaveTextContent('Impossible de joindre le serveur.');
   });
 });
@@ -215,13 +282,22 @@ describe('App : menu du méta-jeu', () => {
     expect(await screen.findByRole('heading', { name: 'kevin_ninja' })).toBeInTheDocument();
   });
 
-  it('ouvre le profil d’un invité avec la grille des succès', async () => {
+  it('ouvre l’écran des succès depuis le menu principal', async () => {
+    mockApi({});
+    render(<App />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Succès/ }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Succès' })).toBeInTheDocument();
+    expect(await screen.findAllByRole('listitem')).toHaveLength(ACHIEVEMENTS.length);
+  });
+
+  it('ouvre les succès depuis le profil', async () => {
     mockApi({});
     render(<App />);
 
     await userEvent.click(await screen.findByRole('button', { name: /Profil/ }));
-    const list = await screen.findByRole('list');
-    expect(within(list).getAllByRole('listitem')).toHaveLength(ACHIEVEMENTS.length);
+    await userEvent.click(await screen.findByRole('button', { name: /Voir tous les succès/ }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Succès' })).toBeInTheDocument();
   });
 
   it('réserve le back-office aux administrateurs', async () => {

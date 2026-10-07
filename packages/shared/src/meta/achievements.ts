@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { LocalizedTextSchema, type LocalizedText } from '../i18n.js';
 import type { DevRole } from '../sim/components.js';
+import type { FurnitureId } from '../sim/furniture.js';
 import type { GameState } from '../sim/state.js';
 
 /** Difficulté d'un succès, de « dès la première partie » à « défi de speedrunner ». */
@@ -40,7 +41,7 @@ const countRole = (state: GameState, role: DevRole) =>
   Object.values(state.components.identity).filter((identity) => identity.role === role).length;
 
 /** Le bureau contient-il cet objet ? */
-const owns = (state: GameState, itemId: string) =>
+const owns = (state: GameState, itemId: FurnitureId) =>
   Object.values(state.components.furniture).some((item) => item.itemId === itemId);
 
 /** Deux collègues ont-ils tous les deux une affinité qui vérifie `test` l'un envers l'autre ? */
@@ -51,10 +52,6 @@ const mutualRelation = (state: GameState, test: (affinity: number) => boolean) =
         test(affinity) && test(state.components.relations[otherId]?.[id] ?? 0),
     ),
   );
-
-/** Nombre de devs qui font la même activité en ce moment. */
-const countActivity = (state: GameState, kind: string) =>
-  Object.values(state.components.activity).filter((activity) => activity.kind === kind).length;
 
 export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   // ── Débloqués par des cartes ─────────────────────────────────────────────
@@ -93,7 +90,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   },
   {
     id: 'zero-meeting',
-    difficulty: 'HARD',
+    difficulty: 'MEDIUM',
     icon: '📵',
     title: t('Zéro Réunion', 'Zero Meetings'),
     description: t(
@@ -143,7 +140,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   },
   {
     id: 'debt-free-unicorn',
-    difficulty: 'LEGENDARY',
+    difficulty: 'HARD',
     icon: '🦄',
     title: t('Licorne sans dette', 'Debt-free Unicorn'),
     description: t(
@@ -404,10 +401,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     icon: '🐛',
     difficulty: 'MEDIUM',
     title: t('Sprint de nettoyage', 'Cleanup Sprint'),
-    description: t(
-      'Corriger 5 bugs dans le même sprint.',
-      'Fix 5 bugs in the same sprint.',
-    ),
+    description: t('Corriger 5 bugs dans le même sprint.', 'Fix 5 bugs in the same sprint.'),
     check: (state) =>
       Object.values(state.components.task).filter(
         (task) => task.type === 'BUGFIX' && task.doneAtSprint === state.sprint,
@@ -424,7 +418,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   {
     id: 'hype-train',
     icon: '🚂',
-    difficulty: 'MEDIUM',
+    difficulty: 'HARD',
     title: t('Hype train', 'Hype Train'),
     description: t('Faire monter la hype à 90.', 'Push hype up to 90.'),
     check: (state) => state.gauges.hype >= 90,
@@ -457,7 +451,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   {
     id: 'great-place',
     icon: '😊',
-    difficulty: 'HARD',
+    difficulty: 'MEDIUM',
     title: t('Great Place to Work', 'Great Place to Work'),
     description: t(
       'Avoir au moins 5 devs, tous avec un moral de 85 ou plus.',
@@ -471,7 +465,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   {
     id: 'kind-boss',
     icon: '🕊️',
-    difficulty: 'HARD',
+    difficulty: 'MEDIUM',
     title: t('Patron bienveillant', 'Kind Boss'),
     description: t(
       'Finir une partie sans licenciement ni démission.',
@@ -484,11 +478,8 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     icon: '⏱️',
     difficulty: 'LEGENDARY',
     title: t('Speedrun any %', 'Speedrun Any%'),
-    description: t(
-      'Devenir une licorne avant le sprint 20.',
-      'Become a unicorn before sprint 20.',
-    ),
-    check: (state) => state.phase === 'UNICORN' && state.sprint < 20,
+    description: t('Devenir une licorne avant le sprint 25.', 'Become a unicorn before sprint 25.'),
+    check: (state) => state.phase === 'UNICORN' && state.sprint < 25,
   },
   {
     id: 'gotta-catch',
@@ -499,7 +490,8 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
       'Avoir les 8 profils de dev en même temps dans l’équipe.',
       'Have all 8 dev profiles on the team at the same time.',
     ),
-    check: (state) => new Set(Object.values(state.components.identity).map((i) => i.role)).size >= 8,
+    check: (state) =>
+      new Set(Object.values(state.components.identity).map((i) => i.role)).size >= 8,
   },
   // ── Secrets ─────────────────────────────────────────────────────────────
   {
@@ -508,10 +500,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     difficulty: 'MEDIUM',
     secret: true,
     title: t('Skynet', 'Skynet'),
-    description: t(
-      'Avoir 3 IA Agents en même temps.',
-      'Have 3 AI Agents at the same time.',
-    ),
+    description: t('Avoir 3 IA Agents en même temps.', 'Have 3 AI Agents at the same time.'),
     check: (state) => countRole(state, 'AI_AGENT') >= 3,
   },
   {
@@ -529,7 +518,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   {
     id: 'rust-cult',
     icon: '🦀',
-    difficulty: 'MEDIUM',
+    difficulty: 'EASY',
     secret: true,
     title: t('Fearless concurrency', 'Fearless Concurrency'),
     description: t(
@@ -539,28 +528,25 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     check: (state) => Object.keys(state.components.rustConverted).length >= 3,
   },
   {
-    id: 'nap-time',
-    icon: '😴',
-    difficulty: 'MEDIUM',
+    id: 'friday-deploy',
+    icon: '🍻',
+    difficulty: 'EASY',
     secret: true,
-    title: t('Sieste collective', 'Group Nap'),
-    description: t(
-      '3 devs dorment sur leur clavier en même temps.',
-      '3 devs fall asleep on their keyboards at the same time.',
-    ),
-    check: (state) => countActivity(state, 'SLEEPING') >= 3,
+    title: t('On ne déploie pas le vendredi', 'Never Deploy on Friday'),
+    description: t('Voir la prod tomber un vendredi.', 'Watch production go down on a Friday.'),
+    check: (state) => state.stats.fridayOutages >= 1,
   },
   {
     id: 'office-romance',
     icon: '💘',
-    difficulty: 'HARD',
+    difficulty: 'EASY',
     secret: true,
     title: t('Pair programming', 'Pair Programming'),
     description: t(
-      'Deux collègues atteignent une affinité de 90 l’un envers l’autre.',
-      'Two colleagues reach an affinity of 90 with each other.',
+      'Deux collègues deviennent inséparables (affinité de 100 l’un envers l’autre).',
+      'Two colleagues become inseparable (100 affinity with each other).',
     ),
-    check: (state) => mutualRelation(state, (affinity) => affinity >= 90),
+    check: (state) => mutualRelation(state, (affinity) => affinity >= 100),
   },
   {
     id: 'cold-war',
@@ -580,10 +566,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     difficulty: 'MEDIUM',
     secret: true,
     title: t('Dette souveraine', 'Sovereign Debt'),
-    description: t(
-      'Laisser la dette technique atteindre 95.',
-      'Let technical debt reach 95.',
-    ),
+    description: t('Laisser la dette technique atteindre 95.', 'Let technical debt reach 95.'),
     check: (state) => state.gauges.debt >= 95,
   },
   {
@@ -596,16 +579,17 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     check: (state) => state.stats.resignations >= 10,
   },
   {
-    id: 'speed-bankrupt',
-    icon: '💥',
+    id: 'garage-bankrupt',
+    icon: '🏠',
     difficulty: 'MEDIUM',
     secret: true,
-    title: t('Record du monde', 'World Record'),
+    title: t('Retour chez papa-maman', 'Back to Mom’s Basement'),
     description: t(
-      'Faire faillite avant le sprint 10.',
-      'Go bankrupt before sprint 10.',
+      'Faire faillite sans jamais quitter le garage.',
+      'Go bankrupt without ever leaving the garage.',
     ),
-    check: (state) => state.result?.outcome === 'BANKRUPTCY' && state.result.sprint < 10,
+    check: (state) =>
+      state.result?.outcome === 'BANKRUPTCY' && state.result.phaseReached === 'GARAGE',
   },
   {
     id: 'close-call',
@@ -629,8 +613,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
       'Finir une partie de 18 mois sans faillite et sans aucune refacto.',
       'Finish an 18-month game without going bankrupt and without a single refactor.',
     ),
-    check: (state) =>
-      survived(state) && state.totalSprints > 3 && state.stats.refactosDone === 0,
+    check: (state) => survived(state) && state.totalSprints > 3 && state.stats.refactosDone === 0,
   },
   {
     id: 'lone-wolf',
@@ -639,10 +622,10 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     secret: true,
     title: t('Loup solitaire', 'Lone Wolf'),
     description: t(
-      'Finir une partie de 18 mois sans faillite sans jamais dépasser 3 personnes.',
-      'Finish an 18-month game without going bankrupt and never more than 3 people.',
+      'Finir une partie de 18 mois sans faillite sans jamais dépasser 2 personnes.',
+      'Finish an 18-month game without going bankrupt and never more than 2 people.',
     ),
-    check: (state) => survived(state) && state.totalSprints > 3 && state.stats.maxTeamSize <= 3,
+    check: (state) => survived(state) && state.totalSprints > 3 && state.stats.maxTeamSize <= 2,
   },
   {
     id: 'google-campus',
