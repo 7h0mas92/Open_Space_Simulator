@@ -309,6 +309,12 @@
       "medium": "Medium",
       "high": "High"
     },
+    "zoomSpeed": "Zoom speed",
+    "zoomSpeeds": {
+      "slow": "Slow",
+      "normal": "Normal",
+      "fast": "Fast"
+    },
     "reducedMotion": "Reduce motion",
     "edgePan": "Scroll when the mouse reaches the screen edge",
     "textSize": "Text size",

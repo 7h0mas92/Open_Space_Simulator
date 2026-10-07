@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
+import { ZOOM_SPEEDS } from '../../render/isoCamera';
 import { QUALITY_LEVELS } from '../../render/quality';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useGame } from '../store/game';
 import { TEXT_SCALES, useSettings, VOLUME_KEYS } from '../store/settings';
 
-/** Options : qualité graphique, audio, Slack IA, accessibilité, langue. */
+/** Options : qualité graphique, vitesse du zoom, audio, Slack IA, accessibilité, langue. */
 export function SettingsPanel() {
   const { t } = useTranslation();
   const settings = useSettings();
@@ -24,6 +25,21 @@ export function SettingsPanel() {
               onClick={() => settings.update({ quality: level })}
             >
               {t(`settings.qualities.${level}`)}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>{t('settings.zoomSpeed')}</legend>
+        <div className="segmented">
+          {ZOOM_SPEEDS.map((speed) => (
+            <button
+              key={speed}
+              type="button"
+              aria-pressed={settings.zoomSpeed === speed}
+              onClick={() => settings.update({ zoomSpeed: speed })}
+            >
+              {t(`settings.zoomSpeeds.${speed}`)}
             </button>
           ))}
         </div>

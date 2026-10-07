@@ -309,6 +309,12 @@
       "medium": "Moyenne",
       "high": "Haute"
     },
+    "zoomSpeed": "Vitesse du zoom",
+    "zoomSpeeds": {
+      "slow": "Lente",
+      "normal": "Normale",
+      "fast": "Rapide"
+    },
     "reducedMotion": "Réduire les animations",
     "edgePan": "Défiler en approchant la souris du bord de l'écran",
     "textSize": "Taille du texte",

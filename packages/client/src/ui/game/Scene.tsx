@@ -33,6 +33,7 @@ export function Scene() {
         quality: settings.quality,
         reducedMotion: settings.reducedMotion,
         edgePan: settings.edgePan,
+        zoomSpeed: settings.zoomSpeed,
         translate: (key) => translateRef.current(key as never) as string,
         onPick: (target) => {
           const game = useGame.getState();
@@ -107,6 +108,7 @@ export function Scene() {
       renderer.setQuality(state.quality);
       renderer.setReducedMotion(state.reducedMotion);
       renderer.setEdgePan(state.edgePan);
+      renderer.setZoomSpeed(state.zoomSpeed);
     });
     const initial = useGame.getState();
     if (initial.view) renderer.setView(initial.view);
