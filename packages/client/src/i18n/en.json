@@ -260,7 +260,9 @@
     "teamFull": "Team is full for this phase ({{max}} max)."
   },
   "build": {
-    "intro": "Pick an item, then tap a tile to place it.",
+    "title": "Build mode",
+    "intro": "Pick an item to place, or tap a piece of furniture to move or sell it.",
+    "catalog": "Catalog",
     "categories": {
       "work": "Work",
       "comfort": "Comfort",
@@ -269,15 +271,29 @@
       "decor": "Decor"
     },
     "price": "€{{price}}",
+    "owned": "{{count}}/{{max}}",
     "locked": "Unlocks at {{phase}}",
+    "soldOut": "Limit reached ({{max}})",
+    "tooExpensive": "Not enough cash",
     "rotate": "Rotate",
     "sell": "Sell (€{{price}})",
     "move": "Move",
-    "cancel": "Done",
+    "cancel": "Cancel",
+    "done": "Done",
+    "confirm": "Place",
+    "confirmMove": "Move here",
+    "aim": "Aim at a tile of the office.",
+    "hintMouse": "Click to place. R to rotate, Esc to cancel.",
+    "hintTouch": "Tap a tile or drag the item, then \"Place\".",
     "placing": "Placing: {{item}}",
+    "moving": "Moving: {{item}}",
     "selected": "Selected item: {{item}}",
-    "soldOut": "Limit reached ({{max}})"
+    "placed": "{{item}}: placed!",
+    "moved": "{{item}}: moved.",
+    "pause": "Pause",
+    "resume": "Resume"
   },
+
   "results": {
     "INVALID_COMMAND": "That can't be done.",
     "WRONG_STAGE": "Not now: wrong step of the sprint.",
@@ -824,12 +840,12 @@
           },
           "place": {
             "title": "Placing an item",
-            "body": "Pick an item in the list, then tap a free cell in the office to place it. A €60 plant is a good start.",
+            "body": "Pick an item from the catalog at the bottom of the screen: the catalog folds away and the item shows up on a free tile, in green. Click a tile to place it (on touch: tap a tile or drag the item, then \"Place\"). A €60 plant is a good start.",
             "do": "Buy and place an item."
           },
           "manage": {
             "title": "Rotate, move, sell",
-            "body": "Click an item already placed to rotate it (R key), move it or sell it. Selling gives back half the purchase price.\n\nSome items only unlock in later phases, when the office grows."
+            "body": "In build mode, tap an item already placed to move or sell it (selling refunds half the price). With an item in hand, R rotates it and Esc puts it back in the catalog. \"Done\" closes build mode.\n\nSome items only unlock in later stages, when the office grows."
           },
           "items": {
             "title": "Useful items",

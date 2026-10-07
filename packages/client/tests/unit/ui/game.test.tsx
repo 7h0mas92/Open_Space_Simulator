@@ -14,6 +14,8 @@ import { GameScreen } from '../../../src/ui/game/GameScreen';
 import { useGame } from '../../../src/ui/store/game';
 import { useSettings } from '../../../src/ui/store/settings';
 import type { Simulation } from '../../../src/simulation/simulation';
+import { officeLayout } from '../../../src/view/layout';
+import { nearestValidCell } from '../../../src/view/placement';
 import { officeSimulation, SEED_OFFICE, testSource } from '../fixtures/game';
 
 /** Lance l'écran de jeu sur une vraie simulation (moteur sans thread, temps arrêté). */
@@ -126,19 +128,99 @@ describe('Équipe et recrutement', () => {
 });
 
 describe('Construction', () => {
-  it('choisir un objet active l’aperçu, R le tourne, Échap quitte', async () => {
+  /** Case libre pour une plante, calculée avec les mêmes règles que l'aperçu. */
+  function freeCell(kind = 'plant') {
+    const view = useGame.getState().view!;
+    const cell = nearestValidCell(
+      officeLayout(view.phase),
+      view.items,
+      { kind, rotation: 0 },
+      { x: 2, z: 2 },
+    );
+    expect(cell).not.toBeNull();
+    return cell!;
+  }
+
+  it('le HUD s’efface, et le catalogue se replie dès qu’on prend un objet', async () => {
     await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Construction/ }));
-    await userEvent.click(screen.getByRole('tab', { name: 'Déco' }));
-    await userEvent.click(screen.getByRole('button', { name: /^Plante/ }));
+    expect(screen.getByTestId('build-mode')).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Actions du jeu' })).toBeNull();
+    expect(screen.getByTestId('catalog')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('tab', { name: /Déco/ }));
+    await userEvent.click(screen.getByTestId('catalog-plant'));
     expect(useGame.getState().build).toMatchObject({ kind: 'plant', rotation: 0 });
+    expect(screen.queryByTestId('catalog')).toBeNull();
+    expect(screen.getByTestId('placement-bar')).toHaveTextContent('Plante verte');
+
     await userEvent.keyboard('r');
     expect(useGame.getState().build?.rotation).toBe(1);
-    // Premier Échap : ferme le panneau ; second : quitte le mode construction.
+    // Échap recule d'un cran : objet en main → catalogue → jeu.
     await userEvent.keyboard('{Escape}');
-    expect(useGame.getState().panel).toBeNull();
+    expect(useGame.getState().build).toMatchObject({ kind: null });
+    expect(screen.getByTestId('catalog')).toBeInTheDocument();
+    // Le rayon choisi est conservé.
+    expect(screen.getByRole('tab', { name: /Déco/ })).toHaveAttribute('aria-selected', 'true');
     await userEvent.keyboard('{Escape}');
     expect(useGame.getState().build).toBeNull();
+    expect(screen.getByRole('navigation', { name: 'Actions du jeu' })).toBeInTheDocument();
+  });
+
+  it('pose un objet au clavier : flèches pour viser, Entrée pour poser', async () => {
+    await startGame();
+    await userEvent.keyboard('b');
+    await userEvent.click(screen.getByRole('tab', { name: /Déco/ }));
+    await userEvent.click(screen.getByTestId('catalog-plant'));
+    const cell = freeCell();
+    act(() => useGame.getState().setBuildCell({ x: cell.x + 1, z: cell.z }));
+    await userEvent.keyboard('{ArrowLeft}');
+    expect(useGame.getState().build?.cell).toEqual(cell);
+
+    const before = useGame.getState().view!;
+    await userEvent.keyboard('{Enter}');
+    const after = useGame.getState().view!;
+    expect(after.items).toHaveLength(before.items.length + 1);
+    expect(after.items.at(-1)).toMatchObject({ kind: 'plant', x: cell.x, z: cell.z });
+    expect(after.gauges.treasury).toBeLessThan(before.gauges.treasury);
+    // Retour au catalogue pour l'objet suivant.
+    expect(useGame.getState().build).toMatchObject({ kind: null });
+    expect(screen.getByText('Plante verte : posé !')).toHaveClass('toast-success');
+  });
+
+  it('refuse une case occupée et explique pourquoi', async () => {
+    await startGame();
+    const occupied = useGame.getState().view!.items[0]!;
+    act(() => useGame.getState().enterBuild());
+    act(() => useGame.getState().pickItem('plant'));
+    act(() => useGame.getState().setBuildCell({ x: occupied.x, z: occupied.z }));
+    expect(screen.getByTestId('place')).toBeDisabled();
+    expect(screen.getByTestId('placement-bar')).toHaveTextContent('La place est déjà prise.');
+
+    const cell = freeCell();
+    act(() => useGame.getState().setBuildCell(cell));
+    expect(screen.getByTestId('place')).toBeEnabled();
+    await userEvent.click(screen.getByTestId('place'));
+    expect(useGame.getState().view!.items.some((i) => i.x === cell.x && i.z === cell.z)).toBe(true);
+  });
+
+  it('déplace un objet posé depuis le mode construction', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    const item = useGame.getState().view!.items.find((i) => i.kind === 'premium-coffee-machine')!;
+    act(() => useGame.getState().select({ type: 'item', id: item.id }));
+    await userEvent.click(screen.getByRole('button', { name: /Déplacer/ }));
+    expect(useGame.getState().build).toMatchObject({
+      kind: 'premium-coffee-machine',
+      movingItemId: item.id,
+      cell: { x: item.x, z: item.z },
+    });
+    expect(screen.queryByTestId('catalog')).toBeNull();
+
+    const cell = freeCell('premium-coffee-machine');
+    act(() => useGame.getState().setBuildCell(cell));
+    await userEvent.click(screen.getByRole('button', { name: /Déplacer ici/ }));
+    expect(useGame.getState().view!.items.find((i) => i.id === item.id)).toMatchObject(cell);
   });
 
   it('affiche les actions d’un objet sélectionné et le revend', async () => {
@@ -152,8 +234,9 @@ describe('Construction', () => {
   it('les objets verrouillés ne sont pas achetables', async () => {
     await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Construction/ }));
-    await userEvent.click(screen.getByRole('tab', { name: 'Détente' }));
-    expect(screen.getByRole('button', { name: /Toboggan/ })).toBeDisabled();
+    await userEvent.click(screen.getByRole('tab', { name: /Détente/ }));
+    expect(screen.getByTestId('catalog-slide')).toBeDisabled();
+    expect(screen.getByTestId('catalog-slide')).toHaveTextContent('Débloqué en');
   });
 });
 

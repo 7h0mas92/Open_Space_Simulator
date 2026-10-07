@@ -112,6 +112,7 @@ export function Guide({ view }: { view: GameView }) {
   const { text, field } = useText(view.mode);
   const guide = useGuide();
   const panel = useGame((s) => s.panel);
+  const building = useGame((s) => s.build !== null);
   const selected = useGame((s) => s.selected);
   const dispatch = useGame((s) => s.dispatch);
   const { active } = guide;
@@ -157,6 +158,7 @@ export function Guide({ view }: { view: GameView }) {
     isGoalMet(step, {
       view,
       panel,
+      building,
       selectedDev: selected?.type === 'dev',
       baseline: active.baseline,
     });

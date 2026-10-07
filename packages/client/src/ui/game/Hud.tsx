@@ -3,10 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView } from '../../view/types';
 import { useSlack } from '../../slack/store';
 import { PANELS, useGame, type PanelId } from '../store/game';
+
+/** Boutons de la barre d'actions : les panneaux, plus le mode construction (après Recrutement). */
+const ACTIONS = [...PANELS.slice(0, 3), 'build', ...PANELS.slice(3)] as const;
+type ActionId = PanelId | 'build';
 import { formatClock, formatGauge, gaugeRatio, isGaugeCritical } from './format';
 import { Tooltip } from './Tooltip';
 
-const PANEL_ICONS: Record<PanelId, string> = {
+const PANEL_ICONS: Record<ActionId, string> = {
   kanban: '▦',
   team: '☺',
   hiring: '✚',
@@ -107,20 +111,21 @@ export function ActionBar() {
   const replay = useGame((s) => s.replayOf !== null);
   const unread = useSlack((s) => s.unread.general + s.unread.random + s.unread.incidents);
   // En replay, seuls les panneaux de consultation restent utiles.
-  const hidden = new Set<PanelId>(replay ? ['credits', 'hiring', 'build', 'saves'] : ['credits']);
+  const hidden = new Set<ActionId>(replay ? ['credits', 'hiring', 'build', 'saves'] : ['credits']);
   const openPanel = useGame((s) => s.openPanel);
-  const setBuild = useGame((s) => s.setBuild);
+  const enterBuild = useGame((s) => s.enterBuild);
   return (
     <nav className="action-bar" aria-label={t('panels.actions')}>
-      {PANELS.filter((id) => !hidden.has(id)).map((id) => (
+      {ACTIONS.filter((id) => !hidden.has(id)).map((id) => (
         <button
           key={id}
           type="button"
           aria-pressed={panel === id}
           data-tutorial={`panel-${id}`}
+          aria-keyshortcuts={id === 'build' ? 'B' : undefined}
           onClick={() => {
-            if (id !== 'build') setBuild(null);
-            openPanel(panel === id ? null : id);
+            if (id === 'build') enterBuild();
+            else openPanel(panel === id ? null : id);
           }}
         >
           <span className="icon" aria-hidden="true">

@@ -19,6 +19,8 @@ import type { PanelId } from '../store/game';
 export interface GuideContext {
   readonly view: GameView;
   readonly panel: PanelId | null;
+  /** Le mode construction est-il ouvert ? (ce n'est pas un panneau) */
+  readonly building: boolean;
   readonly selectedDev: boolean;
   /** Valeurs relevées au début de l'étape (pour détecter un changement). */
   readonly baseline: GuideBaseline;
@@ -192,7 +194,7 @@ export const LESSONS: readonly Lesson[] = [
     id: 'build',
     trigger: (view, seen) => seen.has('demo') && planningOfSprint(view, 2),
     steps: [
-      { id: 'openBuild', target: 'panel-build', goal: panelOpen('build') },
+      { id: 'openBuild', target: 'panel-build', goal: ({ building }) => building },
       {
         id: 'place',
         goal: ({ view, baseline }) => view.items.length > baseline.items,
