@@ -5,6 +5,7 @@
   "description": "API REST d'Open Space Simulator : Fastify, Prisma, PostgreSQL.",
   "type": "module",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "tsx watch src/server.ts",
     "build": "prisma generate && tsc -p tsconfig.json --noEmit && node scripts/build.mjs",
     "start": "node dist/server.js",
