@@ -31,7 +31,19 @@ interface ItemLook {
    */
   readonly scale?: readonly [number, number, number];
   /** Petits appareils posés côte à côte sur le meuble (machine à café sur un placard…). */
-  readonly onTop?: readonly FurnitureModel[];
+  readonly onTop?: readonly ItemModel[];
+  /** Pièces ajoutées à une position précise (écran sur le bureau, bancs autour d'une table…). */
+  readonly parts?: readonly ItemPart[];
+}
+
+/** Pièce d'un objet composé, placée dans le repère de l'objet (centre de l'emprise, au sol). */
+export interface ItemPart {
+  readonly model: ItemModel;
+  /** Position en unités de grille ; y est la hauteur de la base de la pièce. */
+  readonly at: readonly [number, number, number];
+  /** Rotation autour de l'axe vertical, en quarts de tour. */
+  readonly turn?: number;
+  readonly scale?: readonly [number, number, number];
 }
 
 export interface CatalogItem extends ItemLook {
@@ -49,13 +61,44 @@ export interface CatalogItem extends ItemLook {
 
 const kenney = (model: FurnitureModel): ItemModel => ({ source: 'kenney', model });
 const primitive = (model: MissingAssetId): ItemModel => ({ source: 'primitive', model });
+const part = (
+  model: ItemModel,
+  at: readonly [number, number, number],
+  options: Pick<ItemPart, 'turn' | 'scale'> = {},
+): ItemPart => ({ model, at, ...options });
+
+/** Hauteur des plateaux et plans de travail Kenney (après l'échelle commune du kit). */
+const DESK_TOP = 0.77;
+const TRESTLE_TOP = 0.69;
+const TV_CABINET_TOP = 0.62;
 
 type SimItemId = (typeof FURNITURE_CATALOG)[number]['id'];
 
 /** Habillage de chaque objet de la simulation (le typage oblige à n'en oublier aucun). */
 const LOOKS: Record<SimItemId, ItemLook> = {
-  desk: { category: 'work', model: kenney('desk'), height: 0.75, use: 'desk' },
-  'ikea-desk': { category: 'work', model: kenney('table'), height: 0.65, use: 'desk' },
+  // Bureau de dev complet : écran, clavier, souris.
+  desk: {
+    category: 'work',
+    model: kenney('desk'),
+    height: 0.75,
+    use: 'desk',
+    parts: [
+      part(kenney('computerScreen'), [-0.35, DESK_TOP, -0.15]),
+      part(kenney('computerKeyboard'), [-0.35, DESK_TOP, 0.17]),
+      part(kenney('computerMouse'), [0.05, DESK_TOP, 0.17]),
+    ],
+  },
+  // Le bureau du garage : tréteaux, un portable et des ramen.
+  'ikea-desk': {
+    category: 'work',
+    model: kenney('tableCross'),
+    height: 0.65,
+    use: 'desk',
+    parts: [
+      part(kenney('laptop'), [-0.3, TRESTLE_TOP, 0], { turn: 0 }),
+      part(primitive('ramen'), [0.45, TRESTLE_TOP, 0.05]),
+    ],
+  },
   'standing-desk': {
     category: 'work',
     model: primitive('standingDesk'),
@@ -63,42 +106,60 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     use: 'desk',
   },
   'ergonomic-chair': { category: 'work', model: kenney('chairDesk'), height: 1.2 },
-  'noise-headsets': { category: 'work', model: primitive('headphones'), height: 0.4 },
-  bookcase: { category: 'work', model: kenney('bookcaseClosedWide'), height: 1.6 },
+  'noise-headsets': { category: 'work', model: primitive('headphones'), height: 1.2 },
+  // Bibliothèque garnie de livres sur chaque étagère.
+  bookcase: {
+    category: 'work',
+    model: kenney('bookcaseClosedWide'),
+    height: 1.6,
+    parts: [
+      part(kenney('books'), [-0.45, 0.06, 0]),
+      part(kenney('books'), [0.2, 0.06, 0]),
+      part(kenney('books'), [0.45, 0.56, 0], { turn: 2 }),
+      part(kenney('books'), [-0.3, 1.04, 0]),
+    ],
+  },
   'tv-dashboard': {
     category: 'work',
     model: kenney('cabinetTelevision'),
     height: 1.5,
-    onTop: ['televisionModern'],
+    parts: [part(primitive('metricsScreen'), [0, TV_CABINET_TOP, -0.05])],
   },
-  'server-rack': { category: 'work', model: kenney('bookcaseClosedDoors'), height: 1.7 },
+  'server-rack': { category: 'work', model: primitive('serverRack'), height: 1.9 },
+  // Cafetière à filtre sur un comptoir étroit.
   'coffee-machine': {
     category: 'kitchen',
-    model: kenney('kitchenCabinet'),
+    model: kenney('kitchenBar'),
     height: 1.25,
     use: 'coffee',
-    onTop: ['kitchenCoffeeMachine'],
+    onTop: [primitive('dripCoffeeMaker')],
   },
+  // Machine de barista et son moulin, sur un meuble à tiroirs.
   'premium-coffee-machine': {
     category: 'kitchen',
     model: kenney('kitchenCabinetDrawer'),
-    height: 1.25,
+    height: 1.35,
     use: 'coffee',
-    onTop: ['kitchenCoffeeMachine', 'kitchenBlender'],
+    onTop: [primitive('espressoMachine')],
   },
-  fridge: { category: 'kitchen', model: kenney('kitchenFridge'), height: 1.85, use: 'coffee' },
+  fridge: { category: 'kitchen', model: primitive('drinksFridge'), height: 1.85, use: 'coffee' },
   microwave: {
     category: 'kitchen',
     model: kenney('kitchenCabinet'),
     height: 1.25,
-    onTop: ['kitchenMicrowave'],
+    onTop: [kenney('kitchenMicrowave')],
   },
+  // Grande tablée avec deux bancs, pour les déjeuners d'équipe.
   'canteen-table': {
     category: 'kitchen',
     model: kenney('tableCrossCloth'),
     height: 0.7,
     use: 'meeting',
-    scale: [1.6, 1, 2],
+    scale: [1.6, 1, 1.25],
+    parts: [
+      part(kenney('benchCushionLow'), [0, 0, -0.8], { scale: [3, 1, 1] }),
+      part(kenney('benchCushionLow'), [0, 0, 0.8], { scale: [3, 1, 1] }),
+    ],
   },
   babyfoot: { category: 'fun', model: primitive('babyfoot'), height: 0.9, use: 'babyfoot' },
   speaker: { category: 'fun', model: kenney('speaker'), height: 1.25 },
@@ -106,12 +167,7 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   sofa: { category: 'comfort', model: kenney('loungeSofa'), height: 0.9, use: 'rest' },
   'nap-pod': { category: 'comfort', model: primitive('napPod'), height: 1.2, use: 'rest' },
   plant: { category: 'decor', model: kenney('pottedPlant'), height: 1.3 },
-  'small-plant': {
-    category: 'decor',
-    model: kenney('plantSmall2'),
-    height: 0.55,
-    scale: [2, 2, 2],
-  },
+  'small-plant': { category: 'decor', model: primitive('cactus'), height: 0.75 },
   rug: { category: 'decor', model: kenney('rugRound'), height: 0.02 },
   trashcan: { category: 'decor', model: kenney('trashcan'), height: 0.85 },
 };

@@ -235,6 +235,13 @@ export const MISSING_ASSETS = [
   { id: 'napPod', replacement: 'primitive' },
   { id: 'standingDesk', replacement: 'primitive' },
   { id: 'headphones', replacement: 'primitive' },
+  { id: 'serverRack', replacement: 'primitive' },
+  { id: 'dripCoffeeMaker', replacement: 'primitive' },
+  { id: 'espressoMachine', replacement: 'primitive' },
+  { id: 'drinksFridge', replacement: 'primitive' },
+  { id: 'cactus', replacement: 'primitive' },
+  { id: 'metricsScreen', replacement: 'primitive' },
+  { id: 'ramen', replacement: 'primitive' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;

@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { catalogItem } from '../view/catalog';
+import { catalogItem, type ItemModel } from '../view/catalog';
 import { characterUrl, CHARACTER_IDS, furnitureUrl, type FurnitureModel } from './assetManifest';
 import { buildPrimitive, fallbackBox } from './primitives';
 
@@ -48,27 +48,43 @@ export class AssetLibrary {
     return promise;
   }
 
-  /** Gabarit d'un objet du catalogue : modèle Kenney, forme Three.js, ou boîte de secours. */
+  /**
+   * Gabarit d'un objet du catalogue : modèle Kenney ou forme Three.js, complété de ses pièces
+   * (appareils posés dessus, écran, bancs…). Boîte de secours si le modèle principal manque.
+   */
   async itemTemplate(kind: string): Promise<THREE.Object3D> {
     const def = catalogItem(kind);
     if (!def) return fallbackBox(1, 1, 0.5);
-    if (def.model.source === 'primitive') return withShadows(buildPrimitive(def.model.model));
-    const loaded = await this.loadFurniture(def.model.model);
-    if (!loaded) return fallbackBox(def.size[0], def.size[1], def.height);
-    const body = loaded.clone();
+    const body = await this.model(def.model);
+    if (!body) return fallbackBox(def.size[0], def.size[1], def.height);
     // Le modèle est centré et posé au sol : l'agrandir autour de l'origine le garde en place.
     if (def.scale) body.scale.set(...def.scale);
     const root = new THREE.Group();
     root.add(body);
     if (def.onTop) await this.placeOnTop(root, def.onTop);
-    return root;
+    const parts = await Promise.all((def.parts ?? []).map((part) => this.model(part.model)));
+    (def.parts ?? []).forEach((part, index) => {
+      const object = parts[index];
+      if (!object) return;
+      object.position.set(...part.at);
+      object.rotation.y = ((part.turn ?? 0) * Math.PI) / 2;
+      if (part.scale) object.scale.set(...part.scale);
+      root.add(object);
+    });
+    return withShadows(root);
+  }
+
+  /** Une copie du modèle Kenney ou de la forme Three.js, `null` si le GLB est introuvable. */
+  private async model(model: ItemModel): Promise<THREE.Object3D | null> {
+    if (model.source === 'primitive') return buildPrimitive(model.model);
+    return (await this.loadFurniture(model.model))?.clone() ?? null;
   }
 
   /** Pose de petits appareils côte à côte, centrés sur le dessus du meuble. */
-  private async placeOnTop(base: THREE.Object3D, models: readonly FurnitureModel[]) {
+  private async placeOnTop(base: THREE.Object3D, models: readonly ItemModel[]) {
     const top = new THREE.Box3().setFromObject(base).max.y;
-    const loaded = await Promise.all(models.map((model) => this.loadFurniture(model)));
-    const parts = loaded.flatMap((part) => (part ? [part.clone()] : []));
+    const loaded = await Promise.all(models.map((model) => this.model(model)));
+    const parts = loaded.flatMap((part) => (part ? [part] : []));
     const widths = parts.map(
       (part) => new THREE.Box3().setFromObject(part).getSize(new THREE.Vector3()).x,
     );
