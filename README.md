@@ -35,6 +35,57 @@ pnpm dev            # client sur http://localhost:5173, API sur http://localhost
 Le port 5432 est celui de PostgreSQL : il ne s'ouvre pas dans un navigateur (« ERR_EMPTY_RESPONSE »,
 et une ligne « invalid length of startup packet » dans les logs de la base, sans gravité).
 
+### Se connecter à la base
+
+Les identifiants viennent de `docker-compose.yml` et sont les mêmes dans
+`packages/server/.env.example` :
+
+| Champ        | Valeur                                    |
+| ------------ | ----------------------------------------- |
+| Hôte         | `localhost`                               |
+| Port         | `5432`                                    |
+| Utilisateur  | `oss`                                     |
+| Mot de passe | `oss`                                     |
+| Base         | `oss`                                     |
+| URL complète | `postgresql://oss:oss@localhost:5432/oss` |
+
+Trois façons de regarder les données :
+
+```bash
+# 1. psql dans le conteneur (rien à installer sur le Mac)
+docker compose exec db psql -U oss -d oss
+#    \dt pour lister les tables, \q pour sortir
+docker compose exec db psql -U oss -d oss -c 'select email, role from "User";'
+
+# 2. Prisma Studio, dans le navigateur sur http://localhost:5555
+pnpm --filter @oss/server db:studio
+
+# 3. Un client graphique (TablePlus, DBeaver, pgAdmin, DataGrip) :
+#    nouvelle connexion PostgreSQL avec les valeurs du tableau ci-dessus.
+```
+
+Les tests créent deux bases supplémentaires sur le même serveur, `oss_test`
+(`pnpm test`) et `oss_e2e` (`pnpm test:e2e`). Elles sont créées et migrées
+automatiquement, puis vidées entre les tests : la base `oss` du jeu n'est jamais
+touchée.
+
+### Réinitialiser la base
+
+```bash
+# Repartir de zéro : supprime le conteneur et le volume de données
+docker compose down -v
+pnpm db:up && pnpm db:migrate && pnpm db:seed
+
+# Variante Prisma : rejoue les migrations et le seed sans toucher au conteneur
+pnpm --filter @oss/server exec prisma migrate reset
+```
+
+Arrêter la base sans perdre les données : `docker compose stop db`, puis
+`pnpm db:up` pour la relancer. Les données vivent dans un volume Docker nommé
+d'après le dossier du projet (`docker volume ls` pour le voir, par exemple
+`open_space_simulator_pgdata`) : `docker compose down` seul le conserve, c'est
+l'option `-v` qui l'efface.
+
 En cas de `ERR_MODULE_NOT_FOUND` :
 
 - `.../src/generated/prisma/client.js` : le client Prisma n'est pas généré, lancer
@@ -62,7 +113,9 @@ Sans ces variables, le bouton « Continuer avec GitHub » est simplement masqué
 | `pnpm typecheck`                                 | TypeScript strict sur tout le monorepo                              |
 | `pnpm build`                                     | Build de production des trois paquets                               |
 | `pnpm balance`                                   | Simule 10 000 parties et écrit `packages/client/reports/balance.md` |
+| `pnpm db:up`                                     | Démarre PostgreSQL 16 dans Docker                                   |
 | `pnpm db:migrate`                                | Crée / applique une migration Prisma                                |
+| `pnpm --filter @oss/server db:studio`            | Ouvre Prisma Studio sur http://localhost:5555                       |
 | `pnpm --filter @oss/server db:generate`          | Régénère le client Prisma (après un changement de schéma)           |
 | `pnpm --filter @oss/server user:promote <email>` | Donne le rôle ADMIN                                                 |
 
