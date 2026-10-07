@@ -12,6 +12,11 @@ interface SessionState {
   /** Dernière erreur d'authentification, à traduire avec t(`errors.${code}`). */
   error: ClientErrorCode | null;
   githubEnabled: boolean;
+  /**
+   * Le serveur du jeu répond-il ? `false` sur la version en ligne hébergée sans serveur
+   * (mode invité seulement) ou quand l'API locale n'est pas lancée.
+   */
+  serverAvailable: boolean;
   /** Vérifie au démarrage si une session existe déjà (cookies). */
   restore: () => Promise<void>;
   login: (body: LoginBody) => Promise<void>;
@@ -24,6 +29,12 @@ interface SessionState {
 const errorCode = (error: unknown): ClientErrorCode =>
   error instanceof ApiRequestError ? error.code : 'INTERNAL_ERROR';
 
+/** Erreur d'authentification, en retenant au passage si le serveur est injoignable. */
+const authFailure = (error: unknown) => {
+  const code = errorCode(error);
+  return code === 'NETWORK_ERROR' ? { error: code, serverAvailable: false } : { error: code };
+};
+
 /** Applique la langue enregistrée dans le profil du joueur. */
 function applyUser(user: UserDto) {
   if (i18n.resolvedLanguage !== user.locale) void i18n.changeLanguage(user.locale);
@@ -34,9 +45,16 @@ export const useSession = create<SessionState>()((set, get) => ({
   user: null,
   error: null,
   githubEnabled: false,
+  serverAvailable: true,
 
   restore: async () => {
-    const providers = authApi.providers().catch(() => ({ github: false }));
+    const providers = authApi.providers().then(
+      ({ github }) => ({ github, serverAvailable: true }),
+      (error: unknown) => ({
+        github: false,
+        serverAvailable: errorCode(error) !== 'NETWORK_ERROR',
+      }),
+    );
     try {
       const user = await authApi.me();
       applyUser(user);
@@ -44,7 +62,8 @@ export const useSession = create<SessionState>()((set, get) => ({
     } catch {
       set({ status: 'guest', user: null });
     }
-    set({ githubEnabled: (await providers).github });
+    const { github, serverAvailable } = await providers;
+    set({ githubEnabled: github, serverAvailable });
   },
 
   login: async (body) => {
@@ -52,9 +71,9 @@ export const useSession = create<SessionState>()((set, get) => ({
     try {
       const user = await authApi.login(body);
       applyUser(user);
-      set({ status: 'authenticated', user });
+      set({ status: 'authenticated', user, serverAvailable: true });
     } catch (error) {
-      set({ error: errorCode(error) });
+      set(authFailure(error));
     }
   },
 
@@ -62,9 +81,10 @@ export const useSession = create<SessionState>()((set, get) => ({
     set({ error: null });
     try {
       const user = await authApi.register(body);
-      set({ status: 'authenticated', user });
+      applyUser(user);
+      set({ status: 'authenticated', user, serverAvailable: true });
     } catch (error) {
-      set({ error: errorCode(error) });
+      set(authFailure(error));
     }
   },
 

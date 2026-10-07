@@ -292,6 +292,17 @@ button.cta small {
   background: none;
 }
 
+/* Version sans serveur : un encadré sobre à la place du formulaire. */
+.auth-offline h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--accent);
+}
+
+.auth-offline p {
+  margin: 0 0 1rem;
+}
+
 @media (min-width: 768px) {
   .home-sheet .sheet {
     inset: 0;

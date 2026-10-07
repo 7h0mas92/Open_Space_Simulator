@@ -61,7 +61,7 @@ export const authPlugin = fp(async (app: FastifyInstance, { env }: { env: Env })
       throw unauthorized();
     }
     if (role === 'ADMIN' && request.user.role !== 'ADMIN') {
-      throw forbidden('Réservé aux administrateurs');
+      throw forbidden('Action réservée aux administrateurs');
     }
   });
 });
