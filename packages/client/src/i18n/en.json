@@ -10,7 +10,23 @@
     "guestHint": "No account, no leaderboard. Prod still goes down, though.",
     "continue": "Load a game",
     "more": "More",
-    "startFailed": "Could not start the game. Try again."
+    "startFailed": "Could not start the game. Try again.",
+    "play": "Play",
+    "playHint": "New game in {{mode}} mode",
+    "resume": "Continue",
+    "resumeHint": "{{mode}} · {{phase}} · sprint {{sprint}} · {{valuation}}",
+    "signIn": "Sign in",
+    "account": "Account",
+    "nav": "Main menu",
+    "modesHint": "Every mode has its own tutorial. Read it again anytime from the in-game options.",
+    "ticker": [
+      "#incidents · Prod is down. It's Friday, 5:04 pm.",
+      "#general · The intern just discovered git push --force.",
+      "#random · Someone put ketchup in the coffee machine.",
+      "#general · 2-hour meeting to pick a button colour.",
+      "#incidents · \"Works on my machine.\"",
+      "#random · The Rustacean wants to rewrite everything. Again."
+    ]
   },
   "language": {
     "label": "Language",
@@ -430,27 +446,33 @@
     "title": "Pick your mode",
     "EASY": {
       "name": "Easy",
-      "rule": "To learn: full tutorial, more money, softer crises."
+      "rule": "To learn: full tutorial, more money, softer crises.",
+      "tag": "Beginner"
     },
     "NORMAL": {
       "name": "Normal",
-      "rule": "18 months to become a unicorn."
+      "rule": "18 months to become a unicorn.",
+      "tag": "Recommended"
     },
     "HARDCORE": {
       "name": "Hardcore",
-      "rule": "No pause. Ever."
+      "rule": "No pause. Ever.",
+      "tag": "Expert"
     },
     "INTERNS_ONLY": {
       "name": "Interns Only",
-      "rule": "Interns only. Good luck with production."
+      "rule": "Interns only. Good luck with production.",
+      "tag": "Chaos"
     },
     "SHIP_IN_3": {
       "name": "3-sprint challenge",
-      "rule": "This app must ship in 3 sprints."
+      "rule": "This app must ship in 3 sprints.",
+      "tag": "Short game"
     },
     "DAILY": {
       "name": "Daily",
-      "rule": "The same game for everyone today."
+      "rule": "The same game for everyone today.",
+      "tag": "Daily leaderboard"
     }
   },
   "saves": {

@@ -14,6 +14,7 @@ function uniqueAccount() {
 
 async function register(page: Page) {
   const account = uniqueAccount();
+  await page.getByRole('button', { name: /Connexion/ }).click();
   await page.getByRole('tab', { name: 'Inscription' }).click();
   await page.getByLabel('Email').fill(account.email);
   await page.getByLabel(/Pseudo/).fill(account.pseudo);

@@ -10,7 +10,7 @@ const MODE_ICONS: Record<GameMode, string> = {
   DAILY: '📅',
 };
 
-/** Choix du mode de jeu : un bouton par mode, avec sa règle en une ligne. */
+/** Choix du mode de jeu : une carte par mode, avec son étiquette et sa règle en une ligne. */
 export function ModePicker({
   onPick,
   disabled,
@@ -20,12 +20,12 @@ export function ModePicker({
 }) {
   const { t } = useTranslation();
   return (
-    <ul className="mode-list" aria-label={t('modes.title')}>
+    <ul className="mode-grid" aria-label={t('modes.title')}>
       {GAME_MODES.map((mode) => (
         <li key={mode}>
           <button
             type="button"
-            className={`mode-button ${mode === 'NORMAL' ? 'primary' : ''}`}
+            className={`mode-card mode-${mode.toLowerCase()}`}
             disabled={disabled}
             onClick={() => onPick(mode)}
             data-testid={`mode-${mode}`}
@@ -34,7 +34,10 @@ export function ModePicker({
               {MODE_ICONS[mode]}
             </span>
             <span className="mode-text">
-              <strong>{t(`modes.${mode}.name`)}</strong>
+              <span className="mode-name">
+                <strong>{t(`modes.${mode}.name`)}</strong>
+                <span className="mode-tag">{t(`modes.${mode}.tag`)}</span>
+              </span>
               <small>{t(`modes.${mode}.rule`)}</small>
             </span>
           </button>

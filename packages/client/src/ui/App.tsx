@@ -1,15 +1,14 @@
-import { ErrorCodeSchema, type GameMode } from '@oss/shared';
+import { ErrorCodeSchema } from '@oss/shared';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AuthPanel } from './components/AuthPanel';
-import { LanguageSwitcher } from './components/LanguageSwitcher';
-import { ModePicker } from './menu/ModePicker';
+import { HomeMenu, type MenuPage } from './menu/HomeMenu';
 import { SaveSlots } from './menu/SaveSlots';
 import { AchievementsPage } from './meta/Achievements';
 import { Leaderboard } from './meta/Leaderboard';
 import { MetaPage } from './meta/MetaPage';
 import { Profile } from './meta/Profile';
 import { Credits } from './settings/Credits';
+import { SettingsPanel } from './settings/SettingsPanel';
 import { useGame } from './store/game';
 import { installGameLifecycle, syncOfflineProgress } from './store/lifecycle';
 import { useSession } from './store/session';
@@ -43,15 +42,13 @@ function useTextScale() {
 }
 
 /** Écrans du menu (hors partie). */
-type Screen = 'home' | 'load' | 'leaderboard' | 'achievements' | 'profile' | 'admin' | 'credits';
+type Screen = 'home' | MenuPage;
 
-/** Menu d'accueil (connexion ou invité, choix du mode), pages du méta-jeu, puis la partie. */
+/** Menu d'accueil, pages du méta-jeu (classements, succès, options…), puis la partie. */
 export function App() {
   const { t } = useTranslation();
-  const { status, user, restore, logout, setError } = useSession();
+  const { status, user, restore, setError } = useSession();
   const inGame = useGame((s) => s.view !== null);
-  const startGame = useGame((s) => s.start);
-  const loading = useGame((s) => s.loading);
   const toast = useGame((s) => s.toast);
   // Après une partie, on revient à l'écran d'où elle a été lancée (classement pour un replay).
   const [screen, setScreen] = useState<Screen>('home');
@@ -77,7 +74,6 @@ export function App() {
   }
 
   const back = () => setScreen('home');
-  const play = (mode: GameMode) => void startGame({ mode });
   const menuToast =
     toast?.key && toast.tone === 'error' ? (
       <p className="toast toast-error" role="alert">
@@ -124,6 +120,12 @@ export function App() {
           )}
         </MetaPage>
       );
+    case 'settings':
+      return (
+        <MetaPage title={t('panels.settings')} onBack={back}>
+          <SettingsPanel inGame={false} />
+        </MetaPage>
+      );
     case 'credits':
       return (
         <MetaPage title={t('panels.credits')} onBack={back}>
@@ -134,63 +136,5 @@ export function App() {
       break;
   }
 
-  return (
-    <div className="app">
-      <header className="topbar">
-        <LanguageSwitcher />
-      </header>
-      <main className="menu">
-        <h1>{t('app.title')}</h1>
-        <p className="pitch">{t('app.pitch')}</p>
-
-        {status === 'loading' && <p aria-live="polite">{t('auth.loading')}</p>}
-
-        {status !== 'loading' && (
-          <section className="panel" aria-labelledby="play-title">
-            {status === 'authenticated' && user ? (
-              <p className="welcome">
-                {t('menu.welcome', { pseudo: user.pseudo })}
-                {user.role === 'ADMIN' && <span className="badge">{t('menu.admin')}</span>}
-              </p>
-            ) : (
-              <small>{t('menu.guestHint')}</small>
-            )}
-            <h2 id="play-title">{t('modes.title')}</h2>
-            <ModePicker onPick={play} disabled={loading} />
-            {loading && <p aria-live="polite">{t('auth.loading')}</p>}
-            {menuToast}
-            <nav className="menu-links" aria-label={t('menu.more')}>
-              <button type="button" onClick={() => setScreen('load')}>
-                💾 {t('menu.continue')}
-              </button>
-              <button type="button" onClick={() => setScreen('leaderboard')}>
-                🏆 {t('leaderboard.title')}
-              </button>
-              <button type="button" onClick={() => setScreen('achievements')}>
-                🏅 {t('achievements.title')}
-              </button>
-              <button type="button" onClick={() => setScreen('profile')}>
-                👤 {t('profile.title')}
-              </button>
-              {user?.role === 'ADMIN' && (
-                <button type="button" onClick={() => setScreen('admin')}>
-                  🛠 {t('admin.heading')}
-                </button>
-              )}
-              <button type="button" onClick={() => setScreen('credits')}>
-                © {t('panels.credits')}
-              </button>
-              {status === 'authenticated' && (
-                <button type="button" onClick={() => void logout()}>
-                  {t('menu.logout')}
-                </button>
-              )}
-            </nav>
-          </section>
-        )}
-
-        {status === 'guest' && <AuthPanel />}
-      </main>
-    </div>
-  );
+  return <HomeMenu onOpen={setScreen} toast={menuToast} />;
 }

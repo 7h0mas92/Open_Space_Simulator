@@ -7,8 +7,12 @@ import { useGuide } from '../store/guide';
 import { TEXT_SCALES, useSettings, VOLUME_KEYS } from '../store/settings';
 import { GuideIndex } from '../tutorial/Guide';
 
-/** Options : qualité graphique, vitesse du zoom, audio, Slack IA, accessibilité, langue. */
-export function SettingsPanel() {
+/**
+ * Options : qualité graphique, vitesse du zoom, audio, Slack IA, accessibilité, langue.
+ * Hors partie (menu principal), seuls les réglages sont proposés : le tutoriel, les crédits
+ * et « Quitter » n'ont de sens qu'en jeu.
+ */
+export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
   const { t } = useTranslation();
   const settings = useSettings();
   const quit = useGame((s) => s.quit);
@@ -118,23 +122,27 @@ export function SettingsPanel() {
         <legend>{t('settings.language')}</legend>
         <LanguageSwitcher />
       </fieldset>
-      <button
-        type="button"
-        onClick={() => {
-          settings.update({ tutorialDone: false });
-          useGuide.getState().restart();
-          openPanel(null);
-        }}
-      >
-        {t('settings.tutorial')}
-      </button>
-      <GuideIndex />
-      <button type="button" onClick={() => openPanel('credits')}>
-        {t('panels.credits')}
-      </button>
-      <button type="button" className="danger" onClick={quit}>
-        {t('settings.quit')}
-      </button>
+      {inGame && (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              settings.update({ tutorialDone: false });
+              useGuide.getState().restart();
+              openPanel(null);
+            }}
+          >
+            {t('settings.tutorial')}
+          </button>
+          <GuideIndex />
+          <button type="button" onClick={() => openPanel('credits')}>
+            {t('panels.credits')}
+          </button>
+          <button type="button" className="danger" onClick={quit}>
+            {t('settings.quit')}
+          </button>
+        </>
+      )}
     </div>
   );
 }
