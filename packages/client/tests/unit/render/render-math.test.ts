@@ -30,7 +30,7 @@ import {
   pixelRatioFor,
   QUALITY_PRESETS,
 } from '../../../src/render/quality';
-import { CATALOG } from '../../../src/view/catalog';
+import { CATALOG, type ItemModel } from '../../../src/view/catalog';
 import { AGENT_POSES, type AgentSnapshot } from '../../../src/ai/agents';
 
 describe('qualité graphique', () => {
@@ -243,12 +243,35 @@ describe('manifeste des assets Kenney', () => {
 
   it('chaque objet du catalogue pointe vers un modèle existant ou un remplacement listé', () => {
     const missing = new Set<string>(MISSING_ASSETS.map((a) => a.id));
+    const check = (model: ItemModel) => {
+      if (model.source === 'kenney') expect(FURNITURE_MODELS).toContain(model.model);
+      else expect(missing.has(model.model)).toBe(true);
+    };
     for (const item of CATALOG) {
-      if (item.model.source === 'kenney') expect(FURNITURE_MODELS).toContain(item.model.model);
-      else expect(missing.has(item.model.model)).toBe(true);
-      for (const model of item.onTop ?? []) expect(FURNITURE_MODELS).toContain(model);
+      check(item.model);
+      for (const model of item.onTop ?? []) check(model);
+      for (const part of item.parts ?? []) check(part.model);
     }
     expect(CATALOG.length).toBeGreaterThanOrEqual(15);
+  });
+
+  it('chaque objet du catalogue a un rendu qui lui est propre', () => {
+    // Modèle principal, appareils posés dessus et pièces : deux objets ne se ressemblent jamais.
+    const name = (model: ItemModel) => `${model.source}:${model.model}`;
+    const looks = CATALOG.map((item) =>
+      [
+        name(item.model),
+        ...(item.onTop ?? []).map(name),
+        ...(item.parts ?? []).map((part) => name(part.model)),
+      ].join('+'),
+    );
+    expect(new Set(looks).size).toBe(CATALOG.length);
+    // Et chaque forme Three.js de remplacement sert au moins une fois.
+    const used = new Set(looks.join('+').split('+'));
+    for (const asset of MISSING_ASSETS) {
+      if (asset.replacement === 'primitive')
+        expect(used, asset.id).toContain(`primitive:${asset.id}`);
+    }
   });
 
   it('chaque fichier du manifeste est bien présent dans public/assets/kenney', () => {

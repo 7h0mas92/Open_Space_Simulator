@@ -350,7 +350,11 @@ génère que des messages Slack.
   Characters, inclus dans `packages/client/public/assets/kenney/` (voir le README de ce dossier).
   Le manifeste typé `render/assetManifest.ts` liste exactement les fichiers des packs.
 - Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
-  sieste-pod, standing desk, casque antibruit, pack UI (interface en CSS), packs sons. Le
+  sieste-pod, standing desk, casques antibruit et leur portant, baie de serveurs, cafetière à
+  filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
+  de ramen, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
+  combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
+  ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
   lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
   sons Kenney et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans
   la page Crédits du jeu.
