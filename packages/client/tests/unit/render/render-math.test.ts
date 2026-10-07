@@ -15,6 +15,8 @@ import {
   cameraDirection,
   clampTarget,
   clampZoom,
+  scaleZoomFactor,
+  wheelZoomFactor,
   fitZoom,
   frustum,
   MAX_ZOOM,
@@ -66,6 +68,36 @@ describe('cycle jour/nuit', () => {
 
 describe('caméra isométrique', () => {
   const state = { targetX: 5, targetZ: 5, zoom: 1, quarter: 0 };
+
+  it('garde le pas de 12 % pour un cran de molette souris', () => {
+    expect(wheelZoomFactor({ deltaY: -100, deltaMode: 0, ctrlKey: false })).toBeCloseTo(1.12);
+    expect(wheelZoomFactor({ deltaY: 100, deltaMode: 0, ctrlKey: false })).toBeCloseTo(1 / 1.12);
+    // Firefox : 3 lignes par cran.
+    expect(wheelZoomFactor({ deltaY: -3, deltaMode: 1, ctrlKey: false })).toBeCloseTo(1.12);
+    // Un gros delta ne dépasse pas un cran.
+    expect(wheelZoomFactor({ deltaY: -1000, deltaMode: 0, ctrlKey: false })).toBeCloseTo(1.12);
+  });
+
+  it('zoome proportionnellement aux petits deltas du trackpad', () => {
+    const tiny = wheelZoomFactor({ deltaY: -4, deltaMode: 0, ctrlKey: false });
+    expect(tiny).toBeGreaterThan(1);
+    expect(tiny).toBeLessThan(1.01);
+    // 25 petits évènements valent un cran de souris, pas 25 crans.
+    expect(tiny ** 25).toBeCloseTo(1.12);
+    // Pincement trackpad (ctrlKey) : plus réactif mais toujours progressif.
+    const pinch = wheelZoomFactor({ deltaY: -2, deltaMode: 0, ctrlKey: true });
+    expect(pinch).toBeGreaterThan(1.01);
+    expect(pinch).toBeLessThan(1.05);
+  });
+
+  it('applique la vitesse de zoom choisie', () => {
+    const input = { deltaY: -100, deltaMode: 0, ctrlKey: false };
+    const normal = Math.log(wheelZoomFactor(input));
+    expect(Math.log(wheelZoomFactor(input, 'slow'))).toBeCloseTo(normal / 2);
+    expect(Math.log(wheelZoomFactor(input, 'fast'))).toBeCloseTo(normal * 2);
+    expect(scaleZoomFactor(1.5, 'normal')).toBeCloseTo(1.5);
+    expect(scaleZoomFactor(4, 'slow')).toBeCloseTo(2);
+  });
 
   it('borne le zoom', () => {
     expect(clampZoom(100)).toBe(MAX_ZOOM);
