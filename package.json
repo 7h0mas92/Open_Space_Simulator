@@ -20,7 +20,7 @@
     "balance": "pnpm --filter @oss/shared build && pnpm --filter @oss/client balance",
     "db:up": "docker compose up -d db",
     "db:migrate": "pnpm --filter @oss/server db:migrate",
-    "db:seed": "pnpm --filter @oss/server db:seed",
+    "db:seed": "pnpm --filter @oss/shared build && pnpm --filter @oss/server db:seed",
     "prepare": "husky"
   },
   "devDependencies": {
