@@ -271,9 +271,10 @@ sequenceDiagram
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion.
 - **Succès** : 61 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
-  légendaire) ; 21 sont secrets et s'affichent « ??? » tant qu'ils ne sont pas débloqués. Un
-  écran « Succès » est accessible depuis le menu principal ; `pnpm balance` mesure le taux de
-  déblocage de chacun par les bots pour vérifier la difficulté annoncée.
+  légendaire) ; 21 sont secrets : leur nom est visible et compté avec les autres, mais leur
+  condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
+  depuis le menu principal ; `pnpm balance` mesure le taux de déblocage de chacun par les bots
+  pour vérifier la difficulté annoncée.
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le
