@@ -325,7 +325,14 @@
       "medium": "Medium",
       "high": "High"
     },
+    "zoomSpeed": "Zoom speed",
+    "zoomSpeeds": {
+      "slow": "Slow",
+      "normal": "Normal",
+      "fast": "Fast"
+    },
     "reducedMotion": "Reduce motion",
+    "edgePan": "Scroll when the mouse reaches the screen edge",
     "textSize": "Text size",
     "showFps": "Show FPS",
     "language": "Language",
@@ -356,22 +363,6 @@
       "soundPacks": "Kenney sound packs (audio coming later)"
     },
     "back": "Back"
-  },
-  "tutorial": {
-    "skip": "Skip tutorial",
-    "next": "Next",
-    "done": "Let's go",
-    "progress": "Step {{step}} of {{total}}",
-    "steps": {
-      "welcome": "Welcome, founder. You have €2M and 18 months. This is your open space.",
-      "gauges": "At the top, your gauges. Hover or tap them to learn what they do.",
-      "kanban": "Open the Kanban and drag a task from Backlog to \"To do\".",
-      "assign": "Assign a task to a dev: they will start on it when the sprint begins.",
-      "start": "Start the sprint: the devs get to work.",
-      "speed": "Change the speed: pause, x1, x2 or x4.",
-      "select": "Click a dev (long press on mobile) to see their profile.",
-      "build": "Open build mode and buy a plant. They really help."
-    }
   },
   "game": {
     "sceneLabel": "3D open space. Drag to move, wheel or pinch to zoom, Q and E to rotate, arrow keys to pan.",
@@ -431,6 +422,10 @@
   },
   "modes": {
     "title": "Pick your mode",
+    "EASY": {
+      "name": "Easy",
+      "rule": "To learn: full tutorial, more money, softer crises."
+    },
     "NORMAL": {
       "name": "Normal",
       "rule": "18 months to become a unicorn."
@@ -561,5 +556,389 @@
     "topCards": "Most drawn cards",
     "topChoices": "Most frequent choices",
     "noData": "No data yet."
+  },
+  "guide": {
+    "title": "Tutorial",
+    "chapter": "Chapter {{n}} of {{total}}",
+    "step": "Step {{n}} of {{total}}",
+    "prev": "Back",
+    "next": "Next",
+    "finish": "Finish chapter",
+    "yourTurn": "Your turn",
+    "doneTitle": "Well done!",
+    "minimize": "Minimize",
+    "resume": "Tutorial: resume",
+    "stop": "Stop the tutorial",
+    "stopped": "Tutorial stopped. You can reread everything in Settings, Game guide.",
+    "paused": "The game is paused during the explanation.",
+    "index": "Game guide",
+    "indexIntro": "Every chapter of the tutorial. Pick one to read it again, even mid-game.",
+    "read": "Read",
+    "seen": "read",
+    "lessons": {
+      "basics": {
+        "title": "The basics",
+        "steps": {
+          "welcome": {
+            "title": "Welcome, founder",
+            "body": "Your startup just raised money. You have 18 months, that is 39 two-week sprints, to make it a success.\n\nThis tutorial stays with you for the whole game: each chapter opens when you need it. The game is paused during explanations, so take your time.",
+            "HARDCORE": {
+              "body": "Your startup has just raised money. You have 18 months, that is 39 two-week sprints, to make it a success.\n\nThis tutorial stays with you for the whole game: each chapter opens when you need it. Careful: in Hardcore, time never stops during sprints, not even during the explanations."
+            },
+            "SHIP_IN_3": {
+              "body": "Your startup has just raised money. You only have 3 two-week sprints to ship your app.\n\nThis tutorial stays with you for the whole game: each chapter opens when you need it. The game is paused during the explanations: take your time."
+            }
+          },
+          "goal": {
+            "title": "How do you win?",
+            "body": "The game ends in one of four ways:\n\n• Bankruptcy: your cash hits zero. Game over.\n• IPO: you go public, the best ending. You need to be a Unicorn (a one-billion valuation) with a stable production.\n• Acquisition: a big company buys your startup.\n• Zombie: after 18 months, you survive without really growing.\n\nYour score is your startup's final valuation.",
+            "SHIP_IN_3": {
+              "body": "In the 3-sprint challenge, the game ends in one of three ways:\n\n• Bankruptcy: your cash reaches zero. Game over.\n• Acquisition: at the end of sprint 3, you shipped at least 5 features.\n• Zombie: at the end of sprint 3, you shipped fewer than 5.\n\nYour score is your startup's final valuation."
+            }
+          },
+          "gauges": {
+            "title": "The gauges",
+            "body": "At the top of the screen, the gauges sum up your startup's health. Hover them (or tap them on mobile) to see what they do at any time.\n\nLet's go through them one by one, because the whole game is about keeping them balanced."
+          },
+          "treasury": {
+            "title": "Cash",
+            "body": "This is your money. Every month you pay salaries, each dev's costs and the office's fixed costs (€85,000 a month in the garage).\n\nMoney comes from your users (about €0.45 per user per month) and from fundraising.\n\nAt zero, you go bankrupt and the game ends. Check it before every hire."
+          },
+          "coffee": {
+            "title": "Coffee",
+            "body": "Coffee is the team's fuel. Devs drink it while working and during breaks.\n\nEvery morning at 8am, the coffee machines refill the stock (it costs money). The more machines you have, the more it refills.\n\nAt zero, productivity is divided by 3 and morale drops. A second coffee machine is often a great buy."
+          },
+          "debt": {
+            "title": "Tech debt and stability",
+            "body": "Tech debt grows when you ship features in a rush. It slows devs down, wears out production and can cause big bugs.\n\nStability measures how reliable production is. When it drops, outages happen, especially on Friday at 5pm, and users leave.\n\nRefactoring tasks lower the debt; bugfixes and infra raise stability."
+          },
+          "hype": {
+            "title": "Hype and users",
+            "body": "Hype is how excited investors and the public are about your startup. It goes up when you ship features and slowly goes down every day. At zero, no fundraising is possible.\n\nUsers arrive with every shipped feature, and a few on their own when hype is high. They leave when production is unstable. They are the ones who bring in money."
+          },
+          "dilemma": {
+            "title": "The big dilemma",
+            "body": "The whole game fits in one sentence: shipping fast raises the debt, refactoring lowers the hype.\n\nIf you only do features, production ends up collapsing. If you only refactor, nobody talks about you anymore. The right rhythm alternates both.\n\nTip: keep debt under 40 and stability above 60."
+          }
+        }
+      },
+      "rules": {
+        "title": "The rules of {{mode}} mode",
+        "steps": {
+          "easy": {
+            "title": "Easy mode",
+            "body": "Easy mode is made for learning:\n\n• you start with €3M instead of €2M;\n• at most 2 random cards per sprint instead of 3 (the Friday 5pm outage can still add one);\n• the negative effects of crises are halved.\n\nEasy mode scores have their own leaderboard: they don't count in the global leaderboard."
+          },
+          "normal": {
+            "title": "Normal mode",
+            "body": "This is the classic game, the one the balance is tuned for:\n\n• €2M to start and 18 months, that is 39 sprints;\n• up to 3 random cards per sprint, plus the Friday 5pm outage if prod goes down, with their full effects;\n• you can pause at any time.\n\nYour score counts on the global leaderboard and on the Normal mode one."
+          },
+          "hardcore": {
+            "title": "Hardcore mode",
+            "body": "No pause. Ever. The pause button and the space bar no longer respond, and even this tutorial cannot stop time: read it while keeping an eye on the office.\n\nThe other rules are the Normal ones: €2M, 18 months, at most 3 random cards per sprint.\n\nTip: time stays stopped during planning and the demo. That is when you think."
+          },
+          "hardcoreEvents": {
+            "title": "Crises do not wait",
+            "body": "In Hardcore, an event card does not stop time. If you do not choose within 2 in-game hours (about one second at x1), the last answer is picked for you: “you did not decide, so the problem decided for you”.\n\nThat last answer is often the worst one. Stay at x1 during office hours so you have time to read, and keep x2 or x4 for nights and weekends."
+          },
+          "interns": {
+            "title": "Interns Only mode",
+            "body": "Your whole team is made of interns: the starting ones and every hiring candidate.\n\n• They are cheap: about €1,800 per month.\n• They are slow and their code creates 40% more debt.\n• Each one has a 5% chance per day of breaking prod.\n\nWith 6 interns, an outage every three days is normal. Good luck with prod."
+          },
+          "internsTips": {
+            "title": "Surviving the interns",
+            "body": "• Always put bugfix and infra tasks in “To do”: stability is your most fragile gauge.\n• Buy a server rack as soon as you can: it raises stability every day.\n• Refactor as soon as debt goes above 40.\n• Good news: with salaries this low, your cash lasts a long time. Use it to hire."
+          },
+          "ship": {
+            "title": "The 3-sprint challenge",
+            "body": "“This app must ship in 3 sprints.” The game lasts only 3 sprints instead of 39.\n\nAt the end of sprint 3:\n\n• if you shipped at least 5 features, your startup is acquired;\n• otherwise, it is the “zombie” ending.\n\nBankruptcy is still possible, but with €2M it is unlikely in so little time."
+          },
+          "shipTips": {
+            "title": "Ship, ship, ship",
+            "body": "Only features count towards the 5: refactoring, bugfix and infra tasks do not.\n\n• Fill “To do” with small features from the first sprint.\n• Hire from the first sprint: every extra dev means more points shipped.\n• Do not worry too much about debt: you will not have time to pay for it.\n\nEvery demo report shows how many features the sprint shipped."
+          },
+          "daily": {
+            "title": "The Daily",
+            "body": "The Daily is the same game for everyone, every day, like Wordle. All players start from the same seed: same team, same candidates, same draws. Only your choices make the difference.\n\nThe rules are the Normal ones: €2M, 18 months, at most 3 random cards per sprint."
+          },
+          "dailyTips": {
+            "title": "Today’s leaderboard",
+            "body": "At the end of the game, your score goes to today’s leaderboard if you are signed in. The server replays your whole game from the seed and your decisions to check the score: no cheating possible.\n\nThere is no “Play again” button at the end: today’s game is played once. Come back tomorrow for a new seed."
+          }
+        }
+      },
+      "planning": {
+        "title": "Planning a sprint",
+        "steps": {
+          "sprint": {
+            "title": "A sprint in 4 parts",
+            "body": "Each sprint lasts two in-game weeks, about 3 real minutes at x1 speed. It has 4 parts:\n\n1. Planning: you choose the work. Time is stopped.\n2. Execution: the devs work in the open space.\n3. Crises: event cards come up during execution.\n4. Demo: the sprint's results.\n\nWe are in planning: get your first sprint ready."
+          },
+          "openKanban": {
+            "title": "The Kanban",
+            "body": "The Kanban is the board of your product's tasks. This is where you decide what the team works on.",
+            "do": "Open the Kanban with its button (it is blinking)."
+          },
+          "columns": {
+            "title": "The columns",
+            "body": "The board has four columns:\n\n• Backlog: ideas on hold. Nobody touches them.\n• To do: the work planned for this sprint.\n• Doing: what the devs are working on right now.\n• Done: what has shipped.\n\nYou only move tasks between Backlog and To do. The devs do the rest on their own."
+          },
+          "types": {
+            "title": "Task types",
+            "body": "Each task has a size in points and a type:\n\n• Feature: brings users and hype, but raises the debt.\n• Refactor: melts the debt, but costs a little hype.\n• Bugfix: raises stability a lot and lowers the debt a little.\n• Infra: raises stability.\n\nThe \"Impact\" line on each card sums up its effect on the gauges."
+          },
+          "move": {
+            "title": "Choosing the work",
+            "body": "Drag a task from Backlog to To do, with your finger or the mouse. You can also use the arrows on the card, or the keyboard.\n\nTo start, pick one or two features: you need your first users.",
+            "do": "Move a task to \"To do\"."
+          },
+          "capacity": {
+            "title": "How many tasks?",
+            "body": "Don't overload the sprint. An average dev gets through about 9 points per sprint. A 10x Developer does more than twice that; a Product Owner, half.\n\nWhat isn't finished at the end of the sprint stays in progress and continues in the next one. Finishing a few tasks beats starting many."
+          },
+          "assign": {
+            "title": "Assigning a dev",
+            "body": "Devs pick up \"To do\" tasks on their own. You can still choose who does what: a dev with good Quality creates less debt on a feature.\n\nOn the task card, pick a dev in the \"Assigned to\" list.",
+            "do": "Assign a task to a dev."
+          },
+          "start": {
+            "title": "Here we go",
+            "body": "Everything is ready. The \"Start sprint\" button starts the execution: the devs get to work and time moves on.",
+            "do": "Close the Kanban and start the sprint."
+          }
+        }
+      },
+      "execution": {
+        "title": "During the sprint",
+        "steps": {
+          "office": {
+            "title": "Your open space",
+            "body": "Your devs live in the office: they work, grab coffee, chat, argue, play foosball or fall asleep on the keyboard when they are exhausted. In the evening, they go home.\n\nThe bubbles above their heads show what they think. \"I'm going to quit\" is a warning to take seriously."
+          },
+          "speed": {
+            "title": "Game speed",
+            "body": "Top right, you set the speed: pause, x1, x2 or x4. The space bar also pauses.\n\nThe game is paused during this explanation.",
+            "do": "Pick a speed, for example x1.",
+            "HARDCORE": {
+              "body": "At the top right, you set the speed: x1, x2 or x4. In Hardcore, pause is disabled.\n\nTime keeps passing during this explanation.",
+              "do": "Change the speed, for example to x2."
+            }
+          },
+          "camera": {
+            "title": "Moving around the office",
+            "body": "• Drag to move the camera.\n• Mouse wheel or two-finger pinch to zoom.\n• Q and E to rotate the view, arrow keys to move with the keyboard."
+          },
+          "select": {
+            "title": "Picking a dev",
+            "body": "Click a dev to see their profile (on mobile, long-press them).",
+            "do": "Select a dev in the office."
+          },
+          "sheet": {
+            "title": "A dev's profile",
+            "body": "Each dev has four stats:\n\n• Speed: how much work they get through.\n• Quality: less debt on their features, more effect from their refactors and bugfixes.\n• Endurance: they get tired more slowly.\n• Ego: they ask for a higher salary and argue more often.\n\nThe profile also shows their morale, energy, personality trait and relationships. They gain experience and levels by working."
+          },
+          "roles": {
+            "title": "The 8 profiles",
+            "body": "• Bearded Senior: +50% quality, but refuses recent frameworks.\n• 10x Developer: very fast, but their code raises the debt.\n• Intern: cheap, but a 5% chance per day of breaking production.\n• Rustacean: wants to rewrite everything in Rust and converts colleagues.\n• Designer: blocks releases if the padding is wrong, but makes demos shine.\n• Product Owner: 4 meetings a day (-10% productivity for everyone), but +hype.\n• AI Agent: ultra fast, but a 30% chance of hallucinating a feature.\n• Ghost Dev: remote, invisible in the office, but their tickets get closed.",
+            "INTERNS_ONLY": {
+              "body": "The game has 8 profiles: Bearded Senior, 10x Developer, Intern, Rustacean, Designer, Product Owner, AI Agent and Ghost Dev.\n\nIn this mode you will only meet interns: cheap, motivated, and a 5% chance per day of breaking prod. The 7 other profiles are waiting for you in the other modes."
+            }
+          },
+          "clock": {
+            "title": "Day, night and Friday 5pm",
+            "body": "The clock shows the day and time. The office lighting follows the day/night cycle, and everyone rests at the weekend.\n\nOn Friday at 5pm, a banner warns you: it's when production goes down most often if stability is low."
+          }
+        }
+      },
+      "team": {
+        "title": "Your team",
+        "steps": {
+          "openTeam": {
+            "title": "The team",
+            "body": "The Team panel lists all your devs with their mood, salary and activity.",
+            "do": "Open the Team panel."
+          },
+          "morale": {
+            "title": "Morale",
+            "body": "Each dev has their own morale. It drops with debt, fatigue, lack of coffee and conflicts; it recovers at the weekend, and with plants, foosball or the sofa.\n\nAt zero, the dev quits, with a fake LinkedIn post to go with it.\n\nYou can fire a dev from their profile: you pay one month of salary and the whole team loses morale, especially their friends."
+          },
+          "openHiring": {
+            "title": "Hiring",
+            "body": "Every sprint, 3 new candidates apply.",
+            "do": "Open the Hiring panel."
+          },
+          "hiring": {
+            "title": "Making an offer",
+            "body": "Each candidate states the salary they want. Adjust your offer before sending it:\n\n• under 75% of their ask, they always refuse;\n• at 110% or more, they always accept;\n• in between, it's a negotiation: the closer your offer is to their ask, the more likely they accept.\n\nThe team is limited by the office size: 2 people in the garage, 6 at Seed, 15 at Series A, 30 as a Unicorn. A salary is paid every month: hire when your cash can keep up.",
+            "INTERNS_ONLY": {
+              "body": "Here, every candidate is an intern. Each one states the salary they ask for. Set your offer before sending it:\n\n• below 75% of the ask, they always refuse;\n• at 110% or more, they always accept;\n• in between, it is a negotiation.\n\nThe team size depends on the office: 2 people in the garage, 6 at Seed, 15 at Series A, 30 as a Unicorn."
+            }
+          }
+        }
+      },
+      "events": {
+        "title": "Crises",
+        "steps": {
+          "card": {
+            "title": "An event card",
+            "body": "During execution, events happen: a broken coffee machine, an investor who wants blockchain, an intern who ran git push --force…\n\nTime stops until you decide. Read the situation, then pick an answer.",
+            "HARDCORE": {
+              "body": "During execution, events happen: a broken coffee machine, an investor who wants blockchain, an intern who ran git push --force…\n\nIn Hardcore, time does not stop: you have 2 in-game hours to choose, otherwise the last answer is picked for you. This chapter opens before your first card so you have time to read it."
+            }
+          },
+          "effects": {
+            "title": "Reading the effects",
+            "body": "Under each choice, chips show its effects on the gauges: green for what helps you, red for what costs you.\n\nThere is almost never a perfect choice. Ask yourself which gauge you can afford to sacrifice right now."
+          },
+          "later": {
+            "title": "\"Let's talk about it later\"",
+            "body": "Some cards let you postpone the decision. It's tempting, but the card comes back a sprint or two later, worse: its negative effects grow by 50% each time you postpone."
+          },
+          "soft": {
+            "title": "In Easy mode",
+            "body": "In Easy mode, the negative effects of cards are halved (the numbers shown already include it) and at most 2 random cards come up per sprint. Only the Friday 5pm outage can add one."
+          }
+        }
+      },
+      "incident": {
+        "title": "Production is down",
+        "steps": {
+          "outage": {
+            "title": "Production incident",
+            "body": "The screen flashes red and smoke comes out of the servers: production is down.\n\nAn outage costs stability, hype and 2% of your users. The worse your stability and debt, the more often outages happen."
+          },
+          "fix": {
+            "title": "Avoiding the next one",
+            "body": "Next sprint, put bugfixes and infra in \"To do\", plus some refactoring if the debt is high.\n\nIn the office, a server rack raises stability a little every day, and a trash can nibbles at the debt. And avoid leaving interns alone in charge on Fridays."
+          }
+        }
+      },
+      "demo": {
+        "title": "The demo",
+        "steps": {
+          "report": {
+            "title": "End of the sprint",
+            "body": "The sprint is over: it's demo time. The screen shows the results: users gained or lost, revenue, expenses, features shipped, incidents and valuation."
+          },
+          "read": {
+            "title": "Reading the results",
+            "body": "Compare expenses with revenue: as long as you spend more than you earn, your cash melts. Watch how fast, and raise money before it's too late.\n\nThe user feedback at the bottom is mostly there for laughs. Mostly."
+          },
+          "next": {
+            "title": "What now?",
+            "body": "The \"Next sprint\" button opens the planning of the next sprint. Later in the game, this screen can also show an acquisition offer or the IPO button."
+          }
+        }
+      },
+      "build": {
+        "title": "Furnishing the office",
+        "steps": {
+          "openBuild": {
+            "title": "Build mode",
+            "body": "Office items have real effects on the game. You can buy, place, rotate and sell them.",
+            "do": "Open Build."
+          },
+          "place": {
+            "title": "Placing an item",
+            "body": "Pick an item from the catalog at the bottom of the screen: the catalog folds away and the item shows up on a free tile, in green. Click a tile to place it (on touch: tap a tile or drag the item, then \"Place\"). A €60 plant is a good start.",
+            "do": "Buy and place an item."
+          },
+          "manage": {
+            "title": "Rotate, move, sell",
+            "body": "In build mode, tap an item already placed to move or sell it (selling refunds half the price). With an item in hand, R rotates it and Esc puts it back in the catalog. \"Done\" closes build mode.\n\nSome items only unlock in later stages, when the office grows."
+          },
+          "items": {
+            "title": "Useful items",
+            "body": "• Coffee machine: more coffee every morning. The premium one refills twice as much and lifts morale.\n• Plants, rugs, sofa: extra morale.\n• Foosball: lots of morale, a bit less productivity.\n• Noise-cancelling headsets: cancel the Product Owner's meeting penalty.\n• Ergonomic chair and standing desk: devs get tired more slowly.\n• Server rack: stability every day.\n• Dashboard screen: a little hype every day."
+          }
+        }
+      },
+      "dashboard": {
+        "title": "The dashboard",
+        "steps": {
+          "open": {
+            "title": "Tracking progress",
+            "body": "The dashboard plots the history of every gauge, one point per day.",
+            "do": "Open the Dashboard."
+          },
+          "read": {
+            "title": "Reading the charts",
+            "body": "Charts show trends better than a number: debt slowly rising for three sprints means it's time to refactor. Cash on a steep slope means it's time to raise money or slow down hiring."
+          }
+        }
+      },
+      "funding": {
+        "title": "Raising money",
+        "steps": {
+          "why": {
+            "title": "Why raise?",
+            "body": "Raising money fills your cash and grows your startup: the 1st round takes you to Seed, the 2nd to Series A. At each phase, the office grows and you can hire more people."
+          },
+          "when": {
+            "title": "When to raise?",
+            "body": "The \"Raise funds\" button appears during planning, next to \"Start sprint\".\n\nYou need some hype (at zero, no investor will see you), and after each attempt you must wait 3 sprints before the next one. Pick your moment: lots of hype and users is ideal."
+          },
+          "pitch": {
+            "title": "The pitch",
+            "body": "In front of the investor, you pick 3 arguments, one per round. Each argument relies on a gauge:\n\n• Traction: you need users.\n• Tech: you need low debt.\n• Team: you need a large, happy team.\n• Stability: some arguments need a reliable production, and the live demo can crash.\n\nEach investor has their own tastes. A failed pitch costs a little hype."
+          },
+          "dilution": {
+            "title": "Dilution",
+            "body": "In exchange for the money, the investor takes a share of your startup: between 10 and 30% of the company. The more convinced they are, the more they pay, and the bigger the share they take.\n\nYour share of the company is shown after each round. The more you raise, the smaller it gets."
+          },
+          "phases": {
+            "title": "The phases",
+            "body": "• Garage: 1 IKEA desk and ramen, 2 people at most.\n• Seed (1st round): a small open space, 6 people.\n• Series A (2nd round): foosball, plants and standing desks, 15 people.\n• Unicorn (one-billion valuation): slide, nap pods and canteen, 30 people.\n\nThe valuation depends on your users, your revenue and the team size."
+          }
+        }
+      },
+      "endings": {
+        "title": "Endings",
+        "steps": {
+          "four": {
+            "title": "How it ends",
+            "body": "After 18 months, your phase decides the ending:\n\n• Unicorn: IPO, the best ending.\n• Series A: acquisition, at a discount.\n• Seed: acquisition if you are worth more than €100M, otherwise zombie.\n• Garage: zombie.\n\nAnd if your cash hits zero before that, it's bankruptcy.",
+            "SHIP_IN_3": {
+              "body": "The challenge stops at the end of sprint 3:\n\n• at least 5 features shipped: your startup is acquired;\n• fewer than 5: it is the “zombie” ending.\n\nAnd if your cash reaches zero before that, it is bankruptcy. The demo reports show how many features each sprint shipped."
+            }
+          },
+          "offer": {
+            "title": "Acquisition offers and IPO",
+            "body": "From Series A on, a big company may offer to buy you on the demo screen. Accepting ends the game right away with that amount. Refusing means betting on what comes next.\n\nOnce you are a Unicorn with a stability of at least 50, the \"Launch the IPO\" button appears: you can go public without waiting for the end."
+          },
+          "share": {
+            "title": "Sharing your ending",
+            "body": "The end screen sums up your game in one sentence (\"My startup was acquired for €400M and 7 devs burned out\") and offers you an image to share."
+          }
+        }
+      },
+      "tools": {
+        "title": "Other tools",
+        "steps": {
+          "slack": {
+            "title": "Slack",
+            "body": "The Slack panel shows what your devs say in #general, #random and #incidents. It's funny, and it's also a good way to spot who is struggling."
+          },
+          "saves": {
+            "title": "Saves",
+            "body": "The game saves on its own. The Saves panel also lets you save into one of 5 slots and resume later from the menu."
+          },
+          "settings": {
+            "title": "Settings",
+            "body": "In Settings: graphics quality, text size, reduced motion, volumes and the AI-driven Slack. The Game guide is there too: you can reread every chapter of this tutorial whenever you like."
+          },
+          "bye": {
+            "title": "You're ready",
+            "body": "You now know the whole game. The tutorial ends here: take your startup all the way.\n\nYou can reread every chapter at any time in Options, Game guide.",
+            "EASY": {
+              "body": "You now know the whole game. The tutorial ends here: it's up to you to take your startup all the way to the IPO.\n\nWhen you feel comfortable, try Normal mode, then the Daily to compare yourself with other players."
+            },
+            "DAILY": {
+              "body": "You now know the whole game. The tutorial ends here: go play today’s game.\n\nCompare your score with other players on today’s leaderboard, and come back tomorrow for a new seed."
+            }
+          }
+        }
+      }
+    }
   }
 }

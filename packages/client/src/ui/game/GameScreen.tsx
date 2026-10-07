@@ -13,7 +13,7 @@ import { useGame, type PanelId } from '../store/game';
 import { useSettings } from '../store/settings';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
-import { Tutorial } from '../tutorial/Tutorial';
+import { Guide } from '../tutorial/Guide';
 import { ActionBar, Alerts, Gauges, TimeControls } from './Hud';
 import { Scene } from './Scene';
 import { Sheet } from './Sheet';
@@ -159,7 +159,8 @@ export function GameScreen() {
         </p>
       )}
       {panel !== 'slack' && !building && <SlackDock />}
-      {!replayOf && <Tutorial view={view} />}
+      {/* Le tutoriel s'adapte au mode de jeu (voir tutorial/lessons.ts). */}
+      {!replayOf && <Guide view={view} />}
       <StageScreens view={view} />
       {panel && (
         <Sheet title={t(`panels.${panel}`)} onClose={() => openPanel(null)}>

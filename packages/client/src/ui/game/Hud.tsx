@@ -79,6 +79,7 @@ export function TimeControls({ view }: { view: GameView }) {
             disabled={view.pitchBlocker !== null}
             title={view.pitchBlocker ? t(`results.${view.pitchBlocker}`) : undefined}
             onClick={() => void dispatch({ type: 'startPitch' })}
+            data-tutorial="pitch"
           >
             💼 {t('pitch.open')}
           </button>

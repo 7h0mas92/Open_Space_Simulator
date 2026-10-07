@@ -23,6 +23,47 @@ export function clampZoom(zoom: number): number {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
 }
 
+/** Réglage joueur de la vitesse du zoom (molette, trackpad, pincement). */
+export const ZOOM_SPEEDS = ['slow', 'normal', 'fast'] as const;
+export type ZoomSpeed = (typeof ZOOM_SPEEDS)[number];
+const ZOOM_SPEED_MULTIPLIER: Record<ZoomSpeed, number> = { slow: 0.5, normal: 1, fast: 2 };
+
+/** Un cran de molette (≈ 100 px) zoome de 12 %, comme avant. */
+const WHEEL_STEP = 1.12;
+const WHEEL_NOTCH_PIXELS = 100;
+/** Pincement trackpad (molette + ctrlKey) : petits deltas, rendus un peu plus réactifs. */
+const PINCH_ZOOM_PER_PIXEL = 0.01;
+/** Conversion des deltas exprimés en lignes (Firefox) ou en pages vers des pixels. */
+const LINE_PIXELS = WHEEL_NOTCH_PIXELS / 3;
+const PAGE_PIXELS = 800;
+
+export interface WheelInput {
+  readonly deltaY: number;
+  /** 0 = pixels, 1 = lignes, 2 = pages (WheelEvent.deltaMode). */
+  readonly deltaMode: number;
+  /** Les navigateurs signalent le pincement du trackpad par une molette avec ctrlKey. */
+  readonly ctrlKey: boolean;
+}
+
+/**
+ * Facteur de zoom pour un évènement molette, proportionnel à son delta.
+ *
+ * Une souris envoie peu d'évènements à gros delta (un cran ≈ 100 px), un trackpad en envoie
+ * des dizaines par seconde à petit delta : avec un pas fixe par évènement, le trackpad zoomait
+ * beaucoup trop vite. Le delta est borné à un cran pour qu'un cran de souris garde le même pas.
+ */
+export function wheelZoomFactor(input: WheelInput, speed: ZoomSpeed = 'normal'): number {
+  const unit = input.deltaMode === 1 ? LINE_PIXELS : input.deltaMode === 2 ? PAGE_PIXELS : 1;
+  const pixels = Math.max(-WHEEL_NOTCH_PIXELS, Math.min(WHEEL_NOTCH_PIXELS, input.deltaY * unit));
+  const perPixel = input.ctrlKey ? PINCH_ZOOM_PER_PIXEL : Math.log(WHEEL_STEP) / WHEEL_NOTCH_PIXELS;
+  return Math.exp(-pixels * perPixel * ZOOM_SPEED_MULTIPLIER[speed]);
+}
+
+/** Applique la vitesse de zoom à un facteur de pincement tactile. */
+export function scaleZoomFactor(factor: number, speed: ZoomSpeed): number {
+  return factor ** ZOOM_SPEED_MULTIPLIER[speed];
+}
+
 /** Azimut de la caméra : 45° + un quart de tour par rotation. */
 export function azimuth(quarter: number): number {
   return Math.PI / 4 + (quarter * Math.PI) / 2;

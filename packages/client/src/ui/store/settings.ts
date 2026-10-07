@@ -2,6 +2,7 @@
  * Préférences du joueur (qualité graphique, accessibilité), gardées dans le navigateur.
  */
 import { create } from 'zustand';
+import { ZOOM_SPEEDS, type ZoomSpeed } from '../../render/isoCamera';
 import { defaultQuality, QUALITY_LEVELS, type QualityLevel } from '../../render/quality';
 
 export const TEXT_SCALES = [0.875, 1, 1.125, 1.25] as const;
@@ -9,8 +10,12 @@ export const TEXT_SCALES = [0.875, 1, 1.125, 1.25] as const;
 export interface Settings {
   readonly quality: QualityLevel;
   readonly reducedMotion: boolean;
+  /** Vitesse du zoom caméra (molette, trackpad, pincement). */
+  readonly zoomSpeed: ZoomSpeed;
   readonly textScale: number;
   readonly showFps: boolean;
+  /** Défilement de la caméra quand la souris touche un bord de l'écran (desktop). */
+  readonly edgePan: boolean;
   readonly tutorialDone: boolean;
   /** Slack animé par l'IA du serveur (sinon : templates). */
   readonly slackAi: boolean;
@@ -40,8 +45,10 @@ function detectDefaults(): Settings {
       hardwareConcurrency: navigator.hardwareConcurrency,
     }),
     reducedMotion: media('(prefers-reduced-motion: reduce)'),
+    zoomSpeed: 'normal',
     textScale: 1,
     showFps: false,
+    edgePan: true,
     tutorialDone: false,
     slackAi: false,
     musicVolume: 0.5,
@@ -60,10 +67,14 @@ function load(): Settings {
         : defaults.quality,
       reducedMotion:
         typeof raw.reducedMotion === 'boolean' ? raw.reducedMotion : defaults.reducedMotion,
+      zoomSpeed: ZOOM_SPEEDS.includes(raw.zoomSpeed as ZoomSpeed)
+        ? (raw.zoomSpeed as ZoomSpeed)
+        : defaults.zoomSpeed,
       textScale: TEXT_SCALES.includes(raw.textScale as (typeof TEXT_SCALES)[number])
         ? (raw.textScale as number)
         : 1,
       showFps: raw.showFps === true,
+      edgePan: raw.edgePan !== false,
       tutorialDone: raw.tutorialDone === true,
       slackAi: raw.slackAi === true,
       musicVolume: volume(raw.musicVolume, defaults.musicVolume),

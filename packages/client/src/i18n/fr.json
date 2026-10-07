@@ -325,7 +325,14 @@
       "medium": "Moyenne",
       "high": "Haute"
     },
+    "zoomSpeed": "Vitesse du zoom",
+    "zoomSpeeds": {
+      "slow": "Lente",
+      "normal": "Normale",
+      "fast": "Rapide"
+    },
     "reducedMotion": "Réduire les animations",
+    "edgePan": "Défiler en approchant la souris du bord de l'écran",
     "textSize": "Taille du texte",
     "showFps": "Afficher les FPS",
     "language": "Langue",
@@ -356,22 +363,6 @@
       "soundPacks": "Packs sons Kenney (audio à venir)"
     },
     "back": "Retour"
-  },
-  "tutorial": {
-    "skip": "Passer le tutoriel",
-    "next": "Suivant",
-    "done": "C'est parti",
-    "progress": "Étape {{step}} sur {{total}}",
-    "steps": {
-      "welcome": "Bienvenue, fondateur. Tu as 2 M€ et 18 mois. Voici ton open space.",
-      "gauges": "En haut, tes jauges. Survole-les ou touche-les pour savoir à quoi elles servent.",
-      "kanban": "Ouvre le Kanban et glisse une tâche du Backlog vers « À faire ».",
-      "assign": "Assigne une tâche à un dev : il s'y mettra dès le lancement du sprint.",
-      "start": "Lance le sprint : les devs se mettent au travail.",
-      "speed": "Change la vitesse : pause, x1, x2 ou x4.",
-      "select": "Clique sur un dev (appui long sur mobile) pour voir sa fiche.",
-      "build": "Ouvre la construction pour acheter une plante. Elles aident vraiment."
-    }
   },
   "game": {
     "sceneLabel": "Open space en 3D. Glisser pour déplacer, molette ou pincer pour zoomer, Q et E pour tourner, flèches pour se déplacer.",
@@ -431,6 +422,10 @@
   },
   "modes": {
     "title": "Choisis ton mode",
+    "EASY": {
+      "name": "Facile",
+      "rule": "Pour apprendre : tutoriel complet, plus d'argent, crises adoucies."
+    },
     "NORMAL": {
       "name": "Normal",
       "rule": "18 mois pour devenir une licorne."
@@ -561,5 +556,389 @@
     "topCards": "Cartes les plus tirées",
     "topChoices": "Choix les plus fréquents",
     "noData": "Pas encore de données."
+  },
+  "guide": {
+    "title": "Tutoriel",
+    "chapter": "Chapitre {{n}} sur {{total}}",
+    "step": "Étape {{n}} sur {{total}}",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "finish": "Terminer le chapitre",
+    "yourTurn": "À toi",
+    "doneTitle": "Bien joué !",
+    "minimize": "Réduire",
+    "resume": "Tutoriel : reprendre",
+    "stop": "Arrêter le tutoriel",
+    "stopped": "Tutoriel arrêté. Tu peux tout relire dans Options, Guide du jeu.",
+    "paused": "Partie en pause pendant l'explication.",
+    "index": "Guide du jeu",
+    "indexIntro": "Tous les chapitres du tutoriel. Choisis-en un pour le relire, même en pleine partie.",
+    "read": "Lire",
+    "seen": "lu",
+    "lessons": {
+      "basics": {
+        "title": "Les bases",
+        "steps": {
+          "welcome": {
+            "title": "Bienvenue, fondateur",
+            "body": "Ta startup vient de lever des fonds. Tu as 18 mois, soit 39 sprints de deux semaines, pour en faire une réussite.\n\nCe tutoriel t'accompagne pendant toute la partie : chaque chapitre s'ouvre au moment où tu en as besoin. Pendant les explications, la partie est en pause : prends ton temps.",
+            "HARDCORE": {
+              "body": "Ta startup vient de lever des fonds. Tu as 18 mois, soit 39 sprints de deux semaines, pour en faire une réussite.\n\nCe tutoriel t'accompagne pendant toute la partie : chaque chapitre s'ouvre au moment où tu en as besoin. Attention : en Hardcore, le temps ne s'arrête jamais pendant les sprints, même pendant les explications."
+            },
+            "SHIP_IN_3": {
+              "body": "Ta startup vient de lever des fonds. Tu n'as que 3 sprints de deux semaines pour sortir ton app.\n\nCe tutoriel t'accompagne pendant toute la partie : chaque chapitre s'ouvre au moment où tu en as besoin. Pendant les explications, la partie est en pause : prends ton temps."
+            }
+          },
+          "goal": {
+            "title": "Comment gagner ?",
+            "body": "La partie se termine de quatre façons :\n\n• Faillite : la trésorerie tombe à zéro. C'est perdu.\n• IPO : tu entres en Bourse, la plus belle fin. Il faut être une Licorne (valorisation d'un milliard) avec une prod stable.\n• Rachat : une grande entreprise achète ta startup.\n• Zombie : au bout des 18 mois, tu survis sans avoir vraiment grandi.\n\nTon score, c'est la valorisation finale de ta startup.",
+            "SHIP_IN_3": {
+              "body": "Dans le défi 3 sprints, la partie se termine de trois façons :\n\n• Faillite : la trésorerie tombe à zéro. C'est perdu.\n• Rachat : à la fin du 3e sprint, tu as livré au moins 5 features.\n• Zombie : à la fin du 3e sprint, tu en as livré moins de 5.\n\nTon score, c'est la valorisation finale de ta startup."
+            }
+          },
+          "gauges": {
+            "title": "Les jauges",
+            "body": "En haut de l'écran, les jauges résument la santé de ta startup. Survole-les (ou touche-les sur mobile) pour revoir leur rôle à tout moment.\n\nOn les passe en revue une par une, parce que tout le jeu consiste à les garder en équilibre."
+          },
+          "treasury": {
+            "title": "Trésorerie",
+            "body": "C'est ton argent. Chaque mois, tu paies les salaires, les frais de chaque dev et les frais fixes du bureau (85 000 € par mois dans le garage).\n\nL'argent rentre grâce aux utilisateurs (environ 0,45 € par utilisateur et par mois) et aux levées de fonds.\n\nÀ zéro, c'est la faillite et la partie s'arrête. Surveille-la avant chaque recrutement."
+          },
+          "coffee": {
+            "title": "Café",
+            "body": "Le café est le carburant de l'équipe. Les devs en boivent en travaillant et pendant leurs pauses.\n\nChaque matin à 8h, les machines à café remettent du café (c'est payant). Plus tu as de machines, plus le stock remonte.\n\nÀ zéro, la productivité est divisée par 3 et le moral baisse. Une deuxième machine à café est souvent un excellent achat."
+          },
+          "debt": {
+            "title": "Dette technique et stabilité",
+            "body": "La dette technique monte quand tu livres des features à la va-vite. Elle ralentit les devs, use la prod et peut provoquer de gros bugs.\n\nLa stabilité mesure la fiabilité de la prod. Quand elle baisse, les pannes arrivent, surtout le vendredi à 17h, et les utilisateurs s'en vont.\n\nLes tâches de refacto font baisser la dette ; les bugfix et l'infra font remonter la stabilité."
+          },
+          "hype": {
+            "title": "Hype et utilisateurs",
+            "body": "La hype, c'est l'envie que ta startup donne aux investisseurs et au public. Elle monte quand tu livres des features et baisse doucement chaque jour. À zéro, plus aucune levée de fonds n'est possible.\n\nLes utilisateurs arrivent avec chaque feature livrée, et un peu tout seuls quand la hype est haute. Ils partent quand la prod est instable. Ce sont eux qui rapportent de l'argent."
+          },
+          "dilemma": {
+            "title": "Le grand dilemme",
+            "body": "Tout le jeu tient en une phrase : livrer vite fait monter la dette, refactorer fait baisser la hype.\n\nSi tu ne fais que des features, la prod finit par s'écrouler. Si tu ne fais que du refacto, plus personne ne parle de toi. Le bon rythme alterne les deux.\n\nAstuce : garde la dette sous 40 et la stabilité au-dessus de 60."
+          }
+        }
+      },
+      "rules": {
+        "title": "Les règles du mode {{mode}}",
+        "steps": {
+          "easy": {
+            "title": "Le mode Facile",
+            "body": "Le mode Facile est fait pour apprendre :\n\n• tu démarres avec 3 M€ au lieu de 2 M€ ;\n• au plus 2 cartes tirées au hasard par sprint au lieu de 3 (la panne du vendredi 17h peut toujours en ajouter une) ;\n• les effets négatifs des crises sont divisés par deux.\n\nLes scores du mode Facile ont leur propre classement : ils ne comptent pas dans le classement global."
+          },
+          "normal": {
+            "title": "Le mode Normal",
+            "body": "C'est la partie classique, celle pour laquelle le jeu est équilibré :\n\n• 2 M€ au départ et 18 mois, soit 39 sprints ;\n• jusqu'à 3 cartes tirées au hasard par sprint, plus la panne du vendredi 17h si la prod tombe, avec leurs effets complets ;\n• la pause est autorisée à tout moment.\n\nTon score compte dans le classement global et dans celui du mode Normal."
+          },
+          "hardcore": {
+            "title": "Le mode Hardcore",
+            "body": "Pas de pause. Jamais. Le bouton pause et la barre d'espace ne répondent plus, et même ce tutoriel ne peut pas arrêter le temps : lis-le en gardant un œil sur le bureau.\n\nLe reste des règles est celui du mode Normal : 2 M€, 18 mois, 3 cartes tirées au hasard par sprint au maximum.\n\nAstuce : le temps reste arrêté pendant la planification et la démo. C'est là que tu réfléchis."
+          },
+          "hardcoreEvents": {
+            "title": "Les crises n’attendent pas",
+            "body": "En Hardcore, une carte d'événement n'arrête pas le temps. Si tu ne choisis pas dans les 2 heures de jeu (environ une seconde à x1), la dernière réponse est choisie pour toi : « tu n'as rien décidé, le problème a décidé pour toi ».\n\nCette dernière réponse est souvent la pire. Reste en x1 pendant les heures de bureau pour avoir le temps de lire, et garde x2 ou x4 pour les nuits et les week-ends."
+          },
+          "interns": {
+            "title": "Le mode Stagiaires Only",
+            "body": "Toute ton équipe est faite de stagiaires : ceux du départ et tous les candidats au recrutement.\n\n• Ils coûtent peu : environ 1 800 € par mois.\n• Ils sont lents et leur code produit 40 % de dette en plus.\n• Chacun a 5 % de chance par jour de casser la prod.\n\nAvec 6 stagiaires, une panne tous les trois jours est un rythme normal. Bon courage pour la prod."
+          },
+          "internsTips": {
+            "title": "Survivre aux stagiaires",
+            "body": "• Mets toujours du bugfix et de l'infra dans « À faire » : la stabilité est ta jauge la plus fragile.\n• Achète une baie de serveurs dès que tu peux : elle remonte la stabilité chaque jour.\n• Fais du refacto dès que la dette passe 40.\n• Bonne nouvelle : avec des salaires aussi bas, ta trésorerie tient longtemps. Profites-en pour recruter."
+          },
+          "ship": {
+            "title": "Le défi 3 sprints",
+            "body": "« Cette app doit sortir en 3 sprints. » La partie ne dure que 3 sprints au lieu de 39.\n\nÀ la fin du 3e sprint :\n\n• si tu as livré au moins 5 features, ta startup est rachetée ;\n• sinon, c'est la fin « zombie ».\n\nLa faillite reste possible, mais avec 2 M€ elle est peu probable en si peu de temps."
+          },
+          "shipTips": {
+            "title": "Livrer, livrer, livrer",
+            "body": "Seules les features comptent pour les 5 : le refacto, le bugfix et l'infra n'en font pas partie.\n\n• Remplis « À faire » de petites features dès le premier sprint.\n• Recrute dès le premier sprint : chaque dev en plus, ce sont des points livrés.\n• Ne t'inquiète pas trop de la dette : tu n'auras pas le temps d'en payer le prix.\n\nLe bilan de chaque démo indique combien de features le sprint a livrées."
+          },
+          "daily": {
+            "title": "Le Daily",
+            "body": "Le Daily est la même partie pour tout le monde, chaque jour, à la manière de Wordle. Tous les joueurs partent de la même graine : même équipe, mêmes candidats, mêmes tirages. Seuls tes choix font la différence.\n\nLes règles sont celles du mode Normal : 2 M€, 18 mois, 3 cartes tirées au hasard par sprint au maximum."
+          },
+          "dailyTips": {
+            "title": "Le classement du jour",
+            "body": "À la fin de la partie, ton score part dans le classement du jour, si tu es connecté. Le serveur rejoue toute ta partie à partir de la graine et de tes décisions pour vérifier le score : pas de triche possible.\n\nIl n'y a pas de bouton « Rejouer » à la fin : la partie du jour se joue une fois. Reviens demain pour une nouvelle graine."
+          }
+        }
+      },
+      "planning": {
+        "title": "Planifier un sprint",
+        "steps": {
+          "sprint": {
+            "title": "Un sprint en 4 temps",
+            "body": "Chaque sprint dure deux semaines de jeu, environ 3 minutes réelles à vitesse x1. Il se déroule en 4 temps :\n\n1. Planification : tu choisis le travail. Le temps est arrêté.\n2. Exécution : les devs travaillent dans l'open space.\n3. Crises : des cartes d'événements tombent pendant l'exécution.\n4. Démo : le bilan du sprint.\n\nOn est en planification : prépare ton premier sprint."
+          },
+          "openKanban": {
+            "title": "Le Kanban",
+            "body": "Le Kanban est le tableau des tâches de ton produit. C'est là que tu décides sur quoi l'équipe travaille.",
+            "do": "Ouvre le Kanban avec son bouton (il clignote)."
+          },
+          "columns": {
+            "title": "Les colonnes",
+            "body": "Le tableau a quatre colonnes :\n\n• Backlog : les idées en attente. Personne n'y touche.\n• À faire : le travail prévu pour ce sprint.\n• En cours : ce que les devs font en ce moment.\n• Terminé : ce qui est livré.\n\nTu ne déplaces les tâches qu'entre Backlog et À faire. Les devs font le reste tout seuls."
+          },
+          "types": {
+            "title": "Les types de tâches",
+            "body": "Chaque tâche a une taille en points et un type :\n\n• Feature : apporte des utilisateurs et de la hype, mais fait monter la dette.\n• Refacto : fait fondre la dette, mais coûte un peu de hype.\n• Bugfix : remonte bien la stabilité et baisse un peu la dette.\n• Infra : remonte la stabilité.\n\nLa ligne « Impact » de chaque carte résume son effet sur les jauges."
+          },
+          "move": {
+            "title": "Choisir le travail",
+            "body": "Glisse une tâche du Backlog vers À faire, au doigt ou à la souris. Tu peux aussi utiliser les flèches sur la carte, ou le clavier.\n\nPour commencer, prends une ou deux features : il te faut tes premiers utilisateurs.",
+            "do": "Déplace une tâche vers « À faire »."
+          },
+          "capacity": {
+            "title": "Combien de tâches ?",
+            "body": "Ne surcharge pas le sprint. Un dev moyen abat environ 9 points par sprint. Un 10x Developer en fait plus du double ; un Product Owner, moitié moins.\n\nCe qui n'est pas fini au bout du sprint reste en cours et continue au sprint suivant. Il vaut mieux finir peu de tâches que d'en commencer beaucoup."
+          },
+          "assign": {
+            "title": "Assigner un dev",
+            "body": "Les devs prennent seuls les tâches « À faire ». Tu peux quand même choisir qui fait quoi : un dev de bonne Qualité produit moins de dette sur une feature.\n\nDans la carte de la tâche, choisis un dev dans la liste « Assigné à ».",
+            "do": "Assigne une tâche à un dev."
+          },
+          "start": {
+            "title": "C'est parti",
+            "body": "Tout est prêt. Le bouton « Lancer le sprint » démarre l'exécution : les devs se mettent au travail et le temps avance.",
+            "do": "Ferme le Kanban et lance le sprint."
+          }
+        }
+      },
+      "execution": {
+        "title": "Pendant le sprint",
+        "steps": {
+          "office": {
+            "title": "Ton open space",
+            "body": "Tes devs vivent dans le bureau : ils travaillent, vont au café, discutent, se disputent, jouent au babyfoot ou s'endorment sur le clavier quand ils sont épuisés. Le soir, ils rentrent chez eux.\n\nLes bulles au-dessus des têtes montrent ce qu'ils pensent. « Je vais démissionner » est un signal à prendre au sérieux."
+          },
+          "speed": {
+            "title": "La vitesse du temps",
+            "body": "En haut à droite, tu règles la vitesse : pause, x1, x2 ou x4. La barre d'espace met aussi en pause.\n\nLa partie est en pause pendant cette explication.",
+            "do": "Choisis une vitesse, par exemple x1.",
+            "HARDCORE": {
+              "body": "En haut à droite, tu règles la vitesse : x1, x2 ou x4. En Hardcore, la pause est désactivée.\n\nLe temps continue de passer pendant cette explication.",
+              "do": "Change de vitesse, par exemple x2."
+            }
+          },
+          "camera": {
+            "title": "Se déplacer dans le bureau",
+            "body": "• Glisse pour déplacer la caméra.\n• Molette ou pincement à deux doigts pour zoomer.\n• Q et E pour tourner la vue, les flèches pour te déplacer au clavier."
+          },
+          "select": {
+            "title": "Choisir un dev",
+            "body": "Clique sur un dev pour voir sa fiche (sur mobile, appuie longuement sur lui).",
+            "do": "Sélectionne un dev dans le bureau."
+          },
+          "sheet": {
+            "title": "La fiche d'un dev",
+            "body": "Chaque dev a quatre stats :\n\n• Vitesse : la quantité de travail abattue.\n• Qualité : moins de dette sur ses features, plus d'effet sur ses refacto et ses bugfix.\n• Endurance : il se fatigue moins vite.\n• Ego : il demande un salaire plus élevé et se dispute plus souvent.\n\nLa fiche montre aussi son moral, son énergie, son trait de caractère et ses relations. Il gagne de l'expérience et des niveaux en travaillant."
+          },
+          "roles": {
+            "title": "Les 8 profils",
+            "body": "• Senior Barbu : +50 % de qualité, mais refuse les frameworks récents.\n• 10x Developer : très rapide, mais son code fait monter la dette.\n• Stagiaire : pas cher, mais 5 % de chance par jour de casser la prod.\n• Rustacé : veut tout réécrire en Rust et convertit ses collègues.\n• Designeuse : bloque les releases si le padding est faux, mais embellit les démos.\n• Product Owner : 4 réunions par jour (-10 % de productivité pour tous), mais +hype.\n• IA Agent : ultra rapide, mais 30 % de chance d'halluciner une feature.\n• Dev Fantôme : en télétravail, invisible au bureau, mais ses tickets se ferment.",
+            "INTERNS_ONLY": {
+              "body": "Le jeu compte 8 profils : Senior Barbu, 10x Developer, Stagiaire, Rustacé, Designeuse, Product Owner, IA Agent et Dev Fantôme.\n\nDans ce mode, tu ne croiseras que des stagiaires : pas chers, motivés, et 5 % de chance par jour de casser la prod. Les 7 autres profils t'attendent dans les autres modes."
+            }
+          },
+          "clock": {
+            "title": "Jour, nuit et vendredi 17h",
+            "body": "L'horloge affiche le jour et l'heure. L'éclairage du bureau suit le cycle jour/nuit, et le week-end tout le monde se repose.\n\nLe vendredi à 17h, un bandeau te prévient : c'est l'heure où la prod tombe le plus souvent si la stabilité est basse."
+          }
+        }
+      },
+      "team": {
+        "title": "Ton équipe",
+        "steps": {
+          "openTeam": {
+            "title": "L'équipe",
+            "body": "Le panneau Équipe liste tous tes devs avec leur humeur, leur salaire et leur activité.",
+            "do": "Ouvre le panneau Équipe."
+          },
+          "morale": {
+            "title": "Le moral",
+            "body": "Chaque dev a son propre moral. Il baisse avec la dette, la fatigue, le manque de café et les conflits ; il remonte le week-end, avec les plantes, le babyfoot ou le canapé.\n\nÀ zéro, le dev démissionne, avec un faux post LinkedIn à la clé.\n\nTu peux licencier un dev depuis sa fiche : tu paies un mois de salaire et toute l'équipe perd du moral, surtout ses amis."
+          },
+          "openHiring": {
+            "title": "Le recrutement",
+            "body": "Chaque sprint, 3 nouveaux candidats se présentent.",
+            "do": "Ouvre le panneau Recrutement."
+          },
+          "hiring": {
+            "title": "Faire une offre",
+            "body": "Chaque candidat annonce le salaire qu'il demande. Règle ton offre avant de l'envoyer :\n\n• sous 75 % de sa demande, il refuse toujours ;\n• à 110 % ou plus, il accepte toujours ;\n• entre les deux, c'est une négociation : plus ton offre est proche de sa demande, plus il a de chances d'accepter.\n\nL'équipe est limitée par la taille du bureau : 2 personnes dans le garage, 6 en Seed, 15 en Série A, 30 en Licorne. Un salaire, ça se paie tous les mois : recrute quand ta trésorerie peut suivre.",
+            "INTERNS_ONLY": {
+              "body": "Ici, tous les candidats sont des stagiaires. Chacun annonce le salaire qu'il demande. Règle ton offre avant de l'envoyer :\n\n• sous 75 % de sa demande, il refuse toujours ;\n• à 110 % ou plus, il accepte toujours ;\n• entre les deux, c'est une négociation.\n\nL'équipe est limitée par la taille du bureau : 2 personnes dans le garage, 6 en Seed, 15 en Série A, 30 en Licorne."
+            }
+          }
+        }
+      },
+      "events": {
+        "title": "Les crises",
+        "steps": {
+          "card": {
+            "title": "Une carte d'événement",
+            "body": "Pendant l'exécution, des événements tombent : une panne de machine à café, un investisseur qui veut de la blockchain, un stagiaire qui a fait un git push --force…\n\nLe temps s'arrête jusqu'à ta décision. Lis la situation, puis choisis une réponse.",
+            "HARDCORE": {
+              "body": "Pendant l'exécution, des événements tombent : une panne de machine à café, un investisseur qui veut de la blockchain, un stagiaire qui a fait un git push --force…\n\nEn Hardcore, le temps ne s'arrête pas : tu as 2 heures de jeu pour choisir, sinon la dernière réponse est choisie pour toi. Ce chapitre s'ouvre avant ta première carte pour te laisser le temps de le lire."
+            }
+          },
+          "effects": {
+            "title": "Lire les effets",
+            "body": "Sous chaque choix, des pastilles montrent ses effets sur les jauges : en vert ce qui t'aide, en rouge ce qui te coûte.\n\nIl n'y a presque jamais de choix parfait. Demande-toi quelle jauge tu peux te permettre de sacrifier en ce moment."
+          },
+          "later": {
+            "title": "« On en reparle »",
+            "body": "Certaines cartes proposent de remettre la décision à plus tard. C'est tentant, mais la carte revient dans un sprint ou deux, en pire : ses effets négatifs augmentent de 50 % à chaque report."
+          },
+          "soft": {
+            "title": "En mode Facile",
+            "body": "En mode Facile, les effets négatifs des cartes sont divisés par deux (les chiffres affichés en tiennent déjà compte) et il tombe au plus 2 cartes au hasard par sprint. Seule la panne du vendredi 17h peut s'y ajouter."
+          }
+        }
+      },
+      "incident": {
+        "title": "La prod est tombée",
+        "steps": {
+          "outage": {
+            "title": "Incident en production",
+            "body": "L'écran clignote en rouge et de la fumée sort des serveurs : la prod est en panne.\n\nUne panne fait perdre de la stabilité, de la hype et 2 % de tes utilisateurs. Plus la stabilité et la dette sont mauvaises, plus les pannes sont fréquentes."
+          },
+          "fix": {
+            "title": "Éviter la prochaine",
+            "body": "Au prochain sprint, mets des bugfix et de l'infra dans « À faire », et un peu de refacto si la dette est haute.\n\nDans le bureau, une baie de serveurs remonte un peu la stabilité chaque jour, et une poubelle grignote la dette. Et évite les stagiaires seuls aux commandes le vendredi."
+          }
+        }
+      },
+      "demo": {
+        "title": "La démo",
+        "steps": {
+          "report": {
+            "title": "La fin du sprint",
+            "body": "Le sprint est fini : c'est la démo. L'écran fait le bilan : utilisateurs gagnés ou perdus, chiffre d'affaires, dépenses, features livrées, incidents et valorisation."
+          },
+          "read": {
+            "title": "Lire le bilan",
+            "body": "Compare les dépenses au chiffre d'affaires : tant que tu dépenses plus que tu ne gagnes, ta trésorerie fond. Regarde à quelle vitesse, et lève des fonds avant qu'il ne soit trop tard.\n\nLes retours d'utilisateurs, en bas, sont surtout là pour rire. Enfin, presque."
+          },
+          "next": {
+            "title": "Et maintenant ?",
+            "body": "Le bouton « Sprint suivant » ouvre la planification du sprint d'après. Plus tard dans la partie, cet écran pourra aussi afficher une offre de rachat ou le bouton d'IPO."
+          }
+        }
+      },
+      "build": {
+        "title": "Aménager le bureau",
+        "steps": {
+          "openBuild": {
+            "title": "Le mode construction",
+            "body": "Les objets du bureau ont de vrais effets sur le jeu. Tu peux les acheter, les placer, les tourner et les revendre.",
+            "do": "Ouvre la Construction."
+          },
+          "place": {
+            "title": "Poser un objet",
+            "body": "Choisis un objet dans le catalogue en bas de l'écran : il se replie et l'objet apparaît sur une case libre, en vert. Clique sur une case pour le poser (au doigt : touche une case ou fais glisser l'objet, puis « Poser »). Une plante à 60 € est un bon début.",
+            "do": "Achète et pose un objet."
+          },
+          "manage": {
+            "title": "Tourner, déplacer, revendre",
+            "body": "En construction, touche un objet déjà posé pour le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
+          },
+          "items": {
+            "title": "Les objets utiles",
+            "body": "• Machine à café : plus de café chaque matin. La premium en remet deux fois plus et remonte le moral.\n• Plantes, tapis, canapé : du moral en plus.\n• Babyfoot : beaucoup de moral, un peu moins de productivité.\n• Casques antibruit : annulent le malus des réunions du Product Owner.\n• Chaise ergonomique et bureau debout : les devs se fatiguent moins.\n• Baie de serveurs : de la stabilité chaque jour.\n• Écran de dashboard : un peu de hype chaque jour."
+          }
+        }
+      },
+      "dashboard": {
+        "title": "Le dashboard",
+        "steps": {
+          "open": {
+            "title": "Suivre l'évolution",
+            "body": "Le dashboard trace l'historique de chaque jauge, un point par jour.",
+            "do": "Ouvre le Dashboard."
+          },
+          "read": {
+            "title": "Lire les courbes",
+            "body": "Les courbes montrent les tendances mieux qu'un chiffre : une dette qui monte lentement depuis trois sprints, c'est le moment de refactorer. Une trésorerie en pente raide, c'est le moment de lever des fonds ou de ralentir les recrutements."
+          }
+        }
+      },
+      "funding": {
+        "title": "Lever des fonds",
+        "steps": {
+          "why": {
+            "title": "Pourquoi lever ?",
+            "body": "Lever des fonds remplit ta trésorerie et fait grandir ta startup : la 1re levée te fait passer en Seed, la 2e en Série A. À chaque phase, le bureau s'agrandit et tu peux recruter plus de monde."
+          },
+          "when": {
+            "title": "Quand lever ?",
+            "body": "Le bouton « Lever des fonds » apparaît pendant la planification, à côté de « Lancer le sprint ».\n\nIl faut un peu de hype (à zéro, aucun investisseur ne te reçoit), et après chaque tentative, il faut attendre 3 sprints avant la suivante. Choisis bien ton moment : beaucoup de hype et des utilisateurs, c'est idéal."
+          },
+          "pitch": {
+            "title": "Le pitch",
+            "body": "Face à l'investisseur, tu choisis 3 arguments, un par manche. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nChaque investisseur a ses préférences. Un pitch raté coûte un peu de hype."
+          },
+          "dilution": {
+            "title": "La dilution",
+            "body": "En échange de l'argent, l'investisseur prend une part de ta startup : entre 10 et 30 % du capital. Plus il est conquis, plus il paie cher, et plus il prend de parts.\n\nTa part du capital est affichée après chaque levée. Plus tu lèves, plus elle diminue."
+          },
+          "phases": {
+            "title": "Les phases",
+            "body": "• Garage : 1 bureau IKEA et des ramen, 2 personnes au maximum.\n• Seed (1re levée) : un petit open space, 6 personnes.\n• Série A (2e levée) : babyfoot, plantes et bureaux debout, 15 personnes.\n• Licorne (valorisation d'un milliard) : toboggan, sieste-pods et cantine, 30 personnes.\n\nLa valorisation dépend de tes utilisateurs, de ton chiffre d'affaires et de la taille de l'équipe."
+          }
+        }
+      },
+      "endings": {
+        "title": "Les fins de partie",
+        "steps": {
+          "four": {
+            "title": "Comment ça se termine",
+            "body": "Au bout des 18 mois, ta phase décide de la fin :\n\n• Licorne : IPO, la meilleure fin.\n• Série A : rachat, à prix cassé.\n• Seed : rachat si tu vaux plus de 100 M€, sinon zombie.\n• Garage : zombie.\n\nEt si la trésorerie tombe à zéro avant, c'est la faillite.",
+            "SHIP_IN_3": {
+              "body": "Le défi s'arrête à la fin du 3e sprint :\n\n• au moins 5 features livrées : ta startup est rachetée ;\n• moins de 5 : c'est la fin « zombie ».\n\nEt si la trésorerie tombe à zéro avant, c'est la faillite. Les bilans des démos indiquent combien de features chaque sprint a livrées."
+            }
+          },
+          "offer": {
+            "title": "Offres de rachat et IPO",
+            "body": "À partir de la Série A, une grande entreprise peut proposer de te racheter à l'écran de démo. Accepter termine la partie tout de suite avec ce montant. Refuser, c'est parier sur la suite.\n\nUne fois Licorne, avec une stabilité d'au moins 50, le bouton « Lancer l'IPO » apparaît : tu peux entrer en Bourse sans attendre la fin."
+          },
+          "share": {
+            "title": "Partager ta fin",
+            "body": "L'écran de fin résume ta partie en une phrase (« Ma startup a été rachetée 400 M€ et 7 devs ont fait un burn-out ») et te propose une image à partager."
+          }
+        }
+      },
+      "tools": {
+        "title": "Les autres outils",
+        "steps": {
+          "slack": {
+            "title": "Slack",
+            "body": "Le panneau Slack montre ce que racontent tes devs dans #general, #random et #incidents. C'est drôle, et c'est aussi un bon moyen de repérer qui va mal."
+          },
+          "saves": {
+            "title": "Sauvegardes",
+            "body": "Le jeu se sauvegarde tout seul. Le panneau Sauvegardes te permet aussi d'enregistrer dans l'un des 5 emplacements, et de reprendre plus tard depuis le menu."
+          },
+          "settings": {
+            "title": "Options",
+            "body": "Dans les Options : qualité graphique, taille du texte, réduction des animations, volumes et Slack animé par l'IA. Le Guide du jeu s'y trouve aussi : tu peux relire chaque chapitre de ce tutoriel quand tu veux."
+          },
+          "bye": {
+            "title": "Tu es prêt",
+            "body": "Tu connais maintenant tout le jeu. Le tutoriel s'arrête ici : à toi de mener ta startup jusqu'au bout.\n\nTu peux relire chaque chapitre quand tu veux dans Options, Guide du jeu.",
+            "EASY": {
+              "body": "Tu connais maintenant tout le jeu. Le tutoriel s'arrête ici : à toi de mener ta startup jusqu'à l'IPO.\n\nQuand tu te sentiras à l'aise, essaie le mode Normal, puis le Daily pour te comparer aux autres joueurs."
+            },
+            "DAILY": {
+              "body": "Tu connais maintenant tout le jeu. Le tutoriel s'arrête ici : à toi de jouer la partie du jour.\n\nCompare ton score à celui des autres dans le classement du jour, et reviens demain pour une nouvelle graine."
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -13,11 +13,10 @@ import {
 import { GameScreen } from '../../../src/ui/game/GameScreen';
 import { useGame } from '../../../src/ui/store/game';
 import { useSettings } from '../../../src/ui/store/settings';
-import { isStepDone } from '../../../src/ui/tutorial/Tutorial';
 import type { Simulation } from '../../../src/simulation/simulation';
 import { officeLayout } from '../../../src/view/layout';
 import { nearestValidCell } from '../../../src/view/placement';
-import { officeSimulation, SEED_OFFICE, testSource, viewOf } from '../fixtures/game';
+import { officeSimulation, SEED_OFFICE, testSource } from '../fixtures/game';
 
 /** Lance l'écran de jeu sur une vraie simulation (moteur sans thread, temps arrêté). */
 async function startGame(simulation: Simulation = officeSimulation(SEED_OFFICE)) {
@@ -263,42 +262,6 @@ describe('Options et accessibilité', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Crédits' }));
     expect(screen.getByText(/licence CC0/)).toBeInTheDocument();
     expect(screen.getByText('Babyfoot')).toBeInTheDocument();
-  });
-});
-
-describe('Tutoriel', () => {
-  it('s’affiche au premier lancement et se passe', async () => {
-    useSettings.setState({ tutorialDone: false });
-    await startGame();
-    expect(screen.getByText(/Bienvenue, fondateur/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Suivant' }));
-    expect(screen.getByText(/tes jauges/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Passer le tutoriel' }));
-    expect(useSettings.getState().tutorialDone).toBe(true);
-  });
-
-  it('valide chaque étape quand l’action est faite', () => {
-    const simulation = officeSimulation(SEED_OFFICE);
-    const before = viewOf(simulation);
-    const base = {
-      view: before,
-      panel: null,
-      selectedDev: false,
-      initialSpeed: 1,
-      initialItems: before.items.length,
-    };
-    expect(isStepDone('kanban', base)).toBe(false);
-    const taskId = before.tasks[0]!.id;
-    simulation.dispatch({ type: 'MOVE_TASK', taskId, column: 'TODO' });
-    simulation.dispatch({ type: 'ASSIGN_TASK', taskId, devId: before.devs[0]!.id });
-    simulation.dispatch({ type: 'START_SPRINT' });
-    simulation.dispatch({ type: 'BUY_FURNITURE', itemId: 'plant', x: 5, y: 8, rotation: 0 });
-    const view = { ...viewOf(simulation), time: { ...viewOf(simulation).time, speed: 2 as const } };
-    const after = { ...base, view, selectedDev: true };
-    for (const step of ['kanban', 'assign', 'start', 'speed', 'select', 'build'] as const) {
-      expect(isStepDone(step, after), step).toBe(true);
-    }
-    expect(isStepDone('welcome', after)).toBe(false);
   });
 });
 

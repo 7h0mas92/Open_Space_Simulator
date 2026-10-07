@@ -20,17 +20,27 @@ Slack simulé (templates ou IA), back-office, PWA hors ligne et configuration de
 Prérequis : Node.js 22.12+, pnpm 10 (`corepack enable`), Docker.
 
 ```bash
-pnpm install
+pnpm install         # génère aussi le client Prisma (postinstall)
 cp packages/server/.env.example packages/server/.env   # puis adapter si besoin
 pnpm db:up          # PostgreSQL 16 dans Docker
 pnpm db:migrate     # applique les migrations Prisma
-pnpm db:seed        # crée le compte admin@oss.local / admin-dev-password
+pnpm db:seed        # compile @oss/shared, puis crée admin@oss.local / admin-dev-password et les 100 cartes
 pnpm dev            # client sur http://localhost:5173, API sur http://localhost:3000
 ```
 
 - Jeu : http://localhost:5173
 - Documentation de l'API (Swagger UI) : http://localhost:3000/docs
 - Santé du serveur : http://localhost:3000/api/health
+
+Le port 5432 est celui de PostgreSQL : il ne s'ouvre pas dans un navigateur (« ERR_EMPTY_RESPONSE »,
+et une ligne « invalid length of startup packet » dans les logs de la base, sans gravité).
+
+En cas de `ERR_MODULE_NOT_FOUND` :
+
+- `.../src/generated/prisma/client.js` : le client Prisma n'est pas généré, lancer
+  `pnpm --filter @oss/server db:generate` (Prisma 7 ne le fait plus pendant `migrate dev`) ;
+- `.../@oss/shared/dist/index.js` : le paquet partagé n'est pas compilé, lancer
+  `pnpm --filter @oss/shared build`.
 
 ### Connexion GitHub (facultative)
 
@@ -53,6 +63,7 @@ Sans ces variables, le bouton « Continuer avec GitHub » est simplement masqué
 | `pnpm build`                                     | Build de production des trois paquets                               |
 | `pnpm balance`                                   | Simule 10 000 parties et écrit `packages/client/reports/balance.md` |
 | `pnpm db:migrate`                                | Crée / applique une migration Prisma                                |
+| `pnpm --filter @oss/server db:generate`          | Régénère le client Prisma (après un changement de schéma)           |
 | `pnpm --filter @oss/server user:promote <email>` | Donne le rôle ADMIN                                                 |
 
 Les messages de commit suivent les [commits conventionnels](https://www.conventionalcommits.org/fr/)

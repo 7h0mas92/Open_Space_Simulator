@@ -125,6 +125,7 @@ describe('Leaderboard', () => {
     expect(tabs).toEqual([
       'Global',
       'Daily du jour',
+      'Facile',
       'Normal',
       'Hardcore',
       'Stagiaires Only',

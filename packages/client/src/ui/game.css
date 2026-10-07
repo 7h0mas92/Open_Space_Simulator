@@ -102,7 +102,6 @@
 .time-controls,
 .action-bar,
 .selection-bar,
-.tutorial,
 .toast {
   background: rgb(27 31 46 / 92%);
   border: 1px solid var(--border);
@@ -1138,39 +1137,212 @@ legend {
   color: var(--accent);
 }
 
-/* --- Tutoriel ------------------------------------------------------------------------- */
+/* --- Tutoriel (adapté à chaque mode) --------------------------------------------------- */
 
-.tutorial {
+/* Petits écrans : carte en bas, au-dessus de la barre d'actions (réductible). */
+.guide {
   position: absolute;
-  z-index: 15;
-  left: 50%;
-  top: 30%;
-  width: min(24rem, calc(100vw - 32px));
-  padding: 12px 14px;
-  transform: translateX(-50%);
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+  z-index: 45;
+  left: 8px;
+  right: 8px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 48dvh;
+  /* Seul le texte défile : le titre et les boutons restent toujours visibles. */
+  overflow: hidden;
+  padding: 14px 16px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: rgb(27 31 46 / 96%);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 45%);
 }
 
-.tutorial-progress {
+.guide-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.guide-kicker,
+.guide-progress,
+.guide-paused {
   margin: 0;
   color: var(--text-muted);
   font-size: 0.8rem;
 }
 
-.tutorial-text {
-  margin: 4px 0 10px;
+.guide-kicker {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.guide h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  text-wrap: balance;
+}
+
+.guide-minimize {
+  flex: none;
+  min-width: var(--touch);
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.guide-body {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+.guide-body p,
+.guide-body ul,
+.guide-body ol {
+  margin: 0;
+}
+
+.guide-body ul,
+.guide-body ol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 1.2rem;
+}
+
+.guide-task {
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgb(245 185 66 / 14%);
   font-weight: 600;
 }
 
-.tutorial-text.done {
+.guide-task.done {
+  background: rgb(125 220 152 / 16%);
   color: #7ddc98;
 }
 
-.tutorial-actions {
+.guide-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+  margin-top: 6px;
+}
+
+.guide-stop {
+  margin-right: auto;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
+.guide-pill {
+  position: absolute;
+  z-index: 45;
+  left: 8px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+  border-color: var(--accent);
+  background: rgb(27 31 46 / 96%);
+}
+
+/* L'élément dont parle le tutoriel clignote doucement. */
+.guide-target {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  animation: guide-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes guide-pulse {
+  50% {
+    outline-color: rgb(245 185 66 / 25%);
+  }
+}
+
+.guide-index ol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-index li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.guide-index h3 {
+  margin: 0;
+}
+
+/* Tablette : une carte plus étroite, à gauche. */
+@media (min-width: 768px) {
+  .guide {
+    right: auto;
+    width: min(26rem, calc(100vw - 32px));
+    max-height: 50dvh;
+  }
+}
+
+/* Ordinateur : sous l'horloge, entre la colonne des jauges et le panneau ouvert. */
+@media (min-width: 1024px) and (min-height: 501px) {
+  .guide,
+  .guide-pill {
+    top: 88px;
+    bottom: auto;
+    left: calc(15rem + 32px);
+  }
+
+  .guide {
+    width: min(27rem, calc(100vw - 15rem - 64px));
+    max-height: calc(100dvh - 120px);
+  }
+
+  .game.has-panel .guide {
+    width: max(18rem, min(27rem, calc(100vw - var(--panel-width) - 15rem - 64px)));
+  }
+}
+
+/* Construction : le guide monte sous le bandeau pour laisser le catalogue et la scène libres. */
+.game.is-building .guide,
+.game.is-building .guide-pill {
+  top: calc(env(safe-area-inset-top, 0px) + 68px);
+  bottom: auto;
+}
+
+.game.is-building .guide {
+  max-height: 42dvh;
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .game.is-building .guide {
+    max-height: calc(100dvh - 80px);
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 501px) {
+  .game.is-building .guide,
+  .game.is-building .guide-pill {
+    top: 88px;
+    left: 16px;
+  }
+
+  .game.is-building .guide {
+    max-height: calc(100dvh - 88px - min(17rem, 40vh) - 120px);
+  }
 }
 
 .guest-panel {

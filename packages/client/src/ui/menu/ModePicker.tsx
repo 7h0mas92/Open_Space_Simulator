@@ -2,6 +2,7 @@ import { GAME_MODES, type GameMode } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 
 const MODE_ICONS: Record<GameMode, string> = {
+  EASY: '🐣',
   NORMAL: '🚀',
   HARDCORE: '🔥',
   INTERNS_ONLY: '🎒',
