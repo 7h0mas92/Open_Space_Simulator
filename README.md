@@ -336,6 +336,14 @@ bouton 🛠 du menu principal.
   panneau qui se replie. La logique est dans `ui/admin/cardFilters.ts` (fonctions pures, testées).
 - **Éditeur** : JSON validé en direct par le schéma Zod partagé, avec l'aperçu de la carte telle
   que le joueur la verra.
+- **Packs de personnages** : Noël, Halloween, Pâques, super-héros (héros inventés, sans
+  licence), été, espace, pirates, Moyen Âge, années 80 et cyberpunk. Un pack déguise toute l'équipe : chaque profil a son costume construit en Three.js
+  (Père Noël barbu, stagiaire citrouille, oreilles de lapin, cape et emblème…), avec un aperçu 3D
+  des 8 profils. Le pack « Base » (les looks habituels, sans costume) est le seul actif au départ ;
+  si plusieurs packs sont actifs, l'équipe se répartit entre eux (Base et Noël : la moitié en
+  costume), et si aucun ne l'est, on revient aux looks de base. Le client lit `GET /api/character-packs` au lancement d'une partie et le garde en cache
+  pour le hors-ligne ; l'administrateur les change avec `PUT /api/admin/character-packs/:id`.
+  Costumes dans `render/characterPacks.ts`.
 - **Statistiques** : joueurs, parties, fins, faillites par phase, cartes les plus tirées et choix
   les plus fréquents, avec des barres proportionnelles.
 
@@ -433,5 +441,10 @@ génère que des messages Slack.
   lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
   sons Kenney et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans
   la page Crédits du jeu.
+- Personnages : 10 des 18 Blocky Characters sont hors thème (pirate, ninja, zombies, policier…)
+  et ne sont jamais tirés. Chaque profil a sa liste de looks (`render/officeCharacters.ts`) :
+  les personnages Kenney adaptés, complétés d'accessoires Three.js (barbe, casque, béret, badge,
+  crabe Ferris), et 13 personnages construits en Three.js avec la même hiérarchie que les GLB, ce
+  qui leur permet de jouer les clips d'animation Kenney.
 - Rendu : [Three.js](https://threejs.org). Interface : React, Zustand, i18next. Audio :
   Howler.js. Slack IA : API Claude d'Anthropic.

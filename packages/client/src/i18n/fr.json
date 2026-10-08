@@ -612,6 +612,7 @@
     "heading": "Back-office",
     "tabs": {
       "cards": "Cartes",
+      "packs": "Packs de personnages",
       "stats": "Statistiques"
     },
     "search": "Rechercher une carte",
@@ -693,7 +694,16 @@
     "editing": "Modifier : {{title}}",
     "creating": "Nouvelle carte",
     "showResults_one": "Voir {{count}} carte",
-    "showResults_other": "Voir les {{count}} cartes"
+    "showResults_other": "Voir les {{count}} cartes",
+    "packs": {
+      "intro": "Un pack déguise l'équipe avec ses costumes. Seul « Base » (les looks habituels) est actif au départ ; si plusieurs packs sont actifs, l'équipe se répartit entre eux, et si aucun ne l'est, on revient aux looks de base. Les joueurs voient les changements au lancement de leur prochaine partie.",
+      "toggle": "Pack actif",
+      "enabled": "Pack « {{pack}} » activé.",
+      "disabled": "Pack « {{pack}} » désactivé.",
+      "previewAlt": "Les 8 profils en costume du pack {{pack}}",
+      "on": "Actif",
+      "off": "Désactivé"
+    }
   },
   "guide": {
     "title": "Tutoriel",
@@ -1097,5 +1107,51 @@
     "sprintProgress": "Avancement du sprint : {{percent}} %",
     "system": "Partie",
     "runwayLong": "Trésorerie : {{months}} mois restants"
+  },
+  "packs": {
+    "BASE": {
+      "name": "Base",
+      "description": "Les looks habituels de l'équipe, sans costume. Actif au départ ; mélangé à un pack à thème, une partie de l'équipe reste en tenue normale."
+    },
+    "CHRISTMAS": {
+      "name": "Noël",
+      "description": "Père Noël barbu, lutins, Rudolph le Rustacé, pulls moches et robot guirlande."
+    },
+    "HALLOWEEN": {
+      "name": "Halloween",
+      "description": "Magicien barbu, vampire 10x, stagiaires citrouilles, squelette, sorcière, diable et momie robot."
+    },
+    "EASTER": {
+      "name": "Pâques",
+      "description": "Oreilles de lapin, poussins, couronnes de fleurs et œufs peints sur des tenues pastel."
+    },
+    "SUPERHEROES": {
+      "name": "Super-héros",
+      "description": "Capes, loups et emblèmes inventés : une équipe de héros sans licence (aucun personnage existant)."
+    },
+    "SUMMER": {
+      "name": "Été",
+      "description": "Chapeaux de paille, lunettes de soleil, chemises hawaïennes, marinière et bouée."
+    },
+    "SPACE": {
+      "name": "Espace",
+      "description": "Astronautes en casque bulle, stagiaire extraterrestre et robot aux néons."
+    },
+    "PIRATES": {
+      "name": "Pirates",
+      "description": "Capitaine barbu et son perroquet, bandanas, cache-œil et marinières."
+    },
+    "MEDIEVAL": {
+      "name": "Moyen Âge",
+      "description": "Enchanteur, chevaliers en armure, bouffon, princesse et un PO couronné."
+    },
+    "RETRO_80S": {
+      "name": "Années 80",
+      "description": "Survêtements fluo, bandeaux, walkman et veste blanche façon Miami."
+    },
+    "CYBERPUNK": {
+      "name": "Cyberpunk",
+      "description": "Visières lumineuses, crêtes néon et combinaisons sombres à bandes fluo."
+    }
   }
 }

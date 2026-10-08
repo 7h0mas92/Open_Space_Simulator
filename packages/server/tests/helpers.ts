@@ -23,7 +23,7 @@ export async function createTestApp(
   const env = testEnv(overrides);
   const prisma = deps.prisma ?? createPrismaClient(env.DATABASE_URL);
   await prisma.$executeRawUnsafe(
-    'TRUNCATE "User", "EventCard", "Achievement", "CardSet" RESTART IDENTITY CASCADE',
+    'TRUNCATE "User", "EventCard", "Achievement", "CardSet", "CharacterPack" RESTART IDENTITY CASCADE',
   );
   const app = await buildApp(env, { ...deps, prisma });
   await app.ready();

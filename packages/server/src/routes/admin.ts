@@ -4,10 +4,14 @@ import {
   AdminCardSchema,
   AdminStatsResponseSchema,
   CardIdSchema,
+  CharacterPackIdSchema,
+  CharacterPackSchema,
+  CharacterPacksResponseSchema,
   OUTCOMES,
   PHASES,
   type AdminStatsResponse,
   type LocalizedText,
+  UpdateCharacterPackBodySchema,
 } from '@oss/shared';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
@@ -15,12 +19,13 @@ import { Prisma } from '../generated/prisma/client.js';
 import { AppError } from '../lib/errors.js';
 import { errorResponses } from '../lib/schemas.js';
 import { cardData, toAdminCard, toEventCard } from '../services/cards.service.js';
+import { listCharacterPacks, setCharacterPack } from '../services/packs.service.js';
 
 const IdParamsSchema = z.object({ id: CardIdSchema });
 
 /**
- * Back-office : /api/admin/* (rôle ADMIN obligatoire). Gestion des cartes d'événements
- * et statistiques de jeu.
+ * Back-office : /api/admin/* (rôle ADMIN obligatoire). Gestion des cartes d'événements,
+ * des packs de personnages et statistiques de jeu.
  */
 export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireRole('ADMIN'));
@@ -233,5 +238,32 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
         outcomes,
       };
     },
+  );
+  app.get(
+    '/character-packs',
+    {
+      schema: {
+        tags: ['admin'],
+        summary: 'Packs de personnages thématiques et leur état',
+        security,
+        response: { 200: CharacterPacksResponseSchema, ...errorResponses },
+      },
+    },
+    async () => ({ packs: await listCharacterPacks(app.prisma) }),
+  );
+
+  app.put(
+    '/character-packs/:id',
+    {
+      schema: {
+        tags: ['admin'],
+        summary: 'Activer ou désactiver un pack de personnages',
+        security,
+        params: z.object({ id: CharacterPackIdSchema }),
+        body: UpdateCharacterPackBodySchema,
+        response: { 200: CharacterPackSchema, ...errorResponses },
+      },
+    },
+    async (request) => setCharacterPack(app.prisma, request.params.id, request.body.enabled),
   );
 };

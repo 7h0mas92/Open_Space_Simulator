@@ -4,6 +4,8 @@ import {
   AdminCardSchema,
   AdminStatsResponseSchema,
   CardSetResponseSchema,
+  CharacterPackSchema,
+  CharacterPacksResponseSchema,
   DailyResponseSchema,
   LeaderboardResponseSchema,
   OkResponseSchema,
@@ -20,6 +22,8 @@ import {
   type AdminStatsResponse,
   type AchievementDto,
   type CardSetResponse,
+  type CharacterPack,
+  type CharacterPackId,
   type DailyResponse,
   type GameMode,
   type LeaderboardResponse,
@@ -44,13 +48,21 @@ function query(params: Record<string, string | number | undefined>): string {
     : `?${new URLSearchParams(entries.map(([key, value]) => [key, String(value)])).toString()}`;
 }
 
-/** Appels du méta-jeu : cartes, sauvegardes, scores, classements, succès, Slack IA, admin. */
+/** Appels du méta-jeu : cartes, packs de personnages, sauvegardes, scores, classements, succès, Slack IA, admin. */
 export const metaApi = {
   cards: (version?: string): Promise<CardSetResponse> =>
     apiRequest(`/events${query({ version })}`, {
       schema: CardSetResponseSchema,
       retryOnUnauthorized: false,
     }),
+
+  characterPacks: async (): Promise<CharacterPack[]> =>
+    (
+      await apiRequest('/character-packs', {
+        schema: CharacterPacksResponseSchema,
+        retryOnUnauthorized: false,
+      })
+    ).packs,
 
   daily: (): Promise<DailyResponse> =>
     apiRequest('/daily', { schema: DailyResponseSchema, retryOnUnauthorized: false }),
@@ -121,6 +133,14 @@ export const metaApi = {
       }),
     disable: (id: string): Promise<AdminCard> =>
       apiRequest(`/admin/events/${id}`, { method: 'DELETE', schema: AdminCardSchema }),
+    characterPacks: async (): Promise<CharacterPack[]> =>
+      (await apiRequest('/admin/character-packs', { schema: CharacterPacksResponseSchema })).packs,
+    setCharacterPack: (id: CharacterPackId, enabled: boolean): Promise<CharacterPack> =>
+      apiRequest(`/admin/character-packs/${id}`, {
+        method: 'PUT',
+        body: { enabled },
+        schema: CharacterPackSchema,
+      }),
     stats: (): Promise<AdminStatsResponse> =>
       apiRequest('/admin/stats', { schema: AdminStatsResponseSchema }),
   },

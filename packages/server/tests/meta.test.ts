@@ -1,4 +1,10 @@
-import { BUILTIN_CARDS_VERSION, dailySeed, EVENT_CARDS, utcDate } from '@oss/shared';
+import {
+  BUILTIN_CARDS_VERSION,
+  CHARACTER_PACKS,
+  dailySeed,
+  EVENT_CARDS,
+  utcDate,
+} from '@oss/shared';
 import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cookiesOf, createTestApp, registerUser, validUser } from './helpers.js';
@@ -404,6 +410,52 @@ describe('/api/admin', () => {
     expect((await app.inject({ url: '/api/admin/events', cookies })).json().cards).toHaveLength(1);
     // Plus aucune carte active : retour aux cartes intégrées.
     expect((await app.inject({ url: '/api/events' })).json().version).toBe('builtin');
+  });
+
+  it('active et désactive les packs de personnages, seul « Base » au départ', async () => {
+    const packs = (await app.inject({ url: '/api/character-packs' })).json().packs;
+    expect(packs).toEqual(CHARACTER_PACKS.map((id) => ({ id, enabled: id === 'BASE' })));
+
+    const lambda = await player('lambda');
+    const refused = await app.inject({
+      method: 'PUT',
+      url: '/api/admin/character-packs/HALLOWEEN',
+      cookies: lambda,
+      payload: { enabled: true },
+    });
+    expect(refused.statusCode).toBe(403);
+
+    const cookies = await admin();
+    const enabled = await app.inject({
+      method: 'PUT',
+      url: '/api/admin/character-packs/HALLOWEEN',
+      cookies,
+      payload: { enabled: true },
+    });
+    expect(enabled.json()).toEqual({ id: 'HALLOWEEN', enabled: true });
+    const unknown = await app.inject({
+      method: 'PUT',
+      url: '/api/admin/character-packs/CARNAVAL',
+      cookies,
+      payload: { enabled: true },
+    });
+    expect(unknown.statusCode).toBe(400);
+
+    const listed = (await app.inject({ url: '/api/character-packs' })).json().packs;
+    expect(listed.filter((pack: { enabled: boolean }) => pack.enabled)).toEqual([
+      { id: 'BASE', enabled: true },
+      { id: 'HALLOWEEN', enabled: true },
+    ]);
+    await app.inject({
+      method: 'PUT',
+      url: '/api/admin/character-packs/HALLOWEEN',
+      cookies,
+      payload: { enabled: false },
+    });
+    const adminList = (await app.inject({ url: '/api/admin/character-packs', cookies })).json();
+    expect(adminList.packs.filter((pack: { enabled: boolean }) => pack.enabled)).toEqual([
+      { id: 'BASE', enabled: true },
+    ]);
   });
 
   it('calcule les statistiques à partir des parties publiées', async () => {
