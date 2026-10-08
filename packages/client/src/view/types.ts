@@ -14,6 +14,7 @@ import type {
   CalendarDate,
   DecorTheme,
   DevTrait,
+  FurnitureColor,
   GameMode,
   GameResult,
   LocalizedText,
@@ -202,6 +203,16 @@ export interface PlacedItemView {
   readonly rotation: Rotation;
   /** Somme remboursée à la revente. */
   readonly resale: number;
+  /** Couleur choisie (`natural` : couleurs d'origine du modèle). */
+  readonly color: FurnitureColor;
+  /** Accessoire : le meuble qui le porte et l'emplacement occupé, sinon `null`. */
+  readonly host: ItemHost | null;
+}
+
+/** Emplacement d'un accessoire sur le plateau d'un meuble. */
+export interface ItemHost {
+  readonly id: string;
+  readonly slot: number;
 }
 
 export interface GameTime {
@@ -329,7 +340,22 @@ export type GameCommand =
       readonly x: number;
       readonly z: number;
       readonly rotation: Rotation;
+      readonly color?: FurnitureColor;
     }
+  | {
+      readonly type: 'placeAccessory';
+      readonly kind: string;
+      readonly host: ItemHost;
+      readonly rotation: Rotation;
+      readonly color?: FurnitureColor;
+    }
+  | {
+      readonly type: 'moveAccessory';
+      readonly itemId: string;
+      readonly host: ItemHost;
+      readonly rotation: Rotation;
+    }
+  | { readonly type: 'paintItem'; readonly itemId: string; readonly color: FurnitureColor }
   | {
       readonly type: 'moveItem';
       readonly itemId: string;

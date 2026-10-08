@@ -19,11 +19,18 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents';
+import { itemCells } from '../ai/grid';
 import { catalogItem, footprint } from '../view/catalog';
 import { decorKey, planDecor } from '../view/decor';
 import { officeLayout, type Cell, type OfficeLayout } from '../view/layout';
-import { checkPlacement, nearestValidCell } from '../view/placement';
 import { liveSprintMinutes } from '../view/liveTime';
+import type { FurnitureColor } from '../view/colors';
+import {
+  checkPlacement,
+  nearestValidCell,
+  resolveAccessory,
+  slotPosition,
+} from '../view/placement';
 import type { GameView, Rotation } from '../view/types';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
@@ -46,7 +53,7 @@ import {
   type IsoCameraState,
 } from './isoCamera';
 import { lightingAt, type LightingState } from './lighting';
-import { itemMatrix, OfficeView } from './office';
+import { accessoryMatrix, itemMatrix, OfficeView } from './office';
 import { OfficeLights } from './officeLights';
 import { pixelRatioFor, QUALITY_PRESETS, type QualityLevel } from './quality';
 import { ScreenGlow } from './screens';
@@ -64,6 +71,8 @@ export interface BuildPreview {
   readonly movingItemId?: string;
   /** Case visée par l'aperçu, `null` tant qu'elle n'est pas connue. */
   readonly cell: Cell | null;
+  /** Couleur choisie : l'aperçu la montre. */
+  readonly color?: FurnitureColor;
 }
 
 export interface RendererOptions {
@@ -93,6 +102,13 @@ const SMOOTH_SNAP_MINUTES = 45;
 const SELECTION_COLOR = 0xf5b942;
 const VALID_COLOR = 0x4caf6e;
 const INVALID_COLOR = 0xe0584a;
+/** Aperçu d'une pose impossible : l'objet passe en rouge translucide. */
+const INVALID_GHOST = new THREE.MeshBasicMaterial({
+  color: INVALID_COLOR,
+  transparent: true,
+  opacity: 0.55,
+  depthWrite: false,
+});
 
 export class GameRenderer {
   private readonly renderer: THREE.WebGLRenderer;
@@ -714,6 +730,18 @@ export class GameRenderer {
       const item = this.view.items.find((i) => i.id === target.id);
       const def = item && catalogItem(item.kind);
       if (!item || !def) return;
+      if (item.host) {
+        // Accessoire : un petit carré sur le plateau, à son emplacement.
+        const hostId = item.host.id;
+        const host = this.view.items.find((i) => i.id === hostId);
+        const position = host && slotPosition(host, item.host.slot);
+        if (!position) return;
+        marker.visible = true;
+        marker.position.set(position[0], position[1] + 0.02, position[2]);
+        marker.scale.set(0.4, 1, 0.4);
+        marker.rotation.set(0, 0, 0);
+        return;
+      }
       const [w, d] = footprint(def, item.rotation);
       marker.visible = true;
       marker.position.set(item.x + (w - 1) / 2, 0.02, item.z + (d - 1) / 2);
@@ -723,23 +751,18 @@ export class GameRenderer {
   }
 
   private async refreshGhost(): Promise<void> {
-    const key = this.build?.kind ?? '';
+    const color = this.build?.color ?? 'natural';
+    const key = this.build?.kind ? `${this.build.kind}#${color}` : '';
     if (key !== this.ghostKey) {
       this.ghostKey = key;
       if (this.ghost) this.scene.remove(this.ghost);
       this.ghost = null;
       if (this.build?.kind) {
-        const ghost = await this.office.single(this.build.kind);
+        // L'aperçu garde ses vraies couleurs (on voit la teinte choisie) ; rouge si impossible.
+        const ghost = await this.office.single(this.build.kind, color);
         if (this.ghostKey !== key) return;
         ghost.traverse((node) => {
-          if (node instanceof THREE.Mesh) {
-            node.material = new THREE.MeshBasicMaterial({
-              color: VALID_COLOR,
-              transparent: true,
-              opacity: 0.55,
-              depthWrite: false,
-            });
-          }
+          if (node instanceof THREE.Mesh) node.userData.material = node.material;
         });
         this.ghost = ghost;
         this.scene.add(ghost);
@@ -810,8 +833,39 @@ export class GameRenderer {
     );
   }
 
+  /**
+   * Case visée en mode construction. Un accessoire vise le dessus des meubles : on cherche le
+   * meuble sous le pointeur (et non le sol derrière lui, décalé par la vue isométrique).
+   */
+  private aimCell(x: number, y: number): Cell | null {
+    const kind = this.build?.kind;
+    if (kind && catalogItem(kind)?.accessory && this.view) {
+      this.raycaster.setFromCamera(this.ndc(x, y), this.camera);
+      const hit = this.raycaster.intersectObjects(this.office.pickables, false)[0];
+      const ids = hit?.object.userData.itemIds as string[] | undefined;
+      const id = hit?.instanceId !== undefined ? ids?.[hit.instanceId] : undefined;
+      const item = id ? this.view.items.find((i) => i.id === id) : undefined;
+      const hostId = item?.host?.id ?? item?.id;
+      const host = this.view.items.find((i) => i.id === hostId);
+      if (hit && host) {
+        // La case du meuble la plus proche du point touché.
+        let best: Cell | null = null;
+        let bestDistance = Infinity;
+        for (const cell of itemCells(host)) {
+          const distance = (cell.x - hit.point.x) ** 2 + (cell.z - hit.point.z) ** 2;
+          if (distance < bestDistance) {
+            best = cell;
+            bestDistance = distance;
+          }
+        }
+        if (best) return best;
+      }
+    }
+    return this.cellAt(x, y);
+  }
+
   private aimAt(x: number, y: number): void {
-    const cell = this.cellAt(x, y);
+    const cell = this.aimCell(x, y);
     const current = this.build?.cell;
     if (cell && (cell.x !== current?.x || cell.z !== current?.z)) this.options.onBuildCell?.(cell);
   }
@@ -831,16 +885,34 @@ export class GameRenderer {
     };
     const valid = checkPlacement(this.layout, this.view.items, request) === null;
     const def = catalogItem(build.kind);
-    const [w, d] = def ? footprint(def, build.rotation) : [1, 1];
-    this.footprintTile.position.set(cell.x + (w - 1) / 2, 0.015, cell.z + (d - 1) / 2);
-    this.footprintTile.scale.set(w, 1, d);
+    let matrix = itemMatrix({ id: '', ...request });
+    if (def?.accessory) {
+      // Accessoire : l'aperçu se pose sur l'emplacement libre du meuble visé.
+      const resolved = resolveAccessory(this.view.items, request);
+      const host =
+        'host' in resolved ? this.view.items.find((i) => i.id === resolved.host.id) : undefined;
+      const slotMatrix =
+        host && 'host' in resolved
+          ? accessoryMatrix(host, resolved.host.slot, build.rotation)
+          : null;
+      if (slotMatrix) matrix = slotMatrix;
+      const position = new THREE.Vector3().setFromMatrixPosition(matrix);
+      this.footprintTile.position.set(position.x, position.y + 0.012, position.z);
+      this.footprintTile.scale.set(0.45, 1, 0.45);
+    } else {
+      const [w, d] = def ? footprint(def, build.rotation) : [1, 1];
+      this.footprintTile.position.set(cell.x + (w - 1) / 2, 0.015, cell.z + (d - 1) / 2);
+      this.footprintTile.scale.set(w, 1, d);
+    }
     this.footprintTile.material.color.setHex(valid ? VALID_COLOR : INVALID_COLOR);
     if (!this.ghost) return;
     this.ghost.matrixAutoUpdate = false;
-    this.ghost.matrix.copy(itemMatrix({ id: '', ...request }));
+    this.ghost.matrix.copy(matrix);
     this.ghost.traverse((node) => {
-      if (node instanceof THREE.Mesh && node.material instanceof THREE.MeshBasicMaterial) {
-        node.material.color.setHex(valid ? VALID_COLOR : INVALID_COLOR);
+      if (node instanceof THREE.Mesh) {
+        node.material = valid
+          ? (node.userData.material as THREE.Material | THREE.Material[])
+          : INVALID_GHOST;
       }
     });
   }
@@ -874,7 +946,7 @@ export class GameRenderer {
       this.touchInput = point.touch;
       // Au doigt, glisser depuis l'aperçu le déplace ; ailleurs, le glisser déplace la caméra.
       if (event.isPrimary) {
-        this.draggingGhost = point.touch && this.onGhost(this.cellAt(point.x, point.y));
+        this.draggingGhost = point.touch && this.onGhost(this.aimCell(point.x, point.y));
         this.gestures.panLocked = this.draggingGhost;
       }
       this.gestures.down(point).forEach((e) => this.handleGesture(e));
@@ -1011,7 +1083,7 @@ export class GameRenderer {
       case 'longPress': {
         if (this.build?.kind) {
           // Souris : le clic pose. Doigt : le tap vise, le bouton « Poser » confirme.
-          const cell = this.cellAt(event.x, event.y);
+          const cell = this.aimCell(event.x, event.y);
           if (!cell || event.type === 'longPress') break;
           if (this.touchInput) this.aimAt(event.x, event.y);
           else this.options.onPlace?.(cell);

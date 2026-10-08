@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { catalogItem, type ItemModel } from '../view/catalog';
+import { COLOR_HEX, SECONDARY_SHADE, type FurnitureColor } from '../view/colors';
 import type { DevRole } from '../view/types';
 import { dressUp, themedLookFor, themedLookKey, type ThemedLook } from './characterPacks';
 import { characterUrl, furnitureUrl, type CharacterId, type FurnitureModel } from './assetManifest';
@@ -62,11 +63,13 @@ export class AssetLibrary {
    * Gabarit d'un objet du catalogue : modèle Kenney ou forme Three.js, complété de ses pièces
    * (appareils posés dessus, écran, bancs…). Boîte de secours si le modèle principal manque.
    */
-  async itemTemplate(kind: string): Promise<THREE.Object3D> {
+  async itemTemplate(kind: string, color: FurnitureColor = 'natural'): Promise<THREE.Object3D> {
     const def = catalogItem(kind);
     if (!def) return fallbackBox(1, 1, 0.5);
     const body = await this.model(def.model);
     if (!body) return fallbackBox(def.size[0], def.size[1], def.height);
+    // Seul le meuble est repeint : l'écran, les livres ou la cafetière posés dessus non.
+    paintObject(body, def.paint, color);
     // Le modèle est centré et posé au sol : l'agrandir autour de l'origine le garde en place.
     if (def.scale) body.scale.set(...def.scale);
     const root = new THREE.Group();
@@ -162,6 +165,31 @@ export class AssetLibrary {
     }
     return promise;
   }
+}
+
+/**
+ * Repeint les matériaux nommés dans `names` (le premier avec la teinte choisie, les autres un
+ * peu plus sombres). Les matériaux sont clonés : les modèles en cache restent intacts.
+ */
+export function paintObject(
+  root: THREE.Object3D,
+  names: readonly string[],
+  color: FurnitureColor,
+): void {
+  if (color === 'natural' || names.length === 0) return;
+  const base = new THREE.Color(COLOR_HEX[color]);
+  const repaint = (material: THREE.Material): THREE.Material => {
+    const index = names.indexOf(material.name);
+    if (index < 0 || !(material instanceof THREE.MeshStandardMaterial)) return material;
+    const painted = material.clone();
+    painted.color.copy(base).multiplyScalar(index === 0 ? 1 : SECONDARY_SHADE);
+    return painted;
+  };
+  root.traverse((child) => {
+    if (!(child instanceof THREE.Mesh)) return;
+    const material = child.material as THREE.Material | THREE.Material[];
+    child.material = Array.isArray(material) ? material.map(repaint) : repaint(material);
+  });
 }
 
 function withShadows<T extends THREE.Object3D>(root: T): T {

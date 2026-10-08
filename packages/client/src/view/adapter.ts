@@ -270,6 +270,8 @@ function itemViews(state: GameState): PlacedItemView[] {
     z: item.y,
     rotation: (item.rotation % 4) as Rotation,
     resale: Math.round(item.purchasePrice * RESALE_RATIO),
+    color: item.color ?? 'natural',
+    host: item.hostId !== undefined ? { id: item.hostId, slot: item.slot ?? 0 } : null,
   }));
 }
 
@@ -425,11 +427,40 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
         x: command.x,
         y: command.z,
         rotation: command.rotation,
+        ...(command.color ? { color: command.color } : {}),
       };
+    case 'placeAccessory':
+      return {
+        type: 'BUY_ACCESSORY',
+        itemId: command.kind,
+        hostId: command.host.id,
+        slot: command.host.slot,
+        rotation: command.rotation,
+        ...(command.color ? { color: command.color } : {}),
+      };
+    case 'moveAccessory':
+      return {
+        type: 'MOVE_ACCESSORY',
+        furnitureId: command.itemId,
+        hostId: command.host.id,
+        slot: command.host.slot,
+        rotation: command.rotation,
+      };
+    case 'paintItem':
+      return { type: 'PAINT_FURNITURE', furnitureId: command.itemId, color: command.color };
     case 'moveItem':
     case 'rotateItem': {
       const item = view.items.find((i) => i.id === command.itemId);
       if (!item) return null;
+      // Un accessoire tourne sur place, sur son emplacement.
+      if (command.type === 'rotateItem' && item.host)
+        return {
+          type: 'MOVE_ACCESSORY',
+          furnitureId: item.id,
+          hostId: item.host.id,
+          slot: item.host.slot,
+          rotation: (item.rotation + 1) % 4,
+        };
       return command.type === 'moveItem'
         ? {
             type: 'MOVE_FURNITURE',

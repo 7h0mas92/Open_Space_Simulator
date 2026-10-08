@@ -287,6 +287,15 @@ flowchart LR
   Doigt : tap ou glisser de l'aperçu pour viser, bouton « Poser » pour confirmer (pas d'achat
   par erreur). Clavier : `B` ouvre et ferme, flèches pour viser, `R` pour tourner, Entrée pour
   poser, Échap pour reculer d'un cran.
+- **Pose en série, accessoires, couleurs** : un objet acheté reste en main pour en poser
+  d'autres (l'aperçu saute sur la place libre la plus proche) jusqu'à « Annuler » ou
+  « Terminer », ou jusqu'au maximum ou à la trésorerie épuisée. Le rayon Accessoires (lampe,
+  mug, canard en plastique, succulente, livres, nounours, radio, deuxième écran, enceinte,
+  trophée, grille-pain, blender) se pose sur les meubles à plateau (bureaux, bibliothèque,
+  baie de serveurs, frigo, table de cantine), suit son meuble quand on le déplace et part
+  avec lui à la revente. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
+  avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
+  couleur.
 
 ### Méta-jeu et anti-triche
 
@@ -454,7 +463,7 @@ génère que des messages Slack.
 - Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
   sieste-pod, standing desk, casques antibruit et leur portant, baie de serveurs, cafetière à
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
-  de ramen, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
+  de ramen, mug, canard en plastique, trophée de hackathon, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
   ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
   lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
