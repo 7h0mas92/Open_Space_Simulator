@@ -23,7 +23,7 @@ const WALL_HEIGHT = 2.2;
 const PARTITION_HEIGHT = 1.3;
 
 /** Partie d'un gabarit : un maillage et sa transformation relative à la racine. */
-interface TemplatePart {
+export interface TemplatePart {
   readonly geometry: THREE.BufferGeometry;
   readonly material: THREE.Material | THREE.Material[];
   readonly matrix: THREE.Matrix4;
@@ -36,7 +36,8 @@ export interface ItemHit {
   readonly itemId: string;
 }
 
-function flatten(template: THREE.Object3D): TemplatePart[] {
+/** Aplatit un modèle en pièces (géométrie, matériau, matrice) prêtes à être instanciées. */
+export function flattenTemplate(template: THREE.Object3D): TemplatePart[] {
   template.updateMatrixWorld(true);
   const parts: TemplatePart[] = [];
   template.traverse((child) => {
@@ -183,7 +184,7 @@ export class OfficeView {
   private template(kind: string): Promise<TemplatePart[]> {
     let promise = this.templates.get(kind);
     if (!promise) {
-      promise = this.loadTemplate(kind).then(flatten);
+      promise = this.loadTemplate(kind).then(flattenTemplate);
       this.templates.set(kind, promise);
     }
     return promise;
