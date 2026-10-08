@@ -2,7 +2,7 @@ import { BALANCE } from '@oss/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DevView, GameView } from '../../view/types';
-import { formatMoney, localized } from '../game/format';
+import { formatBirthday, formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { moodEmoji, StatBars } from './StatBars';
 
@@ -73,6 +73,11 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
         </h3>
         <p className="role">
           {t(`roles.${dev.role}`)} · {t('team.level', { level: dev.level })}
+        </p>
+        <p className="birthday">
+          {view.calendar.birthdays.includes(dev.id)
+            ? t('team.birthdayToday')
+            : t('team.birthday', { date: formatBirthday(dev.birthday, i18n.language) })}
         </p>
         <p className="bio">{localized(dev.bio, i18n.language)}</p>
         <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>

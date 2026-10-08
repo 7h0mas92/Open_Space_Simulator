@@ -18,6 +18,7 @@ import { Rng } from './rng';
 import { endSprint } from './sprint';
 import { createEmptyState, setupNewGame, type GameConfig } from './state';
 import { activitySystem } from './systems/activity';
+import { calendarSystem } from './systems/calendar';
 import { dailySystem } from './systems/daily';
 import { incidentSystem } from './systems/incidents';
 import { coffeeSystem, energySystem } from './systems/needs';
@@ -38,6 +39,7 @@ export const SYSTEMS: readonly System[] = [
   incidentSystem,
   eventSystem,
   dailySystem,
+  calendarSystem,
 ];
 
 export interface DispatchResult {

@@ -1,6 +1,7 @@
 import {
   BUILTIN_CARDS_VERSION,
   CHARACTER_PACKS,
+  DECOR_THEMES,
   dailySeed,
   EVENT_CARDS,
   utcDate,
@@ -58,7 +59,7 @@ describe('GET /api/events', () => {
     const response = await app.inject({ url: '/api/events' });
     expect(response.statusCode).toBe(200);
     expect(response.json().version).toBe(BUILTIN_CARDS_VERSION);
-    expect(response.json().cards).toHaveLength(100);
+    expect(response.json().cards).toHaveLength(EVENT_CARDS.length);
   });
 
   it('versionne les cartes de la base et retrouve une ancienne version', async () => {
@@ -262,7 +263,7 @@ describe('POST /api/scores (anti-triche)', () => {
     expect(global.entries).toHaveLength(2);
 
     const replay = (await app.inject({ url: `/api/scores/${board.entries[0].id}/replay` })).json();
-    expect(replay.cards).toHaveLength(100);
+    expect(replay.cards).toHaveLength(EVENT_CARDS.length);
     expect(replay.commands.length).toBeGreaterThan(0);
     expect(replay.cardsVersion).toBe(BUILTIN_CARDS_VERSION);
     expect((await app.inject({ url: '/api/scores/nope/replay' })).statusCode).toBe(404);
@@ -458,6 +459,50 @@ describe('/api/admin', () => {
     ]);
   });
 
+  it('règle les décorations de saison : pendant la période au départ', async () => {
+    const themes = (await app.inject({ url: '/api/decor-themes' })).json().themes;
+    expect(themes).toEqual(DECOR_THEMES.map((id) => ({ id, mode: 'SEASON' })));
+
+    const lambda = await player('lambda');
+    const refused = await app.inject({
+      method: 'PUT',
+      url: '/api/admin/decor-themes/CHRISTMAS',
+      cookies: lambda,
+      payload: { mode: 'ALWAYS' },
+    });
+    expect(refused.statusCode).toBe(403);
+
+    const cookies = await admin();
+    const always = await app.inject({
+      method: 'PUT',
+      url: '/api/admin/decor-themes/CHRISTMAS',
+      cookies,
+      payload: { mode: 'ALWAYS' },
+    });
+    expect(always.json()).toEqual({ id: 'CHRISTMAS', mode: 'ALWAYS' });
+    await app.inject({
+      method: 'PUT',
+      url: '/api/admin/decor-themes/PIRATES',
+      cookies,
+      payload: { mode: 'OFF' },
+    });
+    for (const [url, payload] of [
+      ['/api/admin/decor-themes/CARNAVAL', { mode: 'OFF' }],
+      ['/api/admin/decor-themes/PIRATES', { mode: 'PARFOIS' }],
+    ] as const) {
+      const invalid = await app.inject({ method: 'PUT', url, cookies, payload });
+      expect(invalid.statusCode).toBe(400);
+    }
+
+    const listed = (await app.inject({ url: '/api/decor-themes' })).json().themes;
+    expect(listed.filter((theme: { mode: string }) => theme.mode !== 'SEASON')).toEqual([
+      { id: 'PIRATES', mode: 'OFF' },
+      { id: 'CHRISTMAS', mode: 'ALWAYS' },
+    ]);
+    const adminList = (await app.inject({ url: '/api/admin/decor-themes', cookies })).json();
+    expect(adminList.themes).toEqual(listed);
+  });
+
   it('calcule les statistiques à partir des parties publiées', async () => {
     const cookies = await admin();
     for (const source of EVENT_CARDS) {
@@ -481,7 +526,7 @@ describe('/api/admin', () => {
 
     const stats = (await app.inject({ url: '/api/admin/stats', cookies })).json();
     expect(stats.totals.games).toBeGreaterThanOrEqual(1);
-    expect(stats.totals.cards).toBe(100);
+    expect(stats.totals.cards).toBe(EVENT_CARDS.length);
     expect(stats.topCards.length).toBeGreaterThan(0);
     expect(stats.topChoices[0].share).toBeGreaterThan(0);
     const phase = stats.bankruptcyByPhase.find(

@@ -220,6 +220,7 @@
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
     "day": "{{day}} {{time}}",
+    "birthday": "Anniversaire de {{names}} : gâteau au bureau !",
     "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
     "pause": "Pause",
     "speed": "Vitesse x{{speed}}",
@@ -270,6 +271,8 @@
   },
   "team": {
     "age": "{{age}} ans",
+    "birthday": "🎂 Anniversaire le {{date}}",
+    "birthdayToday": "🎂 C'est son anniversaire aujourd'hui !",
     "salary": "{{salary}} €/mois",
     "level": "Niveau {{level}}",
     "mood": "Humeur",
@@ -426,7 +429,8 @@
       "ramen": "Pot de ramen",
       "officeCharacters": "Personnages de bureau en Three.js (barbus, Rustacés, designeuses, robot, fantôme…) et accessoires des personnages Kenney",
       "uiPack": "Pack UI Kenney (interface en CSS)",
-      "soundPacks": "Packs sons Kenney (audio à venir)"
+      "soundPacks": "Packs sons Kenney (audio à venir)",
+      "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit"
     },
     "back": "Retour"
   },
@@ -613,6 +617,7 @@
     "tabs": {
       "cards": "Cartes",
       "packs": "Packs de personnages",
+      "decor": "Décorations",
       "stats": "Statistiques"
     },
     "search": "Rechercher une carte",
@@ -703,6 +708,27 @@
       "previewAlt": "Les 8 profils en costume du pack {{pack}}",
       "on": "Actif",
       "off": "Désactivé"
+    },
+    "decor": {
+      "intro": "Chaque thème décore le bureau : guirlandes aux murs, objets au sol et sur les bureaux. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
+      "legend": "Réglage du thème {{theme}}",
+      "previewAlt": "Un coin de bureau décoré pour le thème {{theme}}",
+      "live": "Affiché en ce moment",
+      "state": {
+        "OFF": "Désactivé",
+        "SEASON": "Hors saison",
+        "ALWAYS": "Toujours"
+      },
+      "mode": {
+        "OFF": "Désactivé",
+        "SEASON": "En saison",
+        "ALWAYS": "Toujours"
+      },
+      "changed": {
+        "OFF": "Décorations « {{theme}} » désactivées.",
+        "SEASON": "Décorations « {{theme}} » affichées pendant leur période.",
+        "ALWAYS": "Décorations « {{theme}} » toujours affichées."
+      }
     }
   },
   "guide": {

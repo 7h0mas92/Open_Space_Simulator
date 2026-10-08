@@ -243,6 +243,7 @@ export const MISSING_ASSETS = [
   { id: 'metricsScreen', replacement: 'primitive' },
   { id: 'ramen', replacement: 'primitive' },
   { id: 'officeCharacters', replacement: 'character' },
+  { id: 'seasonalDecor', replacement: 'decor' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;

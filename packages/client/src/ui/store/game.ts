@@ -7,6 +7,7 @@
  */
 import {
   dailySeed,
+  isoDate,
   utcDate,
   type EventCard,
   type GameMode,
@@ -82,11 +83,13 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   DEV_FIRED: 'info',
   DEV_RESIGNED: 'error',
   DEV_LEVEL_UP: 'success',
+  DEV_BIRTHDAY: 'success',
   DEV_REMOTE: 'info',
   RUST_CONVERT: 'info',
   FUNDS_RAISED: 'success',
   PITCH_FAILED: 'error',
   PHASE_UP: 'success',
+  SEASON_STARTED: 'success',
   ACQUISITION_OFFER: 'info',
   SPRINT_LOST: 'error',
   ACHIEVEMENT_UNLOCKED: 'success',
@@ -166,8 +169,14 @@ export function onGameNotifications(listener: NotificationListener): () => void 
 }
 
 /** Graine aléatoire d'une partie (le Daily utilise la graine du jour, la même pour tous). */
+/**
+ * Graine d'une nouvelle partie : la date du jour, puis du hasard. La date fixe le calendrier de
+ * la partie (Halloween tombe à Halloween), le hasard rend chaque partie unique.
+ */
 function randomSeed(): string {
-  return Math.floor(Math.random() * 2 ** 31).toString(36);
+  const now = new Date();
+  const date = isoDate({ year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() });
+  return `${date}.${Math.floor(Math.random() * 2 ** 31).toString(36)}`;
 }
 
 /** Graine du Daily : demandée au serveur, ou calculée localement hors ligne. */

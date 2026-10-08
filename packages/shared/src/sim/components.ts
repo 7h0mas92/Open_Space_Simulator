@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LocalizedTextSchema } from '../i18n.js';
+import { BirthdaySchema } from './calendar.js';
 
 /**
  * Composants de l'ECS (Entity Component System) de la simulation.
@@ -81,6 +82,8 @@ export const IdentitySchema = z.object({
   bio: LocalizedTextSchema,
   /** Variante visuelle (0 à 17) : le rendu choisit le modèle de personnage avec. */
   look: z.number().int().min(0),
+  /** Date d'anniversaire (absente des sauvegardes d'avant les anniversaires). */
+  birthday: BirthdaySchema.optional(),
 });
 export type Identity = z.infer<typeof IdentitySchema>;
 

@@ -966,6 +966,109 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── DEV_BIRTHDAY ─────────────────────────────────────────────────────────
+  {
+    trigger: 'DEV_BIRTHDAY',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🎂 {event} Rendez-vous à la table de la cuisine. Le gâteau est en carton, mais l’intention est là.',
+      '🎂 {event} Meet at the kitchen table. The cake is cardboard, but it’s the thought that counts.',
+    ),
+  },
+  {
+    trigger: 'DEV_BIRTHDAY',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Qui a pris la dernière part de gâteau ? Je pose juste la question. Pour un ami.',
+      'Who took the last slice of cake? Just asking. For a friend.',
+    ),
+  },
+  {
+    trigger: 'DEV_BIRTHDAY',
+    channel: 'random',
+    author: dev('DESIGNER'),
+    text: t(
+      'Les bougies ne sont pas centrées sur le gâteau. Je ne dis rien. Je le note.',
+      'The candles aren’t centred on the cake. I’m not saying anything. I’m writing it down.',
+    ),
+  },
+  {
+    trigger: 'DEV_BIRTHDAY',
+    channel: 'random',
+    author: dev('RUSTACEAN'),
+    text: t(
+      'Joyeux anniversaire {other} ! Mon cadeau : une réécriture de ton code en Rust. Avec amour.',
+      'Happy birthday {other}! My gift: your code, rewritten in Rust. With love.',
+    ),
+  },
+  {
+    trigger: 'DEV_BIRTHDAY',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      'J’ai bloqué 15 min pour chanter. Ordre du jour en pièce jointe.',
+      'I booked 15 minutes for the song. Agenda attached.',
+    ),
+  },
+  {
+    trigger: 'DEV_BIRTHDAY',
+    channel: 'random',
+    author: dev('INTERN'),
+    text: t(
+      'Les cadeaux sur la table sont vides ?! On m’a eu.',
+      'The presents on the table are empty?! I got fooled.',
+    ),
+  },
+
+  // ─── SEASON_STARTED ───────────────────────────────────────────────────────
+  {
+    trigger: 'SEASON_STARTED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '📅 {event} Le bureau a été décoré pendant la nuit. Personne ne sait par qui.',
+      '📅 {event} The office was decorated overnight. Nobody knows by whom.',
+    ),
+  },
+  {
+    trigger: 'SEASON_STARTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Il y a des décorations partout. Est-ce que ça compte comme une feature ?',
+      'There are decorations everywhere. Does that count as a feature?',
+    ),
+  },
+  {
+    trigger: 'SEASON_STARTED',
+    channel: 'random',
+    author: dev('SENIOR_BEARD'),
+    text: t(
+      'Dans ma première boîte, on décorait avec des câbles RJ45. C’était mieux avant.',
+      'At my first company we decorated with Ethernet cables. Things were better back then.',
+    ),
+  },
+  {
+    trigger: 'SEASON_STARTED',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      'Idée : une édition spéciale de l’appli pour l’occasion. Livraison demain ?',
+      'Idea: a special edition of the app for the occasion. Ship it tomorrow?',
+    ),
+  },
+  {
+    trigger: 'SEASON_STARTED',
+    channel: 'random',
+    author: dev('AI_AGENT'),
+    text: t(
+      'J’ai généré 400 décorations. 3 sont réelles. Les autres sont dans le cloud.',
+      'I generated 400 decorations. 3 are real. The rest are in the cloud.',
+    ),
+  },
+
   // ─── DEV_LEVEL_UP ─────────────────────────────────────────────────────────
   {
     trigger: 'DEV_LEVEL_UP',

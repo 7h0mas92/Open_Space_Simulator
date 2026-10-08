@@ -1,6 +1,7 @@
-import type { CardGauge, EventCard, GameState } from '@oss/shared';
+import { seasonsAt, type CardGauge, type EventCard, type GameState } from '@oss/shared';
 import { phaseIndex } from '../simulation/furniture';
 import { hasRole, teamMoral } from '../simulation/helpers';
+import { calendarDay } from '../simulation/systems/calendar';
 import type { SimClock } from '../simulation/time';
 
 /** Valeur d'une jauge telle que la voient les conditions de cartes. */
@@ -8,7 +9,7 @@ export function cardGaugeValue(state: GameState, gauge: CardGauge): number {
   return gauge === 'moral' ? teamMoral(state) : state.gauges[gauge];
 }
 
-/** Les conditions de la carte sont-elles remplies (phase, rôle, jauges, jour, heure) ? */
+/** Les conditions de la carte sont-elles remplies (phase, rôle, jauges, jour, heure, saison) ? */
 export function conditionsMet(state: GameState, card: EventCard, clock: SimClock): boolean {
   const c = card.conditions;
   const phase = phaseIndex(state.phase);
@@ -18,6 +19,7 @@ export function conditionsMet(state: GameState, card: EventCard, clock: SimClock
   if (c.dayOfWeek !== undefined && clock.dayOfWeek !== c.dayOfWeek) return false;
   if (c.afterHour !== undefined && clock.hour < c.afterHour) return false;
   if (c.requiresSeen && !(c.requiresSeen in state.events.lastSeenSprint)) return false;
+  if (c.season && !seasonsAt(calendarDay(state, clock.day)).includes(c.season)) return false;
   if (c.gauges) {
     for (const [gauge, range] of Object.entries(c.gauges) as [
       CardGauge,

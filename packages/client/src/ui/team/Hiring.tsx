@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CandidateView, GameView } from '../../view/types';
-import { formatMoney, localized } from '../game/format';
+import { formatBirthday, formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { StatBars } from './StatBars';
 
@@ -41,6 +41,9 @@ function CandidateCard({ candidate, disabled }: { candidate: CandidateView; disa
         {dev.name}, {t('team.age', { age: dev.age })}
       </h3>
       <p className="role">{t(`roles.${dev.role}`)}</p>
+      <p className="birthday">
+        {t('team.birthday', { date: formatBirthday(dev.birthday, i18n.language) })}
+      </p>
       <p className="bio">{localized(dev.bio, i18n.language)}</p>
       <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
       <StatBars stats={dev.stats} />

@@ -10,6 +10,9 @@
  */
 import type {
   AcquisitionOffer,
+  Birthday,
+  CalendarDate,
+  DecorTheme,
   DevTrait,
   GameMode,
   GameResult,
@@ -90,6 +93,8 @@ export interface DevView {
   readonly history: readonly { readonly sprint: number; readonly text: LocalizedText }[];
   /** Tirage du look (0 à 17), interprété selon le profil par `render/officeCharacters.ts`. */
   readonly look: number;
+  /** Date d'anniversaire (jour et mois). */
+  readonly birthday: Birthday;
 }
 
 export const TASK_TYPES = ['FEATURE', 'REFACTOR', 'BUGFIX', 'INFRA'] as const;
@@ -187,12 +192,23 @@ export interface GameNotification {
   readonly entityId: string | null;
 }
 
+/** Calendrier : la date du jour simulé et ce qu'on y fête. */
+export interface CalendarView {
+  /** Date réelle du jour simulé (la partie commence le lundi de la date de sa graine). */
+  readonly date: CalendarDate;
+  /** Périodes à thème en cours (Halloween, Noël…), selon la date seule. */
+  readonly seasons: readonly DecorTheme[];
+  /** Devs dont on fête l'anniversaire aujourd'hui (table de fête au bureau). */
+  readonly birthdays: readonly string[];
+}
+
 export interface GameView {
   readonly seed: string;
   readonly mode: GameMode;
   /** Numéro du tick de simulation ayant produit cet instantané. */
   readonly tick: number;
   readonly time: GameTime;
+  readonly calendar: CalendarView;
   readonly phase: Phase;
   readonly step: SprintStep;
   readonly gauges: Gauges;

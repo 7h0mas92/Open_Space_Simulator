@@ -208,6 +208,10 @@ export class AgentWorld {
   private desks: PointOfInterest[] = [];
   private devs = new Map<string, DevView>();
   private gridKey = '';
+  /** Décorations posées au sol et table d'anniversaire (voir `view/decor.ts`). */
+  private decorBlocked: readonly Cell[] = [];
+  private party: PointOfInterest | null = null;
+  private decorKey = '';
   private incident = false;
   private fridayFive = false;
   private tickCount = 0;
@@ -220,11 +224,12 @@ export class AgentWorld {
     this.fridayFive = isFridayFive(view.time);
     this.devs = new Map(view.devs.map((dev) => [dev.id, dev]));
 
-    const key = `${view.phase}|${view.items.map((i) => `${i.id}:${i.x}:${i.z}:${i.rotation}`).join(',')}`;
+    const key = `${view.phase}|${view.items.map((i) => `${i.id}:${i.x}:${i.z}:${i.rotation}`).join(',')}|${this.decorKey}`;
     if (key !== this.gridKey) {
       this.gridKey = key;
       this.layout = officeLayout(view.phase);
       this.grid = buildNavGrid(this.layout, view.items);
+      for (const cell of this.decorBlocked) this.grid.block(cell.x, cell.z);
       this.indexPointsOfInterest(view.items);
       for (const agent of this.agents) {
         agent.path = [];
@@ -249,6 +254,25 @@ export class AgentWorld {
       }
     }
     this.agents.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  }
+
+  /**
+   * Décorations du jour : les cases occupées deviennent des obstacles, et s'il y a une table
+   * d'anniversaire, la pause café se prend autour du gâteau. Pris en compte au prochain `sync`.
+   */
+  setDecor(
+    blocked: readonly Cell[],
+    party: { access: Cell; center: { x: number; z: number } } | null,
+  ) {
+    this.decorBlocked = blocked;
+    this.party = party
+      ? {
+          item: { id: 'party', kind: 'party', x: party.access.x, z: party.access.z, rotation: 0 },
+          access: party.access,
+          center: party.center,
+        }
+      : null;
+    this.decorKey = `${blocked.map((c) => `${c.x}:${c.z}`).join(',')}`;
   }
 
   /** Avance d'un pas fixe. */
@@ -293,6 +317,8 @@ export class AgentWorld {
   }
 
   poiFor(agent: Agent, use: string): PointOfInterest | null {
+    // Jour d'anniversaire : on prend son café (et du gâteau) autour de la table de fête.
+    if (use === 'coffee' && this.party) return this.party;
     const list = this.pois.get(use);
     if (!list || list.length === 0) return null;
     // Le plus proche, à égalité le premier par identifiant : déterministe.

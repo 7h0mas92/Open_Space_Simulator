@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GameRenderer } from '../../render/GameRenderer';
+import { useDecorThemes } from '../../save/decor';
 import { useCharacterPacks } from '../../save/packs';
 import { setThumbnailSource } from '../build/thumbnails';
 import { onGameNotifications, useGame } from '../store/game';
@@ -68,9 +69,13 @@ export function Scene() {
         );
       }
     });
-    // Confettis quand une levée de fonds réussit ou que la startup change de phase.
+    // Confettis : levée de fonds réussie, nouvelle phase ou anniversaire.
     const unsubscribeNotifications = onGameNotifications((notifications) => {
-      if (notifications.some((n) => n.kind === 'FUNDS_RAISED' || n.kind === 'PHASE_UP'))
+      if (
+        notifications.some(
+          (n) => n.kind === 'FUNDS_RAISED' || n.kind === 'PHASE_UP' || n.kind === 'DEV_BIRTHDAY',
+        )
+      )
         renderer.celebrate();
     });
     const unsubscribeSettings = useSettings.subscribe((state) => {
@@ -85,6 +90,12 @@ export function Scene() {
       renderer.setCharacterPacks(state.enabled),
     );
     void useCharacterPacks.getState().refresh();
+    // Décorations de saison (Halloween, Noël…) réglées au back-office.
+    renderer.setDecorModes(useDecorThemes.getState().modes);
+    const unsubscribeDecor = useDecorThemes.subscribe((state) =>
+      renderer.setDecorModes(state.modes),
+    );
+    void useDecorThemes.getState().refresh();
     const initial = useGame.getState();
     if (initial.view) renderer.setView(initial.view);
 
@@ -93,6 +104,7 @@ export function Scene() {
       unsubscribeNotifications();
       unsubscribeSettings();
       unsubscribePacks();
+      unsubscribeDecor();
       setThumbnailSource(null);
       renderer.dispose();
       rendererRef.current = null;

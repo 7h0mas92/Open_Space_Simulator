@@ -346,6 +346,12 @@ bouton 🛠 du menu principal.
   costume), et si aucun ne l'est, on revient aux looks de base. Le client lit `GET /api/character-packs` au lancement d'une partie et le garde en cache
   pour le hors-ligne ; l'administrateur les change avec `PUT /api/admin/character-packs/:id`.
   Costumes dans `render/characterPacks.ts`.
+- **Décorations** : un thème par période de l'année (Nouvel An, Saint-Valentin, Pâques, espace,
+  Moyen Âge, super-héros, années 80, été, pirates, Halloween, cyberpunk, Noël). Chacun a une
+  guirlande murale, trois objets au sol et un petit objet par bureau, construits en Three.js, avec
+  un aperçu 3D. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
+  période) ou toujours. `GET /api/decor-themes` (public, en cache hors ligne) et
+  `PUT /api/admin/decor-themes/:id`.
 - **Statistiques** : joueurs, parties, fins, faillites par phase, cartes les plus tirées et choix
   les plus fréquents, avec des barres proportionnelles.
 
@@ -421,7 +427,8 @@ Render et Vercel. Toutes les variables sont décrites dans
 ## Ce que l'application fait et ne fait pas
 
 Elle fait : un jeu de gestion solo complet (5 modes, 39 sprints, 100 cartes, 8 profils de
-devs, 4 phases et 4 fins), jouable hors ligne en invité, avec classements en ligne (global,
+devs, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période et les
+anniversaires des devs), jouable hors ligne en invité, avec classements en ligne (global,
 Daily, par mode), replays vérifiés par le serveur, 61 succès (dont 21 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 

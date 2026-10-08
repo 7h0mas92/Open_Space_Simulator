@@ -214,6 +214,13 @@ export const BALANCE = {
     dailyMoral: 0.3,
     isolationDrift: 0.3,
   },
+  /** Anniversaires : gâteau, cadeaux (factices) et un peu de moral. */
+  birthday: {
+    /** Moral gagné par le dev fêté. */
+    moral: 10,
+    /** Moral gagné par chaque collègue présent (il y a du gâteau). */
+    teamMoral: 2,
+  },
   relations: {
     chatGain: 4,
     argueLoss: 8,
@@ -320,6 +327,8 @@ export const BALANCE = {
     escalation: 0.5,
     /** Mode Hardcore : ticks avant résolution automatique (dernier choix). */
     hardcoreAutoResolveTicks: 4,
+    /** Pendant une période à thème, part des tirages réservée à ses cartes de saison. */
+    seasonalShare: 0.7,
   },
   /**
    * Mode Facile : pensé pour apprendre, avec le tutoriel complet. Plus d'argent au départ,
