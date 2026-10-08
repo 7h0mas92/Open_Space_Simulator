@@ -406,6 +406,11 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   note globale S à D mesurée sur les 2 derniers sprints, productivité par sprint côte à côte
   dans la fiche (100 % = un dev standard), ancienneté, XP, tâche en cours, allié et bête noire ;
   au recrutement, performance estimée, salaire du marché et chances d'acceptation de l'offre.
+- Ambiance du bureau : l'écran d'un dev s'allume quand il y travaille, avec un contenu lié à son
+  métier (code, vim, Rust, maquettes, Kanban, terminal d'IA, forum ; erreur rouge quand il crie,
+  économiseur quand il dort) : `render/screens.ts`. Éclairage de la salle : appliques Kenney et
+  halos, plafonniers, fenêtres couleur du ciel, taches de soleil le jour (`render/officeLights.ts`) ;
+  vraies lampes selon la qualité (0 bas, 3 moyen, 6 haut).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

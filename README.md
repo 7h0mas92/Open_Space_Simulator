@@ -248,6 +248,9 @@ flowchart LR
 - **Scène** : caméra orthographique isométrique (35,26°, rotation par quarts de tour), sol et
   murs par phase (Garage, Seed, Série A, Licorne), mobilier en `InstancedMesh`, cycle jour/nuit,
   ombres, contour de sélection et léger bloom (post-processing).
+- **Ambiance** : l'écran d'un dev s'allume quand il travaille, avec un contenu propre à son
+  métier ; appliques murales et halos, plafonniers, fenêtres couleur du ciel et taches de
+  soleil le jour ; les lampes prennent le relais le soir.
 - **Personnages** : l'IA décide où chacun marche (A* 8 directions, évitement entre collègues)
   et quelle posture il prend selon son activité ; le rendu joue le clip GLB correspondant ou une
   animation procédurale, et affiche des bulles de pensée traduites.
