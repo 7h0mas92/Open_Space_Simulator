@@ -379,7 +379,7 @@
     "incidentsValue_one": "{{count}} panne de prod provoquée",
     "incidentsValue_other": "{{count}} pannes de prod provoquées",
     "current": "Sprint en cours : {{productivity}} % · {{hours}} h sur les tâches · {{points}} pts livrés",
-    "currentIdle": "Sprint en cours : pas encore de tâche.",
+    "currentIdle": "Sprint en cours : rien de produit pour l’instant.",
     "strengthsLabel": "Points forts et points faibles",
     "strengths": {
       "speed": "Rapide",

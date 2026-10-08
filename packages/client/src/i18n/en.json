@@ -379,7 +379,7 @@
     "incidentsValue_one": "{{count}} prod outage caused",
     "incidentsValue_other": "{{count}} prod outages caused",
     "current": "Current sprint: {{productivity}}% · {{hours}} h on tasks · {{points}} pts shipped",
-    "currentIdle": "Current sprint: no task yet.",
+    "currentIdle": "Current sprint: nothing produced yet.",
     "strengthsLabel": "Strengths and weaknesses",
     "strengths": {
       "speed": "Fast",
