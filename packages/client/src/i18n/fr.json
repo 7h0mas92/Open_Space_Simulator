@@ -404,7 +404,7 @@
       "ambienceVolume": "Ambiance"
     },
     "slackAi": "Slack piloté par l'IA",
-    "slackAiHint": "Les devs réagissent en direct (compte requis, quota quotidien)."
+    "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques."
   },
   "credits": {
     "title": "Crédits",
@@ -603,7 +603,6 @@
     "empty": "Rien pour l'instant. Profite du calme.",
     "aiBadge": "IA",
     "ai": {
-      "off": "Connecte-toi pour activer le Slack IA.",
       "unavailable": "Slack IA indisponible : messages classiques.",
       "quota": "Quota IA du jour atteint : messages classiques."
     }
@@ -710,8 +709,12 @@
     "stopped": "Tutoriel arrêté. Tu peux tout relire dans Options, Guide du jeu.",
     "paused": "Partie en pause pendant l'explication.",
     "index": "Guide du jeu",
-    "indexIntro": "Tous les chapitres du tutoriel. Choisis-en un pour le relire, même en pleine partie.",
-    "read": "Lire",
+    "progress": "{{seen}}/{{total}} lus",
+    "groups": {
+      "start": "Premiers pas",
+      "crises": "Équipe et crises",
+      "growth": "Faire grandir la startup"
+    },
     "seen": "lu",
     "lessons": {
       "basics": {

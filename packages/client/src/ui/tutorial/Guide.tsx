@@ -7,8 +7,8 @@ import { useGuide } from '../store/guide';
 import { useSettings } from '../store/settings';
 import {
   CORE_LESSONS,
+  LESSON_GROUPS,
   LESSON_IDS,
-  LESSONS,
   getLesson,
   isGoalMet,
   nextLesson,
@@ -239,7 +239,10 @@ export function Guide({ view }: { view: GameView }) {
   );
 }
 
-/** Sommaire du tutoriel, dans les Options : chaque chapitre peut être relu à tout moment. */
+/**
+ * Sommaire du tutoriel, dans les Options : les chapitres sont rangés en trois parties
+ * repliables pour ne pas allonger le panneau, et chacun peut être relu à tout moment.
+ */
 export function GuideIndex() {
   const { t } = useTranslation();
   const seen = useGuide((s) => s.seen);
@@ -252,23 +255,57 @@ export function GuideIndex() {
     open(id, baselineOf(view), true);
     openPanel(null);
   };
+  const restart = () => {
+    useSettings.getState().update({ tutorialDone: false });
+    useGuide.getState().restart();
+    openPanel(null);
+  };
+  const count = (ids: readonly LessonId[]) => ids.filter((id) => seen.includes(id)).length;
   return (
     <section className="guide-index" aria-labelledby="guide-index-title">
-      <h3 id="guide-index-title">📖 {t('guide.index')}</h3>
-      <p className="muted">{t('guide.indexIntro')}</p>
-      <ol>
-        {LESSONS.map((lesson) => (
-          <li key={lesson.id}>
-            <span>
-              {text(`guide.lessons.${lesson.id}.title`)}
-              {seen.includes(lesson.id) && <small className="muted"> · {t('guide.seen')}</small>}
-            </span>
-            <button type="button" onClick={() => read(lesson.id)} disabled={!view}>
-              {t('guide.read')}
-            </button>
-          </li>
-        ))}
-      </ol>
+      <header>
+        <h3 id="guide-index-title">
+          📖 {t('guide.index')}
+          <small className="muted">
+            {t('guide.progress', { seen: count(LESSON_IDS), total: LESSON_IDS.length })}
+          </small>
+        </h3>
+        <button type="button" onClick={restart}>
+          {t('settings.tutorial')}
+        </button>
+      </header>
+      {LESSON_GROUPS.map((group) => (
+        <details key={group.id} className="guide-group">
+          <summary>
+            <span>{t(`guide.groups.${group.id}`)}</span>
+            <small className="muted">
+              {count(group.lessons)}/{group.lessons.length}
+            </small>
+          </summary>
+          <ul>
+            {group.lessons.map((id) => {
+              const done = seen.includes(id);
+              return (
+                <li key={id}>
+                  <button
+                    type="button"
+                    className={done ? 'seen' : undefined}
+                    onClick={() => read(id)}
+                    disabled={!view}
+                  >
+                    {text(`guide.lessons.${id}.title`)}
+                    {done && (
+                      <span className="guide-seen" aria-label={t('guide.seen')}>
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </details>
+      ))}
     </section>
   );
 }

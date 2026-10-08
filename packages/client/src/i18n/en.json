@@ -404,7 +404,7 @@
       "ambienceVolume": "Ambience"
     },
     "slackAi": "AI-driven Slack",
-    "slackAiHint": "Devs react live (account required, daily quota)."
+    "slackAiHint": "Devs react live thanks to AI (daily quota). Unchecked: classic messages."
   },
   "credits": {
     "title": "Credits",
@@ -603,7 +603,6 @@
     "empty": "Nothing yet. Enjoy the quiet.",
     "aiBadge": "AI",
     "ai": {
-      "off": "Log in to enable AI Slack.",
       "unavailable": "AI Slack unavailable: classic messages.",
       "quota": "Daily AI quota reached: classic messages."
     }
@@ -710,8 +709,12 @@
     "stopped": "Tutorial stopped. You can reread everything in Settings, Game guide.",
     "paused": "The game is paused during the explanation.",
     "index": "Game guide",
-    "indexIntro": "Every chapter of the tutorial. Pick one to read it again, even mid-game.",
-    "read": "Read",
+    "progress": "{{seen}}/{{total}} read",
+    "groups": {
+      "start": "First steps",
+      "crises": "Team and crises",
+      "growth": "Growing the startup"
+    },
     "seen": "read",
     "lessons": {
       "basics": {

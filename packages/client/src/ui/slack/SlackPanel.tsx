@@ -43,7 +43,9 @@ export function SlackPanel() {
           </button>
         ))}
       </div>
-      {aiWanted && ai !== 'on' && <p className="hint">{t(`slack.ai.${ai}`)}</p>}
+      {aiWanted && (ai === 'unavailable' || ai === 'quota') && (
+        <p className="hint">{t(`slack.ai.${ai}`)}</p>
+      )}
       {shown.length === 0 ? (
         <p className="hint">{t('slack.empty')}</p>
       ) : (

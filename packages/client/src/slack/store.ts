@@ -8,16 +8,19 @@ import i18n from '../i18n';
 import type { GameNotification, GameView } from '../view/types';
 import {
   ambientMessages,
+  chanceOf,
   messagesForNotifications,
+  templateMessage,
   type Random,
   type SlackMessage,
 } from './generator';
+import { isUrgent, SlackPacer } from './pacing';
 import { SLACK_CHANNELS, type SlackChannel } from './templates';
 
 /** Messages gardés par canal. */
 export const MAX_MESSAGES = 60;
 /** Délai minimum entre deux appels à l'IA (le quota serveur reste la vraie limite). */
-export const AI_COOLDOWN_MS = 20_000;
+export const AI_COOLDOWN_MS = 45_000;
 
 /** Événements assez marquants pour mériter une réaction écrite par l'IA. */
 const AI_KINDS = new Set([
@@ -123,17 +126,39 @@ export interface SlackFeedOptions {
 
 /**
  * Le fil Slack d'une partie : reçoit les notifications et les instantanés, produit les
- * messages. Le mode IA remplace le template d'un événement marquant ; en cas d'échec, le
- * template est utilisé et l'IA est mise en pause pour la session.
+ * messages. Le débit est limité (voir pacing.ts) pour que le canal reste lisible, même en x4.
+ * Le mode IA remplace le template d'un événement marquant ; en cas d'échec, le template est
+ * utilisé et l'IA est mise en pause pour la session.
  */
 export class SlackFeed {
   private lastAiCall = Number.NEGATIVE_INFINITY;
   private readonly random: Random;
   private readonly now: () => number;
+  private readonly pacer: SlackPacer;
 
   constructor(private readonly options: SlackFeedOptions = {}) {
     this.random = options.random ?? Math.random;
     this.now = options.now ?? Date.now;
+    this.pacer = new SlackPacer(this.now);
+  }
+
+  /** Messages de templates pour un lot, les urgents d'abord, dans la limite du débit. */
+  private templateMessages(
+    view: GameView,
+    notifications: readonly GameNotification[],
+  ): SlackMessage[] {
+    const ordered = [
+      ...notifications.filter((n) => isUrgent(n.kind)),
+      ...notifications.filter((n) => !isUrgent(n.kind)),
+    ];
+    const messages: SlackMessage[] = [];
+    for (const notification of ordered) {
+      if (this.random() > chanceOf(notification.kind)) continue;
+      if (!this.pacer.take(isUrgent(notification.kind))) continue;
+      const message = templateMessage(notification.kind, view, this.random, notification.text);
+      if (message) messages.push(message);
+    }
+    return messages;
   }
 
   onNotifications(view: GameView, notifications: readonly GameNotification[]): void {
@@ -148,12 +173,19 @@ export class SlackFeed {
       view.devs.length > 0 &&
       this.now() - this.lastAiCall >= AI_COOLDOWN_MS;
     const rest = useAi ? notifications.filter((n) => n !== important) : notifications;
-    slack.add(messagesForNotifications(rest, view, this.random));
+    slack.add(this.templateMessages(view, rest));
     if (!useAi || !important || !callAi) return;
+    if (!this.pacer.take(isUrgent(important.kind))) return;
 
     this.lastAiCall = this.now();
     callAi(aiRequest(view, important))
-      .then((messages) => useSlack.getState().add(messages))
+      .then((messages) => {
+        // L'IA écrit jusqu'à 3 messages : le premier est déjà compté, les autres attendent
+        // qu'il reste de la place dans le canal.
+        const [first, ...others] = messages;
+        const kept = first ? [first, ...others.filter(() => this.pacer.take())] : [];
+        useSlack.getState().add(kept);
+      })
       .catch((error: unknown) => {
         const code = (error as { code?: string }).code;
         useSlack.getState().setAi(code === 'AI_QUOTA_EXCEEDED' ? 'quota' : 'unavailable');
@@ -162,6 +194,6 @@ export class SlackFeed {
   }
 
   onView(previous: GameView, view: GameView): void {
-    useSlack.getState().add(ambientMessages(previous, view, this.random));
+    useSlack.getState().add(ambientMessages(previous, view, this.random, () => this.pacer.take()));
   }
 }
