@@ -402,6 +402,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   back-office : désactivé, en saison (défaut) ou toujours ; table `DecorTheme`.
 - Anniversaires des devs (date tirée de la graine, sans toucher au RNG) : table de fête
   décorative (gâteau, cadeaux, ballons), +moral, confettis, Slack ; le week-end, fête le lundi.
+- Performance des devs (`client/src/simulation/performance.ts`, composant ECS `performance`) :
+  note globale S à D mesurée sur les 2 derniers sprints, productivité par sprint côte à côte
+  dans la fiche (100 % = un dev standard), ancienneté, XP, tâche en cours, allié et bête noire ;
+  au recrutement, performance estimée, salaire du marché et chances d'acceptation de l'offre.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
