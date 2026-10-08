@@ -367,7 +367,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   caméra au bord de l'écran.
 - Mode construction refondu : catalogue en bas, aperçu sur la grille, bouton « Poser » au
   tactile, rendu 3D distinct pour chacun des 22 objets.
-- 61 succès avec difficultés, dont 21 secrets (nom visible, condition « ??? »).
+- 65 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
 - Menu principal refondu ; sans serveur, la fenêtre Connexion explique que les comptes sont
   indisponibles et le jeu reste jouable en invité.
 - Interface de jeu refondue : en haut ce qu'on lit (jauges, trésorerie en mois, horloge), en
@@ -415,6 +415,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   maximum ou si la trésorerie manque) ; 12 accessoires posés sur les meubles (`surfaceSlots`,
   commandes `BUY_ACCESSORY` / `MOVE_ACCESSORY`, revendus et déplacés avec leur meuble) ; 12 couleurs
   au choix à l'achat ou via « Peindre » (`PAINT_FURNITURE`, `client/src/view/colors.ts`).
+- Filiales (panneau « Investir », dès la Série A) : 3 projets par planification (prudent,
+  audacieux, moonshot), au plus 3 filiales, 6 mois de salaires toujours gardés en caisse. Chaque
+  filiale donne une aile au bureau (incubateur) et +2 places dans l'équipe ; 80 % de ses parts
+  comptent dans la valorisation, dividendes, revente à 90 %, vente d'urgence avant la faillite.
+  Hasard sur une graine à part : une partie sans filiale reste identique (replays, Daily).
+  6 cartes « filiales », 4 succès, bot « investor » dans `pnpm balance`
+  (`packages/shared/src/sim/ventures.ts`, `client/src/simulation/ventures.ts`).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
