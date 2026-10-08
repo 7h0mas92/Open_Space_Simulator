@@ -242,6 +242,7 @@ export const MISSING_ASSETS = [
   { id: 'cactus', replacement: 'primitive' },
   { id: 'metricsScreen', replacement: 'primitive' },
   { id: 'ramen', replacement: 'primitive' },
+  { id: 'officeCharacters', replacement: 'character' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;

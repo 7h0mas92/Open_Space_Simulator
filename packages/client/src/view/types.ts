@@ -88,7 +88,7 @@ export interface DevView {
   readonly relations: Readonly<Record<string, number>>;
   /** Faits marquants, du plus récent au plus ancien. */
   readonly history: readonly { readonly sprint: number; readonly text: LocalizedText }[];
-  /** Index du personnage Kenney (character-a … character-r). */
+  /** Tirage du look (0 à 17), interprété selon le profil par `render/officeCharacters.ts`. */
   readonly look: number;
 }
 

@@ -207,7 +207,7 @@ export class GameRenderer {
     }
     for (const dev of view.devs) {
       if (!this.characters.has(dev.id)) {
-        const character = new CharacterView(dev.id, dev.look, this.assets);
+        const character = new CharacterView(dev.id, dev.role, dev.look, this.assets);
         this.characters.set(dev.id, character);
         this.scene.add(character.root);
       }

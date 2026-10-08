@@ -1,9 +1,11 @@
 /**
- * Les personnages dans la scène : modèle Blocky Characters animé (clips du GLB) ou personnage
- * de secours animé de façon procédurale (bob, rotation, petits sauts).
+ * Les personnages dans la scène : look choisi selon le profil du dev (personnage Kenney ou
+ * construit en Three.js, voir `officeCharacters.ts`), animé par les clips des GLB Kenney, ou
+ * personnage de secours animé de façon procédurale (bob, rotation, petits sauts).
  */
 import * as THREE from 'three';
 import type { AgentPose, AgentSnapshot } from '../ai/agents';
+import type { DevRole } from '../view/types';
 import type { CharacterClip } from './assetManifest';
 import type { AssetLibrary } from './assets';
 import { fallbackCharacter, PALETTE, ROLE_COLORS } from './primitives';
@@ -38,6 +40,7 @@ export class CharacterView {
 
   constructor(
     readonly id: string,
+    role: DevRole,
     look: number,
     assets: AssetLibrary,
   ) {
@@ -52,11 +55,12 @@ export class CharacterView {
     this.root.add(this.hitBox);
     this.root.name = `dev:${id}`;
 
-    void assets.character(look).then((asset) => {
+    void assets.character(role, look).then((asset) => {
       if (!asset || this.disposed) return;
       this.root.remove(this.body);
       this.body = asset.scene;
       this.root.add(this.body);
+      if (asset.animations.length === 0) return;
       this.mixer = new THREE.AnimationMixer(asset.scene);
       for (const clip of asset.animations) this.actions.set(clip.name, this.mixer.clipAction(clip));
       this.playPose(this.pose, true);

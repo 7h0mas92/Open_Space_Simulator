@@ -8,7 +8,17 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { catalogItem, type ItemModel } from '../view/catalog';
-import { characterUrl, CHARACTER_IDS, furnitureUrl, type FurnitureModel } from './assetManifest';
+import type { DevRole } from '../view/types';
+import { characterUrl, furnitureUrl, type CharacterId, type FurnitureModel } from './assetManifest';
+import {
+  addAccessories,
+  BLOCKY_HEIGHT,
+  buildCharacter,
+  KENNEY_COLORS,
+  lookFor,
+  lookKey,
+  type CharacterLook,
+} from './officeCharacters';
 import { buildPrimitive, fallbackBox } from './primitives';
 
 /**
@@ -18,6 +28,10 @@ import { buildPrimitive, fallbackBox } from './primitives';
 export const FURNITURE_SCALE = 2;
 /** Hauteur visée des personnages, en cases. */
 export const CHARACTER_HEIGHT = 1.15;
+
+/** Personnage Kenney dont on emprunte les clips pour animer les personnages construits. */
+const CLIP_DONOR: CharacterId = 'i';
+const DEFAULT_COLORS = { hair: 0x2b2420, shirt: 0x4f7fd9 };
 
 export interface CharacterAsset {
   readonly scene: THREE.Object3D;
@@ -30,7 +44,9 @@ export const failedAssets = new Set<string>();
 export class AssetLibrary {
   private readonly loader = new GLTFLoader();
   private readonly furniture = new Map<string, Promise<THREE.Object3D | null>>();
+  /** Personnages prêts à cloner, par look. */
   private readonly characters = new Map<string, Promise<CharacterAsset | null>>();
+  private readonly kenney = new Map<CharacterId, Promise<CharacterAsset | null>>();
 
   /** Modèle Kenney normalisé (posé au sol, centré), ou `null` s'il est introuvable. */
   loadFurniture(model: FurnitureModel): Promise<THREE.Object3D | null> {
@@ -97,33 +113,58 @@ export class AssetLibrary {
     });
   }
 
-  /** Personnage animé (une copie indépendante avec son propre squelette). */
-  async character(look: number): Promise<CharacterAsset | null> {
-    const id =
-      CHARACTER_IDS[
-        ((look % CHARACTER_IDS.length) + CHARACTER_IDS.length) % CHARACTER_IDS.length
-      ] ?? 'a';
-    let promise = this.characters.get(id);
+  /**
+   * Personnage animé d'un dev (une copie indépendante) : le look dépend de son profil, voir
+   * `officeCharacters.ts`. Les personnages construits en Three.js empruntent les clips Kenney.
+   */
+  async character(role: DevRole, look: number): Promise<CharacterAsset | null> {
+    const chosen = lookFor(role, look);
+    const key = lookKey(chosen);
+    let promise = this.characters.get(key);
     if (!promise) {
-      promise = this.loader
-        .loadAsync(characterUrl(id))
-        .then((gltf) => ({ scene: normalizeCharacter(gltf.scene), animations: gltf.animations }))
-        .catch(() => {
-          failedAssets.add(`character-${id}`);
-          return null;
-        });
-      this.characters.set(id, promise);
+      promise = this.buildCharacter(chosen);
+      this.characters.set(key, promise);
     }
     const asset = await promise;
     if (!asset) return null;
     return { scene: SkeletonUtils.clone(asset.scene), animations: asset.animations };
+  }
+
+  private async buildCharacter(look: CharacterLook): Promise<CharacterAsset | null> {
+    if (look.kind === 'built') {
+      const donor = await this.kenneyCharacter(CLIP_DONOR);
+      const scene = buildCharacter(look.outfit, look.accessories);
+      return { scene: normalizeCharacter(scene), animations: donor?.animations ?? [] };
+    }
+    const base = await this.kenneyCharacter(look.id);
+    if (!base) return null;
+    const scene = SkeletonUtils.clone(base.scene);
+    addAccessories(scene, look.accessories, KENNEY_COLORS[look.id] ?? DEFAULT_COLORS);
+    return { scene: normalizeCharacter(scene), animations: base.animations };
+  }
+
+  /** GLB Kenney brut (chargé une seule fois). */
+  private kenneyCharacter(id: CharacterId): Promise<CharacterAsset | null> {
+    let promise = this.kenney.get(id);
+    if (!promise) {
+      promise = this.loader
+        .loadAsync(characterUrl(id))
+        .then((gltf) => ({ scene: gltf.scene, animations: gltf.animations }))
+        .catch(() => {
+          failedAssets.add(`character-${id}`);
+          return null;
+        });
+      this.kenney.set(id, promise);
+    }
+    return promise;
   }
 }
 
 function withShadows<T extends THREE.Object3D>(root: T): T {
   root.traverse((child) => {
     if (child instanceof THREE.Mesh) {
-      child.castShadow = true;
+      // Les corps translucides (Dev Fantôme) ne projettent pas d'ombre.
+      child.castShadow = !(child.material as THREE.Material).transparent;
       child.receiveShadow = true;
     }
   });
@@ -142,11 +183,13 @@ function normalizeFurniture(scene: THREE.Object3D): THREE.Object3D {
   return wrapper;
 }
 
+/**
+ * Met le personnage à la hauteur commune et le pose au sol. L'échelle vient de la hauteur du
+ * corps Blocky (et non de la boîte englobante) pour que béret ou antenne ne rapetissent pas le dev.
+ */
 function normalizeCharacter(scene: THREE.Object3D): THREE.Object3D {
-  const box = new THREE.Box3().setFromObject(scene);
-  const height = Math.max(0.01, box.max.y - box.min.y);
-  scene.scale.setScalar(CHARACTER_HEIGHT / height);
-  scene.position.y = -box.min.y * (CHARACTER_HEIGHT / height);
+  scene.scale.setScalar(CHARACTER_HEIGHT / BLOCKY_HEIGHT);
+  scene.position.y = 0;
   withShadows(scene);
   const wrapper = new THREE.Group();
   wrapper.add(scene);

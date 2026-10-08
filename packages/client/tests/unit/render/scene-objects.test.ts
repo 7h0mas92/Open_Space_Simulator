@@ -56,7 +56,7 @@ describe('décor', () => {
 
 describe('personnages', () => {
   it('se replient sur un personnage procédural sans GLB et suivent l’instantané', () => {
-    const character = new CharacterView('dev-1', 3, noAssets);
+    const character = new CharacterView('dev-1', 'INTERN', 3, noAssets);
     character.update(
       { id: 'dev-1', x: 2, z: 4, facing: 1, pose: 'sleep', visible: true, thought: null },
       0.1,
