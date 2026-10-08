@@ -109,7 +109,7 @@ fonctionne normalement.
 
 Une fois connecté avec ce compte, un badge « Administrateur » s'affiche en haut à droite du
 menu et un bouton 🛠 Back-office apparaît dans le menu principal (gestion des cartes
-d'événements et statistiques).
+d'événements avec filtres, et statistiques : voir [Back-office](#back-office)).
 
 Pour donner le rôle ADMIN à un compte créé depuis le jeu :
 
@@ -255,6 +255,15 @@ flowchart LR
   sélectionner sur mobile, flèches, `+`/`-`, `Q`/`E` au clavier.
 - **Qualité réglable** (bas, moyen, haut) : devicePixelRatio plafonné à 2, ombres coupées en
   bas (défaut sur mobile), petits objets masqués quand on dézoome (LOD).
+- **Écran de jeu** : en haut ce qu'on lit (phase, équipe, mois de trésorerie restants, six
+  jauges avec icône, tendance et couleur, horloge et avancement du sprint) ; en bas ce qu'on
+  fait (dock d'actions et commande de l'étape : lancer le sprint, lever des fonds, vitesses).
+  Les cartes d'événement gardent les jauges visibles, montrent les effets en pastilles et se
+  choisissent aussi avec les touches 1 à 3.
+- **Télétravail automatique** : chaque matin de semaine, la simulation envoie en télétravail
+  les devs sans bureau libre, épuisés, en conflit avec un collègue ou accros privés de café (le
+  Dev Fantôme l'est toujours). Ils disparaissent de l'open space, se fatiguent moins mais
+  perdent 15 % de vitesse et 5 % de qualité ; la fiche, l'équipe et Slack l'affichent.
 - **Interface** : jauges avec infobulles, vitesses, Kanban en glisser-déposer (souris et
   tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
   construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
@@ -308,6 +317,31 @@ sequenceDiagram
   jeu retombe sur ses 256 templates. L'IA n'écrit que des messages.
 - **PWA** : `vite-plugin-pwa` met en cache le code, les modèles Kenney et les icônes ; une
   partie en invité se lance sans réseau (testé par Playwright).
+
+### Back-office
+
+Réservé au rôle ADMIN (vérifié par le serveur sur chaque route `/api/admin/*`), ouvert depuis le
+bouton 🛠 du menu principal.
+
+- **Cartes** : chaque carte est une tuile avec son titre, son identifiant, sa description, son
+  poids, son nombre de tirages, les phases où elle peut tomber, le profil requis, les jauges que
+  ses choix modifient et ses particularités. Actions : modifier, dupliquer (ouvre l'éditeur avec
+  un identifiant libre, carte désactivée par défaut) et désactiver ou réactiver en un clic.
+- **Filtres combinables** : recherche plein texte (titre, description, choix et identifiant, en
+  français et en anglais, sans tenir compte des accents), état, phase, profil requis, jauge
+  modifiée, particularités (chaîne « On en reparle », hors tirage, jour ou heure imposés, seuil
+  de jauge, recrute ou licencie, débloque un succès) et tri (titre, poids, tirages, dernière
+  modification). Les filtres actifs s'affichent en pastilles retirables et restent en mémoire
+  pendant la session. Sur ordinateur ils sont dans une colonne à gauche, sur mobile dans un
+  panneau qui se replie. La logique est dans `ui/admin/cardFilters.ts` (fonctions pures, testées).
+- **Éditeur** : JSON validé en direct par le schéma Zod partagé, avec l'aperçu de la carte telle
+  que le joueur la verra.
+- **Statistiques** : joueurs, parties, fins, faillites par phase, cartes les plus tirées et choix
+  les plus fréquents, avec des barres proportionnelles.
+
+| Liste et filtres (ordinateur)                                     | Filtres (mobile)                                             |
+| ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| ![Back-office sur ordinateur](docs/screenshots/admin-desktop.png) | ![Back-office sur mobile](docs/screenshots/admin-mobile.png) |
 
 ### Choix techniques
 

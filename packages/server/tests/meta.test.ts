@@ -368,6 +368,8 @@ describe('/api/admin', () => {
     });
     expect(created.statusCode).toBe(201);
     expect(created.json()).toMatchObject({ id: 'test-card', active: true });
+    const listed = (await app.inject({ url: '/api/admin/events', cookies })).json().cards;
+    expect(listed[0]).toMatchObject({ id: 'test-card', draws: 0 });
     const duplicate = await app.inject({
       method: 'POST',
       url: '/api/admin/events',
@@ -434,5 +436,10 @@ describe('/api/admin', () => {
       (row: { phase: string }) => row.phase === game.result.phaseReached,
     );
     expect(phase.games).toBeGreaterThanOrEqual(1);
+
+    // La liste du back-office porte le même nombre de tirages par carte.
+    const list = (await app.inject({ url: '/api/admin/events', cookies })).json().cards;
+    const top = list.find((row: { id: string }) => row.id === stats.topCards[0].cardId);
+    expect(top.draws).toBe(stats.topCards[0].count);
   }, 60_000);
 });

@@ -244,7 +244,11 @@ un effet réel.
 
 ## 10. Back-office admin
 Interface réservée au rôle ADMIN :
-- créer, modifier et désactiver les cartes d'événements, avec prévisualisation ;
+- créer, modifier, dupliquer, désactiver et réactiver les cartes d'événements, avec
+  prévisualisation ;
+- retrouver une carte grâce à des filtres combinables : recherche plein texte (FR et EN), état,
+  phase, profil requis, jauge modifiée, particularités (chaîne, hors tirage, jour ou heure,
+  seuil de jauge, recrutement ou licenciement, succès) et tri (titre, poids, tirages, date) ;
 - consulter des statistiques : cartes les plus tirées, choix les plus fréquents, taux de faillite
   par phase.
 
@@ -356,3 +360,33 @@ fait, explique comment le tester, puis ATTENDS ma validation avant de continuer.
 
 Si tu vois une meilleure solution technique que celle demandée, propose-la avant de l'appliquer.
 Ne supprime jamais une fonctionnalité du périmètre sans mon accord.
+
+# ÉTAT D'AVANCEMENT (mis à jour le 8 octobre 2026)
+Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
+- Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
+  caméra au bord de l'écran.
+- Mode construction refondu : catalogue en bas, aperçu sur la grille, bouton « Poser » au
+  tactile, rendu 3D distinct pour chacun des 22 objets.
+- 61 succès avec difficultés, dont 21 secrets (nom visible, condition « ??? »).
+- Menu principal refondu ; sans serveur, la fenêtre Connexion explique que les comptes sont
+  indisponibles et le jeu reste jouable en invité.
+- Interface de jeu refondue : en haut ce qu'on lit (jauges, trésorerie en mois, horloge), en
+  bas ce qu'on fait (dock d'actions et commande de l'étape).
+- Télétravail automatique chaque matin de semaine (bureau manquant, épuisement, conflit, café
+  vide pour les accros, Dev Fantôme toujours) : -15 % de vitesse, -5 % de qualité, moins de
+  fatigue.
+- Équilibrage des jauges sur toute la partie (`packages/shared/src/sim/balance.ts`), rapport
+  dans `docs/balance.md`.
+- Back-office refondu : tuiles de cartes, filtres combinables, duplication, réactivation,
+  nombre de tirages par carte (`GET /api/admin/events` renvoie `draws`).
+
+Reste à faire :
+- Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
+  GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
+  https://7h0mas92.github.io/Open_Space_Simulator/ et se redéploie à chaque fusion.
+- Bande son : le lecteur Howler est prêt, les fichiers audio Kenney restent à déposer.
+
+Développement local : `pnpm db:up`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm dev` (jeu sur
+localhost:5173, API et Swagger sur localhost:3000/docs). Base : `pnpm --filter @oss/server
+db:studio` (Prisma Studio sur localhost:5555) ou `docker compose exec db psql -U oss -d oss`.
+Compte admin de développement créé par le seed : `admin@oss.local` / `admin-dev-password`.

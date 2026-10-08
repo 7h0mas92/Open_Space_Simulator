@@ -15,6 +15,7 @@ import {
   SubmitScoreResponseSchema,
   UnlockAchievementsResponseSchema,
   type AdminCard,
+  type AdminCardListItem,
   type AdminCardBody,
   type AdminStatsResponse,
   type AchievementDto,
@@ -108,7 +109,7 @@ export const metaApi = {
   },
 
   admin: {
-    cards: async (): Promise<AdminCard[]> =>
+    cards: async (): Promise<AdminCardListItem[]> =>
       (await apiRequest('/admin/events', { schema: AdminCardListResponseSchema })).cards,
     create: (card: AdminCardBody): Promise<AdminCard> =>
       apiRequest('/admin/events', { method: 'POST', body: card, schema: AdminCardSchema }),

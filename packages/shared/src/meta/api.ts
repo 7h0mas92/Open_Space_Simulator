@@ -228,7 +228,13 @@ export const AdminCardSchema = EventCardSchema.extend({
 });
 export type AdminCard = z.infer<typeof AdminCardSchema>;
 
-export const AdminCardListResponseSchema = z.object({ cards: z.array(AdminCardSchema) });
+/** Ligne de la liste du back-office : la carte et le nombre de fois où elle a été tirée. */
+export const AdminCardListItemSchema = AdminCardSchema.extend({
+  draws: z.number().int().nonnegative(),
+});
+export type AdminCardListItem = z.infer<typeof AdminCardListItemSchema>;
+
+export const AdminCardListResponseSchema = z.object({ cards: z.array(AdminCardListItemSchema) });
 export type AdminCardListResponse = z.infer<typeof AdminCardListResponseSchema>;
 
 export const AdminCardBodySchema = EventCardSchema.extend({ active: z.boolean().default(true) });

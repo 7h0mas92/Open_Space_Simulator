@@ -44,14 +44,21 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         tags: ['admin'],
-        summary: 'Toutes les cartes, actives ou non',
+        summary: 'Toutes les cartes, actives ou non, avec leur nombre de tirages',
         security,
         response: { 200: AdminCardListResponseSchema, ...errorResponses },
       },
     },
     async () => {
-      const rows = await app.prisma.eventCard.findMany({ orderBy: { id: 'asc' } });
-      return { cards: rows.map(toAdminCard) };
+      const [rows, draws] = await Promise.all([
+        app.prisma.eventCard.findMany({ orderBy: { id: 'asc' } }),
+        app.prisma.eventStat.groupBy({ by: ['cardId'], _sum: { count: true } }),
+      ]);
+      // Un tirage compte une fois par choix fait sur la carte.
+      const perCard = new Map(draws.map((row) => [row.cardId, row._sum.count ?? 0]));
+      return {
+        cards: rows.map((row) => ({ ...toAdminCard(row), draws: perCard.get(row.id) ?? 0 })),
+      };
     },
   );
 
