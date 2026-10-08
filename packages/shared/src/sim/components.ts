@@ -178,7 +178,7 @@ export type Furniture = z.infer<typeof FurnitureSchema>;
  * Pourquoi un dev travaille de chez lui aujourd'hui. Le télétravail est automatique :
  * chaque matin, la simulation décide qui reste à la maison (voir `systems/remote.ts`).
  * - GHOST : le Dev Fantôme, toujours en télétravail ;
- * - FATIGUE : énergie trop basse, il récupère sans les transports ;
+ * - FATIGUE : à bout (énergie ou moral trop bas), il récupère sans les transports ;
  * - CONFLICT : brouillé avec un collègue, il évite le bureau ;
  * - NO_COFFEE : accro au café et la machine est vide, il boit le sien ;
  * - NO_DESK : plus de bureau libre dans l'open space.

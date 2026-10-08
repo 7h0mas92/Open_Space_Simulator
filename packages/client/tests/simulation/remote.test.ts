@@ -62,6 +62,11 @@ describe('Télétravail automatique', () => {
     expect(morning(state).reasons[id]).toBe('FATIGUE');
     mood.energy = BALANCE.remote.fatigueRecovered;
     expect(morning(state).reasons[id]).toBeUndefined();
+    // Un moral au plus bas fait aussi rester à la maison.
+    mood.moral = BALANCE.remote.burnoutMoral - 1;
+    expect(morning(state).reasons[id]).toBe('FATIGUE');
+    mood.moral = BALANCE.remote.burnoutMoralRecovered;
+    expect(morning(state).reasons[id]).toBeUndefined();
   });
 
   it('conflit et café vide font aussi rester à la maison', () => {

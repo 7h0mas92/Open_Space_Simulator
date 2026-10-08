@@ -44,7 +44,11 @@ export function personalRemoteReason(state: GameState, id: EntityId): RemoteReas
   if (identity.role === 'AI_AGENT') return null;
   const r = BALANCE.remote;
   const previous = state.components.remoteReason[id];
-  if (mood.energy < (previous === 'FATIGUE' ? r.fatigueRecovered : r.fatigueEnergy))
+  const resting = previous === 'FATIGUE';
+  if (
+    mood.energy < (resting ? r.fatigueRecovered : r.fatigueEnergy) ||
+    mood.moral < (resting ? r.burnoutMoralRecovered : r.burnoutMoral)
+  )
     return 'FATIGUE';
   const worst = worstRelation(state, id);
   if (worst && worst.affinity < (previous === 'CONFLICT' ? r.conflictEased : r.conflictAffinity))

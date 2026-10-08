@@ -177,9 +177,14 @@ export const BALANCE = {
    */
   remote: {
     decisionHour: 8,
-    /** Sous cette énergie, le dev reste chez lui ; il revient au-dessus de `fatigueRecovered`. */
-    fatigueEnergy: 30,
-    fatigueRecovered: 70,
+    /**
+     * Épuisement : sous cette énergie ou ce moral, le dev reste chez lui ; il revient quand
+     * il remonte au-dessus de `fatigueRecovered` (énergie) et de `burnoutMoralRecovered`.
+     */
+    fatigueEnergy: 45,
+    fatigueRecovered: 75,
+    burnoutMoral: 30,
+    burnoutMoralRecovered: 40,
     /** Sous cette affinité avec un collègue, il évite le bureau ; il revient au-dessus de `conflictEased`. */
     conflictAffinity: -60,
     conflictEased: -40,
