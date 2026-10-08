@@ -251,7 +251,7 @@ flowchart LR
 - **Ambiance** : l'écran d'un dev s'allume quand il travaille, avec un contenu propre à son
   métier ; appliques murales et halos, plafonniers, fenêtres couleur du ciel et taches de
   soleil le jour ; les lampes prennent le relais le soir.
-- **Personnages** : l'IA décide où chacun marche (A* 8 directions, évitement entre collègues)
+- **Personnages** : l'IA décide où chacun marche (A\* 8 directions, évitement entre collègues)
   et quelle posture il prend selon son activité ; le rendu joue le clip GLB correspondant ou une
   animation procédurale, et affiche des bulles de pensée traduites.
 - **Contrôles** : glisser pour déplacer, molette ou pincer pour zoomer, appui long pour
