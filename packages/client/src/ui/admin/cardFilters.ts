@@ -28,6 +28,7 @@ export const CARD_TRAITS = [
   'gaugeCondition',
   'team',
   'achievement',
+  'venture',
 ] as const;
 export type CardTrait = (typeof CARD_TRAITS)[number];
 
@@ -95,6 +96,9 @@ export function cardTraits(card: EventCard): CardTrait[] {
     gaugeCondition: Object.keys(conditions.gauges ?? {}).length > 0,
     team: effects.some((effect) => effect.spawnDev !== undefined || effect.fireDev !== undefined),
     achievement: effects.some((effect) => effect.unlockAchievement !== undefined),
+    venture:
+      conditions.hasVenture !== undefined ||
+      effects.some((effect) => effect.ventureValue !== undefined),
   };
   return CARD_TRAITS.filter((trait) => traits[trait]);
 }

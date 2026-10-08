@@ -11,6 +11,7 @@ import { SlackDock } from '../slack/SlackDock';
 import { SettingsPanel } from '../settings/SettingsPanel';
 import { useGame, type PanelId, type Toast } from '../store/game';
 import { useSettings } from '../store/settings';
+import { Group } from '../group/Group';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
@@ -39,6 +40,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Team view={view} />;
     case 'hiring':
       return <Hiring view={view} />;
+    case 'group':
+      return <Group view={view} />;
     case 'dashboard':
       return <Dashboard view={view} />;
     case 'slack':

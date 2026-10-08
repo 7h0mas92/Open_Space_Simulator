@@ -1342,6 +1342,92 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── VENTURE_FOUNDED ──────────────────────────────────────────────────────
+  {
+    trigger: 'VENTURE_FOUNDED',
+    channel: 'general',
+    author: bot('investors'),
+    text: t(
+      '🐣 On a une filiale ! Officiellement, on est un « groupe ». Officieusement, on a un Notion de plus.',
+      '🐣 We have a subsidiary! Officially we\'re a "group". Unofficially, we have one more Notion.',
+    ),
+  },
+  {
+    trigger: 'VENTURE_FOUNDED',
+    channel: 'random',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      'Je propose une réunion de synchro entre filiales. Tous les jours. À 9h.',
+      'I suggest a sync meeting between subsidiaries. Every day. At 9am.',
+    ),
+  },
+  {
+    trigger: 'VENTURE_FOUNDED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'La nouvelle aile a des fenêtres. Je demande ma mutation.',
+      "The new wing has windows. I'm asking for a transfer.",
+    ),
+  },
+
+  // ─── VENTURE_DIED ─────────────────────────────────────────────────────────
+  {
+    trigger: 'VENTURE_DIED',
+    channel: 'general',
+    author: bot('investors'),
+    text: t(
+      '🪦 Une filiale a coulé. Le board parle de « pivot vers le néant ».',
+      '🪦 A subsidiary went under. The board calls it a "pivot to nothing".',
+    ),
+  },
+  {
+    trigger: 'VENTURE_DIED',
+    channel: 'random',
+    author: dev('SENIOR_BEARD'),
+    text: t(
+      'Je l’avais dit dès le deck. Personne ne lit les commentaires du deck.',
+      'I said so on the deck. Nobody reads the deck comments.',
+    ),
+  },
+
+  // ─── VENTURE_SOLD ─────────────────────────────────────────────────────────
+  {
+    trigger: 'VENTURE_SOLD',
+    channel: 'general',
+    author: bot('investors'),
+    text: t(
+      '💸 Parts de filiale revendues. L’argent est sur le compte, le babyfoot reste à nous.',
+      '💸 Subsidiary stake sold. The money is in the bank, the foosball table stays ours.',
+    ),
+  },
+  {
+    trigger: 'VENTURE_SOLD',
+    channel: 'random',
+    author: dev(),
+    text: t('Du coup, on récupère leur machine à café ?', 'So, do we get their coffee machine?'),
+  },
+
+  // ─── VENTURE_DIVIDENDS ────────────────────────────────────────────────────
+  {
+    trigger: 'VENTURE_DIVIDENDS',
+    channel: 'general',
+    author: bot('investors'),
+    text: t(
+      '📈 Les filiales versent des dividendes. Quelqu’un dans ce groupe gagne de l’argent !',
+      '📈 The subsidiaries paid dividends. Someone in this group makes money!',
+    ),
+  },
+  {
+    trigger: 'VENTURE_DIVIDENDS',
+    channel: 'random',
+    author: dev('TEN_X'),
+    text: t(
+      'Les dividendes, c’est pour les actionnaires ou il y a des pizzas ?',
+      'Are dividends for shareholders, or is there pizza?',
+    ),
+  },
+
   // ─── SPRINT_LOST ──────────────────────────────────────────────────────────
   {
     trigger: 'SPRINT_LOST',

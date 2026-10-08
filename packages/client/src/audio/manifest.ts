@@ -31,6 +31,8 @@ export const NOTIFICATION_SOUNDS: Partial<Record<NotificationKind, SoundKey>> = 
   PROD_DOWN: 'alarm',
   FEATURE_DONE: 'success',
   FUNDS_RAISED: 'cash',
+  VENTURE_SOLD: 'cash',
+  VENTURE_DIED: 'error',
   PITCH_FAILED: 'error',
   DEV_LEVEL_UP: 'levelUp',
   DEV_BIRTHDAY: 'levelUp',

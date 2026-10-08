@@ -258,8 +258,10 @@
       "hiring": "Hire",
       "build": "Build",
       "dashboard": "Stats",
-      "slack": "Slack"
-    }
+      "slack": "Slack",
+      "group": "Invest"
+    },
+    "group": "Invest"
   },
   "kanban": {
     "columns": {
@@ -473,7 +475,9 @@
     "entrance": "Don't block the entrance!",
     "unknownItem": "Unknown item.",
     "noSurface": "Accessories go on furniture with a top (desk, bookcase, fridge…).",
-    "surfaceFull": "No room left on this furniture."
+    "surfaceFull": "No room left on this furniture.",
+    "VENTURE_LIMIT": "Your group has already founded the maximum number of subsidiaries.",
+    "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow."
   },
   "dashboard": {
     "intro": "Gauge history, one point per day.",
@@ -780,7 +784,8 @@
       "timed": "Fixed day or hour",
       "gaugeCondition": "Gauge threshold required",
       "team": "Hires or fires",
-      "achievement": "Unlocks an achievement"
+      "achievement": "Unlocks an achievement",
+      "venture": "Subsidiaries"
     },
     "sort": "Sort by",
     "sorts": {
@@ -1235,7 +1240,9 @@
     "trendDown": "Down since yesterday",
     "sprintProgress": "Sprint progress: {{percent}}%",
     "system": "Game",
-    "runwayLong": "Cash: {{months}} months left"
+    "runwayLong": "Cash: {{months}} months left",
+    "group": "Group: {{count}} subsidiary(ies) founded",
+    "groupShort": "Your startup has become a group"
   },
   "packs": {
     "BASE": {
@@ -1282,5 +1289,54 @@
       "name": "Cyberpunk",
       "description": "Glowing visors, neon mohawks and dark suits with neon stripes."
     }
+  },
+  "group": {
+    "intro": "Invest your startup's cash to create other startups. Each subsidiary adds a wing to the office and {{team}} seats to the team, and your stake counts toward your valuation.",
+    "locked": "Unlocked at Series A, after your 2nd funding round.",
+    "founded": "Subsidiaries founded",
+    "active": "Active",
+    "portfolio": "Value of your stakes",
+    "investable": "Investable",
+    "projects": "This sprint's projects",
+    "projectsHint": "You always keep 6 months of salaries in the bank. A risky project costs more but can pay off big.",
+    "ventures": "Your subsidiaries",
+    "blockers": {
+      "LOCKED": "Unlocked at Series A.",
+      "WRONG_STAGE": "Subsidiaries are founded during planning.",
+      "VENTURE_LIMIT": "You've founded the maximum of 3 subsidiaries.",
+      "TOO_LATE": "Too late to found a subsidiary: it wouldn't have time to grow.",
+      "COOLDOWN": "Your last subsidiary was just born: next one possible in sprint {{sprint}}."
+    },
+    "risks": {
+      "SAFE": {
+        "name": "Safe",
+        "help": "slow growth, rarely fatal, steady dividends"
+      },
+      "BOLD": {
+        "name": "Bold",
+        "help": "fast growth, a real risk of going under"
+      },
+      "MOONSHOT": {
+        "name": "Moonshot",
+        "help": "all or nothing, no dividends"
+      }
+    },
+    "found": "Found ({{cost}})",
+    "tooExpensive": "Not enough cash: you must keep 6 months of salaries in the bank.",
+    "status": {
+      "ACTIVE": "Active",
+      "DEAD": "Went under",
+      "SOLD": "Sold"
+    },
+    "since": "founded in sprint {{sprint}}",
+    "invested": "Invested",
+    "stakeValue": "Your stake ({{percent}}%)",
+    "soldFor": "Sold for",
+    "dividends": "Dividends received",
+    "chart": "Valuation of {{name}} each sprint",
+    "sell": "Sell my stake ({{price}})",
+    "confirmSell": "Confirm sale ({{price}})",
+    "cancel": "Cancel",
+    "sellWhen": "Stakes are sold during planning or the demo."
   }
 }

@@ -41,6 +41,7 @@ export const PANELS = [
   'kanban',
   'team',
   'hiring',
+  'group',
   'dashboard',
   'slack',
   'saves',
@@ -111,6 +112,10 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   PHASE_UP: 'success',
   SEASON_STARTED: 'success',
   ACQUISITION_OFFER: 'info',
+  VENTURE_FOUNDED: 'success',
+  VENTURE_DIED: 'error',
+  VENTURE_SOLD: 'success',
+  VENTURE_DIVIDENDS: 'info',
   SPRINT_LOST: 'error',
   ACHIEVEMENT_UNLOCKED: 'success',
 };
@@ -387,7 +392,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const def = catalogItem(build.kind);
     if (!def) return false;
     // Cloisons et entrée sont des contraintes du décor : vérifiées avant d'envoyer.
-    const layout = officeLayout(view.phase);
+    const layout = officeLayout(view.phase, view.group.wings);
     const request = {
       kind: build.kind,
       x: cell.x,

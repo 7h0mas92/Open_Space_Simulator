@@ -10,7 +10,8 @@ import {
   type Phase,
 } from '@oss/shared';
 import type { CardLibrary } from '../events/library';
-import { createBot, playWithBot, scoreEffects, type BotName } from './bots';
+import { BOT_NAMES, createBot, playWithBot, scoreEffects, type BotName } from './bots';
+import { portfolioValue } from './economy';
 import { createEmptyState } from './state';
 import { Simulation } from './simulation';
 
@@ -93,6 +94,8 @@ export interface GameRecord {
   maxUsers: number;
   /** Cartes tirées et choix faits : [identifiant, index du choix]. */
   choices: [string, number][];
+  /** Filiales : créées, coulées, argent rapporté (dividendes et reventes), parts en fin de partie. */
+  ventures: { founded: number; dead: number; cashIn: number; invested: number; portfolio: number };
   /** Succès débloqués pendant la partie. */
   achievements: string[];
   trace: GaugeTrace;
@@ -123,6 +126,13 @@ export function playBalanceGame(
     valuation: result.valuation,
     maxUsers: state.stats.maxUsers,
     choices: state.events.choices.map((c) => [c.cardId, c.choiceIndex]),
+    ventures: {
+      founded: state.ventures.length,
+      dead: state.ventures.filter((v) => v.status === 'DEAD').length,
+      cashIn: state.stats.ventureCashIn,
+      invested: state.ventures.reduce((total, v) => total + v.invested, 0),
+      portfolio: portfolioValue(state),
+    },
     achievements: [...state.achievements],
     trace: traceGauges(state),
   };
@@ -139,6 +149,8 @@ export interface BotSummary {
   medianValuation: number;
   averageSprints: number;
   unicornRate: number;
+  /** Filiales créées par partie, part coulée, et retour sur investissement (argent + parts). */
+  ventures: { perGame: number; deadShare: number; returnMultiple: number };
 }
 
 export interface ChoiceStat {
@@ -225,6 +237,25 @@ function summarizeBot(bot: BotName, records: GameRecord[]): BotSummary {
     medianValuation: median(valuations),
     averageSprints: records.reduce((a, r) => a + r.sprint, 0) / n,
     unicornRate: records.filter((r) => r.phaseReached === 'UNICORN').length / n,
+    ventures: summarizeVentures(records),
+  };
+}
+
+function summarizeVentures(records: GameRecord[]): BotSummary['ventures'] {
+  let founded = 0;
+  let dead = 0;
+  let invested = 0;
+  let returned = 0;
+  for (const { ventures } of records) {
+    founded += ventures.founded;
+    dead += ventures.dead;
+    invested += ventures.invested;
+    returned += ventures.cashIn + ventures.portfolio;
+  }
+  return {
+    perGame: founded / Math.max(1, records.length),
+    deadShare: dead / Math.max(1, founded),
+    returnMultiple: returned / Math.max(1, invested),
   };
 }
 
@@ -294,7 +325,9 @@ export function aggregate(allRecords: GameRecord[], cards: CardLibrary): Balance
   // Les stratégies, les cartes et les succès se comparent en mode Normal ; les autres
   // modes n'ont qu'une section à eux (jauges, faillites).
   const records = allRecords.filter((r) => r.mode === 'NORMAL');
-  const botNames = [...new Set(records.map((r) => r.bot))];
+  // Ordre fixe (celui de BOT_NAMES), quel que soit l'ordre d'arrivée des parties des threads.
+  const played = new Set(records.map((r) => r.bot));
+  const botNames = BOT_NAMES.filter((bot) => played.has(bot));
   const bots = botNames.map((bot) =>
     summarizeBot(
       bot,
@@ -423,6 +456,21 @@ export function renderReport(report: BalanceReport): string {
     lines.push(
       `| ${b.bot} | ${b.games} | ${pct(b.bankruptcyRate)} | ${pct(b.outcomes.IPO / n)} | ${pct(b.outcomes.ACQUISITION / n)} | ${pct(b.outcomes.ZOMBIE / n)} | ${pct(b.unicornRate)} | ${money(b.averageValuation)} | ${money(b.medianValuation)} | ${b.averageSprints.toFixed(1)} |`,
     );
+  }
+  if (report.bots.some((b) => b.ventures.perGame > 0)) {
+    lines.push('', '## Filiales', '');
+    lines.push(
+      'Retour = (dividendes + reventes + valeur des parts en fin de partie) / sommes investies.',
+      '',
+      '| Bot | Filiales par partie | Coulées | Retour |',
+      '| --- | ---: | ---: | ---: |',
+    );
+    for (const b of report.bots) {
+      if (b.ventures.perGame === 0) continue;
+      lines.push(
+        `| ${b.bot} | ${b.ventures.perGame.toFixed(2)} | ${pct(b.ventures.deadShare)} | ×${b.ventures.returnMultiple.toFixed(2)} |`,
+      );
+    }
   }
   lines.push('', '## Taux de faillite par phase', '');
   lines.push(`| Bot | ${PHASES.filter((p) => p !== 'END').join(' | ')} |`);

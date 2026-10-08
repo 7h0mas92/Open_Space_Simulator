@@ -14,6 +14,7 @@ import {
 import type { SimContext } from './helpers';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveTask } from './tasks';
+import { foundVenture, sellVenture } from './ventures';
 
 const fail = (error: Extract<CommandResult, { ok: false }>['error']): CommandResult => ({
   ok: false,
@@ -111,5 +112,9 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       }
       endGame(state, ctx, 'IPO', state.valuation * 1.2);
       return { ok: true };
+    case 'FOUND_VENTURE':
+      return foundVenture(state, ctx, command.ideaId);
+    case 'SELL_VENTURE':
+      return sellVenture(state, ctx, command.ventureId);
   }
 }

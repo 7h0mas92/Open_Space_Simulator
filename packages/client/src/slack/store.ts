@@ -32,6 +32,8 @@ const AI_KINDS = new Set([
   'DEV_FIRED',
   'DEV_HIRED',
   'PHASE_UP',
+  'VENTURE_FOUNDED',
+  'VENTURE_DIED',
   'HALLUCINATION',
   'GAME_OVER',
 ]);

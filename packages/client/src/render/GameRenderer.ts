@@ -237,10 +237,19 @@ export class GameRenderer {
   // --- API publique (appelée par l'interface) ----------------------------------------------
 
   setView(view: GameView): void {
-    const phaseChanged = !this.view || this.view.phase !== view.phase;
+    const phaseChanged =
+      !this.view || this.view.phase !== view.phase || this.view.group.wings !== view.group.wings;
     this.view = view;
-    this.layout = officeLayout(view.phase);
+    this.layout = officeLayout(view.phase, view.group.wings);
     this.office.setLayout(this.layout);
+    const english = document.documentElement.lang.startsWith('en');
+    this.office.setWingSigns(
+      this.layout,
+      view.group.ventures.map((venture) => ({
+        label: `${venture.icon} ${english ? venture.name.en : venture.name.fr}`,
+        closed: venture.status !== 'ACTIVE',
+      })),
+    );
     void this.office.setItems(view.items);
     this.updateDecor(view);
     void this.roomLights.setLayout(this.layout, QUALITY_PRESETS[this.quality].roomLights);

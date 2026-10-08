@@ -655,6 +655,49 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
       return team.length >= 3 && team.every((identity) => identity.role === 'GHOST');
     },
   },
+  // ── Filiales ──────────────────────────────────────────────────────────────
+  {
+    id: 'business-angel',
+    difficulty: 'EASY',
+    title: t('Business Angel', 'Business Angel'),
+    description: t(
+      'Créer une filiale avec l’argent de ta startup.',
+      'Found a subsidiary with your startup’s money.',
+    ),
+    icon: '👼',
+    check: (state) => state.ventures.length >= 1,
+  },
+  {
+    id: 'holding',
+    difficulty: 'HARD',
+    title: t('Holding', 'Holding Company'),
+    description: t(
+      'Avoir trois filiales en vie en même temps.',
+      'Have three subsidiaries alive at the same time.',
+    ),
+    icon: '🏛️',
+    check: (state) => state.ventures.filter((v) => v.status === 'ACTIVE').length >= 3,
+  },
+  {
+    id: 'golden-exit',
+    difficulty: 'MEDIUM',
+    title: t('Exit en or', 'Golden Exit'),
+    description: t(
+      'Revendre tes parts d’une filiale au moins cinq fois ta mise.',
+      'Sell your stake in a subsidiary for at least five times what you put in.',
+    ),
+    icon: '🪙',
+    check: (state) => state.ventures.some((v) => v.soldFor !== null && v.soldFor >= v.invested * 5),
+  },
+  {
+    id: 'money-pit',
+    difficulty: 'MEDIUM',
+    secret: true,
+    title: t('Gouffre financier', 'Money Pit'),
+    description: t('Voir deux filiales couler.', 'Watch two subsidiaries go under.'),
+    icon: '🕳️',
+    check: (state) => state.ventures.filter((v) => v.status === 'DEAD').length >= 2,
+  },
 ];
 
 export const ACHIEVEMENT_IDS: readonly string[] = ACHIEVEMENTS.map((a) => a.id);

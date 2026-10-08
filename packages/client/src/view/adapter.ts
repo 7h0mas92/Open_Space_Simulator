@@ -10,11 +10,12 @@
 import {
   BALANCE,
   ROLE_PROFILES,
-  TEAM_MAX,
   TIME,
+  VENTURES,
   birthdayFromKey,
   civilFromDays,
   getInvestor,
+  getVentureIdea,
   seasonsAt,
   getPitchArgument,
   type Command,
@@ -27,9 +28,9 @@ import {
   type TaskColumn,
 } from '@oss/shared';
 import { badEffectFactor, escalate } from '../events/effects';
-import { runwayMonths } from '../simulation/economy';
+import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { countDesks, RESALE_RATIO } from '../simulation/furniture';
-import { devIds } from '../simulation/helpers';
+import { devIds, teamMax } from '../simulation/helpers';
 import {
   expectedProductivity,
   expectedQuality,
@@ -41,6 +42,14 @@ import {
 import { tasksInColumn } from '../simulation/tasks';
 import { birthdayOf, birthdayPartyIds, calendarDay } from '../simulation/systems/calendar';
 import { getClock } from '../simulation/time';
+import {
+  investableCash,
+  officeWings,
+  salePrice,
+  ventureBlocker,
+  ventureOffers,
+  venturesUnlocked,
+} from '../simulation/ventures';
 import type {
   CandidateView,
   DevActivity,
@@ -49,6 +58,7 @@ import type {
   SprintPerformanceView,
   EventView,
   GameCommand,
+  GroupView,
   GameView,
   GaugeName,
   KanbanColumn,
@@ -310,6 +320,57 @@ function pitchBlocker(state: GameState): GameView['pitchBlocker'] {
   return null;
 }
 
+/** Les filiales du groupe et les projets du sprint. */
+function groupView(state: GameState): GroupView {
+  const blocker = ventureBlocker(state);
+  const investable = investableCash(state);
+  return {
+    unlocked: venturesUnlocked(state),
+    // Les autres refus (`NOT_ENOUGH_MONEY`…) ne concernent qu'un projet donné.
+    blocker:
+      blocker === 'LOCKED' ||
+      blocker === 'WRONG_STAGE' ||
+      blocker === 'VENTURE_LIMIT' ||
+      blocker === 'TOO_LATE' ||
+      blocker === 'COOLDOWN'
+        ? blocker
+        : null,
+    nextSprint:
+      blocker === 'COOLDOWN' && state.lastVentureSprint !== null
+        ? state.lastVentureSprint + VENTURES.cooldownSprints
+        : null,
+    offers: ventureOffers(state).map(({ idea, cost }) => ({
+      id: idea.id,
+      icon: idea.icon,
+      name: idea.name,
+      pitch: idea.pitch,
+      risk: idea.risk,
+      cost,
+      affordable: cost <= investable,
+    })),
+    ventures: state.ventures.map((venture) => ({
+      id: venture.id,
+      icon: getVentureIdea(venture.ideaId)?.icon ?? '🏢',
+      name: venture.name,
+      risk: venture.risk,
+      status: venture.status,
+      invested: venture.invested,
+      stake: venture.stake,
+      valuation: venture.valuation,
+      stakeValue: Math.round(venture.valuation * venture.stake),
+      dividends: venture.dividends,
+      salePrice: salePrice(venture),
+      soldFor: venture.soldFor,
+      foundedAtSprint: venture.foundedAtSprint,
+      history: [...venture.history],
+    })),
+    wings: officeWings(state),
+    maxVentures: VENTURES.maxFounded,
+    investable: Math.max(0, investable),
+    portfolio: portfolioValue(state),
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -360,7 +421,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       state.stage === 'EXECUTION' &&
       lastIncident !== undefined &&
       state.tick - lastIncident.tick < INCIDENT_TICKS,
-    teamMax: TEAM_MAX[state.phase],
+    teamMax: teamMax(state),
     desks: countDesks(state),
     valuation: state.valuation,
     runwayMonths: Number.isFinite(runway) ? runway : null,
@@ -386,6 +447,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
         : null,
     pitchBlocker: pitchBlocker(state),
     acquisitionOffer: state.acquisitionOffer,
+    group: groupView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
       state.phase === 'UNICORN' &&
@@ -495,5 +557,9 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'ANSWER_ACQUISITION', accept: command.accept };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
+    case 'foundVenture':
+      return { type: 'FOUND_VENTURE', ideaId: command.ideaId };
+    case 'sellVenture':
+      return { type: 'SELL_VENTURE', ventureId: command.ventureId };
   }
 }

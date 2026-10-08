@@ -20,6 +20,11 @@ export function conditionsMet(state: GameState, card: EventCard, clock: SimClock
   if (c.afterHour !== undefined && clock.hour < c.afterHour) return false;
   if (c.requiresSeen && !(c.requiresSeen in state.events.lastSeenSprint)) return false;
   if (c.season && !seasonsAt(calendarDay(state, clock.day)).includes(c.season)) return false;
+  if (
+    c.hasVenture !== undefined &&
+    state.ventures.some((venture) => venture.status === 'ACTIVE') !== c.hasVenture
+  )
+    return false;
   if (c.gauges) {
     for (const [gauge, range] of Object.entries(c.gauges) as [
       CardGauge,

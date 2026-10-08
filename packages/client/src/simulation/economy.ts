@@ -43,7 +43,19 @@ export function computeValuation(state: GameState): number {
   const hypeFactor = 0.4 + hype / 60;
   const debtFactor = 1 - debt / 200;
   const stabilityFactor = 0.75 + stability / 400;
-  return Math.round(raw * hypeFactor * debtFactor * stabilityFactor);
+  return Math.round(raw * hypeFactor * debtFactor * stabilityFactor) + portfolioValue(state);
+}
+
+/**
+ * Valeur des parts détenues dans les filiales actives. Elle s'ajoute à la valorisation :
+ * une startup qui a des filiales devient un groupe.
+ */
+export function portfolioValue(state: GameState): number {
+  let total = 0;
+  for (const venture of state.ventures) {
+    if (venture.status === 'ACTIVE') total += Math.round(venture.valuation * venture.stake);
+  }
+  return total;
 }
 
 /** Nombre de mois de trésorerie restants au rythme actuel (Infinity si rentable). */

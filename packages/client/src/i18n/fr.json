@@ -258,8 +258,10 @@
       "hiring": "Recruter",
       "build": "Bâtir",
       "dashboard": "Stats",
-      "slack": "Slack"
-    }
+      "slack": "Slack",
+      "group": "Investir"
+    },
+    "group": "Investir"
   },
   "kanban": {
     "columns": {
@@ -473,7 +475,9 @@
     "entrance": "Ne bloque pas l'entrée !",
     "unknownItem": "Objet inconnu.",
     "noSurface": "Un accessoire se pose sur un meuble à plateau (bureau, bibliothèque, frigo…).",
-    "surfaceFull": "Plus de place sur ce meuble."
+    "surfaceFull": "Plus de place sur ce meuble.",
+    "VENTURE_LIMIT": "Ton groupe a déjà fondé le maximum de filiales.",
+    "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir."
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
@@ -780,7 +784,8 @@
       "timed": "Jour ou heure imposés",
       "gaugeCondition": "Seuil de jauge requis",
       "team": "Recrute ou licencie",
-      "achievement": "Débloque un succès"
+      "achievement": "Débloque un succès",
+      "venture": "Filiales"
     },
     "sort": "Trier par",
     "sorts": {
@@ -1235,7 +1240,9 @@
     "trendDown": "En baisse depuis hier",
     "sprintProgress": "Avancement du sprint : {{percent}} %",
     "system": "Partie",
-    "runwayLong": "Trésorerie : {{months}} mois restants"
+    "runwayLong": "Trésorerie : {{months}} mois restants",
+    "group": "Groupe : {{count}} filiale(s) créée(s)",
+    "groupShort": "Ta startup est devenue un groupe"
   },
   "packs": {
     "BASE": {
@@ -1282,5 +1289,54 @@
       "name": "Cyberpunk",
       "description": "Visières lumineuses, crêtes néon et combinaisons sombres à bandes fluo."
     }
+  },
+  "group": {
+    "intro": "Investis la trésorerie de ta startup pour créer d'autres startups. Chaque filiale ajoute une aile au bureau et {{team}} places dans l'équipe, et tes parts comptent dans la valorisation.",
+    "locked": "Débloqué en Série A, après ta 2e levée de fonds.",
+    "founded": "Filiales créées",
+    "active": "En activité",
+    "portfolio": "Valeur de tes parts",
+    "investable": "Investissable",
+    "projects": "Projets du sprint",
+    "projectsHint": "Tu gardes toujours 6 mois de salaires en caisse. Un projet risqué coûte plus cher mais peut rapporter gros.",
+    "ventures": "Tes filiales",
+    "blockers": {
+      "LOCKED": "Débloqué en Série A.",
+      "WRONG_STAGE": "On crée une filiale pendant la planification.",
+      "VENTURE_LIMIT": "Tu as fondé le maximum de 3 filiales.",
+      "TOO_LATE": "Trop tard pour créer une filiale : elle n'aurait pas le temps de grandir.",
+      "COOLDOWN": "Ta dernière filiale vient de naître : prochaine création possible au sprint {{sprint}}."
+    },
+    "risks": {
+      "SAFE": {
+        "name": "Prudent",
+        "help": "croissance lente, rarement fatale, dividendes réguliers"
+      },
+      "BOLD": {
+        "name": "Audacieux",
+        "help": "croissance rapide, un vrai risque de couler"
+      },
+      "MOONSHOT": {
+        "name": "Moonshot",
+        "help": "tout ou rien, pas de dividendes"
+      }
+    },
+    "found": "Créer ({{cost}})",
+    "tooExpensive": "Pas assez de trésorerie : il faut garder 6 mois de salaires en caisse.",
+    "status": {
+      "ACTIVE": "En activité",
+      "DEAD": "Coulée",
+      "SOLD": "Revendue"
+    },
+    "since": "créée au sprint {{sprint}}",
+    "invested": "Mise",
+    "stakeValue": "Tes parts ({{percent}} %)",
+    "soldFor": "Revendue pour",
+    "dividends": "Dividendes reçus",
+    "chart": "Valorisation de {{name}} à chaque sprint",
+    "sell": "Revendre mes parts ({{price}})",
+    "confirmSell": "Confirmer la revente ({{price}})",
+    "cancel": "Annuler",
+    "sellWhen": "On revend ses parts pendant la planification ou la démo."
   }
 }

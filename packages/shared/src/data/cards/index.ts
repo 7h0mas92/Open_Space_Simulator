@@ -5,9 +5,10 @@ import { OFFICE_CARDS } from './office.js';
 import { SEASON_CARDS } from './seasons.js';
 import { TEAM_CARDS } from './team.js';
 import { TECH_CARDS } from './tech.js';
+import { VENTURE_CARDS } from './ventures.js';
 
 /**
- * Les cartes d'événements du jeu : 100 cartes de base et 24 cartes de saison. Le serveur les insère en base (seed) ; le client
+ * Les cartes d'événements du jeu : 100 cartes de base, 24 cartes de saison et 6 cartes « filiales ». Le serveur les insère en base (seed) ; le client
  * les embarque aussi comme repli hors ligne si l'API et le cache sont indisponibles.
  */
 export const EVENT_CARDS: readonly EventCard[] = [
@@ -17,6 +18,7 @@ export const EVENT_CARDS: readonly EventCard[] = [
   ...BUSINESS_CARDS,
   ...MISC_CARDS,
   ...SEASON_CARDS,
+  ...VENTURE_CARDS,
 ];
 
 /** Succès débloquables par des cartes (l'étape « Méta » les crée en base). */

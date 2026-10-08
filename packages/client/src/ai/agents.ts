@@ -232,10 +232,10 @@ export class AgentWorld {
     this.fridayFive = isFridayFive(view.time);
     this.devs = new Map(view.devs.map((dev) => [dev.id, dev]));
 
-    const key = `${view.phase}|${view.items.map((i) => `${i.id}:${i.x}:${i.z}:${i.rotation}`).join(',')}|${this.decorKey}`;
+    const key = `${view.phase}|${view.group.wings}|${view.items.map((i) => `${i.id}:${i.x}:${i.z}:${i.rotation}`).join(',')}|${this.decorKey}`;
     if (key !== this.gridKey) {
       this.gridKey = key;
-      this.layout = officeLayout(view.phase);
+      this.layout = officeLayout(view.phase, view.group.wings);
       this.grid = buildNavGrid(this.layout, view.items);
       for (const cell of this.decorBlocked) this.grid.block(cell.x, cell.z);
       this.indexPointsOfInterest(view.items);

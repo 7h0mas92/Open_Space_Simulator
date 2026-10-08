@@ -18,6 +18,7 @@ import { log10Approx } from './math';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
 import { tasksInColumn } from './tasks';
+import { activeVentures, investableCash, ventureBlocker, ventureOffers } from './ventures';
 
 /**
  * Joueurs automatiques (« bots »), utilisés par `pnpm balance` pour simuler des milliers
@@ -114,6 +115,8 @@ interface PlanningStyle {
   /** Lever des fonds sous ce nombre de mois de trésorerie. */
   pitchRunway: number;
   buysFurniture: boolean;
+  /** Crée des filiales dès que possible (et revend ses parts si l'argent manque). */
+  invests?: boolean;
 }
 
 /** Bot « raisonnable », paramétré par un style de jeu. */
@@ -191,7 +194,10 @@ class PlannerBot implements Bot {
     const wantsMoney = runway < style.pitchRunway || blockedByPhase;
     if (cooldownOk && wantsMoney && state.gauges.hype > 15) return [{ type: 'START_PITCH' }];
 
-    // 2. Recrutement.
+    // 2. Filiales : un projet audacieux, sinon prudent, si la trésorerie le permet.
+    if (style.invests) commands.push(...this.invest(state, runway));
+
+    // 3. Recrutement.
     if (teamSize(state) < teamMax(state) && runway > style.hireRunway) {
       const candidate = state.candidates
         .filter(
@@ -208,10 +214,10 @@ class PlannerBot implements Bot {
         });
     }
 
-    // 3. Mobilier utile.
+    // 4. Mobilier utile.
     if (style.buysFurniture) commands.push(...this.furniture(state));
 
-    // 4. Kanban : on remplit TODO selon la capacité estimée de l'équipe (un 10x ou une IA
+    // 5. Kanban : on remplit TODO selon la capacité estimée de l'équipe (un 10x ou une IA
     // abattent plus de travail qu'un dev moyen).
     const capacity = devIds(state).reduce((total, id) => {
       const role = state.components.identity[id]?.role;
@@ -235,6 +241,25 @@ class PlannerBot implements Bot {
       planned += task.size;
     }
     commands.push({ type: 'START_SPRINT' });
+    return commands;
+  }
+
+  private invest(state: Readonly<GameState>, runway: number): Command[] {
+    const commands: Command[] = [];
+    const ventures = activeVentures(state as GameState);
+    // Trésorerie en danger : on revend la filiale qui vaut le plus.
+    if (runway < 4 && ventures.length > 0) {
+      const richest = [...ventures].sort((a, b) => b.valuation - a.valuation)[0];
+      if (richest) commands.push({ type: 'SELL_VENTURE', ventureId: richest.id });
+      return commands;
+    }
+    if (ventureBlocker(state as GameState) !== null || runway < 12) return commands;
+    const cash = investableCash(state as GameState);
+    const offers = ventureOffers(state as GameState).filter((offer) => offer.cost <= cash);
+    const pick =
+      offers.find((offer) => offer.idea.risk === 'BOLD') ??
+      offers.find((offer) => offer.idea.risk === 'SAFE');
+    if (pick) commands.push({ type: 'FOUND_VENTURE', ideaId: pick.idea.id });
     return commands;
   }
 
@@ -315,7 +340,7 @@ class RandomBot implements Bot {
 
 const fixPriority = (state: Readonly<GameState>) => state.gauges.stability < 60;
 
-export const BOT_NAMES = ['random', 'shipper', 'balanced', 'cautious'] as const;
+export const BOT_NAMES = ['random', 'shipper', 'balanced', 'cautious', 'investor'] as const;
 export type BotName = (typeof BOT_NAMES)[number];
 
 /** Crée un bot par son nom. `seed` ne sert qu'au bot aléatoire. */
@@ -346,6 +371,21 @@ export function createBot(name: BotName, seed: string): Bot {
         offerRatio: 1.05,
         pitchRunway: 10,
         buysFurniture: true,
+      });
+    case 'investor':
+      // Comme « balanced », mais il crée des filiales dès la Série A.
+      return new PlannerBot(name, {
+        priority: (type, state) => {
+          if (type === 'REFACTO') return state.gauges.debt > 35 ? 4 : 1;
+          if (type === 'BUGFIX' || type === 'INFRA') return fixPriority(state) ? 4 : 1;
+          return 3;
+        },
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        invests: true,
       });
     case 'cautious':
       // Code propre, petite équipe, levées tardives.
