@@ -57,8 +57,12 @@ export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (app, 
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
           const target = JSON.stringify(error.meta ?? {});
           throw target.includes('pseudo')
-            ? new AppError(409, 'PSEUDO_TAKEN', 'Ce pseudo est déjà pris')
-            : new AppError(409, 'EMAIL_TAKEN', 'Un compte existe déjà avec cet email');
+            ? new AppError(409, 'PSEUDO_TAKEN', 'Ce pseudo est déjà pris, choisis-en un autre')
+            : new AppError(
+                409,
+                'EMAIL_TAKEN',
+                'Un compte existe déjà avec cet email, connecte-toi plutôt',
+              );
         }
         throw error;
       }
@@ -84,7 +88,11 @@ export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (app, 
         : (await verifyAgainstDummy(password), false);
       // Même message que l'email existe ou non : on ne révèle pas les comptes existants.
       if (!user || !valid) {
-        throw new AppError(401, 'INVALID_CREDENTIALS', 'Email ou mot de passe incorrect');
+        throw new AppError(
+          401,
+          'INVALID_CREDENTIALS',
+          'Email ou mot de passe incorrect, vérifie ta saisie',
+        );
       }
       await startSession(app, reply, user);
       return { user: toUserDto(user) };

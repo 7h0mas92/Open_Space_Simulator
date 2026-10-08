@@ -93,6 +93,33 @@ En cas de `ERR_MODULE_NOT_FOUND` :
 - `.../@oss/shared/dist/index.js` : le paquet partagé n'est pas compilé, lancer
   `pnpm --filter @oss/shared build`.
 
+### Comptes et compte administrateur
+
+Les comptes (inscription, connexion, classements en ligne) ont besoin du serveur. La version
+en ligne sur GitHub Pages n'en a pas : la fenêtre « Connexion » y explique que les comptes sont
+indisponibles et le jeu reste jouable en invité. En local, avec `pnpm dev` lancé, l'inscription
+fonctionne normalement.
+
+`pnpm db:seed` crée un compte administrateur, **pour le développement uniquement** :
+
+| Champ        | Valeur               |
+| ------------ | -------------------- |
+| Email        | `admin@oss.local`    |
+| Mot de passe | `admin-dev-password` |
+
+Une fois connecté avec ce compte, un badge « Administrateur » s'affiche en haut à droite du
+menu et un bouton 🛠 Back-office apparaît dans le menu principal (gestion des cartes
+d'événements et statistiques).
+
+Pour donner le rôle ADMIN à un compte créé depuis le jeu :
+
+```bash
+pnpm --filter @oss/server user:promote ton@email.fr
+```
+
+En production, `SEED_ADMIN_EMAIL` et `SEED_ADMIN_PASSWORD` sont obligatoires (voir
+[Déploiement](#déploiement)) : le mot de passe de développement n'est jamais utilisé en ligne.
+
 ### Connexion GitHub (facultative)
 
 1. Sur https://github.com/settings/developers, créer une **OAuth App**.
