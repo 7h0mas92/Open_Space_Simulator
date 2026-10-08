@@ -2603,7 +2603,7 @@ legend {
 @media (max-width: 479px) {
   .catalog-tabs button {
     flex: 1 1 auto;
-    min-width: 0;
+    min-width: var(--touch);
     padding: 2px 1px;
     font-size: 0.7rem;
   }
