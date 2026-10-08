@@ -137,6 +137,16 @@ export const BALANCE = {
     xpPerLevel: 120,
     autoAssign: true,
   },
+  performance: {
+    /**
+     * Travail produit par heure travaillée par un dev « standard » (vitesse 5, profil sans
+     * bonus) dans des conditions de jeu ordinaires (moral, dette, réunions...), mesuré sur
+     * des parties simulées : c'est le 100 % de la productivité.
+     */
+    referenceUnitsPerHour: 0.7,
+    /** Sprints terminés gardés dans la fiche de chaque dev. */
+    sprintsKept: 6,
+  },
   energy: {
     drainPerWorkTick: 1.6,
     enduranceSaving: 0.07,
@@ -233,6 +243,13 @@ export const BALANCE = {
     /** Moral quotidien gagné au calme... et perdu en s'éloignant de l'équipe (relations). */
     dailyMoral: 0.3,
     isolationDrift: 0.3,
+  },
+  /** Anniversaires : gâteau, cadeaux (factices) et un peu de moral. */
+  birthday: {
+    /** Moral gagné par le dev fêté. */
+    moral: 10,
+    /** Moral gagné par chaque collègue présent (il y a du gâteau). */
+    teamMoral: 2,
   },
   relations: {
     chatGain: 4,
@@ -340,6 +357,8 @@ export const BALANCE = {
     escalation: 0.5,
     /** Mode Hardcore : ticks avant résolution automatique (dernier choix). */
     hardcoreAutoResolveTicks: 4,
+    /** Pendant une période à thème, part des tirages réservée à ses cartes de saison. */
+    seasonalShare: 0.7,
   },
   /**
    * Mode Facile : pensé pour apprendre, avec le tutoriel complet. Plus d'argent au départ,

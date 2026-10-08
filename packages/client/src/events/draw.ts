@@ -39,7 +39,12 @@ export function drawCard(state: GameState, ctx: SimContext, clock: SimClock): bo
   }
   if (!ctx.rng.chance(BALANCE.events.drawChancePerWorkHour)) return false;
   const eligible = ctx.cards.cards.filter((card) => isEligible(state, card, clock));
-  const card = ctx.rng.weighted(eligible, (c) => c.weight);
+  // Pendant une période (Halloween, Noël…), ses cartes passent souvent devant les autres :
+  // la période ne dure qu'une semaine.
+  const seasonal = eligible.filter((c) => c.conditions.season !== undefined);
+  const pool =
+    seasonal.length > 0 && ctx.rng.chance(BALANCE.events.seasonalShare) ? seasonal : eligible;
+  const card = ctx.rng.weighted(pool, (c) => c.weight);
   if (!card) return false;
   present(state, ctx, card, 0);
   return true;

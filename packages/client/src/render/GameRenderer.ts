@@ -5,8 +5,14 @@
  * deux pas et dessine. Il ne modifie jamais l'état du jeu : les clics sont remontés à
  * l'interface par des callbacks, qui décide de la commande à envoyer.
  */
-import type { CharacterPackId } from '@oss/shared';
+import {
+  decoratedThemes,
+  type CharacterPackId,
+  type DecorMode,
+  type DecorTheme,
+} from '@oss/shared';
 import * as THREE from 'three';
+import type { DevRole } from '@oss/shared';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
@@ -14,12 +20,15 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents';
 import { catalogItem, footprint } from '../view/catalog';
+import { decorKey, planDecor } from '../view/decor';
 import { officeLayout, type Cell, type OfficeLayout } from '../view/layout';
 import { checkPlacement, nearestValidCell } from '../view/placement';
 import { liveSprintMinutes } from '../view/liveTime';
 import type { GameView, Rotation } from '../view/types';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
+import { DecorationsView } from './decorations';
+import { THEME_MODELS } from './decorModels';
 import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
@@ -36,9 +45,11 @@ import {
   panDelta,
   type IsoCameraState,
 } from './isoCamera';
-import { lightingAt } from './lighting';
+import { lightingAt, type LightingState } from './lighting';
 import { itemMatrix, OfficeView } from './office';
+import { OfficeLights } from './officeLights';
 import { pixelRatioFor, QUALITY_PRESETS, type QualityLevel } from './quality';
+import { ScreenGlow } from './screens';
 
 export type PickTarget =
   | { readonly type: 'dev'; readonly id: string }
@@ -91,6 +102,13 @@ export class GameRenderer {
   private readonly hemi = new THREE.HemisphereLight(0xd6e6ff, 0x6b5a48, 0.9);
   private readonly assets = new AssetLibrary();
   private readonly office = new OfficeView(this.assets);
+  private readonly decorations = new DecorationsView(this.assets);
+  /** Réglage de chaque thème de décoration au back-office (absent = pendant sa période). */
+  private decorModes: Partial<Record<DecorTheme, DecorMode>> = {};
+  private readonly roomLights = new OfficeLights(this.assets);
+  private readonly screens = new ScreenGlow();
+  /** Rôle de chaque dev : choisit le contenu de son écran. */
+  private roles = new Map<string, DevRole>();
   private readonly characters = new Map<string, CharacterView>();
   private readonly world: AgentWorld;
   private readonly gestures = new GestureRecognizer();
@@ -105,6 +123,8 @@ export class GameRenderer {
   private outlinePass: OutlinePass | null = null;
 
   private view: GameView | null = null;
+  private decorPlanKey = '';
+  private decorPlan: ReturnType<typeof planDecor> | null = null;
   /** Packs de personnages actifs (costumes de Noël, d'Halloween…). */
   private characterPacks: readonly CharacterPackId[] = [];
   private layout: OfficeLayout = officeLayout('GARAGE');
@@ -156,7 +176,15 @@ export class GameRenderer {
     this.renderer.info.autoReset = false;
 
     this.sun.castShadow = true;
-    this.scene.add(this.hemi, this.sun, this.sun.target, this.office.root);
+    this.scene.add(
+      this.hemi,
+      this.sun,
+      this.sun.target,
+      this.office.root,
+      this.decorations.root,
+      this.roomLights.root,
+      this.screens.root,
+    );
 
     this.smoke = new SmokeEffect(preset.maxParticles);
     this.confetti = new ConfettiEffect(Math.min(200, preset.maxParticles));
@@ -198,6 +226,9 @@ export class GameRenderer {
     this.layout = officeLayout(view.phase);
     this.office.setLayout(this.layout);
     void this.office.setItems(view.items);
+    this.updateDecor(view);
+    void this.roomLights.setLayout(this.layout, QUALITY_PRESETS[this.quality].roomLights);
+    this.roles = new Map(view.devs.map((dev) => [dev.id, dev.role]));
     this.world.sync(view);
     if (phaseChanged) this.fitCamera();
 
@@ -237,6 +268,12 @@ export class GameRenderer {
     this.quality = level;
     this.applyQuality();
     this.resize();
+  }
+
+  /** Change le réglage des décorations de saison (back-office). */
+  setDecorModes(modes: Partial<Record<DecorTheme, DecorMode>>): void {
+    this.decorModes = { ...modes };
+    if (this.view) this.setView(this.view);
   }
 
   /** Change les packs de personnages actifs : toute l'équipe est rhabillée. */
@@ -363,6 +400,10 @@ export class GameRenderer {
     pixelRatio: number;
     /** Position à l'écran (px) du centre de l'aperçu en mode construction. */
     ghost: { x: number; y: number } | null;
+    /** Écrans allumés par les devs au travail. */
+    screens: number;
+    /** Vraies lampes ponctuelles de la salle. */
+    roomLights: number;
   } {
     const tile = this.footprintTile;
     let ghost: { x: number; y: number } | null = null;
@@ -383,6 +424,8 @@ export class GameRenderer {
       target: { x: this.cameraState.targetX, z: this.cameraState.targetZ },
       pixelRatio: this.renderer.getPixelRatio(),
       ghost,
+      screens: this.screens.count,
+      roomLights: this.roomLights.realLights,
     };
   }
 
@@ -393,8 +436,32 @@ export class GameRenderer {
     for (const character of this.characters.values()) character.dispose();
     for (const bubble of this.bubbles.values()) bubble.remove();
     this.office.dispose();
+    this.decorations.dispose();
+    this.roomLights.dispose();
+    this.screens.dispose();
     this.composer?.dispose();
     this.renderer.dispose();
+  }
+
+  // --- Décorations -------------------------------------------------------------------------
+
+  /** Décorations de saison et table d'anniversaire du jour (obstacles pour les personnages). */
+  private updateDecor(view: GameView): void {
+    const themes = decoratedThemes(view.calendar.seasons, this.decorModes);
+    const birthday = view.calendar.birthdays.length > 0;
+    const key = decorKey(this.layout, view.items, themes, birthday);
+    if (key === this.decorPlanKey && this.decorPlan) return;
+    const plan = planDecor(
+      this.layout,
+      view.items,
+      themes,
+      birthday,
+      (theme) => THEME_MODELS[theme].floor.length,
+    );
+    this.decorPlanKey = key;
+    this.decorPlan = plan;
+    this.world.setDecor(plan.blocked, plan.party);
+    void this.decorations.update(key, plan, this.layout, view.items);
   }
 
   // --- Boucle ------------------------------------------------------------------------------
@@ -431,10 +498,18 @@ export class GameRenderer {
 
     if (view) {
       const minute = liveSprintMinutes(view.time, now) % 1440;
-      this.applyLighting(this.smoothMinute(minute, delta));
+      const light = this.applyLighting(this.smoothMinute(minute, delta));
+      this.roomLights.update(light, this.pixelsPerUnit());
+      this.screens.update(
+        { items: view.items, roles: this.roles, agents: this.current },
+        delta,
+        1 - light.daylight,
+        !this.reducedMotion,
+      );
     }
     this.smoke.update(delta);
     this.confetti.update(delta);
+    this.decorations.animate(now / 1000, this.reducedMotion);
     for (const event of this.gestures.poll(now)) this.handleGesture(event);
     this.applyEdgePan(delta);
     this.office.setDetail(this.cameraState.zoom, QUALITY_PRESETS[this.quality].decorLodZoom);
@@ -470,6 +545,8 @@ export class GameRenderer {
     this.scene.traverse((node) => {
       if (node instanceof THREE.Mesh) node.material.needsUpdate = true;
     });
+
+    void this.roomLights.setLayout(this.layout, preset.roomLights);
 
     this.composer?.dispose();
     this.composer = null;
@@ -559,7 +636,13 @@ export class GameRenderer {
     return this.displayMinute;
   }
 
-  private applyLighting(minute: number): void {
+  /** Pixels (du tampon de rendu) par case : taille des halos, que l'ortho ne met pas à l'échelle. */
+  private pixelsPerUnit(): number {
+    const height = this.renderer.getDrawingBufferSize(new THREE.Vector2()).y;
+    return height / Math.max(0.001, this.camera.top - this.camera.bottom);
+  }
+
+  private applyLighting(minute: number): LightingState {
     const light = lightingAt(minute);
     const { width, depth } = this.layout;
     const cx = width / 2;
@@ -583,6 +666,7 @@ export class GameRenderer {
     shadowCamera.bottom = -radius;
     shadowCamera.far = radius * 5;
     shadowCamera.updateProjectionMatrix();
+    return light;
   }
 
   private updateBubbles(): void {

@@ -20,6 +20,8 @@ export interface QualityPreset {
   readonly decorLodZoom: number;
   /** Nombre maximal de particules pour la fumée et les confettis. */
   readonly maxParticles: number;
+  /** Vraies lampes ponctuelles au plafond (les autres lumières sont des textures). */
+  readonly roomLights: number;
 }
 
 export const QUALITY_PRESETS: Readonly<Record<QualityLevel, QualityPreset>> = {
@@ -32,6 +34,7 @@ export const QUALITY_PRESETS: Readonly<Record<QualityLevel, QualityPreset>> = {
     bloom: false,
     decorLodZoom: 0.8,
     maxParticles: 60,
+    roomLights: 0,
   },
   medium: {
     pixelRatioCap: 1.5,
@@ -42,6 +45,7 @@ export const QUALITY_PRESETS: Readonly<Record<QualityLevel, QualityPreset>> = {
     bloom: false,
     decorLodZoom: 0.6,
     maxParticles: 150,
+    roomLights: 3,
   },
   high: {
     pixelRatioCap: 2,
@@ -52,6 +56,7 @@ export const QUALITY_PRESETS: Readonly<Record<QualityLevel, QualityPreset>> = {
     bloom: true,
     decorLodZoom: 0,
     maxParticles: 300,
+    roomLights: 6,
   },
 };
 

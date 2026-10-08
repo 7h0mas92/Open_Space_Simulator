@@ -1,4 +1,4 @@
-import type { LocalizedText } from '@oss/shared';
+import type { Birthday, CalendarDate, LocalizedText } from '@oss/shared';
 import type { GameTime, GameView, GaugeName } from '../../view/types';
 
 /**
@@ -80,4 +80,23 @@ export function gaugeTrend(view: Pick<GameView, 'gauges' | 'history'>, name: Gau
 /** Avancement du sprint en cours, de 0 à 1 (14 jours simulés). */
 export function sprintProgress(time: Pick<GameTime, 'day' | 'minute'>): number {
   return Math.min(1, Math.max(0, (time.day * 1440 + time.minute) / (14 * 1440)));
+}
+
+/** Date du calendrier de la partie : « 29 oct. 2026 » / « Oct 29, 2026 ». */
+export function formatGameDate(date: CalendarDate, language: string): string {
+  return new Intl.DateTimeFormat(intlLocale(language), {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(Date.UTC(date.year, date.month - 1, date.day));
+}
+
+/** Jour et mois d'un anniversaire : « 12 mars » / « March 12 ». */
+export function formatBirthday(birthday: Birthday, language: string): string {
+  return new Intl.DateTimeFormat(intlLocale(language), {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(Date.UTC(2025, birthday.month - 1, birthday.day));
 }

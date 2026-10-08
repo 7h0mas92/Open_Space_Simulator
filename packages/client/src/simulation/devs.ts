@@ -1,6 +1,7 @@
 import {
   BALANCE,
   DEV_TRAITS,
+  birthdayFromKey,
   ROLE_PROFILES,
   type Candidate,
   type CommandResult,
@@ -27,6 +28,7 @@ import {
   text,
   type SimContext,
 } from './helpers';
+import { emptySprintPerformance } from './performance';
 import type { Rng } from './rng';
 
 /** Fréquence des profils parmi les candidats (le Dev Fantôme est rare). */
@@ -105,7 +107,10 @@ export function generateCandidates(state: GameState, ctx: SimContext): void {
   for (let i = 0; i < BALANCE.recruitment.candidatesPerSprint; i++) {
     const role = pickCandidateRole(state, ctx.rng);
     const dev = generateDev(ctx.rng, role);
-    state.candidates.push({ id: `c${state.sprint}-${i}`, status: 'OPEN', ...dev });
+    const id = `c${state.sprint}-${i}`;
+    // L'anniversaire vient d'un hachage (pas du RNG) : les graines existantes restent identiques.
+    const identity = { ...dev.identity, birthday: birthdayFromKey(`${state.seed}:${id}`) };
+    state.candidates.push({ id, status: 'OPEN', ...dev, identity });
   }
 }
 
@@ -117,7 +122,11 @@ export function hireDev(
   salary: number,
 ): EntityId {
   const id = createEntity(state);
-  const { identity, stats } = profile;
+  const { stats } = profile;
+  const identity = {
+    ...profile.identity,
+    birthday: profile.identity.birthday ?? birthdayFromKey(`${state.seed}:${id}`),
+  };
   addComponent(state, id, 'identity', identity);
   addComponent(state, id, 'stats', { ...stats });
   addComponent(state, id, 'employment', {
@@ -134,6 +143,10 @@ export function hireDev(
   addComponent(state, id, 'activity', { kind: 'GONE', untilTick: 0, withId: null });
   addComponent(state, id, 'worker', { taskId: null });
   addComponent(state, id, 'devLog', []);
+  addComponent(state, id, 'performance', {
+    current: emptySprintPerformance(state.sprint),
+    sprints: [],
+  });
   if (identity.role === 'GHOST') {
     addComponent(state, id, 'remote', true);
     addComponent(state, id, 'remoteReason', 'GHOST');
@@ -224,7 +237,10 @@ export function resignDev(state: GameState, ctx: SimContext, devId: EntityId): v
 }
 
 /** Probabilité qu'un candidat accepte une offre de salaire. */
-export function acceptanceChance(candidate: Candidate, salary: number): number {
+export function acceptanceChance(
+  candidate: Pick<Candidate, 'askingSalary'> & { stats: Pick<Stats, 'ego'> },
+  salary: number,
+): number {
   const { minRatio, sureRatio } = BALANCE.recruitment;
   const ratio = salary / candidate.askingSalary;
   if (ratio < minRatio) return 0;

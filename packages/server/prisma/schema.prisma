@@ -198,3 +198,12 @@ model CharacterPack {
   enabled   Boolean  @default(false)
   updatedAt DateTime @updatedAt
 }
+
+/// Thème de décoration de saison (Noël, Halloween…) réglé depuis le back-office :
+/// OFF (jamais), SEASON (pendant sa période) ou ALWAYS (en permanence).
+/// Un thème sans ligne garde le réglage par défaut, SEASON.
+model DecorTheme {
+  id        String   @id
+  mode      String   @default("SEASON")
+  updatedAt DateTime @updatedAt
+}

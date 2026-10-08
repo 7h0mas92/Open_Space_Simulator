@@ -209,6 +209,7 @@ describe('interpolation entre deux ticks', () => {
     pose: 'walk',
     visible: true,
     thought: null,
+    using: null,
   };
 
   it('interpole la position', () => {

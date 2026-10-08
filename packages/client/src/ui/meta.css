@@ -852,3 +852,53 @@
   border-radius: var(--radius);
   background: var(--bg);
 }
+
+/* --- Back-office : décorations de saison ----------------------------------------------- */
+.admin-decor-preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 640 / 220;
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.admin-decor-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.admin-decor-modes label {
+  display: inline-flex;
+  flex: 1 1 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.admin-decor-modes label.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  font-weight: 600;
+}
+
+.admin-decor-modes input {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+}
+
+.admin-decor-modes input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

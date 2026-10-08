@@ -162,6 +162,16 @@
     "ZEN": "Zen",
     "GAMER": "Gamer"
   },
+  "traitDescriptions": {
+    "COFFEE_ADDICT": "Boit deux fois plus de café. +10 % de vitesse quand la jauge de café dépasse 50, télétravail si elle est vide.",
+    "NIGHT_OWL": "Arrive et repart 2 h plus tard que les autres.",
+    "WORKAHOLIC": "Reste 3 h de plus et vient le samedi. Se fatigue 20 % plus vite, mais le travail lui remonte le moral.",
+    "CHATTERBOX": "Discute 2,5 fois plus souvent avec ses collègues : les liens se créent, les tickets attendent.",
+    "PERFECTIONIST": "−10 % de vitesse, +15 % de qualité.",
+    "GRUMPY": "Part fâché avec tout le monde et se dispute 2 fois plus souvent.",
+    "ZEN": "Perd son moral deux fois moins vite.",
+    "GAMER": "Joue 3 fois plus souvent au babyfoot."
+  },
   "taskTypes": {
     "FEATURE": "Feature",
     "REFACTOR": "Refacto",
@@ -227,6 +237,7 @@
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
     "day": "{{day}} {{time}}",
+    "birthday": "Anniversaire de {{names}} : gâteau au bureau !",
     "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
     "pause": "Pause",
     "speed": "Vitesse x{{speed}}",
@@ -277,6 +288,8 @@
   },
   "team": {
     "age": "{{age}} ans",
+    "birthday": "🎂 Anniversaire le {{date}}",
+    "birthdayToday": "🎂 C'est son anniversaire aujourd'hui !",
     "salary": "{{salary}} €/mois",
     "level": "Niveau {{level}}",
     "mood": "Humeur",
@@ -301,7 +314,16 @@
     "remoteBadge": "🏠 Télétravail",
     "officeSummary": "{{office}} au bureau · {{remote}} en télétravail · {{desks}} bureaux",
     "noDeskHint": "Pas assez de bureaux : achète-en en mode construction pour faire revenir l’équipe.",
-    "remoteHint": "Le télétravail est automatique. À distance : pas de café ni de poste au bureau, moins de fatigue, mais −{{productivity}} % de productivité, −{{quality}} % de qualité et des liens qui s’effacent avec l’équipe."
+    "remoteHint": "Le télétravail est automatique. À distance : pas de café ni de poste au bureau, moins de fatigue, mais −{{productivity}} % de productivité, −{{quality}} % de qualité et des liens qui s’effacent avec l’équipe.",
+    "seniority": "Ancienneté",
+    "seniorityValue_one": "{{count}} sprint (arrivé·e au sprint {{sprint}})",
+    "seniorityValue_other": "{{count}} sprints (arrivé·e au sprint {{sprint}})",
+    "tasksDone": "Tâches terminées",
+    "currentTask": "Tâche en cours",
+    "noTask": "Aucune",
+    "xp": "{{xp}}/{{next}} XP",
+    "bestFriend": "Meilleur·e allié·e : {{name}}",
+    "rival": "Bête noire : {{name}}"
   },
   "remoteReasons": {
     "GHOST": "Toujours à distance, c’est un fantôme",
@@ -323,7 +345,61 @@
     "offer": "Ton offre : {{salary}} €/mois",
     "hire": "Faire l'offre",
     "none": "Plus de candidats ce sprint.",
-    "teamFull": "Équipe complète pour cette phase ({{max}} max)."
+    "teamFull": "Équipe complète pour cette phase ({{max}} max).",
+    "market": "Salaire du marché",
+    "acceptance": "Chances qu'il ou elle accepte cette offre : {{chance}} %"
+  },
+  "perf": {
+    "title": "Performance globale",
+    "estimatedTitle": "Performance estimée",
+    "measured": "Mesurée sur ses 2 derniers sprints.",
+    "estimated": "Estimée d'après son profil : elle sera mesurée à la fin de son premier sprint.",
+    "estimatedShort": "estimée",
+    "badgeTitle": "Performance {{score}}/100 : {{label}}",
+    "grades": {
+      "S": "Exceptionnel",
+      "A": "Excellent",
+      "B": "Solide",
+      "C": "Moyen",
+      "D": "À la peine"
+    },
+    "productivity": "Productivité",
+    "quality": "Qualité",
+    "expected": "Attendu (profil)",
+    "expectedProductivity": "Productivité attendue",
+    "expectedQuality": "Qualité attendue",
+    "incidents": "Pannes provoquées",
+    "help": "Productivité : travail produit par heure passée sur une tâche, 100 % = un dev standard. La note combine productivité (50 %), qualité (35 %) et endurance (15 %), avec un bonus pour le Product Owner et la Designeuse et −5 par panne provoquée.",
+    "sprintsTitle": "Productivité par sprint",
+    "lastSprint": "Dernier sprint",
+    "previousSprint": "Sprint d'avant",
+    "noSprintYet": "Pas encore de sprint terminé dans l'équipe.",
+    "notInTeam": "Pas encore dans l'équipe.",
+    "lostSprint": "Sprint perdu : personne n'a rien produit.",
+    "noTask": "Aucune tâche ce sprint. Mets des tâches dans « À faire ».",
+    "points": "Livré",
+    "pointsValue_one": "{{count}} pt ({{tasks}} tâche·s)",
+    "pointsValue_other": "{{count}} pts ({{tasks}} tâche·s)",
+    "hours": "Temps sur les tâches",
+    "hoursValue_one": "{{count}} h",
+    "hoursValue_other": "{{count}} h",
+    "incidentsValue_one": "{{count}} panne de prod provoquée",
+    "incidentsValue_other": "{{count}} pannes de prod provoquées",
+    "current": "Sprint en cours : {{productivity}} % · {{hours}} h sur les tâches · {{points}} pts livrés",
+    "currentIdle": "Sprint en cours : rien de produit pour l’instant.",
+    "strengthsLabel": "Points forts et points faibles",
+    "strengths": {
+      "speed": "Rapide",
+      "quality": "Code soigné",
+      "endurance": "Increvable",
+      "ego": "Facile à vivre"
+    },
+    "weaknesses": {
+      "speed": "Lent",
+      "quality": "Code fragile",
+      "endurance": "S'épuise vite",
+      "ego": "Ego surdimensionné"
+    }
   },
   "build": {
     "title": "Construction",
@@ -433,7 +509,8 @@
       "ramen": "Pot de ramen",
       "officeCharacters": "Personnages de bureau en Three.js (barbus, Rustacés, designeuses, robot, fantôme…) et accessoires des personnages Kenney",
       "uiPack": "Pack UI Kenney (interface en CSS)",
-      "soundPacks": "Packs sons Kenney (audio à venir)"
+      "soundPacks": "Packs sons Kenney (audio à venir)",
+      "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit"
     },
     "back": "Retour"
   },
@@ -620,6 +697,7 @@
     "tabs": {
       "cards": "Cartes",
       "packs": "Packs de personnages",
+      "decor": "Décorations",
       "stats": "Statistiques"
     },
     "search": "Rechercher une carte",
@@ -710,6 +788,27 @@
       "previewAlt": "Les 8 profils en costume du pack {{pack}}",
       "on": "Actif",
       "off": "Désactivé"
+    },
+    "decor": {
+      "intro": "Chaque thème décore le bureau : guirlandes aux murs, objets au sol et sur les bureaux. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
+      "legend": "Réglage du thème {{theme}}",
+      "previewAlt": "Un coin de bureau décoré pour le thème {{theme}}",
+      "live": "Affiché en ce moment",
+      "state": {
+        "OFF": "Désactivé",
+        "SEASON": "Hors saison",
+        "ALWAYS": "Toujours"
+      },
+      "mode": {
+        "OFF": "Désactivé",
+        "SEASON": "En saison",
+        "ALWAYS": "Toujours"
+      },
+      "changed": {
+        "OFF": "Décorations « {{theme}} » désactivées.",
+        "SEASON": "Décorations « {{theme}} » affichées pendant leur période.",
+        "ALWAYS": "Décorations « {{theme}} » toujours affichées."
+      }
     }
   },
   "guide": {

@@ -7,11 +7,15 @@ import {
   CharacterPackIdSchema,
   CharacterPackSchema,
   CharacterPacksResponseSchema,
+  DecorThemeSchema,
+  DecorThemeSettingSchema,
+  DecorThemesResponseSchema,
   OUTCOMES,
   PHASES,
   type AdminStatsResponse,
   type LocalizedText,
   UpdateCharacterPackBodySchema,
+  UpdateDecorThemeBodySchema,
 } from '@oss/shared';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
@@ -19,13 +23,14 @@ import { Prisma } from '../generated/prisma/client.js';
 import { AppError } from '../lib/errors.js';
 import { errorResponses } from '../lib/schemas.js';
 import { cardData, toAdminCard, toEventCard } from '../services/cards.service.js';
+import { listDecorThemes, setDecorTheme } from '../services/decor.service.js';
 import { listCharacterPacks, setCharacterPack } from '../services/packs.service.js';
 
 const IdParamsSchema = z.object({ id: CardIdSchema });
 
 /**
  * Back-office : /api/admin/* (rôle ADMIN obligatoire). Gestion des cartes d'événements,
- * des packs de personnages et statistiques de jeu.
+ * des packs de personnages, des décorations de saison et statistiques de jeu.
  */
 export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireRole('ADMIN'));
@@ -265,5 +270,33 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request) => setCharacterPack(app.prisma, request.params.id, request.body.enabled),
+  );
+
+  app.get(
+    '/decor-themes',
+    {
+      schema: {
+        tags: ['admin'],
+        summary: 'Thèmes de décoration de saison et leur réglage',
+        security,
+        response: { 200: DecorThemesResponseSchema, ...errorResponses },
+      },
+    },
+    async () => ({ themes: await listDecorThemes(app.prisma) }),
+  );
+
+  app.put(
+    '/decor-themes/:id',
+    {
+      schema: {
+        tags: ['admin'],
+        summary: 'Régler un thème de décoration (désactivé, pendant sa période, toujours)',
+        security,
+        params: z.object({ id: DecorThemeSchema }),
+        body: UpdateDecorThemeBodySchema,
+        response: { 200: DecorThemeSettingSchema, ...errorResponses },
+      },
+    },
+    async (request) => setDecorTheme(app.prisma, request.params.id, request.body.mode),
   );
 };

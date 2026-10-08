@@ -85,6 +85,8 @@ export interface AgentSnapshot {
   readonly pose: AgentPose;
   readonly visible: boolean;
   readonly thought: string | null;
+  /** Objet dont le personnage se sert en ce moment (son bureau quand il y travaille), sinon `null`. */
+  readonly using: string | null;
 }
 
 interface Agent {
@@ -102,6 +104,10 @@ interface Agent {
   goal: Cell | null;
   /** Point vers lequel se tourner une fois arrivé. */
   lookAt: { x: number; z: number } | null;
+  /** Objet visé par le dernier déplacement (point d'intérêt). */
+  heading: string | null;
+  /** Objet utilisé une fois arrivé : posé par l'action de pose, effacé à chaque pas. */
+  using: string | null;
   waitTicks: number;
   /** Pas passés bloqué depuis le dernier vrai déplacement (sert à défaire les bouchons). */
   stuckTicks: number;
@@ -142,6 +148,7 @@ function itemCenter(item: ItemPlacement): { x: number; z: number } {
 function goTo(name: string, target: (context: BrainContext) => PointOfInterest | Cell | null) {
   return action<BrainContext>(name, ({ agent, world }) => {
     const found = target({ agent, world });
+    agent.heading = found && 'access' in found ? found.item.id : null;
     if (!found) return 'failure';
     const wanted = 'access' in found ? found.access : found;
     const goal = world.freeCellNear(wanted, agent);
@@ -154,6 +161,7 @@ function goTo(name: string, target: (context: BrainContext) => PointOfInterest |
 function pose(value: AgentPose) {
   return action<BrainContext>(`pose:${value}`, ({ agent }) => {
     agent.pose = value;
+    agent.using = value === 'idle' ? null : agent.heading;
     if (agent.lookAt) {
       agent.facing = Math.atan2(agent.lookAt.x - agent.x, agent.lookAt.z - agent.z);
     }
@@ -270,6 +278,10 @@ export class AgentWorld {
   private lunchCells: Cell[] = [];
   private devs = new Map<string, DevView>();
   private gridKey = '';
+  /** Décorations posées au sol et table d'anniversaire (voir `view/decor.ts`). */
+  private decorBlocked: readonly Cell[] = [];
+  private party: PointOfInterest | null = null;
+  private decorKey = '';
   private incident = false;
   private fridayFive = false;
   private tickCount = 0;
@@ -282,11 +294,12 @@ export class AgentWorld {
     this.fridayFive = isFridayFive(view.time);
     this.devs = new Map(view.devs.map((dev) => [dev.id, dev]));
 
-    const key = `${view.phase}|${view.items.map((i) => `${i.id}:${i.x}:${i.z}:${i.rotation}`).join(',')}`;
+    const key = `${view.phase}|${view.items.map((i) => `${i.id}:${i.x}:${i.z}:${i.rotation}`).join(',')}|${this.decorKey}`;
     if (key !== this.gridKey) {
       this.gridKey = key;
       this.layout = officeLayout(view.phase);
       this.grid = buildNavGrid(this.layout, view.items);
+      for (const cell of this.decorBlocked) this.grid.block(cell.x, cell.z);
       this.indexPointsOfInterest(view.items);
       this.breakCells = this.roomCells(BREAK_ROOMS);
       this.lunchCells = this.roomCells(LUNCH_ROOMS);
@@ -323,6 +336,25 @@ export class AgentWorld {
     this.agents.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
+  /**
+   * Décorations du jour : les cases occupées deviennent des obstacles, et s'il y a une table
+   * d'anniversaire, la pause café se prend autour du gâteau. Pris en compte au prochain `sync`.
+   */
+  setDecor(
+    blocked: readonly Cell[],
+    party: { access: Cell; center: { x: number; z: number } } | null,
+  ) {
+    this.decorBlocked = blocked;
+    this.party = party
+      ? {
+          item: { id: 'party', kind: 'party', x: party.access.x, z: party.access.z, rotation: 0 },
+          access: party.access,
+          center: party.center,
+        }
+      : null;
+    this.decorKey = `${blocked.map((c) => `${c.x}:${c.z}`).join(',')}`;
+  }
+
   /** Avance d'un pas fixe. */
   step(): void {
     this.tickCount++;
@@ -340,6 +372,7 @@ export class AgentWorld {
         agent.x = start.x;
         agent.z = start.z;
       }
+      agent.using = null;
       agent.stayAge++;
       if (agent.pose !== 'walk' && agent.pose !== 'idle') agent.staySteps++;
       if (agent.pending && this.stayOver(agent)) this.switchActivity(agent, agent.pending);
@@ -361,6 +394,7 @@ export class AgentWorld {
       pose: agent.pose,
       visible: agent.visible,
       thought: agent.visible ? agent.thought : null,
+      using: agent.visible ? agent.using : null,
     }));
   }
 
@@ -375,6 +409,8 @@ export class AgentWorld {
   }
 
   poiFor(agent: Agent, use: string): PointOfInterest | null {
+    // Jour d'anniversaire : on prend son café (et du gâteau) autour de la table de fête.
+    if (use === 'coffee' && this.party) return this.party;
     const list = this.pois.get(use);
     if (!list || list.length === 0) return null;
     // Le plus proche, à égalité le premier par identifiant : déterministe.
@@ -543,6 +579,8 @@ export class AgentWorld {
       path: [],
       goal: null,
       lookAt: null,
+      heading: null,
+      using: null,
       waitTicks: 0,
       stuckTicks: 0,
       thought: null,

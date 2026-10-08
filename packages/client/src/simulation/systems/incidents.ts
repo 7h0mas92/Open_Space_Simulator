@@ -1,6 +1,7 @@
 import { BALANCE, type EntityId, type GameState, type LocalizedText } from '@oss/shared';
 import { forceCard } from '../../events/draw';
 import { addGauge, addUsers, devsWithRole, notify, text, type SimContext } from '../helpers';
+import { recordIncident } from '../performance';
 import type { SimClock } from '../time';
 
 /** Identifiant de la carte « Vendredi 17h04, la prod est down ». */
@@ -19,6 +20,7 @@ export function prodDown(
   addUsers(state, -state.gauges.users * stability.outageUserLoss);
   state.tracker.incidents += 1;
   state.stats.prodOutages += 1;
+  if (devId) recordIncident(state, devId);
   notify(state, ctx, 'PROD_DOWN', cause, devId);
 }
 

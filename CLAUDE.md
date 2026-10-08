@@ -394,6 +394,28 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   inchangés) mais l'heure, la barre de sprint et l'éclairage défilent minute par minute
   (`packages/client/src/view/liveTime.ts`). Un sprint dure environ 5 min à x1
   (`GAME.sprintRealSecondsAtX1` = 300).
+- Calendrier et saisons (`packages/shared/src/sim/calendar.ts`) : la partie commence le lundi de
+  la semaine réelle (date dans la graine), 12 périodes d'environ une semaine (Nouvel An,
+  Saint-Valentin, Pâques, Espace, Moyen Âge, Super-héros, Années 80, Été, Pirates, Halloween,
+  Cyberpunk, Noël) avec 24 cartes de saison prioritaires. Décorations par thème en Three.js
+  (`render/decorations.ts`, `view/decor.ts`), réglées dans l'onglet « Décorations » du
+  back-office : désactivé, en saison (défaut) ou toujours ; table `DecorTheme`.
+- Anniversaires des devs (date tirée de la graine, sans toucher au RNG) : table de fête
+  décorative (gâteau, cadeaux, ballons), +moral, confettis, Slack ; le week-end, fête le lundi.
+- Performance des devs (`client/src/simulation/performance.ts`, composant ECS `performance`) :
+  note globale S à D mesurée sur les 2 derniers sprints, productivité par sprint côte à côte
+  dans la fiche (100 % = un dev standard), ancienneté, XP, tâche en cours, allié et bête noire ;
+  au recrutement, performance estimée, salaire du marché et chances d'acceptation de l'offre.
+- Ambiance du bureau : l'écran d'un dev s'allume quand il y travaille, avec un contenu lié à son
+  métier (code, vim, Rust, maquettes, Kanban, terminal d'IA, forum ; erreur rouge quand il crie,
+  économiseur quand il dort) : `render/screens.ts`. Éclairage de la salle : appliques Kenney et
+  halos, plafonniers, fenêtres couleur du ciel, taches de soleil le jour (`render/officeLights.ts`) ;
+  vraies lampes selon la qualité (0 bas, 3 moyen, 6 haut).
+- Vraies pauses (`BALANCE.breaks`, `scheduledBreak` dans `simulation/systems/activity.ts`) :
+  10h30, déjeuner 12h (1 h), 15h, un dev sur deux décalé de 30 min ; café, babyfoot ou balade en
+  cuisine selon le caractère (activités `BREAK` et `LUNCH`). Rendu (`ai/agents.ts`) : marche à
+  8 cases/s, arrivée directe au bureau le matin, activité affichée menée à son terme
+  (`MIN_STAY_STEPS`), personnages bloqués qui se faufilent.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

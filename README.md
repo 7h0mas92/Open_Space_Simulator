@@ -248,6 +248,9 @@ flowchart LR
 - **Scène** : caméra orthographique isométrique (35,26°, rotation par quarts de tour), sol et
   murs par phase (Garage, Seed, Série A, Licorne), mobilier en `InstancedMesh`, cycle jour/nuit,
   ombres, contour de sélection et léger bloom (post-processing).
+- **Ambiance** : l'écran d'un dev s'allume quand il travaille, avec un contenu propre à son
+  métier ; appliques murales et halos, plafonniers, fenêtres couleur du ciel et taches de
+  soleil le jour ; les lampes prennent le relais le soir.
 - **Personnages** : l'IA décide où chacun marche (A* 8 directions, évitement entre collègues)
   et quelle posture il prend selon son activité ; le rendu joue le clip GLB correspondant ou une
   animation procédurale, et affiche des bulles de pensée traduites.
@@ -266,6 +269,20 @@ flowchart LR
   les devs sans bureau libre, épuisés, en conflit avec un collègue ou accros privés de café (le
   Dev Fantôme l'est toujours). Ils disparaissent de l'open space, se fatiguent moins mais
   perdent 15 % de vitesse et 5 % de qualité ; la fiche, l'équipe et Slack l'affichent.
+- **Vraies pauses** : chaque jour de semaine, pause à 10h30, déjeuner à midi (1 h) et pause à
+  15h, un dev sur deux décalé de 30 min (`BALANCE.breaks`). Pendant une pause courte, le dev
+  choisit selon son caractère un café, une partie de babyfoot ou une balade dans la cuisine ; il
+  déjeune à la cuisine ou à la cantine. Le noctambule décale tout de 2 h, le bourreau de travail
+  ne garde que le déjeuner, l'IA Agent ne s'arrête jamais. À l'écran, une demi-heure de jeu ne
+  dure que 0,45 s à x1 : les personnages arrivent directement à leur bureau le matin et vont au
+  bout de ce qu'ils ont commencé avant de suivre la simulation (`ai/agents.ts`).
+- **Performance des devs** : chaque dev a une note globale de S à D (sur 100), mesurée sur ses
+  2 derniers sprints (50 % productivité, 35 % qualité, 15 % endurance, bonus du Product Owner et
+  de la Designeuse, −5 par panne provoquée). La productivité est le travail produit par heure
+  passée sur une tâche, 100 % = un dev standard (référence mesurée sur des parties simulées,
+  `BALANCE.performance`). La fiche montre les 2 derniers sprints côte à côte, l'ancienneté,
+  l'XP, la tâche en cours, l'allié et la bête noire ; chaque candidat affiche sa performance
+  estimée, le salaire du marché et ses chances d'accepter l'offre.
 - **Interface** : jauges avec infobulles, vitesses, Kanban en glisser-déposer (souris et
   tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
   construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
@@ -346,6 +363,12 @@ bouton 🛠 du menu principal.
   costume), et si aucun ne l'est, on revient aux looks de base. Le client lit `GET /api/character-packs` au lancement d'une partie et le garde en cache
   pour le hors-ligne ; l'administrateur les change avec `PUT /api/admin/character-packs/:id`.
   Costumes dans `render/characterPacks.ts`.
+- **Décorations** : un thème par période de l'année (Nouvel An, Saint-Valentin, Pâques, espace,
+  Moyen Âge, super-héros, années 80, été, pirates, Halloween, cyberpunk, Noël). Chacun a une
+  guirlande murale, trois objets au sol et un petit objet par bureau, construits en Three.js, avec
+  un aperçu 3D. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
+  période) ou toujours. `GET /api/decor-themes` (public, en cache hors ligne) et
+  `PUT /api/admin/decor-themes/:id`.
 - **Statistiques** : joueurs, parties, fins, faillites par phase, cartes les plus tirées et choix
   les plus fréquents, avec des barres proportionnelles.
 
@@ -421,7 +444,8 @@ Render et Vercel. Toutes les variables sont décrites dans
 ## Ce que l'application fait et ne fait pas
 
 Elle fait : un jeu de gestion solo complet (5 modes, 39 sprints, 100 cartes, 8 profils de
-devs, 4 phases et 4 fins), jouable hors ligne en invité, avec classements en ligne (global,
+devs, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période et les
+anniversaires des devs), jouable hors ligne en invité, avec classements en ligne (global,
 Daily, par mode), replays vérifiés par le serveur, 61 succès (dont 21 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 
