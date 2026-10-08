@@ -379,6 +379,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   dans `docs/balance.md`.
 - Back-office refondu : tuiles de cartes, filtres combinables, duplication, réactivation,
   nombre de tirages par carte (`GET /api/admin/events` renvoie `draws`).
+- Options compactes : Guide du jeu en 3 parties repliables. L'option Slack IA n'apparaît que
+  pour un joueur connecté sur un serveur qui a une clé d'API. Débit du Slack limité
+  (`packages/client/src/slack/pacing.ts` : 2 messages d'affilée puis 1 toutes les 20 s,
+  urgences toujours publiées, IA appelée au plus toutes les 45 s).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
