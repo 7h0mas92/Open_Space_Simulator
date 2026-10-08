@@ -1,6 +1,7 @@
 import {
   BALANCE,
   DEV_TRAITS,
+  birthdayFromKey,
   ROLE_PROFILES,
   type Candidate,
   type CommandResult,
@@ -105,7 +106,10 @@ export function generateCandidates(state: GameState, ctx: SimContext): void {
   for (let i = 0; i < BALANCE.recruitment.candidatesPerSprint; i++) {
     const role = pickCandidateRole(state, ctx.rng);
     const dev = generateDev(ctx.rng, role);
-    state.candidates.push({ id: `c${state.sprint}-${i}`, status: 'OPEN', ...dev });
+    const id = `c${state.sprint}-${i}`;
+    // L'anniversaire vient d'un hachage (pas du RNG) : les graines existantes restent identiques.
+    const identity = { ...dev.identity, birthday: birthdayFromKey(`${state.seed}:${id}`) };
+    state.candidates.push({ id, status: 'OPEN', ...dev, identity });
   }
 }
 
@@ -117,7 +121,11 @@ export function hireDev(
   salary: number,
 ): EntityId {
   const id = createEntity(state);
-  const { identity, stats } = profile;
+  const { stats } = profile;
+  const identity = {
+    ...profile.identity,
+    birthday: profile.identity.birthday ?? birthdayFromKey(`${state.seed}:${id}`),
+  };
   addComponent(state, id, 'identity', identity);
   addComponent(state, id, 'stats', { ...stats });
   addComponent(state, id, 'employment', {

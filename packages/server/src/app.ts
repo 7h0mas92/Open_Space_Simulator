@@ -18,6 +18,7 @@ import { dailyRoutes } from './routes/daily.js';
 import { eventsRoutes } from './routes/events.js';
 import { healthRoutes } from './routes/health.js';
 import { meRoutes } from './routes/me.js';
+import { decorRoutes } from './routes/decor.js';
 import { packsRoutes } from './routes/packs.js';
 import { savesRoutes } from './routes/saves.js';
 import { scoresRoutes } from './routes/scores.js';
@@ -76,6 +77,7 @@ export async function buildApp(env: Env, deps: AppDependencies = {}): Promise<Fa
   await app.register(adminRoutes, { prefix: '/api/admin' });
   await app.register(eventsRoutes, { prefix: '/api/events' });
   await app.register(packsRoutes, { prefix: '/api/character-packs' });
+  await app.register(decorRoutes, { prefix: '/api/decor-themes' });
   await app.register(savesRoutes, { prefix: '/api/saves' });
   await app.register(scoresRoutes, { prefix: '/api/scores' });
   await app.register(dailyRoutes, { prefix: '/api/daily' });

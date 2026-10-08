@@ -18,11 +18,13 @@ import { FixedRng, makeContext, newSimulation, stateWithTeam, testCard } from '.
 /** Mercredi 10h du sprint courant. */
 const WEDNESDAY_10H = clockAt(1, (2 * 24 + 2) * 2);
 
-describe('Les 100 cartes', () => {
-  it('sont exactement 100, valides et avec des identifiants uniques', () => {
-    expect(EVENT_CARDS).toHaveLength(100);
+describe('Les 100 cartes (et les cartes de saison)', () => {
+  it('sont 100 de base et 24 de saison, valides et avec des identifiants uniques', () => {
+    const seasonal = EVENT_CARDS.filter((card) => card.conditions.season !== undefined);
+    expect(EVENT_CARDS.length - seasonal.length).toBe(100);
+    expect(seasonal).toHaveLength(24);
     for (const card of EVENT_CARDS) expect(() => EventCardSchema.parse(card)).not.toThrow();
-    expect(new Set(EVENT_CARDS.map((card) => card.id)).size).toBe(100);
+    expect(new Set(EVENT_CARDS.map((card) => card.id)).size).toBe(EVENT_CARDS.length);
   });
 
   it('pointent vers des cartes et des succès qui existent', () => {

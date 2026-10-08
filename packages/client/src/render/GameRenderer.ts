@@ -5,7 +5,12 @@
  * deux pas et dessine. Il ne modifie jamais l'état du jeu : les clics sont remontés à
  * l'interface par des callbacks, qui décide de la commande à envoyer.
  */
-import type { CharacterPackId } from '@oss/shared';
+import {
+  decoratedThemes,
+  type CharacterPackId,
+  type DecorMode,
+  type DecorTheme,
+} from '@oss/shared';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
@@ -14,12 +19,15 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents';
 import { catalogItem, footprint } from '../view/catalog';
+import { decorKey, planDecor } from '../view/decor';
 import { officeLayout, type Cell, type OfficeLayout } from '../view/layout';
 import { checkPlacement, nearestValidCell } from '../view/placement';
 import { liveSprintMinutes } from '../view/liveTime';
 import type { GameView, Rotation } from '../view/types';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
+import { DecorationsView } from './decorations';
+import { THEME_MODELS } from './decorModels';
 import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
@@ -91,6 +99,9 @@ export class GameRenderer {
   private readonly hemi = new THREE.HemisphereLight(0xd6e6ff, 0x6b5a48, 0.9);
   private readonly assets = new AssetLibrary();
   private readonly office = new OfficeView(this.assets);
+  private readonly decorations = new DecorationsView(this.assets);
+  /** Réglage de chaque thème de décoration au back-office (absent = pendant sa période). */
+  private decorModes: Partial<Record<DecorTheme, DecorMode>> = {};
   private readonly characters = new Map<string, CharacterView>();
   private readonly world: AgentWorld;
   private readonly gestures = new GestureRecognizer();
@@ -105,6 +116,8 @@ export class GameRenderer {
   private outlinePass: OutlinePass | null = null;
 
   private view: GameView | null = null;
+  private decorPlanKey = '';
+  private decorPlan: ReturnType<typeof planDecor> | null = null;
   /** Packs de personnages actifs (costumes de Noël, d'Halloween…). */
   private characterPacks: readonly CharacterPackId[] = [];
   private layout: OfficeLayout = officeLayout('GARAGE');
@@ -156,7 +169,7 @@ export class GameRenderer {
     this.renderer.info.autoReset = false;
 
     this.sun.castShadow = true;
-    this.scene.add(this.hemi, this.sun, this.sun.target, this.office.root);
+    this.scene.add(this.hemi, this.sun, this.sun.target, this.office.root, this.decorations.root);
 
     this.smoke = new SmokeEffect(preset.maxParticles);
     this.confetti = new ConfettiEffect(Math.min(200, preset.maxParticles));
@@ -198,6 +211,7 @@ export class GameRenderer {
     this.layout = officeLayout(view.phase);
     this.office.setLayout(this.layout);
     void this.office.setItems(view.items);
+    this.updateDecor(view);
     this.world.sync(view);
     if (phaseChanged) this.fitCamera();
 
@@ -237,6 +251,12 @@ export class GameRenderer {
     this.quality = level;
     this.applyQuality();
     this.resize();
+  }
+
+  /** Change le réglage des décorations de saison (back-office). */
+  setDecorModes(modes: Partial<Record<DecorTheme, DecorMode>>): void {
+    this.decorModes = { ...modes };
+    if (this.view) this.setView(this.view);
   }
 
   /** Change les packs de personnages actifs : toute l'équipe est rhabillée. */
@@ -393,8 +413,30 @@ export class GameRenderer {
     for (const character of this.characters.values()) character.dispose();
     for (const bubble of this.bubbles.values()) bubble.remove();
     this.office.dispose();
+    this.decorations.dispose();
     this.composer?.dispose();
     this.renderer.dispose();
+  }
+
+  // --- Décorations -------------------------------------------------------------------------
+
+  /** Décorations de saison et table d'anniversaire du jour (obstacles pour les personnages). */
+  private updateDecor(view: GameView): void {
+    const themes = decoratedThemes(view.calendar.seasons, this.decorModes);
+    const birthday = view.calendar.birthdays.length > 0;
+    const key = decorKey(this.layout, view.items, themes, birthday);
+    if (key === this.decorPlanKey && this.decorPlan) return;
+    const plan = planDecor(
+      this.layout,
+      view.items,
+      themes,
+      birthday,
+      (theme) => THEME_MODELS[theme].floor.length,
+    );
+    this.decorPlanKey = key;
+    this.decorPlan = plan;
+    this.world.setDecor(plan.blocked, plan.party);
+    void this.decorations.update(key, plan, this.layout, view.items);
   }
 
   // --- Boucle ------------------------------------------------------------------------------
@@ -435,6 +477,7 @@ export class GameRenderer {
     }
     this.smoke.update(delta);
     this.confetti.update(delta);
+    this.decorations.animate(now / 1000, this.reducedMotion);
     for (const event of this.gestures.poll(now)) this.handleGesture(event);
     this.applyEdgePan(delta);
     this.office.setDetail(this.cameraState.zoom, QUALITY_PRESETS[this.quality].decorLodZoom);

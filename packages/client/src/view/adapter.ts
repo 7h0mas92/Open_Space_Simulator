@@ -11,7 +11,10 @@ import {
   BALANCE,
   TEAM_MAX,
   TIME,
+  birthdayFromKey,
+  civilFromDays,
   getInvestor,
+  seasonsAt,
   getPitchArgument,
   type Command,
   type EventCard,
@@ -24,6 +27,7 @@ import { runwayMonths } from '../simulation/economy';
 import { countDesks, RESALE_RATIO } from '../simulation/furniture';
 import { devIds } from '../simulation/helpers';
 import { tasksInColumn } from '../simulation/tasks';
+import { birthdayOf, birthdayPartyIds, calendarDay } from '../simulation/systems/calendar';
 import { getClock } from '../simulation/time';
 import type {
   CandidateView,
@@ -135,6 +139,7 @@ function devView(state: GameState, id: string): DevView | null {
     relations: c.relations[id] ?? {},
     history: [...(c.devLog[id] ?? [])].reverse(),
     look: identity.look,
+    birthday: birthdayOf(state, id),
   };
 }
 
@@ -184,6 +189,7 @@ function candidateViews(state: GameState): CandidateView[] {
         relations: {},
         history: [],
         look: candidate.identity.look,
+        birthday: candidate.identity.birthday ?? birthdayFromKey(`${state.seed}:${candidate.id}`),
       },
     }));
 }
@@ -236,6 +242,7 @@ function pitchBlocker(state: GameState): GameView['pitchBlocker'] {
 
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
+  const today = calendarDay(state, clock.day);
   const minutes = Math.round(clock.hour * 60);
   const lastIncident = state.notifications.findLast((n) => n.kind === 'PROD_DOWN');
   const runway = runwayMonths(state);
@@ -256,6 +263,11 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
           ? context.tickDurationMs
           : Number.POSITIVE_INFINITY,
       syncedAt: context.receivedAt ?? 0,
+    },
+    calendar: {
+      date: civilFromDays(today),
+      seasons: seasonsAt(today),
+      birthdays: birthdayPartyIds(state, clock.day),
     },
     phase: state.phase,
     step: state.stage,

@@ -1,4 +1,4 @@
-import { SPEEDS, type Phase, type Speed } from '@oss/shared';
+import { SEASONS, SPEEDS, type Phase, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView, type GaugeName } from '../../view/types';
 import { useSlack } from '../../slack/store';
@@ -6,10 +6,12 @@ import { MODE_ICONS } from '../menu/ModePicker';
 import { useGame, type PanelId } from '../store/game';
 import {
   formatClock,
+  formatGameDate,
   formatGauge,
   gaugeRatio,
   gaugeTrend,
   isGaugeCritical,
+  localized,
   sprintProgress,
 } from './format';
 import { Tooltip } from './Tooltip';
@@ -161,6 +163,33 @@ export function Gauges({ view }: { view: GameView }) {
   );
 }
 
+/** Date du jour simulé, périodes à thème en cours (🎃, 🎄…) et anniversaires (🎂). */
+function CalendarLine({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const { date, seasons, birthdays } = view.calendar;
+  const names = view.devs.filter((dev) => birthdays.includes(dev.id)).map((dev) => dev.name);
+  return (
+    <p className="clock-line clock-calendar">
+      <span>{formatGameDate(date, i18n.language)}</span>
+      {seasons.map((theme) => {
+        const label = localized(SEASONS[theme].name, i18n.language);
+        return (
+          <span key={theme} className="clock-season" title={label}>
+            <span aria-hidden="true">{SEASONS[theme].icon}</span>
+            <span className="visually-hidden">{label}</span>
+          </span>
+        );
+      })}
+      {names.length > 0 && (
+        <span className="clock-season" title={t('time.birthday', { names: names.join(', ') })}>
+          <span aria-hidden="true">🎂</span>
+          <span className="visually-hidden">{t('time.birthday', { names: names.join(', ') })}</span>
+        </span>
+      )}
+    </p>
+  );
+}
+
 /** Horloge : sprint, jour, heure, étape et avancement du sprint. */
 export function Clock({ view }: { view: GameView }) {
   const { t } = useTranslation();
@@ -177,6 +206,7 @@ export function Clock({ view }: { view: GameView }) {
           {t('time.day', { day: days[weekday(live.day)] ?? '', time: formatClock(live.minute) })}
         </span>
       </p>
+      <CalendarLine view={view} />
       <p className="clock-line">
         <span className={`step step-${view.step}`}>{t(`steps.${view.step}`)}</span>
         <span

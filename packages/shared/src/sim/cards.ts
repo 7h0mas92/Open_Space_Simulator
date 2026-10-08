@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { LocalizedTextSchema } from '../i18n.js';
 import { PhaseSchema } from '../game.js';
+import { DecorThemeSchema } from './calendar.js';
 import { DEV_ROLES, DevRoleSchema, type DevRole } from './components.js';
 
 /**
@@ -40,6 +41,8 @@ export const CardConditionsSchema = z.strictObject({
   afterHour: z.number().int().min(0).max(23).optional(),
   /** Identifiant d'une carte qui doit déjà être sortie. */
   requiresSeen: z.string().optional(),
+  /** La carte ne tombe que pendant la période de ce thème (Halloween, Noël…). */
+  season: DecorThemeSchema.optional(),
 });
 export type CardConditions = z.infer<typeof CardConditionsSchema>;
 

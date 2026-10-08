@@ -12,6 +12,7 @@ import type { SimContext } from './helpers';
 import { seedToState } from './rng';
 import { beginPlanning } from './sprint';
 import { computeValuation } from './economy';
+import { announceSeasons, calendarDay } from './systems/calendar';
 import { recordHistory } from './systems/daily';
 
 export interface GameConfig {
@@ -117,5 +118,6 @@ export function setupNewGame(state: GameState, ctx: SimContext): void {
   state.valuation = computeValuation(state);
   state.stats.maxValuation = state.valuation;
   beginPlanning(state, ctx);
+  announceSeasons(state, ctx, calendarDay(state, 0), false);
   recordHistory(state, 0);
 }

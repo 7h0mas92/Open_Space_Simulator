@@ -33,6 +33,8 @@ export const NOTIFICATION_SOUNDS: Partial<Record<NotificationKind, SoundKey>> = 
   FUNDS_RAISED: 'cash',
   PITCH_FAILED: 'error',
   DEV_LEVEL_UP: 'levelUp',
+  DEV_BIRTHDAY: 'levelUp',
+  SEASON_STARTED: 'success',
   ACHIEVEMENT_UNLOCKED: 'levelUp',
   DEV_RESIGNED: 'error',
   HALLUCINATION: 'error',

@@ -15,6 +15,7 @@ import { metaApi } from '../../api/meta';
 import { useCharacterPacks } from '../../save/packs';
 import { localized } from '../game/format';
 import { CardEditor, editableCard, NEW_CARD } from './CardEditor';
+import { DecorTab } from './DecorTab';
 import {
   activeFilterCount,
   CARD_SORTS,
@@ -728,11 +729,11 @@ function PacksTab() {
 /** Back-office (rôle ADMIN, vérifié aussi par le serveur sur chaque route). */
 export function AdminPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'cards' | 'packs' | 'stats'>('cards');
+  const [tab, setTab] = useState<'cards' | 'packs' | 'decor' | 'stats'>('cards');
   return (
     <div className="admin">
       <div className="tabs" role="tablist" aria-label={t('admin.heading')}>
-        {(['cards', 'packs', 'stats'] as const).map((id) => (
+        {(['cards', 'packs', 'decor', 'stats'] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -744,7 +745,15 @@ export function AdminPage() {
           </button>
         ))}
       </div>
-      {tab === 'cards' ? <CardsTab /> : tab === 'packs' ? <PacksTab /> : <StatsTab />}
+      {tab === 'cards' ? (
+        <CardsTab />
+      ) : tab === 'packs' ? (
+        <PacksTab />
+      ) : tab === 'decor' ? (
+        <DecorTab />
+      ) : (
+        <StatsTab />
+      )}
     </div>
   );
 }

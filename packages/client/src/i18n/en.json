@@ -220,6 +220,7 @@
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
     "day": "{{day}} {{time}}",
+    "birthday": "{{names}}'s birthday: cake at the office!",
     "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     "pause": "Pause",
     "speed": "Speed x{{speed}}",
@@ -270,6 +271,8 @@
   },
   "team": {
     "age": "{{age}} y/o",
+    "birthday": "🎂 Birthday: {{date}}",
+    "birthdayToday": "🎂 It's their birthday today!",
     "salary": "€{{salary}}/month",
     "level": "Level {{level}}",
     "mood": "Mood",
@@ -426,7 +429,8 @@
       "ramen": "Instant ramen cup",
       "officeCharacters": "Three.js office characters (bearded seniors, Rustaceans, designers, robot, ghost…) and accessories for the Kenney characters",
       "uiPack": "Kenney UI pack (CSS interface)",
-      "soundPacks": "Kenney sound packs (audio coming later)"
+      "soundPacks": "Kenney sound packs (audio coming later)",
+      "seasonalDecor": "Seasonal decorations (12 themes) and the birthday table: Three.js cake, presents and balloons on the Furniture Kit's tablecloth table"
     },
     "back": "Back"
   },
@@ -613,6 +617,7 @@
     "tabs": {
       "cards": "Cards",
       "packs": "Character packs",
+      "decor": "Decorations",
       "stats": "Statistics"
     },
     "search": "Search a card",
@@ -703,6 +708,27 @@
       "previewAlt": "The 8 profiles dressed for the {{pack}} pack",
       "on": "On",
       "off": "Off"
+    },
+    "decor": {
+      "intro": "Each theme decorates the office: garlands on the walls, items on the floor and on desks. By default, a theme decorates the office during its period in the game calendar (Halloween at the end of October, Christmas in December…), along with its seasonal events. You can also turn it off or keep it always on. Players see changes when they start their next game.",
+      "legend": "Setting for the {{theme}} theme",
+      "previewAlt": "An office corner decorated for the {{theme}} theme",
+      "live": "Showing right now",
+      "state": {
+        "OFF": "Off",
+        "SEASON": "Out of season",
+        "ALWAYS": "Always"
+      },
+      "mode": {
+        "OFF": "Off",
+        "SEASON": "In season",
+        "ALWAYS": "Always"
+      },
+      "changed": {
+        "OFF": "“{{theme}}” decorations turned off.",
+        "SEASON": "“{{theme}}” decorations shown during their period.",
+        "ALWAYS": "“{{theme}}” decorations always shown."
+      }
     }
   },
   "guide": {
