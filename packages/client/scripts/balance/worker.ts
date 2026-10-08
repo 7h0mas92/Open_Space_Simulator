@@ -3,12 +3,13 @@ import { parentPort, workerData } from 'node:worker_threads';
 import { defaultCardLibrary } from '../../src/simulation';
 import { playBalanceGame } from '../../src/simulation/analysis';
 import type { BotName } from '../../src/simulation/bots';
+import type { GameMode } from '@oss/shared';
 
 interface Job {
-  games: { seed: string; bot: BotName }[];
+  games: { seed: string; bot: BotName; mode: GameMode }[];
 }
 
 const cards = defaultCardLibrary();
 const { games } = workerData as Job;
-const records = games.map(({ seed, bot }) => playBalanceGame(seed, bot, cards));
+const records = games.map(({ seed, bot, mode }) => playBalanceGame(seed, bot, cards, mode));
 parentPort?.postMessage(records);

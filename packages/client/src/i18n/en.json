@@ -695,15 +695,15 @@
           },
           "coffee": {
             "title": "Coffee",
-            "body": "Coffee is the team's fuel. Devs drink it while working and during breaks.\n\nEvery morning at 8am, the coffee machines refill the stock (it costs money). The more machines you have, the more it refills.\n\nAt zero, productivity is divided by 3 and morale drops. A second coffee machine is often a great buy."
+            "body": "Coffee is the team's fuel. Devs drink it while working and during breaks.\n\nEvery morning at 8am, the coffee machines refill the stock (it costs money). The more machines you have, the more it refills. From the Seed stage, the kitchen delivers some too, then the canteen stores more; a big team still needs machines.\n\nAt zero, productivity is divided by 3 and morale drops. A second coffee machine is often a great buy."
           },
           "debt": {
             "title": "Tech debt and stability",
-            "body": "Tech debt grows when you ship features in a rush. It slows devs down, wears out production and can cause big bugs.\n\nStability measures how reliable production is. When it drops, outages happen, especially on Friday at 5pm, and users leave.\n\nRefactoring tasks lower the debt; bugfixes and infra raise stability."
+            "body": "Tech debt grows when you ship features in a rush. It slows devs down, wears out production and can cause big bugs.\n\nStability measures how reliable production is. When it drops, outages happen, especially on Friday at 5pm, and users leave.\n\nEven without shortcuts, code ages: debt creeps up a little every day, faster with a big team, and the more users you have, the more production wears out.\n\nRefactoring tasks lower the debt; bugfixes and infra raise stability."
           },
           "hype": {
             "title": "Hype and users",
-            "body": "Hype is how excited investors and the public are about your startup. It goes up when you ship features and slowly goes down every day. At zero, no fundraising is possible.\n\nUsers arrive with every shipped feature, and a few on their own when hype is high. They leave when production is unstable. They are the ones who bring in money."
+            "body": "Hype is how excited investors and the public are about your startup. It goes up when you ship features and drifts back towards 15 every day: very high, it falls fast; at zero, it slowly climbs back. At zero, no fundraising is possible.\n\nUsers arrive with every shipped feature, and a few on their own when hype is high. They leave when production is unstable. They are the ones who bring in money."
           },
           "dilemma": {
             "title": "The big dilemma",

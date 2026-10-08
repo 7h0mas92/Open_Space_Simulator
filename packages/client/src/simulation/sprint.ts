@@ -15,6 +15,7 @@ import {
   text,
   type SimContext,
 } from './helpers';
+import { hypeDrift } from './systems/daily';
 import { refillBacklog } from './tasks';
 
 /** Remise à zéro des compteurs du sprint. */
@@ -197,7 +198,7 @@ function loseSprint(state: GameState, ctx: SimContext): void {
   addMoney(state, (monthlyRevenue(state) * days) / 30);
   const churn = state.gauges.users * BALANCE.users.baseDailyChurn * days;
   addUsers(state, -churn);
-  addGauge(state, 'hype', -BALANCE.hype.dailyDecay * days);
+  for (let day = 0; day < days; day++) addGauge(state, 'hype', hypeDrift(state.gauges.hype));
   state.valuation = computeValuation(state);
   state.history.sprints.push({
     sprint: state.sprint,

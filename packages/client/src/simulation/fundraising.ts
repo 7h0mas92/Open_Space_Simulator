@@ -1,14 +1,17 @@
 import {
   BALANCE,
   INVESTOR_ARCHETYPES,
+  ROLE_PROFILES,
+  TEAM_MAX,
   PITCH_ARGUMENTS,
   getInvestor,
   getPitchArgument,
   type CommandResult,
   type GameState,
+  type Phase,
   type PitchCategory,
 } from '@oss/shared';
-import { computeValuation } from './economy';
+import { computeValuation, monthlyExpenses } from './economy';
 import {
   addGauge,
   addMoney,
@@ -68,6 +71,36 @@ function drawOptions(state: GameState, ctx: SimContext, exclude: readonly string
     (a) => a.id,
   );
   return ctx.rng.shuffle(pool).slice(0, OPTIONS_PER_ROUND);
+}
+
+/** Phase atteinte grâce à cette levée : 1re levée Seed, 2e Série A, ensuite on reste. */
+function phaseAfterRaise(phase: Phase): Phase {
+  return phase === 'GARAGE' ? 'SEED' : phase === 'SEED' ? 'SERIES_A' : phase;
+}
+
+/** Salaire chargé moyen d'un dev, pour estimer les embauches à venir. */
+const AVERAGE_HIRE_COST =
+  Object.values(ROLE_PROFILES).reduce((total, role) => total + role.salary, 0) /
+    Object.keys(ROLE_PROFILES).length +
+  BALANCE.economy.overheadPerDevMonthly;
+
+/**
+ * Montant maximum d'une levée : avec la trésorerie déjà en caisse, les investisseurs
+ * financent au plus `maxRunwayMonths` mois de dépenses de la phase suivante (équipe à
+ * moitié recrutée). Une levée ne doit pas rendre l'argent sans importance pour le reste
+ * de la partie, et enchaîner les levées n'empile pas les millions.
+ */
+export function maxRaise(state: GameState): number {
+  const next = phaseAfterRaise(state.phase);
+  const { fixedCostsMonthly } = BALANCE.economy;
+  const hires = Math.max(0, Math.ceil(TEAM_MAX[next] / 2) - teamSize(state));
+  const projected =
+    monthlyExpenses(state) -
+    fixedCostsMonthly[state.phase] +
+    fixedCostsMonthly[next] +
+    hires * AVERAGE_HIRE_COST;
+  const target = projected * BALANCE.fundraising.maxRunwayMonths;
+  return Math.round(Math.max(target * 0.25, target - Math.max(0, state.gauges.treasury)));
 }
 
 /** Ouvre le mini-jeu de pitch (pendant la planification). */
@@ -139,13 +172,17 @@ function concludePitch(state: GameState, ctx: SimContext): void {
   }
   // Un investisseur conquis accepte une meilleure valorisation (pre-money) et prend plus de parts.
   const { fundraising: f } = BALANCE;
-  const preMoney = Math.round(computeValuation(state) * clamp(1 + pitch.interest * 0.15, 0.7, 1.6));
+  let preMoney = Math.round(computeValuation(state) * clamp(1 + pitch.interest * 0.15, 0.7, 1.6));
   const share = clamp(
     f.baseDilution + pitch.interest * f.dilutionPerInterest,
     f.minDilution,
     f.maxDilution,
   );
-  const amount = Math.round((preMoney * share) / (1 - share));
+  const amount = Math.min(Math.round((preMoney * share) / (1 - share)), maxRaise(state));
+  // Même pour un chèque plafonné, l'investisseur ne prend jamais moins de `minDilution` :
+  // il valorise alors la startup un peu moins cher.
+  if (amount / (preMoney + amount) < f.minDilution)
+    preMoney = Math.round((amount * (1 - f.minDilution)) / f.minDilution);
   const dilution = amount / (preMoney + amount);
   pitch.result = { success: true, amount, preMoney, dilution };
   addMoney(state, amount);
@@ -169,8 +206,8 @@ function concludePitch(state: GameState, ctx: SimContext): void {
     ),
   );
   // 1re levée : Seed. 2e levée : Série A. La Licorne se gagne à la valorisation.
-  const next = state.phase === 'GARAGE' ? 'SEED' : state.phase === 'SEED' ? 'SERIES_A' : null;
-  if (next) {
+  const next = phaseAfterRaise(state.phase);
+  if (next !== state.phase) {
     state.phase = next;
     notify(
       state,

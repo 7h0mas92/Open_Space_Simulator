@@ -328,8 +328,22 @@ sequenceDiagram
 
 `pnpm balance` joue 10 000 parties avec quatre stratégies automatiques (aléatoire, « ship it »,
 équilibrée, prudente) et produit un rapport : taux de faillite (global et par phase),
-valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Le dernier rapport
-est dans [`docs/balance.md`](docs/balance.md).
+valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
+trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
+collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
+Only, 3 sprints). Le dernier rapport est dans [`docs/balance.md`](docs/balance.md).
+
+Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
+`packages/shared/src/sim/balance.ts`) :
+
+- **Trésorerie** : une levée finance au plus 18 mois de dépenses, trésorerie en caisse comprise.
+  Il faut relever pour grandir, au lieu de dormir sur 20 M€.
+- **Hype** : elle revient chaque jour vers 15 ; haute, elle retombe vite, à 0 elle remonte seule.
+- **Café** : la cuisine (Seed), puis la cantine, livrent du café et stockent plus ; les machines
+  restent nécessaires pour une grande équipe.
+- **Dette et stabilité** : le code vieillit un peu chaque jour (plus vite avec une grande équipe)
+  et la charge des utilisateurs use la prod : rien ne reste à 0 de dette ou à 100 de stabilité
+  sans entretien.
 
 ## Déploiement
 

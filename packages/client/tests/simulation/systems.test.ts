@@ -4,7 +4,7 @@ import { generateCandidates, spawnDev } from '../../src/simulation/devs';
 import { computeValuation, monthlyExpenses, runwayMonths } from '../../src/simulation/economy';
 import { teamSize } from '../../src/simulation/helpers';
 import { activitySystem, isMeetingTime, isPresent } from '../../src/simulation/systems/activity';
-import { dailySystem } from '../../src/simulation/systems/daily';
+import { dailySystem, hypeDrift } from '../../src/simulation/systems/daily';
 import { incidentSystem } from '../../src/simulation/systems/incidents';
 import { coffeeSystem, energySystem } from '../../src/simulation/systems/needs';
 import { productivity, thinksInRust, workSystem } from '../../src/simulation/systems/work';
@@ -173,6 +173,31 @@ describe('Besoins : café et énergie', () => {
     expect(ctx.outbox.some((n) => n.kind === 'COFFEE_EMPTY')).toBe(true);
   });
 
+  it('la cuisine livre du café à partir de la phase Seed', () => {
+    const { state } = stateWithTeam(['SENIOR_BEARD']);
+    const ctx = makeContext(state);
+    ctx.office.coffeeRestock = 0;
+    state.phase = 'GARAGE';
+    state.gauges.coffee = 10;
+    coffeeSystem(state, ctx, at(0, 8));
+    expect(state.gauges.coffee).toBe(10);
+    state.phase = 'SERIES_A';
+    coffeeSystem(state, ctx, at(1, 8));
+    expect(state.gauges.coffee).toBe(10 + BALANCE.coffee.kitchenRestock.SERIES_A);
+  });
+
+  it('un grand stock fait durer le café d’une grande équipe', () => {
+    const drink = (phase: GameState['phase']) => {
+      const { state, ids } = stateWithTeam(['SENIOR_BEARD', 'TEN_X']);
+      state.phase = phase;
+      state.gauges.coffee = 50;
+      for (const id of ids) state.components.activity[id]!.kind = 'WORKING';
+      coffeeSystem(state, makeContext(state), at(0, 10));
+      return 50 - state.gauges.coffee;
+    };
+    expect(drink('UNICORN')).toBeLessThan(drink('SEED'));
+  });
+
   it('fatigue au travail, repos la nuit, l’IA ne se fatigue jamais', () => {
     const { state, ids } = stateWithTeam(['SENIOR_BEARD', 'AI_AGENT']);
     const ctx = makeContext(state);
@@ -255,6 +280,34 @@ describe('Journée (minuit)', () => {
     expect(monthlyExpenses(state)).toBeGreaterThan(0);
     dailySystem(state, makeContext(state), at(1, 10));
     expect(state.history.daily).toHaveLength(1);
+  });
+
+  it('la hype revient vers son niveau de base au lieu de rester collée à 0', () => {
+    expect(hypeDrift(0)).toBeGreaterThan(0);
+    expect(hypeDrift(BALANCE.hype.baseline)).toBe(0);
+    expect(hypeDrift(90)).toBeLessThan(hypeDrift(40));
+    const { state } = stateWithTeam(['SENIOR_BEARD']);
+    state.gauges.hype = 0;
+    for (let day = 1; day <= 60; day++) dailySystem(state, makeContext(state), at(day, 0));
+    expect(state.gauges.hype).toBeGreaterThan(5);
+    expect(state.gauges.hype).toBeLessThan(BALANCE.hype.baseline);
+  });
+
+  it('la dette monte un peu chaque jour, la charge use la prod', () => {
+    const { state } = stateWithTeam(['SENIOR_BEARD', 'TEN_X']);
+    state.gauges.debt = 0;
+    dailySystem(state, makeContext(state), at(1, 0));
+    expect(state.gauges.debt).toBeGreaterThan(0);
+
+    const stabilityAfterADay = (users: number) => {
+      const { state: s } = stateWithTeam([]);
+      s.gauges.debt = 0;
+      s.gauges.stability = 50;
+      s.gauges.users = users;
+      dailySystem(s, makeContext(s), at(1, 0));
+      return s.gauges.stability;
+    };
+    expect(stabilityAfterADay(1_000_000)).toBeLessThan(stabilityAfterADay(100));
   });
 
   it('un dev à bout démissionne avec un faux post LinkedIn', () => {

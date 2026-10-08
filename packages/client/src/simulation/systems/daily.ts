@@ -11,10 +11,11 @@ import {
   devsWithRole,
   notify,
   teamMoral,
+  teamSize,
   text,
   type SimContext,
 } from '../helpers';
-import { round } from '../math';
+import { log10Approx, round } from '../math';
 import type { SimClock } from '../time';
 import { thinksInRust } from './work';
 
@@ -38,22 +39,33 @@ function users(state: GameState): void {
   addUsers(state, -churn);
 }
 
+/** Retour quotidien de la hype vers son niveau de base (négatif quand elle est au-dessus). */
+export function hypeDrift(hype: number): number {
+  return (BALANCE.hype.baseline - hype) * BALANCE.hype.dailyReversion;
+}
+
 /** Dérive naturelle des jauges et effets du mobilier. */
 function gauges(state: GameState, ctx: SimContext): void {
+  const { stability, debt } = BALANCE;
   const productOwners = devsWithRole(state, 'PRODUCT_OWNER').length;
   addGauge(
     state,
     'hype',
-    -BALANCE.hype.dailyDecay + productOwners * BALANCE.hype.poDailyGain + ctx.office.hypePerDay,
+    hypeDrift(state.gauges.hype) + productOwners * BALANCE.hype.poDailyGain + ctx.office.hypePerDay,
   );
   addGauge(
     state,
     'stability',
-    BALANCE.stability.dailyRecovery -
-      state.gauges.debt * BALANCE.stability.dailyDebtErosion +
+    stability.dailyRecovery -
+      state.gauges.debt * stability.dailyDebtErosion -
+      log10Approx(state.gauges.users) * stability.loadErosionPerDecade +
       ctx.office.stabilityPerDay,
   );
-  addGauge(state, 'debt', ctx.office.debtPerDay);
+  addGauge(
+    state,
+    'debt',
+    debt.dailyEntropy + teamSize(state) * debt.dailyEntropyPerDev + ctx.office.debtPerDay,
+  );
 }
 
 /** Moral quotidien de chaque dev ; à 0, il démissionne (faux post LinkedIn). */

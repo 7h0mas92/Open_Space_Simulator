@@ -3,13 +3,15 @@
  * sans navigateur, et produit un rapport d'équilibrage (taux de faillite, valorisation
  * moyenne, cartes trop fortes).
  *
- * Options : --games 10000 (total, réparti entre les bots), --threads 4, --out reports/balance.md
+ * Options : --games 10000 (mode Normal, réparti entre les bots), --mode-games 400 (par autre
+ * mode : Facile, Hardcore, Stagiaires Only, 3 sprints), --threads 4, --out reports/balance.md
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { Worker } from 'node:worker_threads';
+import type { GameMode } from '@oss/shared';
 import { defaultCardLibrary } from '../../src/simulation';
 import { aggregate, renderReport, type GameRecord } from '../../src/simulation/analysis';
 import { BOT_NAMES, type BotName } from '../../src/simulation/bots';
@@ -17,16 +19,25 @@ import { BOT_NAMES, type BotName } from '../../src/simulation/bots';
 const { values } = parseArgs({
   options: {
     games: { type: 'string', default: '10000' },
+    'mode-games': { type: 'string', default: '400' },
     threads: { type: 'string', default: String(availableParallelism()) },
     out: { type: 'string', default: 'reports/balance.md' },
   },
 });
 
-const total = Number(values.games);
+/** Le mode Daily est une partie Normale avec la graine du jour : rien à mesurer de plus. */
+const OTHER_MODES: GameMode[] = ['EASY', 'HARDCORE', 'INTERNS_ONLY', 'SHIP_IN_3'];
+
+const jobs: { seed: string; bot: BotName; mode: GameMode }[] = [];
+const addGames = (mode: GameMode, count: number, prefix: string) => {
+  for (let i = 0; i < count; i++)
+    jobs.push({ seed: `${prefix}-${i}`, bot: BOT_NAMES[i % BOT_NAMES.length] as BotName, mode });
+};
+addGames('NORMAL', Number(values.games), 'balance');
+for (const mode of OTHER_MODES)
+  addGames(mode, Number(values['mode-games']), `balance-${mode.toLowerCase()}`);
+const total = jobs.length;
 const threads = Math.max(1, Math.min(Number(values.threads), total));
-const jobs: { seed: string; bot: BotName }[] = [];
-for (let i = 0; i < total; i++)
-  jobs.push({ seed: `balance-${i}`, bot: BOT_NAMES[i % BOT_NAMES.length] as BotName });
 
 const started = performance.now();
 console.log(`Simulation de ${total} parties sur ${threads} threads...`);

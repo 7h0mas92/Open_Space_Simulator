@@ -4,12 +4,15 @@ import type { SimClock } from '../time';
 
 /**
  * Système « café » : les devs consomment du café en travaillant et pendant leurs
- * pauses ; la machine est réapprovisionnée chaque matin à 8h (et facturée).
+ * pauses ; les machines et la cuisine sont réapprovisionnées chaque matin à 8h (et facturées).
  */
 export function coffeeSystem(state: GameState, ctx: SimContext, clock: SimClock): void {
   if (clock.hour === 8 && !clock.isWeekend) {
     const missing = 100 - state.gauges.coffee;
-    const restock = Math.min(missing, ctx.office.coffeeRestock);
+    const restock = Math.min(
+      missing,
+      ctx.office.coffeeRestock + BALANCE.coffee.kitchenRestock[state.phase],
+    );
     if (restock > 0) {
       addGauge(state, 'coffee', restock);
       addMoney(state, -restock * BALANCE.coffee.pricePerPoint);
@@ -27,7 +30,7 @@ export function coffeeSystem(state: GameState, ctx: SimContext, clock: SimClock)
       consumption += BALANCE.coffee.consumptionPerWorkTick * addict;
     else if (kind === 'COFFEE') consumption += BALANCE.coffee.consumptionPerBreak * addict;
   }
-  addGauge(state, 'coffee', -consumption);
+  addGauge(state, 'coffee', -consumption * BALANCE.coffee.stockScale[state.phase]);
   if (before > 0 && state.gauges.coffee <= 0) {
     notify(
       state,

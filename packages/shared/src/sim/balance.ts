@@ -149,6 +149,23 @@ export const BALANCE = {
     addictMultiplier: 2,
     /** Coût d'un point de café réapprovisionné. */
     pricePerPoint: 4,
+    /**
+     * Livraison quotidienne de la cuisine (puis de la cantine) de chaque phase, en plus
+     * des machines. Le garage n'a que sa cafetière.
+     */
+    kitchenRestock: { GARAGE: 0, SEED: 10, SERIES_A: 20, UNICORN: 35, END: 0 } as Record<
+      Phase,
+      number
+    >,
+    /**
+     * Consommation relative selon la taille du stock : la jauge est un pourcentage du stock,
+     * et la cantine d'une licorne stocke plus de café que le placard du garage. Sans ça,
+     * une équipe de 15 vide la jauge chaque jour, quel que soit le nombre de machines.
+     */
+    stockScale: { GARAGE: 1, SEED: 1, SERIES_A: 0.7, UNICORN: 0.45, END: 1 } as Record<
+      Phase,
+      number
+    >,
   },
   activity: {
     coffeeBreak: 0.05,
@@ -235,6 +252,12 @@ export const BALANCE = {
     hypePerRefactoPoint: -0.8,
   },
   debt: {
+    /**
+     * Le code vieillit tout seul : chaque jour, la dette monte un peu, d'autant plus que
+     * l'équipe est grande. Sans refacto régulier, elle ne reste pas à 0.
+     */
+    dailyEntropy: 0.15,
+    dailyEntropyPerDev: 0.02,
     featurePerPoint: 1.1,
     refactoPerPoint: -1.8,
     bugfixPerPoint: -0.4,
@@ -246,7 +269,12 @@ export const BALANCE = {
     bugfixPerPoint: 2.2,
     infraPerPoint: 1.6,
     dailyDebtErosion: 0.02,
-    dailyRecovery: 0.3,
+    dailyRecovery: 0.25,
+    /**
+     * Érosion quotidienne due à la charge, par puissance de 10 d'utilisateurs
+     * (1 M d'utilisateurs : −0,3 par jour). Plus de monde, plus de choses qui cassent.
+     */
+    loadErosionPerDecade: 0.05,
     outageLoss: 15,
     /** Probabilité de panne le vendredi à 17h quand la stabilité est à 0. */
     fridayOutageMax: 0.6,
@@ -255,7 +283,12 @@ export const BALANCE = {
     outageUserLoss: 0.02,
   },
   hype: {
-    dailyDecay: 0.4,
+    /**
+     * La hype revient chaque jour vers son niveau de base (le bruit de fond autour de la
+     * startup) : elle redescend vite quand elle est haute, et ne reste jamais collée à 0.
+     */
+    baseline: 15,
+    dailyReversion: 0.01,
     /** Au-delà de cette valeur, la hype ne monte plus avec les livraisons. */
     softCap: 120,
     poDailyGain: 0.25,
@@ -301,7 +334,7 @@ export const BALANCE = {
   valuation: {
     base: 4_000_000,
     perDev: 400_000,
-    perUser: 100,
+    perUser: 200,
     arrMultiple: 15,
   },
   fundraising: {
@@ -312,6 +345,12 @@ export const BALANCE = {
     dilutionPerInterest: 0.03,
     minDilution: 0.1,
     maxDilution: 0.3,
+    /**
+     * Les investisseurs financent au plus ce nombre de mois de dépenses, trésorerie en caisse
+     * comprise (équipe de la phase suivante à moitié recrutée). Au-delà, l'argent dort et ne
+     * pose plus de choix. Une levée rapporte quand même au moins le quart de ce montant.
+     */
+    maxRunwayMonths: 18,
   },
   phases: {
     unicornValuation: 1_000_000_000,
