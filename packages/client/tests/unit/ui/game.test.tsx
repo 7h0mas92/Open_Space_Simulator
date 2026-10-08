@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { metaApi } from '../../../src/api/meta';
@@ -140,6 +140,40 @@ describe('Équipe et recrutement', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Licencier' }));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmer' }));
     expect(useGame.getState().view!.devs.some((d) => d.id === dev.id)).toBe(false);
+  });
+
+  it('montre la performance globale et la productivité des 2 derniers sprints', async () => {
+    const simulation = officeSimulation(SEED_OFFICE);
+    playSprint(simulation);
+    simulation.dispatch({ type: 'END_DEMO' });
+    playSprint(simulation);
+    simulation.dispatch({ type: 'END_DEMO' });
+    await startGame(simulation);
+    const dev = useGame.getState().view!.devs.find((d) => d.role !== 'GHOST')!;
+    const [last, previous] = dev.performance.lastSprints;
+    expect(last!.sprint).toBe(previous!.sprint + 1);
+    await userEvent.click(screen.getByRole('button', { name: /Équipe/ }));
+    await userEvent.click(screen.getByRole('button', { name: new RegExp(dev.name) }));
+    expect(screen.getByRole('heading', { name: 'Performance globale' })).toBeInTheDocument();
+    expect(screen.getByText(`${dev.performance.score}`)).toBeInTheDocument();
+    const sprints = screen.getByRole('region', { name: 'Productivité par sprint' });
+    expect(within(sprints).getByText('Dernier sprint')).toBeInTheDocument();
+    expect(within(sprints).getByText("Sprint d'avant")).toBeInTheDocument();
+    expect(within(sprints).getByText(`Sprint ${last!.sprint}`)).toBeInTheDocument();
+    expect(within(sprints).getByText(`Sprint ${previous!.sprint}`)).toBeInTheDocument();
+    expect(screen.getByText('Ancienneté')).toBeInTheDocument();
+  });
+
+  it('détaille chaque candidat : performance estimée, marché, chances d’accepter', async () => {
+    await startGame();
+    await userEvent.click(screen.getByRole('button', { name: /Recrutement/ }));
+    expect(screen.getAllByText('Performance estimée')).toHaveLength(3);
+    expect(screen.getAllByText('Salaire du marché')).toHaveLength(3);
+    // L'offre par défaut est la demande du candidat : il n'est pas sûr d'accepter.
+    const chance = screen.getAllByText(/Chances qu'il ou elle accepte cette offre/)[0]!;
+    const slider = screen.getAllByRole('slider')[0]!;
+    fireEvent.change(slider, { target: { value: slider.getAttribute('max') } });
+    expect(chance).toHaveTextContent('100 %');
   });
 
   it('fait une offre à un candidat', async () => {

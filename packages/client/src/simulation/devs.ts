@@ -28,6 +28,7 @@ import {
   text,
   type SimContext,
 } from './helpers';
+import { emptySprintPerformance } from './performance';
 import type { Rng } from './rng';
 
 /** Fréquence des profils parmi les candidats (le Dev Fantôme est rare). */
@@ -142,6 +143,10 @@ export function hireDev(
   addComponent(state, id, 'activity', { kind: 'GONE', untilTick: 0, withId: null });
   addComponent(state, id, 'worker', { taskId: null });
   addComponent(state, id, 'devLog', []);
+  addComponent(state, id, 'performance', {
+    current: emptySprintPerformance(state.sprint),
+    sprints: [],
+  });
   if (identity.role === 'GHOST') {
     addComponent(state, id, 'remote', true);
     addComponent(state, id, 'remoteReason', 'GHOST');
@@ -232,7 +237,10 @@ export function resignDev(state: GameState, ctx: SimContext, devId: EntityId): v
 }
 
 /** Probabilité qu'un candidat accepte une offre de salaire. */
-export function acceptanceChance(candidate: Candidate, salary: number): number {
+export function acceptanceChance(
+  candidate: Pick<Candidate, 'askingSalary'> & { stats: Pick<Stats, 'ego'> },
+  salary: number,
+): number {
   const { minRatio, sureRatio } = BALANCE.recruitment;
   const ratio = salary / candidate.askingSalary;
   if (ratio < minRatio) return 0;

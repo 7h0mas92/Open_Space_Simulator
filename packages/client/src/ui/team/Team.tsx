@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { DevView, GameView } from '../../view/types';
 import { formatBirthday, formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
+import { GradeBadge, PerformancePanel, SprintProductivity, Strengths } from './Performance';
 import { moodEmoji, StatBars } from './StatBars';
 
 /** Liste de l'équipe, puis fiche détaillée du dev choisi (ou sélectionné dans la scène). */
@@ -48,6 +49,11 @@ export function Team({ view }: { view: GameView }) {
                   ? `${t('team.remoteBadge')} · ${t(`remoteShort.${dev.remoteReason}`)}`
                   : t(`activities.${dev.activity}`)}
               </span>
+              <GradeBadge
+                grade={dev.performance.grade}
+                score={dev.performance.score}
+                estimated={dev.performance.estimated}
+              />
             </button>
           </li>
         ))}
@@ -61,6 +67,12 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
   const dispatch = useGame((s) => s.dispatch);
   const [confirming, setConfirming] = useState(false);
   const colleagues = view.devs.filter((other) => other.id !== dev.id);
+  const { career } = dev;
+  const ranked = colleagues
+    .map((other) => ({ other, value: dev.relations[other.id] ?? 0 }))
+    .sort((a, b) => b.value - a.value);
+  const bestFriend = ranked[0] && ranked[0].value > 25 ? ranked[0].other : null;
+  const rival = ranked.at(-1) && (ranked.at(-1)?.value ?? 0) < -25 ? ranked.at(-1)?.other : null;
 
   return (
     <article className="dev-sheet" aria-labelledby={`dev-${dev.id}`}>
@@ -82,6 +94,8 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
         <p className="bio">{localized(dev.bio, i18n.language)}</p>
         <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
       </header>
+      <PerformancePanel performance={dev.performance} />
+      <SprintProductivity performance={dev.performance} />
       <dl className="facts">
         <div>
           <dt>{t('team.activity')}</dt>
@@ -99,6 +113,31 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
           <dt>{t('team.trait')}</dt>
           <dd>{t(`traits.${dev.trait}` as never)}</dd>
         </div>
+        {career && (
+          <>
+            <div>
+              <dt>{t('team.seniority')}</dt>
+              <dd>
+                {t('team.seniorityValue', {
+                  count: career.sprintsInTeam,
+                  sprint: career.hiredAtSprint,
+                })}
+              </dd>
+            </div>
+            <div>
+              <dt>{t('team.tasksDone')}</dt>
+              <dd>{career.tasksDone}</dd>
+            </div>
+            <div>
+              <dt>{t('team.currentTask')}</dt>
+              <dd>
+                {career.currentTask
+                  ? localized(career.currentTask, i18n.language)
+                  : t('team.noTask')}
+              </dd>
+            </div>
+          </>
+        )}
         <div>
           <dt>{t('team.mood')}</dt>
           <dd>
@@ -122,10 +161,30 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
           })}
         </p>
       )}
+      <p className="hint">{t(`traitDescriptions.${dev.trait}`)}</p>
+      {career && (
+        <div className="xp">
+          <span>
+            {t('team.level', { level: dev.level })} ·{' '}
+            {t('team.xp', { xp: Math.floor(career.xp), next: career.xpToNext })}
+          </span>
+          <span className="bar" aria-hidden="true">
+            <span style={{ width: `${Math.min(100, (career.xp / career.xpToNext) * 100)}%` }} />
+          </span>
+        </div>
+      )}
       <StatBars stats={dev.stats} />
+      <Strengths stats={dev.stats} />
       {colleagues.length > 0 && (
         <section>
           <h4>{t('team.relations')}</h4>
+          {(bestFriend || rival) && (
+            <p className="hint">
+              {bestFriend && t('team.bestFriend', { name: bestFriend.name })}
+              {bestFriend && rival && ' · '}
+              {rival && t('team.rival', { name: rival.name })}
+            </p>
+          )}
           <ul className="relations">
             {colleagues.map((other) => {
               const value = dev.relations[other.id] ?? 0;

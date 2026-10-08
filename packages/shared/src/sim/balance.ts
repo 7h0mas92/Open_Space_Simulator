@@ -137,6 +137,16 @@ export const BALANCE = {
     xpPerLevel: 120,
     autoAssign: true,
   },
+  performance: {
+    /**
+     * Travail produit par heure travaillée par un dev « standard » (vitesse 5, profil sans
+     * bonus) dans des conditions de jeu ordinaires (moral, dette, réunions...), mesuré sur
+     * des parties simulées : c'est le 100 % de la productivité.
+     */
+    referenceUnitsPerHour: 0.7,
+    /** Sprints terminés gardés dans la fiche de chaque dev. */
+    sprintsKept: 6,
+  },
   energy: {
     drainPerWorkTick: 1.6,
     enduranceSaving: 0.07,

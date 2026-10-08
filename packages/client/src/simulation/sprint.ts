@@ -5,6 +5,7 @@ import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue } from './economy';
 import { endGame, endOfTime } from './endings';
 import { phaseIndex } from './furniture';
+import { closeSprintPerformance } from './performance';
 import {
   addGauge,
   addMoney,
@@ -131,6 +132,7 @@ export function endSprint(state: GameState, ctx: SimContext): void {
     valuation: state.valuation,
     feedback: pickFeedback(state, ctx, shipped),
   });
+  closeSprintPerformance(state);
   state.stage = 'DEMO';
   notify(
     state,
@@ -216,6 +218,7 @@ function loseSprint(state: GameState, ctx: SimContext): void {
       text(['« Il se passe quelque chose chez vous ? »', '"Is anything happening over there?"']),
     ],
   });
+  closeSprintPerformance(state, true);
   notify(
     state,
     ctx,

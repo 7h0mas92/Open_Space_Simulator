@@ -155,6 +155,16 @@
     "ZEN": "Zen",
     "GAMER": "Gamer"
   },
+  "traitDescriptions": {
+    "COFFEE_ADDICT": "Drinks twice as much coffee. +10% speed when coffee is above 50, works from home when it is empty.",
+    "NIGHT_OWL": "Arrives and leaves 2 hours later than everyone else.",
+    "WORKAHOLIC": "Stays 3 extra hours and comes in on Saturday. Tires 20% faster, but work lifts their morale.",
+    "CHATTERBOX": "Chats 2.5 times more often: bonds grow, tickets wait.",
+    "PERFECTIONIST": "−10% speed, +15% quality.",
+    "GRUMPY": "Starts off on the wrong foot with everyone and argues twice as often.",
+    "ZEN": "Loses morale half as fast.",
+    "GAMER": "Plays table football 3 times more often."
+  },
   "taskTypes": {
     "FEATURE": "Feature",
     "REFACTOR": "Refactor",
@@ -297,7 +307,16 @@
     "remoteBadge": "🏠 Remote",
     "officeSummary": "{{office}} at the office · {{remote}} remote · {{desks}} desks",
     "noDeskHint": "Not enough desks: buy some in build mode to bring the team back.",
-    "remoteHint": "Remote work is automatic. From home: no office coffee or desk needed, less fatigue, but −{{productivity}}% productivity, −{{quality}}% quality and weaker ties with the team."
+    "remoteHint": "Remote work is automatic. From home: no office coffee or desk needed, less fatigue, but −{{productivity}}% productivity, −{{quality}}% quality and weaker ties with the team.",
+    "seniority": "Seniority",
+    "seniorityValue_one": "{{count}} sprint (joined in sprint {{sprint}})",
+    "seniorityValue_other": "{{count}} sprints (joined in sprint {{sprint}})",
+    "tasksDone": "Tasks done",
+    "currentTask": "Current task",
+    "noTask": "None",
+    "xp": "{{xp}}/{{next}} XP",
+    "bestFriend": "Best ally: {{name}}",
+    "rival": "Nemesis: {{name}}"
   },
   "remoteReasons": {
     "GHOST": "Always remote, they are a ghost",
@@ -319,7 +338,61 @@
     "offer": "Your offer: €{{salary}}/month",
     "hire": "Make offer",
     "none": "No more candidates this sprint.",
-    "teamFull": "Team is full for this phase ({{max}} max)."
+    "teamFull": "Team is full for this phase ({{max}} max).",
+    "market": "Market salary",
+    "acceptance": "Chance they accept this offer: {{chance}}%"
+  },
+  "perf": {
+    "title": "Overall performance",
+    "estimatedTitle": "Estimated performance",
+    "measured": "Measured over their last 2 sprints.",
+    "estimated": "Estimated from their profile: it will be measured at the end of their first sprint.",
+    "estimatedShort": "estimated",
+    "badgeTitle": "Performance {{score}}/100: {{label}}",
+    "grades": {
+      "S": "Outstanding",
+      "A": "Excellent",
+      "B": "Solid",
+      "C": "Average",
+      "D": "Struggling"
+    },
+    "productivity": "Productivity",
+    "quality": "Quality",
+    "expected": "Expected (profile)",
+    "expectedProductivity": "Expected productivity",
+    "expectedQuality": "Expected quality",
+    "incidents": "Outages caused",
+    "help": "Productivity: work done per hour spent on a task, 100% = a standard dev. The grade combines productivity (50%), quality (35%) and endurance (15%), with a bonus for the Product Owner and the Designer and −5 per outage caused.",
+    "sprintsTitle": "Productivity per sprint",
+    "lastSprint": "Last sprint",
+    "previousSprint": "Sprint before",
+    "noSprintYet": "No finished sprint in the team yet.",
+    "notInTeam": "Not in the team yet.",
+    "lostSprint": "Lost sprint: nobody shipped anything.",
+    "noTask": "No task this sprint. Put tasks in “To do”.",
+    "points": "Shipped",
+    "pointsValue_one": "{{count}} pt ({{tasks}} task(s))",
+    "pointsValue_other": "{{count}} pts ({{tasks}} task(s))",
+    "hours": "Time on tasks",
+    "hoursValue_one": "{{count}} h",
+    "hoursValue_other": "{{count}} h",
+    "incidentsValue_one": "{{count}} prod outage caused",
+    "incidentsValue_other": "{{count}} prod outages caused",
+    "current": "Current sprint: {{productivity}}% · {{hours}} h on tasks · {{points}} pts shipped",
+    "currentIdle": "Current sprint: nothing produced yet.",
+    "strengthsLabel": "Strengths and weaknesses",
+    "strengths": {
+      "speed": "Fast",
+      "quality": "Clean code",
+      "endurance": "Tireless",
+      "ego": "Easygoing"
+    },
+    "weaknesses": {
+      "speed": "Slow",
+      "quality": "Fragile code",
+      "endurance": "Burns out fast",
+      "ego": "Oversized ego"
+    }
   },
   "build": {
     "title": "Build mode",

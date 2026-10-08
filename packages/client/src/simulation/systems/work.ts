@@ -17,6 +17,7 @@ import {
   text,
   type SimContext,
 } from '../helpers';
+import { recordTaskDone, recordWork } from '../performance';
 
 /** Le dev pense en Rust : le Rustacé lui-même, ou un collègue converti. */
 export function thinksInRust(state: GameState, devId: EntityId): boolean {
@@ -140,6 +141,7 @@ function completeTask(state: GameState, ctx: SimContext, taskId: EntityId, devId
   if (worker) worker.taskId = null;
   const employment = state.components.employment[devId];
   if (employment) employment.tasksDone += 1;
+  recordTaskDone(state, devId, task.size);
 
   const quality = task.progress > 0 ? task.qualitySum / task.progress : 0.5;
   const debtMultiplier = task.progress > 0 ? task.debtFactor / task.progress : 1;
@@ -214,7 +216,9 @@ export function workSystem(state: GameState, ctx: SimContext): void {
     if (task.column === 'TODO') task.column = 'IN_PROGRESS';
     const rate = productivity(state, ctx, devId, task, hasProductOwner);
     task.progress += rate;
-    task.qualitySum += rate * effectiveQuality(state, ctx, devId);
+    const quality = effectiveQuality(state, ctx, devId);
+    task.qualitySum += rate * quality;
+    recordWork(state, devId, rate, quality);
     task.debtFactor += rate * ROLE_PROFILES[identity.role].debtMultiplier;
     gainXp(state, ctx, devId, rate);
     if (task.progress >= task.work) completeTask(state, ctx, taskId, devId);

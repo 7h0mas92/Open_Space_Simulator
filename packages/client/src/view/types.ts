@@ -67,6 +67,64 @@ export interface DevStats {
   readonly ego: number;
 }
 
+/** Note de performance globale, de S (excellent) à D (à la peine). */
+export const PERFORMANCE_GRADES = ['S', 'A', 'B', 'C', 'D'] as const;
+export type PerformanceGrade = (typeof PERFORMANCE_GRADES)[number];
+
+/** Ce qu'un dev a produit pendant un sprint. */
+export interface SprintPerformanceView {
+  readonly sprint: number;
+  /** Productivité en % d'un dev standard, ou null s'il n'a pas eu de tâche. */
+  readonly productivity: number | null;
+  /** Qualité moyenne du travail (0 à 1), ou null s'il n'a rien produit. */
+  readonly quality: number | null;
+  /** Points de tâches terminées. */
+  readonly points: number;
+  readonly tasks: number;
+  /** Heures passées sur une tâche. */
+  readonly hours: number;
+  /** Pannes de prod provoquées. */
+  readonly incidents: number;
+  /** Sprint perdu (carte « sprintsLost ») : personne n'a rien produit. */
+  readonly lost: boolean;
+}
+
+export interface PerformanceView {
+  /** Performance globale de 0 à 100. */
+  readonly score: number;
+  readonly grade: PerformanceGrade;
+  /** Vrai tant qu'aucun sprint terminé ne permet de la mesurer : elle vient du profil. */
+  readonly estimated: boolean;
+  /** Productivité retenue pour la note, en % d'un dev standard. */
+  readonly productivity: number;
+  /** Qualité retenue pour la note, de 0 à 1. */
+  readonly quality: number;
+  /** Productivité et qualité attendues d'après le profil (stats, rôle, niveau, trait). */
+  readonly expectedProductivity: number;
+  readonly expectedQuality: number;
+  /** Pannes provoquées pendant les 2 derniers sprints. */
+  readonly incidents: number;
+  /** Les 2 derniers sprints terminés, du plus récent au plus ancien (0 à 2 éléments). */
+  readonly lastSprints: readonly SprintPerformanceView[];
+  /** Sprint en cours (null pour un candidat). */
+  readonly current: SprintPerformanceView | null;
+}
+
+/** Carrière d'un dev dans l'entreprise. */
+export interface CareerView {
+  /** Sprint d'arrivée dans l'équipe. */
+  readonly hiredAtSprint: number;
+  /** Sprints passés dans l'équipe (le sprint d'arrivée compte). */
+  readonly sprintsInTeam: number;
+  /** Expérience accumulée vers le prochain niveau, et expérience nécessaire. */
+  readonly xp: number;
+  readonly xpToNext: number;
+  /** Tâches terminées depuis l'arrivée. */
+  readonly tasksDone: number;
+  /** Tâche en cours, ou null. */
+  readonly currentTask: LocalizedText | null;
+}
+
 export interface DevView {
   readonly id: string;
   readonly name: string;
@@ -95,6 +153,10 @@ export interface DevView {
   readonly look: number;
   /** Date d'anniversaire (jour et mois). */
   readonly birthday: Birthday;
+  /** Performance globale et productivité par sprint. */
+  readonly performance: PerformanceView;
+  /** Ancienneté, expérience, tâches (null pour un candidat). */
+  readonly career: CareerView | null;
 }
 
 export const TASK_TYPES = ['FEATURE', 'REFACTOR', 'BUGFIX', 'INFRA'] as const;
@@ -124,6 +186,8 @@ export interface CandidateView {
   readonly dev: DevView;
   /** Salaire demandé. */
   readonly askingSalary: number;
+  /** Salaire de référence de son profil sur le marché. */
+  readonly marketSalary: number;
 }
 
 /** Rotation d'un objet posé, en quarts de tour. */
