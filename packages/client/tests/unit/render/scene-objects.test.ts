@@ -58,14 +58,32 @@ describe('personnages', () => {
   it('se replient sur un personnage procédural sans GLB et suivent l’instantané', () => {
     const character = new CharacterView('dev-1', 'INTERN', 3, noAssets);
     character.update(
-      { id: 'dev-1', x: 2, z: 4, facing: 1, pose: 'sleep', visible: true, thought: null },
+      {
+        id: 'dev-1',
+        x: 2,
+        z: 4,
+        facing: 1,
+        pose: 'sleep',
+        visible: true,
+        thought: null,
+        using: null,
+      },
       0.1,
       false,
     );
     expect(character.root.position.toArray()).toEqual([2, 0, 4]);
     expect(character.outlineTarget.rotation.x).toBeGreaterThan(0.2); // penché sur le clavier
     character.update(
-      { id: 'dev-1', x: 2, z: 4, facing: 1, pose: 'walk', visible: false, thought: null },
+      {
+        id: 'dev-1',
+        x: 2,
+        z: 4,
+        facing: 1,
+        pose: 'walk',
+        visible: false,
+        thought: null,
+        using: null,
+      },
       0.1,
       true,
     );

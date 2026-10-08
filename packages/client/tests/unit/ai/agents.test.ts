@@ -41,6 +41,20 @@ describe('IA des personnages', () => {
     expect(cells.size).toBe(visible.length);
   });
 
+  it('indique le bureau dont chaque dev se sert (pour allumer son écran)', () => {
+    const working = withActivity(view, 'WORKING');
+    const world = new AgentWorld(1);
+    // Au départ, tout le monde marche depuis l'entrée : aucun bureau n'est utilisé.
+    expect(run(world, working, 1).every((agent) => agent.using === null)).toBe(true);
+    const snapshot = run(world, working, 400);
+    const deskIds = new Set(working.items.filter((i) => i.kind.includes('desk')).map((i) => i.id));
+    const used = snapshot.filter((agent) => agent.visible).map((agent) => agent.using);
+    expect(used.every((id) => id !== null && deskIds.has(id))).toBe(true);
+    expect(new Set(used).size).toBe(used.length);
+    // Le Dev Fantôme, invisible, n'utilise rien.
+    expect(snapshot.filter((agent) => !agent.visible).every((a) => a.using === null)).toBe(true);
+  });
+
   it('le Dev Fantôme est invisible', () => {
     const snapshot = run(new AgentWorld(1), view, 10);
     const ghost = view.devs.find((dev) => dev.role === 'GHOST')!;

@@ -60,6 +60,8 @@ export interface AgentSnapshot {
   readonly pose: AgentPose;
   readonly visible: boolean;
   readonly thought: string | null;
+  /** Objet dont le personnage se sert en ce moment (son bureau quand il y travaille), sinon `null`. */
+  readonly using: string | null;
 }
 
 interface Agent {
@@ -77,6 +79,10 @@ interface Agent {
   goal: Cell | null;
   /** Point vers lequel se tourner une fois arrivé. */
   lookAt: { x: number; z: number } | null;
+  /** Objet visé par le dernier déplacement (point d'intérêt). */
+  heading: string | null;
+  /** Objet utilisé une fois arrivé : posé par l'action de pose, effacé à chaque pas. */
+  using: string | null;
   waitTicks: number;
   thought: string | null;
   thoughtTicks: number;
@@ -106,6 +112,7 @@ function itemCenter(item: ItemPlacement): { x: number; z: number } {
 function goTo(name: string, target: (context: BrainContext) => PointOfInterest | Cell | null) {
   return action<BrainContext>(name, ({ agent, world }) => {
     const found = target({ agent, world });
+    agent.heading = found && 'access' in found ? found.item.id : null;
     if (!found) return 'failure';
     const wanted = 'access' in found ? found.access : found;
     const goal = world.freeCellNear(wanted, agent);
@@ -118,6 +125,7 @@ function goTo(name: string, target: (context: BrainContext) => PointOfInterest |
 function pose(value: AgentPose) {
   return action<BrainContext>(`pose:${value}`, ({ agent }) => {
     agent.pose = value;
+    agent.using = value === 'idle' ? null : agent.heading;
     if (agent.lookAt) {
       agent.facing = Math.atan2(agent.lookAt.x - agent.x, agent.lookAt.z - agent.z);
     }
@@ -285,6 +293,7 @@ export class AgentWorld {
         agent.x = this.layout.entrance.x;
         agent.z = this.layout.entrance.z;
       }
+      agent.using = null;
       BRAIN.tick({ agent, world: this });
       this.think(agent);
     }
@@ -303,6 +312,7 @@ export class AgentWorld {
       pose: agent.pose,
       visible: agent.visible,
       thought: agent.visible ? agent.thought : null,
+      using: agent.visible ? agent.using : null,
     }));
   }
 
@@ -440,6 +450,8 @@ export class AgentWorld {
       path: [],
       goal: null,
       lookAt: null,
+      heading: null,
+      using: null,
       waitTicks: 0,
       thought: null,
       thoughtTicks: 0,
