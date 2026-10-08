@@ -190,6 +190,36 @@ export const REMOTE_REASONS = ['GHOST', 'FATIGUE', 'CONFLICT', 'NO_COFFEE', 'NO_
 export const RemoteReasonSchema = z.enum(REMOTE_REASONS);
 export type RemoteReason = z.infer<typeof RemoteReasonSchema>;
 
+/**
+ * Ce qu'un dev a produit pendant un sprint : sert à calculer sa productivité et sa
+ * performance globale, affichées dans sa fiche.
+ */
+export const SprintPerformanceSchema = z.object({
+  sprint: z.number().int(),
+  /** Unités de travail produites (1 unité = 1 h d'un dev de vitesse 5). */
+  work: z.number().nonnegative(),
+  /** Somme du travail pondéré par sa qualité (qualité moyenne = qualitySum / work). */
+  qualitySum: z.number().nonnegative(),
+  /** Points de tâches terminées. */
+  points: z.number().nonnegative(),
+  tasks: z.number().int().nonnegative(),
+  /** Ticks (demi-heures) passés à travailler sur une tâche. */
+  workTicks: z.number().int().nonnegative(),
+  /** Pannes de prod provoquées (le stagiaire...). */
+  incidents: z.number().int().nonnegative(),
+  /** Sprint perdu (effet `sprintsLost`) : personne n'a rien produit. */
+  lost: z.boolean(),
+});
+export type SprintPerformance = z.infer<typeof SprintPerformanceSchema>;
+
+export const PerformanceSchema = z.object({
+  /** Sprint en cours. */
+  current: SprintPerformanceSchema,
+  /** Sprints terminés, du plus ancien au plus récent (les derniers seulement). */
+  sprints: z.array(SprintPerformanceSchema),
+});
+export type Performance = z.infer<typeof PerformanceSchema>;
+
 /** Composant "tag" (sans données) : ce dev a été converti à Rust par le Rustacé. */
 export const TagSchema = z.literal(true);
 
@@ -209,6 +239,8 @@ export const ComponentStoresSchema = z.object({
   /** Raison du télétravail (absente des sauvegardes d'avant le télétravail automatique). */
   remoteReason: z.record(z.string(), RemoteReasonSchema).default({}),
   rustConverted: z.record(z.string(), TagSchema),
+  /** Productivité par sprint (absente des sauvegardes d'avant les fiches de performance). */
+  performance: z.record(z.string(), PerformanceSchema).default({}),
 });
 export type ComponentStores = z.infer<typeof ComponentStoresSchema>;
 export type ComponentName = keyof ComponentStores;

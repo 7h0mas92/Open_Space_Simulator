@@ -9,6 +9,7 @@
  */
 import {
   BALANCE,
+  ROLE_PROFILES,
   TEAM_MAX,
   TIME,
   birthdayFromKey,
@@ -19,13 +20,24 @@ import {
   type Command,
   type EventCard,
   type GameState,
+  type Identity,
   type Speed,
+  type SprintPerformance,
+  type Stats,
   type TaskColumn,
 } from '@oss/shared';
 import { badEffectFactor, escalate } from '../events/effects';
 import { runwayMonths } from '../simulation/economy';
 import { countDesks, RESALE_RATIO } from '../simulation/furniture';
 import { devIds } from '../simulation/helpers';
+import {
+  expectedProductivity,
+  expectedQuality,
+  hoursOf,
+  overallPerformance,
+  productivityOf,
+  qualityOf,
+} from '../simulation/performance';
 import { tasksInColumn } from '../simulation/tasks';
 import { birthdayOf, birthdayPartyIds, calendarDay } from '../simulation/systems/calendar';
 import { getClock } from '../simulation/time';
@@ -33,6 +45,8 @@ import type {
   CandidateView,
   DevActivity,
   DevView,
+  PerformanceView,
+  SprintPerformanceView,
   EventView,
   GameCommand,
   GameView,
@@ -115,6 +129,37 @@ function remoteReasonOf(state: GameState, id: string): RemoteReason | null {
   return state.components.remoteReason[id] ?? 'GHOST';
 }
 
+function sprintPerformanceView(sprint: SprintPerformance): SprintPerformanceView {
+  return {
+    sprint: sprint.sprint,
+    productivity: productivityOf(sprint),
+    quality: qualityOf(sprint),
+    points: sprint.points,
+    tasks: sprint.tasks,
+    hours: hoursOf(sprint),
+    incidents: sprint.incidents,
+    lost: sprint.lost,
+  };
+}
+
+/** Performance d'un dev (ou d'un candidat, sans sprint mesuré). */
+export function performanceView(
+  identity: Identity,
+  stats: Stats,
+  level: number,
+  sprints: readonly SprintPerformance[] = [],
+  current: SprintPerformance | null = null,
+): PerformanceView {
+  const overall = overallPerformance(identity, stats, level, sprints);
+  return {
+    ...overall,
+    expectedProductivity: expectedProductivity(identity, stats, level),
+    expectedQuality: expectedQuality(identity, stats),
+    lastSprints: sprints.slice(-2).reverse().map(sprintPerformanceView),
+    current: current ? sprintPerformanceView(current) : null,
+  };
+}
+
 function devView(state: GameState, id: string): DevView | null {
   const c = state.components;
   const identity = c.identity[id];
@@ -122,6 +167,9 @@ function devView(state: GameState, id: string): DevView | null {
   if (!identity || !stats) return null;
   const employment = c.employment[id];
   const mood = c.mood[id];
+  const level = employment?.level ?? 1;
+  const performance = c.performance[id];
+  const taskId = c.worker[id]?.taskId;
   return {
     id,
     name: identity.name,
@@ -131,7 +179,7 @@ function devView(state: GameState, id: string): DevView | null {
     bio: identity.bio,
     stats,
     salary: employment?.salary ?? 0,
-    level: employment?.level ?? 1,
+    level,
     morale: mood?.moral ?? 50,
     energy: mood?.energy ?? 100,
     activity: activityOf(state, id),
@@ -140,6 +188,23 @@ function devView(state: GameState, id: string): DevView | null {
     history: [...(c.devLog[id] ?? [])].reverse(),
     look: identity.look,
     birthday: birthdayOf(state, id),
+    performance: performanceView(
+      identity,
+      stats,
+      level,
+      performance?.sprints,
+      performance?.current ?? null,
+    ),
+    career: employment
+      ? {
+          hiredAtSprint: employment.hiredAtSprint,
+          sprintsInTeam: state.sprint - employment.hiredAtSprint + 1,
+          xp: employment.xp,
+          xpToNext: employment.level * BALANCE.work.xpPerLevel,
+          tasksDone: employment.tasksDone,
+          currentTask: (taskId && c.task[taskId]?.title) || null,
+        }
+      : null,
   };
 }
 
@@ -172,6 +237,7 @@ function candidateViews(state: GameState): CandidateView[] {
     .map((candidate) => ({
       id: candidate.id,
       askingSalary: candidate.askingSalary,
+      marketSalary: ROLE_PROFILES[candidate.identity.role].salary,
       dev: {
         id: candidate.id,
         name: candidate.identity.name,
@@ -190,6 +256,8 @@ function candidateViews(state: GameState): CandidateView[] {
         history: [],
         look: candidate.identity.look,
         birthday: candidate.identity.birthday ?? birthdayFromKey(`${state.seed}:${candidate.id}`),
+        performance: performanceView(candidate.identity, candidate.stats, 1),
+        career: null,
       },
     }));
 }

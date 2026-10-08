@@ -3,7 +3,7 @@ import type { DevStats } from '../../view/types';
 
 const STATS = ['speed', 'quality', 'endurance', 'ego'] as const;
 
-/** Barres de stats d'un dev ou d'un candidat. */
+/** Barres de stats d'un dev ou d'un candidat (stats de 1 à 10). */
 export function StatBars({ stats }: { stats: DevStats }) {
   const { t } = useTranslation();
   return (
@@ -13,7 +13,7 @@ export function StatBars({ stats }: { stats: DevStats }) {
           <dt>{t(`stats.${stat}`)}</dt>
           <dd>
             <span className="bar" aria-hidden="true">
-              <span style={{ width: `${stats[stat]}%` }} />
+              <span style={{ width: `${stats[stat] * 10}%` }} />
             </span>
             <span className="value">{stats[stat]}</span>
           </dd>

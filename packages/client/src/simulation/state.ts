@@ -51,6 +51,7 @@ export function createEmptyState(config: GameConfig): GameState {
       remote: {},
       remoteReason: {},
       rustConverted: {},
+      performance: {},
     },
     gauges: {
       treasury,
