@@ -123,9 +123,11 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
     }
     const work: Activity = worker.taskId && state.stage === 'EXECUTION' ? 'WORKING' : 'IDLE';
 
-    // Le Dev Fantôme et l'IA Agent ne font jamais de pause visible.
+    // Les télétravailleurs et l'IA Agent ne font jamais de pause visible
+    // (un télétravailleur épuisé fait quand même la sieste sur son canapé).
     if (id in state.components.remote || identity.role === 'AI_AGENT') {
-      setActivity(state, id, work, 1);
+      const nap = mood.energy < BALANCE.energy.sleepThreshold && identity.role !== 'AI_AGENT';
+      setActivity(state, id, nap ? 'SLEEPING' : work, 1);
       continue;
     }
     if (meeting && !ctx.office.meetingShielded[id]) {

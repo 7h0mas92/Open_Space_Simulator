@@ -162,6 +162,8 @@ export const GameStatsSchema = z.object({
   coffeeShortageDays: z.number().int(),
   maxValuation: z.number(),
   maxUsers: z.number(),
+  /** Journées de télétravail cumulées (hors Dev Fantôme). */
+  remoteDays: z.number().int().default(0),
 });
 export type GameStats = z.infer<typeof GameStatsSchema>;
 
@@ -182,6 +184,7 @@ export const NOTIFICATION_KINDS = [
   'DEV_FIRED',
   'DEV_RESIGNED',
   'DEV_LEVEL_UP',
+  'DEV_REMOTE',
   'RUST_CONVERT',
   'FUNDS_RAISED',
   'PITCH_FAILED',

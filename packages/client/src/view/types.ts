@@ -49,6 +49,10 @@ export const DEV_ACTIVITIES = [
 ] as const;
 export type DevActivity = (typeof DEV_ACTIVITIES)[number];
 
+/** Pourquoi un dev télétravaille aujourd'hui (le télétravail est décidé par la simulation). */
+export const REMOTE_REASONS = ['GHOST', 'FATIGUE', 'CONFLICT', 'NO_COFFEE', 'NO_DESK'] as const;
+export type RemoteReason = (typeof REMOTE_REASONS)[number];
+
 export const GAUGES = ['treasury', 'coffee', 'debt', 'stability', 'hype', 'users'] as const;
 export type GaugeName = (typeof GAUGES)[number];
 export type Gauges = Readonly<Record<GaugeName, number>>;
@@ -78,6 +82,8 @@ export interface DevView {
   /** Énergie de 0 à 100. */
   readonly energy: number;
   readonly activity: DevActivity;
+  /** Raison du télétravail du jour, ou null si le dev vient au bureau. */
+  readonly remoteReason: RemoteReason | null;
   /** Affinité avec chaque collègue, de -100 (conflit) à +100. */
   readonly relations: Readonly<Record<string, number>>;
   /** Faits marquants, du plus récent au plus ancien. */
@@ -193,6 +199,8 @@ export interface GameView {
   readonly incident: boolean;
   /** Taille maximale de l'équipe à cette phase. */
   readonly teamMax: number;
+  /** Bureaux posés dans l'open space : les devs en trop télétravaillent. */
+  readonly desks: number;
   readonly valuation: number;
   /** Mois de trésorerie restants au rythme actuel (dépenses moins revenus), `null` si rentable. */
   readonly runwayMonths: number | null;

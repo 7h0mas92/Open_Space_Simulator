@@ -2257,3 +2257,9 @@ legend {
   font-size: 0.85rem;
   font-weight: 400;
 }
+
+.team-office {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}

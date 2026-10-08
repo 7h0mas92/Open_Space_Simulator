@@ -120,6 +120,17 @@ export function sellFurniture(state: GameState, furnitureId: EntityId): CommandR
   return { ok: true };
 }
 
+/** Nombre de postes de travail (bureaux) posés dans l'open space. */
+export function countDesks(state: GameState): number {
+  let desks = 0;
+  for (const id of query(state, 'furniture')) {
+    const placed = state.components.furniture[id];
+    const effects = placed ? getFurniture(placed.itemId)?.effects : undefined;
+    if (effects?.seatProductivity) desks += effects.seats ?? 1;
+  }
+  return desks;
+}
+
 /** Effets cumulés du mobilier, recalculés à chaque pas de simulation. */
 export interface OfficeEffects {
   coffeeRestock: number;
@@ -131,6 +142,8 @@ export interface OfficeEffects {
   debtPerDay: number;
   restBonus: number;
   babyfoot: boolean;
+  /** Postes de travail (bureaux) : au-delà, les devs sans bureau télétravaillent. */
+  desks: number;
   /** Bonus individuels attribués aux devs présents au bureau, dans l'ordre d'arrivée. */
   seatProductivity: Record<EntityId, number>;
   seatEnergySaving: Record<EntityId, number>;
@@ -158,6 +171,7 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     debtPerDay: 0,
     restBonus: 0,
     babyfoot: false,
+    desks: 0,
     seatProductivity: {},
     seatEnergySaving: {},
     meetingShielded: {},
@@ -180,6 +194,7 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.restBonus += e.restBonus ?? 0;
     effects.babyfoot ||= e.babyfoot ?? false;
     const seats = e.seats ?? 1;
+    if (e.seatProductivity) effects.desks += seats;
     for (let i = 0; i < seats; i++) {
       if (e.seatProductivity) productivitySeats.push(e.seatProductivity);
       if (e.seatEnergySaving) energySeats.push(e.seatEnergySaving);

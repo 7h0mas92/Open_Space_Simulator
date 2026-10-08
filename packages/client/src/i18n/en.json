@@ -288,7 +288,27 @@
     "empty": "Nobody. Not even an intern.",
     "energy": "Energy",
     "noHistory": "Nothing to report yet.",
-    "sprint": "Sprint {{sprint}}"
+    "sprint": "Sprint {{sprint}}",
+    "workplace": "Workplace",
+    "atOffice": "🏢 At the office",
+    "remoteBadge": "🏠 Remote",
+    "officeSummary": "{{office}} at the office · {{remote}} remote · {{desks}} desks",
+    "noDeskHint": "Not enough desks: buy some in build mode to bring the team back.",
+    "remoteHint": "Remote work is automatic. From home: no office coffee or desk needed, less fatigue, but −{{productivity}}% productivity, −{{quality}}% quality and weaker ties with the team."
+  },
+  "remoteReasons": {
+    "GHOST": "Always remote, they are a ghost",
+    "FATIGUE": "Exhausted, recovering at home",
+    "CONFLICT": "Avoiding a colleague they clash with",
+    "NO_COFFEE": "No coffee left at the office",
+    "NO_DESK": "No free desk"
+  },
+  "remoteShort": {
+    "GHOST": "ghost",
+    "FATIGUE": "fatigue",
+    "CONFLICT": "conflict",
+    "NO_COFFEE": "no coffee",
+    "NO_DESK": "no desk"
   },
   "hiring": {
     "intro": "3 candidates this sprint. Make an offer: too low and they refuse.",
@@ -829,7 +849,7 @@
           },
           "morale": {
             "title": "Morale",
-            "body": "Each dev has their own morale. It drops with debt, fatigue, lack of coffee and conflicts; it recovers at the weekend, and with plants, foosball or the sofa.\n\nAt zero, the dev quits, with a fake LinkedIn post to go with it.\n\nYou can fire a dev from their profile: you pay one month of salary and the whole team loses morale, especially their friends."
+            "body": "Each dev has their own morale. It drops with debt, fatigue, lack of coffee and conflicts; it recovers at the weekend, and with plants, foosball or the sofa.\n\nAt zero, the dev quits, with a fake LinkedIn post to go with it.\n\nYou can fire a dev from their profile: you pay one month of salary and the whole team loses morale, especially their friends.\n\nRemote work is automatic: a dev who is exhausted, clashing with a colleague or without a free desk stays home. They disappear from the office and skip your coffee, but work more slowly."
           },
           "openHiring": {
             "title": "Hiring",

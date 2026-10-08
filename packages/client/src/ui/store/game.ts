@@ -82,6 +82,7 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   DEV_FIRED: 'info',
   DEV_RESIGNED: 'error',
   DEV_LEVEL_UP: 'success',
+  DEV_REMOTE: 'info',
   RUST_CONVERT: 'info',
   FUNDS_RAISED: 'success',
   PITCH_FAILED: 'error',

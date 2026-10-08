@@ -35,6 +35,7 @@ const CHANCE: Partial<Record<SlackTrigger, number>> = {
   CARD_RESOLVED: 0.7,
   SPRINT_STARTED: 0.8,
   DEV_LEVEL_UP: 0.6,
+  DEV_REMOTE: 0.6,
 };
 
 const BOT_NAMES = {

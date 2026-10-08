@@ -285,7 +285,8 @@ export class AgentWorld {
   // --- Requêtes utilisées par l'arbre de comportement -------------------------------------
 
   deskOf(agent: Agent): PointOfInterest | Cell {
-    const index = this.agents.filter((a) => a.role !== 'GHOST').indexOf(agent);
+    // Les bureaux vont aux devs présents : les télétravailleurs n'en occupent pas.
+    const index = this.agents.filter((a) => a.activity !== 'REMOTE').indexOf(agent);
     const desk = this.desks[index];
     if (desk) return desk;
     return { x: Math.floor(this.layout.width / 2), z: Math.floor(this.layout.depth / 2) };
