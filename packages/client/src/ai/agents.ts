@@ -9,7 +9,7 @@
  * instantanés de jeu ⇒ mêmes positions. Il ne modifie jamais l'état du jeu.
  */
 import { catalogItem } from '../view/catalog';
-import { officeLayout, type Cell, type OfficeLayout } from '../view/layout';
+import { officeLayout, roomAt, type Cell, type OfficeLayout, type RoomKind } from '../view/layout';
 import {
   isFridayFive,
   type DevActivity,
@@ -26,14 +26,38 @@ import { pickThought } from './thoughts';
 
 /** Durée d'un pas de l'IA, en secondes (multipliée par la vitesse de jeu). */
 export const AGENT_TICK_SECONDS = 0.1;
-/** Vitesse de marche, en cases par seconde. */
-export const WALK_SPEED = 2.2;
+/**
+ * Vitesse de marche, en cases par seconde (multipliée par la vitesse de jeu). Une demi-heure de
+ * jeu ne dure qu'une demi-seconde à x1 : il faut marcher vite pour aller en pause et revenir.
+ */
+export const WALK_SPEED = 8;
 /** Pas d'attente avant de recalculer un chemin bloqué par un collègue. */
 const MAX_WAIT_TICKS = 6;
+/** Au-delà, un personnage bloqué traverse ses collègues plutôt que de rester coincé. */
+const MAX_STUCK_TICKS = 6;
 /** Durée d'affichage d'une bulle, en pas. */
 const THOUGHT_TICKS = 35;
 /** Probabilité par pas qu'un personnage sans bulle se mette à penser. */
 const THOUGHT_CHANCE = 0.006;
+/**
+ * Une demi-heure de jeu ne dure qu'une demi-seconde à x1 : en suivant la simulation à la
+ * lettre, un dev en pause ferait demi-tour avant d'atteindre la cuisine, et celui qui revient
+ * de pause repartirait avant de s'être assis. Ce qu'un personnage a commencé à l'écran
+ * (travailler, prendre un café, déjeuner…) dure donc au moins ce nombre de pas sur place ;
+ * la dernière activité demandée entre-temps prend le relais (la simulation, elle, n'attend pas).
+ */
+export const MIN_STAY_STEPS = 12;
+/** Au-delà de ce nombre de pas, l'activité affichée cède quoi qu'il arrive. */
+const MAX_STAY_STEPS = 50;
+/** Pas passés à un endroit avant d'aller flâner ailleurs dans la cuisine. */
+const WANDER_STEPS = 5;
+/** Activités de pause : le personnage quitte son bureau pour la cuisine ou le babyfoot. */
+const BREAKS: readonly DevActivity[] = ['COFFEE', 'BREAK', 'LUNCH', 'BABYFOOT'];
+/** Le soir et le télétravail ne se font pas attendre. */
+const isImmediate = (activity: DevActivity) => activity === 'LEAVING' || activity === 'REMOTE';
+/** Pièces où l'on flâne en pause, et où l'on déjeune. */
+const BREAK_ROOMS: readonly RoomKind[] = ['kitchen', 'canteen', 'lounge'];
+const LUNCH_ROOMS: readonly RoomKind[] = ['kitchen', 'canteen'];
 
 export const AGENT_POSES = [
   'idle',
@@ -46,6 +70,7 @@ export const AGENT_POSES = [
   'sleep',
   'yell',
   'play',
+  'eat',
 ] as const;
 export type AgentPose = (typeof AGENT_POSES)[number];
 
@@ -84,8 +109,19 @@ interface Agent {
   /** Objet utilisé une fois arrivé : posé par l'action de pose, effacé à chaque pas. */
   using: string | null;
   waitTicks: number;
+  /** Pas passés bloqué depuis le dernier vrai déplacement (sert à défaire les bouchons). */
+  stuckTicks: number;
   thought: string | null;
   thoughtTicks: number;
+  /** Endroit choisi pour la pause en cours (flânerie ou repas). */
+  spot: Cell | null;
+  /** Pas passés à l'endroit actuel. */
+  lingerSteps: number;
+  /** Pas passés sur place depuis le début de l'activité affichée, et depuis son début. */
+  staySteps: number;
+  stayAge: number;
+  /** Activité suivante, appliquée quand l'activité affichée a assez duré. */
+  pending: DevActivity | null;
 }
 
 interface PointOfInterest {
@@ -141,6 +177,17 @@ function hide(): BTNode<BrainContext> {
   });
 }
 
+/** Sur place depuis un moment : on va voir ailleurs dans la cuisine (frigo, micro-ondes…). */
+function wander(): BTNode<BrainContext> {
+  return action('wander', ({ agent }) => {
+    if (++agent.lingerSteps >= WANDER_STEPS) {
+      agent.lingerSteps = 0;
+      agent.spot = null;
+    }
+    return 'success';
+  });
+}
+
 const is = (activity: DevActivity) =>
   condition<BrainContext>(`is:${activity}`, ({ agent }) => agent.activity === activity);
 
@@ -159,6 +206,19 @@ export const BRAIN: BTNode<BrainContext> = selector(
     is('COFFEE'),
     goTo('toCoffee', (c) => c.world.poiFor(c.agent, 'coffee')),
     pose('drink'),
+  ),
+  sequence(
+    'break',
+    is('BREAK'),
+    goTo('toKitchen', (c) => c.world.breakSpot(c.agent, false)),
+    pose('drink'),
+    wander(),
+  ),
+  sequence(
+    'lunch',
+    is('LUNCH'),
+    goTo('toLunch', (c) => c.world.breakSpot(c.agent, true)),
+    pose('eat'),
   ),
   sequence(
     'meeting',
@@ -214,6 +274,8 @@ export class AgentWorld {
   private agents: Agent[] = [];
   private pois = new Map<string, PointOfInterest[]>();
   private desks: PointOfInterest[] = [];
+  private breakCells: Cell[] = [];
+  private lunchCells: Cell[] = [];
   private devs = new Map<string, DevView>();
   private gridKey = '';
   /** Décorations posées au sol et table d'anniversaire (voir `view/decor.ts`). */
@@ -239,9 +301,12 @@ export class AgentWorld {
       this.grid = buildNavGrid(this.layout, view.items);
       for (const cell of this.decorBlocked) this.grid.block(cell.x, cell.z);
       this.indexPointsOfInterest(view.items);
+      this.breakCells = this.roomCells(BREAK_ROOMS);
+      this.lunchCells = this.roomCells(LUNCH_ROOMS);
       for (const agent of this.agents) {
         agent.path = [];
         agent.goal = null;
+        agent.spot = null;
       }
     }
 
@@ -255,11 +320,18 @@ export class AgentWorld {
       }
       agent.role = dev.role;
       agent.morale = dev.morale;
-      if (agent.activity !== dev.activity) {
-        agent.activity = dev.activity;
-        agent.goal = null;
-        agent.path = [];
-      }
+      if (agent.activity === dev.activity) agent.pending = null;
+      else if (
+        !isImmediate(agent.activity) &&
+        !isImmediate(dev.activity) &&
+        !this.stayOver(agent)
+      ) {
+        // L'activité affichée se termine d'abord (voir MIN_STAY_STEPS). Une pause en attente
+        // n'est pas effacée par le retour au travail : on la verra quand même.
+        const keepBreak =
+          agent.pending !== null && BREAKS.includes(agent.pending) && dev.activity === 'WORKING';
+        if (!keepBreak) agent.pending = dev.activity;
+      } else this.switchActivity(agent, dev.activity);
     }
     this.agents.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
@@ -288,12 +360,22 @@ export class AgentWorld {
     this.tickCount++;
     for (const agent of this.agents) {
       if (agent.activity !== 'REMOTE' && agent.activity !== 'LEAVING' && !agent.visible) {
-        // Retour le lendemain matin : le personnage réapparaît à l'entrée.
+        // Arrivée (le matin, ou au chargement) : le personnage apparaît directement à son bureau. Une
+        // demi-heure de jeu ne dure qu'une demi-seconde à x1 : en partant de l'entrée, toute
+        // l'équipe passait la matinée à traverser l'open space.
+        const desk = this.deskOf(agent);
+        const wanted = 'access' in desk ? desk.access : desk;
+        const start =
+          this.grid.nearestWalkable(wanted, (cell) => !this.isClaimed(cell, agent)) ??
+          this.layout.entrance;
         agent.visible = true;
-        agent.x = this.layout.entrance.x;
-        agent.z = this.layout.entrance.z;
+        agent.x = start.x;
+        agent.z = start.z;
       }
       agent.using = null;
+      agent.stayAge++;
+      if (agent.pose !== 'walk' && agent.pose !== 'idle') agent.staySteps++;
+      if (agent.pending && this.stayOver(agent)) this.switchActivity(agent, agent.pending);
       BRAIN.tick({ agent, world: this });
       this.think(agent);
     }
@@ -342,6 +424,20 @@ export class AgentWorld {
       }
     }
     return best;
+  }
+
+  /**
+   * Où passer sa pause : une case de la cuisine, de la cantine ou du salon, tirée au hasard
+   * (le repas se prend de préférence à la cantine). Le garage n'a pas de cuisine : on reste
+   * près de la cafetière.
+   */
+  breakSpot(agent: Agent, lunch: boolean): PointOfInterest | Cell | null {
+    if (!agent.spot) {
+      const cells = lunch && this.lunchCells.length > 0 ? this.lunchCells : this.breakCells;
+      agent.spot = cells.length > 0 ? (cells[agent.random.int(cells.length)] ?? null) : null;
+      agent.lingerSteps = 0;
+    }
+    return agent.spot ?? this.poiFor(agent, 'coffee') ?? this.poiFor(agent, 'rest');
   }
 
   /** Case à côté du collègue préféré (ou détesté) qui est visible. */
@@ -397,8 +493,11 @@ export class AgentWorld {
 
     const next = agent.path[0];
     if (!next) return 'running';
-    if (this.isOccupied(next, agent) && !sameCell(next, here)) {
+    // Bloqué trop longtemps (toute l'équipe arrive par la même porte à 9h) : on se faufile.
+    const blocked = this.isOccupied(next, agent) && !sameCell(next, here);
+    if (blocked && agent.stuckTicks <= MAX_STUCK_TICKS) {
       agent.waitTicks++;
+      agent.stuckTicks++;
       agent.pose = 'idle';
       if (agent.waitTicks > MAX_WAIT_TICKS) {
         agent.waitTicks = 0;
@@ -407,6 +506,7 @@ export class AgentWorld {
       return 'running';
     }
     agent.waitTicks = 0;
+    if (!blocked) agent.stuckTicks = 0;
     agent.pose = 'walk';
 
     let budget = WALK_SPEED * AGENT_TICK_SECONDS;
@@ -433,6 +533,34 @@ export class AgentWorld {
 
   // --- Interne ------------------------------------------------------------------------------
 
+  private switchActivity(agent: Agent, activity: DevActivity): void {
+    agent.activity = activity;
+    agent.pending = null;
+    agent.goal = null;
+    agent.path = [];
+    agent.spot = null;
+    agent.lingerSteps = 0;
+    agent.staySteps = 0;
+    agent.stayAge = 0;
+  }
+
+  /** L'activité affichée a assez duré pour qu'on ait vu le dev la faire. */
+  private stayOver(agent: Agent): boolean {
+    return agent.staySteps >= MIN_STAY_STEPS || agent.stayAge >= MAX_STAY_STEPS;
+  }
+
+  /** Cases praticables des pièces données, dans un ordre fixe. */
+  private roomCells(kinds: readonly RoomKind[]): Cell[] {
+    const cells: Cell[] = [];
+    for (let z = 0; z < this.layout.depth; z++) {
+      for (let x = 0; x < this.layout.width; x++) {
+        const kind = roomAt(this.layout, { x, z })?.kind;
+        if (kind && kinds.includes(kind) && this.grid.walkable(x, z)) cells.push({ x, z });
+      }
+    }
+    return cells;
+  }
+
   private spawn(dev: DevView): Agent {
     const random = new Random(this.seed ^ hashString(dev.id));
     const start = this.grid.nearestWalkable(this.layout.entrance) ?? this.layout.entrance;
@@ -446,15 +574,22 @@ export class AgentWorld {
       z: start.z,
       facing: 0,
       pose: 'idle',
-      visible: dev.activity !== 'REMOTE',
+      // Caché jusqu'au premier pas, qui le place à son bureau (comme chaque matin).
+      visible: false,
       path: [],
       goal: null,
       lookAt: null,
       heading: null,
       using: null,
       waitTicks: 0,
+      stuckTicks: 0,
       thought: null,
       thoughtTicks: 0,
+      spot: null,
+      lingerSteps: 0,
+      staySteps: 0,
+      stayAge: 0,
+      pending: null,
     };
   }
 

@@ -23,6 +23,7 @@ export const POSE_CLIPS: Readonly<Record<AgentPose, CharacterClip>> = {
   sleep: 'sit',
   yell: 'emote-no',
   play: 'interact-right',
+  eat: 'holding-both',
 };
 
 const CROSSFADE_SECONDS = 0.2;
@@ -121,6 +122,10 @@ export class CharacterView {
       case 'sleep':
         // Endormi sur le clavier : penché vers l'avant, respiration lente.
         this.body.rotation.x = 0.35 + Math.sin(t * 1.5) * 0.03;
+        break;
+      case 'eat':
+        // On mâche : petit hochement de tête.
+        this.body.rotation.x = Math.max(0, Math.sin(t * 5)) * 0.06;
         break;
       case 'work':
         if (!hasClips) this.body.position.y = Math.sin(t * 6) * 0.01;

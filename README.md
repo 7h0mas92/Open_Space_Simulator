@@ -269,6 +269,13 @@ flowchart LR
   les devs sans bureau libre, épuisés, en conflit avec un collègue ou accros privés de café (le
   Dev Fantôme l'est toujours). Ils disparaissent de l'open space, se fatiguent moins mais
   perdent 15 % de vitesse et 5 % de qualité ; la fiche, l'équipe et Slack l'affichent.
+- **Vraies pauses** : chaque jour de semaine, pause à 10h30, déjeuner à midi (1 h) et pause à
+  15h, un dev sur deux décalé de 30 min (`BALANCE.breaks`). Pendant une pause courte, le dev
+  choisit selon son caractère un café, une partie de babyfoot ou une balade dans la cuisine ; il
+  déjeune à la cuisine ou à la cantine. Le noctambule décale tout de 2 h, le bourreau de travail
+  ne garde que le déjeuner, l'IA Agent ne s'arrête jamais. À l'écran, une demi-heure de jeu ne
+  dure que 0,45 s à x1 : les personnages arrivent directement à leur bureau le matin et vont au
+  bout de ce qu'ils ont commencé avant de suivre la simulation (`ai/agents.ts`).
 - **Performance des devs** : chaque dev a une note globale de S à D (sur 100), mesurée sur ses
   2 derniers sprints (50 % productivité, 35 % qualité, 15 % endurance, bonus du Product Owner et
   de la Designeuse, −5 par panne provoquée). La productivité est le travail produit par heure

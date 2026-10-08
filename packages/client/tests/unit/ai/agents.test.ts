@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { AgentWorld } from '../../../src/ai/agents';
+import { AgentWorld, MIN_STAY_STEPS } from '../../../src/ai/agents';
 import { ALL_THOUGHTS, pickThought } from '../../../src/ai/thoughts';
 import { Random } from '../../../src/ai/random';
+import { officeLayout, roomAt } from '../../../src/view/layout';
 import type { DevActivity, GameView } from '../../../src/view/types';
 import fr from '../../../src/i18n/fr.json';
 import en from '../../../src/i18n/en.json';
@@ -44,8 +45,9 @@ describe('IA des personnages', () => {
   it('indique le bureau dont chaque dev se sert (pour allumer son écran)', () => {
     const working = withActivity(view, 'WORKING');
     const world = new AgentWorld(1);
-    // Au départ, tout le monde marche depuis l'entrée : aucun bureau n'est utilisé.
-    expect(run(world, working, 1).every((agent) => agent.using === null)).toBe(true);
+    // Avant le premier pas, personne n'est encore arrivé : aucun bureau n'est utilisé.
+    world.sync(working);
+    expect(world.snapshot().every((agent) => agent.using === null)).toBe(true);
     const snapshot = run(world, working, 400);
     const deskIds = new Set(working.items.filter((i) => i.kind.includes('desk')).map((i) => i.id));
     const used = snapshot.filter((agent) => agent.visible).map((agent) => agent.using);
@@ -90,6 +92,62 @@ describe('IA des personnages', () => {
     // Sans babyfoot en phase Seed, les joueurs se rabattent sur la machine à café.
     const snapshot = run(new AgentWorld(5), withActivity(view, 'BABYFOOT'), 500);
     expect(snapshot.filter((a) => a.visible).every((a) => a.pose === 'play')).toBe(true);
+  });
+
+  it('en pause, on flâne dans la cuisine ; au déjeuner, on y mange', () => {
+    const layout = officeLayout('SEED');
+    const inKitchen = (a: { x: number; z: number }) =>
+      roomAt(layout, { x: Math.round(a.x), z: Math.round(a.z) })?.kind === 'kitchen';
+    for (const [activity, pose] of [
+      ['BREAK', 'drink'],
+      ['LUNCH', 'eat'],
+    ] as const) {
+      const world = new AgentWorld(6);
+      // Les poses de pause apparaissent dans la cuisine (toutes en même temps, ça se bouscule).
+      let seen = false;
+      world.sync(withActivity(view, activity));
+      for (let i = 0; i < 800 && !seen; i++) {
+        world.step();
+        seen = world.snapshot().some((a) => a.visible && a.pose === pose && inKitchen(a));
+      }
+      expect(seen, activity).toBe(true);
+    }
+  });
+
+  it('une pause se voit jusqu’au bout, même si la simulation est déjà repassée au travail', () => {
+    const world = new AgentWorld(2);
+    world.sync(withActivity(view, 'LUNCH'));
+    world.step();
+    // La demi-heure de jeu est passée avant que les devs n'aient atteint la cuisine.
+    const working = withActivity(view, 'WORKING');
+    world.sync(working);
+    let ate = 0;
+    for (let i = 0; i < 300; i++) {
+      world.step();
+      world.sync(working);
+      ate += world.snapshot().filter((a) => a.pose === 'eat').length;
+    }
+    expect(ate).toBeGreaterThanOrEqual(MIN_STAY_STEPS);
+    // Puis tout le monde retourne à son bureau.
+    const snapshot = run(world, working, 400);
+    expect(snapshot.filter((a) => a.visible).every((a) => a.pose === 'work')).toBe(true);
+  });
+
+  it('le matin, chacun réapparaît directement à son bureau', () => {
+    const world = new AgentWorld(4);
+    run(world, withActivity(view, 'LEAVING'), 400);
+    // Quelques pas suffisent : personne ne traverse l'open space depuis l'entrée.
+    const snapshot = run(world, withActivity(view, 'WORKING'), 5);
+    const visible = snapshot.filter((a) => a.visible);
+    expect(visible.length).toBe(view.devs.length - 1);
+    expect(visible.every((a) => a.pose === 'work')).toBe(true);
+  });
+
+  it('la soirée interrompt une pause tout de suite', () => {
+    const world = new AgentWorld(2);
+    run(world, withActivity(view, 'BREAK'), 5);
+    const snapshot = run(world, withActivity(view, 'LEAVING'), 400);
+    expect(snapshot.every((a) => !a.visible)).toBe(true);
   });
 
   it('suit les changements de bureau et de phase', () => {
