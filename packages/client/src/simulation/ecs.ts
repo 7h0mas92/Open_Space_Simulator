@@ -18,6 +18,7 @@ const COMPONENT_NAMES: readonly ComponentName[] = [
   'task',
   'furniture',
   'remote',
+  'remoteReason',
   'rustConverted',
 ];
 

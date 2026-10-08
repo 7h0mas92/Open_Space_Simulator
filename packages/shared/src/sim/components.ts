@@ -174,6 +174,19 @@ export const FurnitureSchema = z.object({
 });
 export type Furniture = z.infer<typeof FurnitureSchema>;
 
+/**
+ * Pourquoi un dev travaille de chez lui aujourd'hui. Le télétravail est automatique :
+ * chaque matin, la simulation décide qui reste à la maison (voir `systems/remote.ts`).
+ * - GHOST : le Dev Fantôme, toujours en télétravail ;
+ * - FATIGUE : à bout (énergie ou moral trop bas), il récupère sans les transports ;
+ * - CONFLICT : brouillé avec un collègue, il évite le bureau ;
+ * - NO_COFFEE : accro au café et la machine est vide, il boit le sien ;
+ * - NO_DESK : plus de bureau libre dans l'open space.
+ */
+export const REMOTE_REASONS = ['GHOST', 'FATIGUE', 'CONFLICT', 'NO_COFFEE', 'NO_DESK'] as const;
+export const RemoteReasonSchema = z.enum(REMOTE_REASONS);
+export type RemoteReason = z.infer<typeof RemoteReasonSchema>;
+
 /** Composant "tag" (sans données) : ce dev a été converti à Rust par le Rustacé. */
 export const TagSchema = z.literal(true);
 
@@ -188,7 +201,10 @@ export const ComponentStoresSchema = z.object({
   devLog: z.record(z.string(), z.array(DevLogEntrySchema)),
   task: z.record(z.string(), TaskSchema),
   furniture: z.record(z.string(), FurnitureSchema),
+  /** Dev en télétravail aujourd'hui : absent de l'open space 3D. */
   remote: z.record(z.string(), TagSchema),
+  /** Raison du télétravail (absente des sauvegardes d'avant le télétravail automatique). */
+  remoteReason: z.record(z.string(), RemoteReasonSchema).default({}),
   rustConverted: z.record(z.string(), TagSchema),
 });
 export type ComponentStores = z.infer<typeof ComponentStoresSchema>;

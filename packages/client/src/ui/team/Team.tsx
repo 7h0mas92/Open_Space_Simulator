@@ -1,3 +1,4 @@
+import { BALANCE } from '@oss/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DevView, GameView } from '../../view/types';
@@ -15,27 +16,43 @@ export function Team({ view }: { view: GameView }) {
 
   if (selectedDev) return <DevSheet dev={selectedDev} view={view} onBack={() => select(null)} />;
   if (view.devs.length === 0) return <p>{t('team.empty')}</p>;
+  const remote = view.devs.filter((dev) => dev.remoteReason !== null).length;
+  const noDesk = view.devs.some((dev) => dev.remoteReason === 'NO_DESK');
   return (
-    <ul className="team-list">
-      {view.devs.map((dev) => (
-        <li key={dev.id}>
-          <button
-            type="button"
-            className="dev-row"
-            onClick={() => select({ type: 'dev', id: dev.id })}
-          >
-            <span className="mood" aria-hidden="true">
-              {moodEmoji(dev.morale)}
-            </span>
-            <span className="dev-row-main">
-              <strong>{dev.name}</strong>
-              <span>{t(`roles.${dev.role}`)}</span>
-            </span>
-            <span className="dev-row-activity">{t(`activities.${dev.activity}`)}</span>
-          </button>
-        </li>
-      ))}
-    </ul>
+    <>
+      <p className="team-office">
+        {t('team.officeSummary', {
+          office: view.devs.length - remote,
+          remote,
+          desks: view.desks,
+        })}
+      </p>
+      {noDesk && <p className="hint">{t('team.noDeskHint')}</p>}
+      <ul className="team-list">
+        {view.devs.map((dev) => (
+          <li key={dev.id}>
+            <button
+              type="button"
+              className="dev-row"
+              onClick={() => select({ type: 'dev', id: dev.id })}
+            >
+              <span className="mood" aria-hidden="true">
+                {moodEmoji(dev.morale)}
+              </span>
+              <span className="dev-row-main">
+                <strong>{dev.name}</strong>
+                <span>{t(`roles.${dev.role}`)}</span>
+              </span>
+              <span className="dev-row-activity">
+                {dev.remoteReason
+                  ? `${t('team.remoteBadge')} · ${t(`remoteShort.${dev.remoteReason}`)}`
+                  : t(`activities.${dev.activity}`)}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -66,6 +83,14 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
           <dd>{t(`activities.${dev.activity}`)}</dd>
         </div>
         <div>
+          <dt>{t('team.workplace')}</dt>
+          <dd>
+            {dev.remoteReason
+              ? `${t('team.remoteBadge')} : ${t(`remoteReasons.${dev.remoteReason}`)}`
+              : t('team.atOffice')}
+          </dd>
+        </div>
+        <div>
           <dt>{t('team.trait')}</dt>
           <dd>{t(`traits.${dev.trait}` as never)}</dd>
         </div>
@@ -84,6 +109,14 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
           <dd>{t('team.salary', { salary: formatMoney(dev.salary, i18n.language) })}</dd>
         </div>
       </dl>
+      {dev.remoteReason && dev.remoteReason !== 'GHOST' && (
+        <p className="hint">
+          {t('team.remoteHint', {
+            productivity: Math.round(BALANCE.remote.productivityPenalty * 100),
+            quality: Math.round(BALANCE.remote.qualityPenalty * 100),
+          })}
+        </p>
+      )}
       <StatBars stats={dev.stats} />
       {colleagues.length > 0 && (
         <section>

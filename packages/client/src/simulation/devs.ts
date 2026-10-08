@@ -134,7 +134,10 @@ export function hireDev(
   addComponent(state, id, 'activity', { kind: 'GONE', untilTick: 0, withId: null });
   addComponent(state, id, 'worker', { taskId: null });
   addComponent(state, id, 'devLog', []);
-  if (identity.role === 'GHOST') addComponent(state, id, 'remote', true);
+  if (identity.role === 'GHOST') {
+    addComponent(state, id, 'remote', true);
+    addComponent(state, id, 'remoteReason', 'GHOST');
+  }
 
   // Relations : une affinité de départ avec chaque collègue, dans les deux sens.
   const relations: Record<string, number> = {};

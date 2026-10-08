@@ -21,6 +21,7 @@ import { activitySystem } from './systems/activity';
 import { dailySystem } from './systems/daily';
 import { incidentSystem } from './systems/incidents';
 import { coffeeSystem, energySystem } from './systems/needs';
+import { remoteSystem } from './systems/remote';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 
@@ -32,6 +33,7 @@ export const SYSTEMS: readonly System[] = [
   activitySystem,
   workSystem,
   coffeeSystem,
+  remoteSystem,
   (state, ctx) => energySystem(state, ctx),
   incidentSystem,
   eventSystem,
@@ -77,11 +79,12 @@ export class Simulation {
 
   /**
    * Toute modification du mobilier ou de l'équipe ajoute une entité (nextEntityId change)
-   * ou en retire une (un des deux compteurs change) : la clé suffit à détecter un changement.
+   * ou en retire une (un des deux compteurs change). Les postes vont aux devs présents au
+   * bureau : la liste des télétravailleurs fait donc aussi partie de la clé.
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}`;
+    const key = `${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;

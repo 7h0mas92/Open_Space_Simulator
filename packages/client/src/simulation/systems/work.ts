@@ -47,8 +47,9 @@ export function productivity(
 
   let rate = (stats.speed / 5) * hours * profile.speedMultiplier;
   rate *= 1 + (employment.level - 1) * 0.05;
-  // Café à 0 : productivité divisée par 3 (l'IA Agent et le Fantôme ne boivent pas notre café).
-  const drinksCoffee = identity.role !== 'AI_AGENT' && identity.role !== 'GHOST';
+  // Café à 0 : productivité divisée par 3 (l'IA Agent et les télétravailleurs ne boivent pas notre café).
+  const remote = devId in state.components.remote;
+  const drinksCoffee = identity.role !== 'AI_AGENT' && !remote;
   if (drinksCoffee && state.gauges.coffee <= 0) rate /= BALANCE.work.coffeeEmptyDivider;
   rate *= 0.6 + (0.5 * mood.moral) / 100;
   if (mood.energy < 30) rate *= 0.75;
@@ -63,6 +64,8 @@ export function productivity(
   if (thinksInRust(state, devId)) {
     rate *= task.type === 'REFACTO' ? BALANCE.roles.rustRefactoBonus : BALANCE.roles.rustOtherMalus;
   }
+  // Télétravail : moins de collaboration (le Dev Fantôme, lui, a toujours travaillé ainsi).
+  if (remote && identity.role !== 'GHOST') rate *= 1 - BALANCE.remote.productivityPenalty;
   if (identity.trait === 'PERFECTIONIST') rate *= 0.9;
   if (identity.trait === 'COFFEE_ADDICT' && state.gauges.coffee > 50) rate *= 1.1;
   return rate;
@@ -76,6 +79,9 @@ export function effectiveQuality(state: GameState, ctx: SimContext, devId: Entit
   let quality = (stats.quality / 10) * ROLE_PROFILES[identity.role].qualityMultiplier;
   quality *= 1 + ctx.office.quality;
   if (identity.trait === 'PERFECTIONIST') quality *= 1.15;
+  // Télétravail : moins de relectures à deux devant le même écran.
+  if (devId in state.components.remote && identity.role !== 'GHOST')
+    quality *= 1 - BALANCE.remote.qualityPenalty;
   return clamp(quality, 0, 1);
 }
 
