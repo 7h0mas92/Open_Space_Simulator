@@ -10,6 +10,7 @@ import {
   isoDate,
   utcDate,
   type EventCard,
+  type FurnitureColor,
   type GameMode,
   type LocalizedText,
   type LoggedCommand,
@@ -22,7 +23,7 @@ import i18n from '../../i18n';
 import type { PickTarget } from '../../render/GameRenderer';
 import { catalogItem } from '../../view/catalog';
 import { officeLayout, type Cell } from '../../view/layout';
-import { checkPlacement } from '../../view/placement';
+import { checkPlacement, nearestValidCell, resolveAccessory } from '../../view/placement';
 import { localized } from '../game/format';
 import type { GameSource } from '../../view/source';
 import type {
@@ -30,6 +31,7 @@ import type {
   GameCommand,
   GameNotification,
   GameView,
+  PlacedItemView,
   Rotation,
 } from '../../view/types';
 
@@ -51,7 +53,8 @@ export type PanelId = (typeof PANELS)[number];
  * Mode construction (`null` hors construction) :
  * - `kind === null` : le catalogue est ouvert, on peut aussi toucher un objet posé ;
  * - `kind` renseigné : l'objet est « en main », le catalogue se replie et l'aperçu suit
- *   `cell` (souris, doigt ou flèches du clavier) jusqu'à la pose.
+ *   `cell` (souris, doigt ou flèches du clavier). Après une pose, l'objet reste en main pour
+ *   en poser d'autres, jusqu'à « Annuler » ou « Terminer ».
  */
 export interface BuildState {
   readonly kind: string | null;
@@ -60,7 +63,24 @@ export interface BuildState {
   readonly movingItemId: string | null;
   /** Case visée par l'aperçu (coin de l'emprise), `null` tant qu'elle n'est pas connue. */
   readonly cell?: Cell | null;
+  /** Couleur des objets posés (et de l'aperçu). */
+  readonly color: FurnitureColor;
+  /** Exemplaires déjà posés depuis la prise en main (pose en série). */
+  readonly placed: number;
 }
+
+/** Rien en main : le catalogue est ouvert. */
+const EMPTY_BUILD: BuildState = {
+  kind: null,
+  rotation: 0,
+  movingItemId: null,
+  cell: null,
+  color: 'natural',
+  placed: 0,
+};
+
+/** Dernière couleur choisie pour chaque objet : on la retrouve en le reprenant en main. */
+const lastColors = new Map<string, FurnitureColor>();
 
 export interface Toast {
   readonly id: number;
@@ -150,9 +170,14 @@ interface GameStore {
   startMove(itemId: string): void;
   setBuildCell(cell: Cell | null): void;
   rotateBuild(): void;
+  /** Change la couleur de l'objet en main. */
+  setBuildColor(color: FurnitureColor): void;
   /** Repose l'objet en main et revient au catalogue. */
   cancelPlacement(): void;
-  /** Pose l'objet en main sur `cell` (ou sur la case visée). Vrai si la pose a réussi. */
+  /**
+   * Pose l'objet en main sur `cell` (ou sur la case visée). Vrai si la pose a réussi. Un objet
+   * acheté reste en main (pose en série) ; un objet déplacé ramène au catalogue.
+   */
   placeAt(cell?: Cell): Promise<boolean>;
   notify(key: string, tone?: Toast['tone'], params?: Toast['params']): void;
   setFps(fps: number): void;
@@ -297,7 +322,7 @@ export const useGame = create<GameStore>((set, get) => ({
 
   enterBuild() {
     set({
-      build: { kind: null, rotation: 0, movingItemId: null, cell: null },
+      build: EMPTY_BUILD,
       panel: null,
       selected: null,
     });
@@ -308,7 +333,10 @@ export const useGame = create<GameStore>((set, get) => ({
   },
 
   pickItem(kind) {
-    set({ build: { kind, rotation: 0, movingItemId: null, cell: null }, selected: null });
+    set({
+      build: { ...EMPTY_BUILD, kind, color: lastColors.get(kind) ?? 'natural' },
+      selected: null,
+    });
   },
 
   startMove(itemId) {
@@ -320,6 +348,8 @@ export const useGame = create<GameStore>((set, get) => ({
         rotation: item.rotation,
         movingItemId: item.id,
         cell: { x: item.x, z: item.z },
+        color: item.color,
+        placed: 0,
       },
       panel: null,
       selected: null,
@@ -339,43 +369,104 @@ export const useGame = create<GameStore>((set, get) => ({
     set({ build: { ...build, rotation: ((build.rotation + 1) % 4) as Rotation } });
   },
 
+  setBuildColor(color) {
+    const { build } = get();
+    if (!build?.kind) return;
+    if (!build.movingItemId) lastColors.set(build.kind, color);
+    set({ build: { ...build, color } });
+  },
+
   cancelPlacement() {
-    set({ build: { kind: null, rotation: 0, movingItemId: null, cell: null }, selected: null });
+    set({ build: EMPTY_BUILD, selected: null });
   },
 
   async placeAt(target) {
     const { build, view, dispatch, notify } = get();
     const cell = target ?? build?.cell;
     if (!build?.kind || !view || !cell) return false;
+    const def = catalogItem(build.kind);
+    if (!def) return false;
     // Cloisons et entrée sont des contraintes du décor : vérifiées avant d'envoyer.
-    const error = checkPlacement(officeLayout(view.phase), view.items, {
+    const layout = officeLayout(view.phase);
+    const request = {
       kind: build.kind,
       x: cell.x,
       z: cell.z,
       rotation: build.rotation,
       ignoreId: build.movingItemId ?? undefined,
-    });
+    };
+    const error = checkPlacement(layout, view.items, request);
     if (error) {
       notify(`results.${error}`, 'error');
       return false;
     }
-    const result = await dispatch(
-      build.movingItemId
-        ? {
-            type: 'moveItem',
-            itemId: build.movingItemId,
+    // Un accessoire se pose sur l'emplacement libre du meuble visé.
+    const resolved = def.accessory ? resolveAccessory(view.items, request) : null;
+    const host = resolved && 'host' in resolved ? resolved.host : null;
+    if (def.accessory && !host) return false;
+    const moving = build.movingItemId;
+    const command: GameCommand | null = host
+      ? moving
+        ? { type: 'moveAccessory', itemId: moving, host, rotation: build.rotation }
+        : {
+            type: 'placeAccessory',
+            kind: build.kind,
+            host,
+            rotation: build.rotation,
+            color: build.color,
+          }
+      : moving
+        ? { type: 'moveItem', itemId: moving, x: cell.x, z: cell.z, rotation: build.rotation }
+        : {
+            type: 'placeItem',
+            kind: build.kind,
             x: cell.x,
             z: cell.z,
             rotation: build.rotation,
-          }
-        : { type: 'placeItem', kind: build.kind, x: cell.x, z: cell.z, rotation: build.rotation },
-    );
+            color: build.color,
+          };
+    const result = await dispatch(command);
     if (!result.ok) return false;
-    const def = catalogItem(build.kind);
-    const name = def ? localized(def.name, i18n.language) : build.kind;
-    notify(build.movingItemId ? 'build.moved' : 'build.placed', 'success', { item: name });
-    // Retour au catalogue (si on est toujours en construction).
-    if (get().build) get().cancelPlacement();
+    const name = localized(def.name, i18n.language);
+    notify(moving ? 'build.moved' : 'build.placed', 'success', { item: name });
+    if (!get().build) return true; // on a quitté la construction entre-temps
+    if (moving) {
+      get().cancelPlacement();
+      return true;
+    }
+
+    // Pose en série : l'objet reste en main tant qu'on peut en acheter un autre.
+    const owned = view.items.filter((item) => item.kind === build.kind).length + 1;
+    if (owned >= def.maxCount || view.gauges.treasury - def.price < def.price) {
+      notify(owned >= def.maxCount ? 'build.stopSoldOut' : 'build.stopMoney', 'info', {
+        item: name,
+      });
+      get().cancelPlacement();
+      return true;
+    }
+    // L'aperçu saute sur la place libre la plus proche (l'objet tout juste posé compte, même si
+    // l'instantané de la simulation n'est pas encore arrivé).
+    const justPlaced: PlacedItemView = {
+      id: '@just-placed',
+      kind: build.kind,
+      x: cell.x,
+      z: cell.z,
+      rotation: build.rotation,
+      resale: 0,
+      color: build.color,
+      host,
+    };
+    const items = [...(get().view ?? view).items, justPlaced];
+    const next = nearestValidCell(
+      layout,
+      items,
+      { kind: build.kind, rotation: build.rotation },
+      cell,
+    );
+    const current = get().build;
+    if (current?.kind === build.kind && !current.movingItemId) {
+      set({ build: { ...current, cell: next ?? cell, placed: current.placed + 1 } });
+    }
     return true;
   },
 

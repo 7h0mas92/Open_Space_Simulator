@@ -3,7 +3,14 @@ import { resolveEvent } from '../events/resolve';
 import { fireDev, makeOffer } from './devs';
 import { endGame } from './endings';
 import { closePitch, pitchArgument, startPitch } from './fundraising';
-import { buyFurniture, moveFurniture, sellFurniture } from './furniture';
+import {
+  buyAccessory,
+  buyFurniture,
+  moveAccessory,
+  moveFurniture,
+  paintFurniture,
+  sellFurniture,
+} from './furniture';
 import type { SimContext } from './helpers';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveTask } from './tasks';
@@ -46,7 +53,33 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
     case 'BUY_FURNITURE':
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')
-        : buyFurniture(state, command.itemId, command.x, command.y, command.rotation);
+        : buyFurniture(
+            state,
+            command.itemId,
+            command.x,
+            command.y,
+            command.rotation,
+            command.color,
+          );
+    case 'BUY_ACCESSORY':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : buyAccessory(
+            state,
+            command.itemId,
+            command.hostId,
+            command.slot,
+            command.rotation,
+            command.color,
+          );
+    case 'MOVE_ACCESSORY':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : moveAccessory(state, command.furnitureId, command.hostId, command.slot, command.rotation);
+    case 'PAINT_FURNITURE':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : paintFurniture(state, command.furnitureId, command.color);
     case 'MOVE_FURNITURE':
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')

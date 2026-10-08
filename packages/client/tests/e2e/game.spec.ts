@@ -156,6 +156,12 @@ test('mode construction : le catalogue se replie quand on prend un objet', async
   await place.click();
   await expect.poll(count).toBe(items + 1);
   await expect(page.getByText('Plante verte : posé !')).toBeVisible();
+  // L'objet reste en main pour en poser d'autres, jusqu'à « Annuler » ou « Terminer ».
+  await expect(page.getByTestId('placed-count')).toHaveText(/1 posé/);
+  await expect(place).toBeEnabled();
+  await place.click();
+  await expect.poll(count).toBe(items + 2);
+  await page.getByRole('button', { name: /Annuler/ }).click();
   await expect(page.getByTestId('catalog')).toBeVisible();
 
   await page.getByRole('button', { name: /Terminer/ }).click();

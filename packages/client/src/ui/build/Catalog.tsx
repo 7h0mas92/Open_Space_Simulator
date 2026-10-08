@@ -14,6 +14,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   kitchen: '☕',
   fun: '🎮',
   decor: '🪴',
+  accessory: '🦆',
 };
 
 /** Rayon ouvert en dernier : on y revient après chaque pose. */

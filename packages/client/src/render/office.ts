@@ -7,9 +7,11 @@
 import * as THREE from 'three';
 import { accessCell, type ItemPlacement } from '../ai/grid';
 import { catalogItem, footprint } from '../view/catalog';
+import type { FurnitureColor } from '../view/colors';
+import { slotPosition } from '../view/placement';
 import type { OfficeLayout, RoomKind } from '../view/layout';
 import type { PlacedItemView } from '../view/types';
-import type { AssetLibrary } from './assets';
+import { paintObject, type AssetLibrary } from './assets';
 import { material, PALETTE } from './primitives';
 
 const FLOOR_COLORS: Record<RoomKind, readonly [number, number]> = {
@@ -29,8 +31,13 @@ export interface TemplatePart {
   readonly matrix: THREE.Matrix4;
 }
 
-/** Objets décoratifs masqués quand on dézoome (LOD). */
+/** Objets décoratifs masqués quand on dézoome (LOD), en plus des accessoires. */
 const DECOR_KINDS = new Set(['small-plant', 'microwave', 'trashcan', 'noise-headsets']);
+
+/** Clé d'un gabarit : l'objet et sa couleur (`desk#blue`). */
+function templateKey(kind: string, color: FurnitureColor): string {
+  return `${kind}#${color}`;
+}
 
 export interface ItemHit {
   readonly itemId: string;
@@ -64,7 +71,40 @@ export function itemMatrix(item: ItemPlacement): THREE.Matrix4 {
   return new THREE.Matrix4().compose(position, rotation, new THREE.Vector3(1, 1, 1));
 }
 
-/** Objets ajoutés automatiquement autour de certains meubles (chaise et écran d'un bureau). */
+/**
+ * Matrice monde d'un accessoire : l'emplacement du meuble qui le porte, tourné avec lui, puis
+ * la rotation propre de l'accessoire. `null` si le meuble a disparu.
+ */
+export function accessoryMatrix(
+  host: ItemPlacement,
+  slot: number,
+  rotation: number,
+): THREE.Matrix4 | null {
+  const position = slotPosition(host, slot);
+  if (!position) return null;
+  const turn = new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 1, 0),
+    ((host.rotation + rotation) * Math.PI) / 2,
+  );
+  return new THREE.Matrix4().compose(
+    new THREE.Vector3(...position),
+    turn,
+    new THREE.Vector3(1, 1, 1),
+  );
+}
+
+/** Matrice monde de n'importe quel objet posé (au sol ou sur un meuble). */
+export function placedMatrix(
+  item: PlacedItemView,
+  items: readonly PlacedItemView[],
+): THREE.Matrix4 | null {
+  if (!item.host) return itemMatrix(item);
+  const hostId = item.host.id;
+  const host = items.find((other) => other.id === hostId);
+  return host ? accessoryMatrix(host, item.host.slot, item.rotation) : null;
+}
+
+/** Objets ajoutés automatiquement autour de certains meubles (la chaise d'un bureau). */
 function extrasFor(item: PlacedItemView): { kind: string; matrix: THREE.Matrix4 }[] {
   const def = catalogItem(item.kind);
   if (def?.use !== 'desk' || item.kind === 'standing-desk') return [];
@@ -112,7 +152,9 @@ export class OfficeView {
 
   /** Reconstruit le mobilier (instances) si les objets posés ont changé. */
   async setItems(items: readonly PlacedItemView[]): Promise<void> {
-    const key = items.map((i) => `${i.id}:${i.kind}:${i.x}:${i.z}:${i.rotation}`).join('|');
+    const key = items
+      .map((i) => `${i.id}:${i.kind}:${i.x}:${i.z}:${i.rotation}:${i.color}:${i.host?.slot ?? ''}`)
+      .join('|');
     if (key === this.itemsKey) return;
     this.itemsKey = key;
     const buildId = ++this.buildId;
@@ -124,8 +166,12 @@ export class OfficeView {
       groups.set(kind, list);
     };
     for (const item of items) {
-      add(item.kind, itemMatrix(item), item.id);
-      for (const extra of extrasFor(item)) add(extra.kind, extra.matrix, item.id);
+      const matrix = placedMatrix(item, items);
+      if (!matrix) continue;
+      add(templateKey(item.kind, item.color), matrix, item.id);
+      // La chaise d'un bureau prend la couleur du bureau : un poste assorti.
+      for (const extra of extrasFor(item))
+        add(templateKey(extra.kind, item.color), extra.matrix, item.id);
     }
 
     const built = await Promise.all(
@@ -153,7 +199,8 @@ export class OfficeView {
         mesh.computeBoundingSphere();
         this.furniture.add(mesh);
         this.pickables.push(mesh);
-        if (DECOR_KINDS.has(kind)) this.decor.push(mesh);
+        const itemKind = kind.split('#')[0] ?? kind;
+        if (DECOR_KINDS.has(itemKind) || catalogItem(itemKind)?.accessory) this.decor.push(mesh);
       }
     }
   }
@@ -165,8 +212,8 @@ export class OfficeView {
   }
 
   /** Construit un objet isolé (non instancié) : aperçu du mode construction, contour. */
-  async single(kind: string): Promise<THREE.Group> {
-    const parts = await this.template(kind);
+  async single(kind: string, color: FurnitureColor = 'natural'): Promise<THREE.Group> {
+    const parts = await this.template(templateKey(kind, color));
     const group = new THREE.Group();
     for (const part of parts) {
       const mesh = new THREE.Mesh(part.geometry, part.material);
@@ -190,12 +237,16 @@ export class OfficeView {
     return promise;
   }
 
-  private async loadTemplate(kind: string): Promise<THREE.Object3D> {
+  private async loadTemplate(key: string): Promise<THREE.Object3D> {
+    const [kind = key, color = 'natural'] = key.split('#') as [string, FurnitureColor];
     // L'écran et le clavier font partie du bureau (voir `parts` dans le catalogue) ; seule la
     // chaise, posée sur la case d'accès, est un gabarit à part.
-    if (kind === '@chair')
-      return (await this.assets.loadFurniture('chairDesk'))?.clone() ?? new THREE.Group();
-    return this.assets.itemTemplate(kind);
+    if (kind === '@chair') {
+      const chair = (await this.assets.loadFurniture('chairDesk'))?.clone() ?? new THREE.Group();
+      paintObject(chair, ['carpet'], color);
+      return chair;
+    }
+    return this.assets.itemTemplate(kind, color);
   }
 }
 

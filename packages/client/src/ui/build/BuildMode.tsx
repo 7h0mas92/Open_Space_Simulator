@@ -6,6 +6,7 @@ import type { GameView } from '../../view/types';
 import { formatGauge, formatMoney, localized } from '../game/format';
 import { useGame, type BuildState } from '../store/game';
 import { Catalog, ItemThumbnail } from './Catalog';
+import { ColorPicker } from './ColorPicker';
 import { SelectionBar } from './SelectionBar';
 
 /**
@@ -84,6 +85,7 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
   const rotateBuild = useGame((s) => s.rotateBuild);
   const cancelPlacement = useGame((s) => s.cancelPlacement);
   const placeAt = useGame((s) => s.placeAt);
+  const setBuildColor = useGame((s) => s.setBuildColor);
   const def = build.kind ? catalogItem(build.kind) : undefined;
   if (!def) return null;
 
@@ -99,12 +101,14 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
     : null;
   const moving = build.movingItemId !== null;
   const status = !cell
-    ? t('build.aim')
+    ? t(def.accessory ? 'build.hintAccessory' : 'build.aim')
     : error
       ? t(`results.${error}`)
-      : coarsePointer()
-        ? t('build.hintTouch')
-        : t('build.hintMouse');
+      : build.placed > 0
+        ? t('build.again')
+        : coarsePointer()
+          ? t('build.hintTouch')
+          : t('build.hintMouse');
 
   return (
     <div
@@ -125,6 +129,12 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
               · {t('build.price', { price: formatMoney(def.price, i18n.language) })}
             </span>
           )}
+          {build.placed > 0 && (
+            <span className="placement-count" data-testid="placed-count">
+              {' '}
+              · {t('build.placedCount', { count: build.placed })}
+            </span>
+          )}
         </p>
         <p className={error ? 'placement-status invalid' : 'placement-status'} aria-live="polite">
           {error ? '✕ ' : ''}
@@ -132,6 +142,9 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
         </p>
       </div>
       <div className="placement-actions">
+        {!moving && def.paint.length > 0 && (
+          <ColorPicker value={build.color} onChange={setBuildColor} />
+        )}
         <button type="button" onClick={rotateBuild} aria-keyshortcuts="R">
           ⟳ <span className="label">{t('build.rotate')}</span>
         </button>

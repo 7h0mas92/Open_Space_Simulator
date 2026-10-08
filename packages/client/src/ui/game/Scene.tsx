@@ -64,6 +64,7 @@ export function Scene() {
                 rotation: build.rotation,
                 movingItemId: build.movingItemId ?? undefined,
                 cell: build.cell ?? null,
+                color: build.color,
               }
             : null,
         );

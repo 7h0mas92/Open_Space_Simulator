@@ -243,9 +243,79 @@ describe('Construction', () => {
     expect(after.items).toHaveLength(before.items.length + 1);
     expect(after.items.at(-1)).toMatchObject({ kind: 'plant', x: cell.x, z: cell.z });
     expect(after.gauges.treasury).toBeLessThan(before.gauges.treasury);
-    // Retour au catalogue pour l'objet suivant.
-    expect(useGame.getState().build).toMatchObject({ kind: null });
     expect(screen.getByText('Plante verte : posé !')).toHaveClass('toast-success');
+    // L'objet reste en main, l'aperçu saute sur une case libre : Entrée en pose un deuxième.
+    const build = useGame.getState().build!;
+    expect(build).toMatchObject({ kind: 'plant', placed: 1 });
+    expect(build.cell).not.toEqual(cell);
+    expect(screen.getByTestId('placed-count')).toHaveTextContent('1 posé');
+    await userEvent.keyboard('{Enter}');
+    expect(useGame.getState().view!.items).toHaveLength(before.items.length + 2);
+    expect(useGame.getState().build).toMatchObject({ kind: 'plant', placed: 2 });
+    // « Annuler » lâche l'objet et rouvre le catalogue.
+    await userEvent.click(screen.getByRole('button', { name: /Annuler/ }));
+    expect(useGame.getState().build).toMatchObject({ kind: null });
+  });
+
+  it('revient au catalogue quand le maximum est atteint', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    act(() => useGame.getState().pickItem('trashcan'));
+    for (let i = 0; i < 2; i++) {
+      act(() => useGame.getState().setBuildCell(freeCell('trashcan')));
+      await act(() => useGame.getState().placeAt());
+    }
+    // 2 poubelles au maximum : la deuxième pose ramène au catalogue.
+    expect(useGame.getState().build).toMatchObject({ kind: null });
+    expect(screen.getByText(/maximum atteint, retour au catalogue/)).toBeInTheDocument();
+  });
+
+  it('choisit la couleur avant de poser, puis repeint un objet posé', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    await userEvent.click(screen.getByRole('tab', { name: /Travail/ }));
+    await userEvent.click(screen.getByTestId('catalog-desk'));
+    await userEvent.click(screen.getByTestId('color-button'));
+    await userEvent.click(screen.getByRole('radio', { name: 'Bleu' }));
+    expect(useGame.getState().build?.color).toBe('blue');
+    const cell = freeCell('desk');
+    act(() => useGame.getState().setBuildCell(cell));
+    await userEvent.click(screen.getByTestId('place'));
+    const desk = useGame.getState().view!.items.find((i) => i.x === cell.x && i.z === cell.z)!;
+    expect(desk).toMatchObject({ kind: 'desk', color: 'blue' });
+    // La couleur est retenue pour le prochain bureau.
+    await userEvent.click(screen.getByRole('button', { name: /Annuler/ }));
+    await userEvent.click(screen.getByTestId('catalog-desk'));
+    expect(useGame.getState().build?.color).toBe('blue');
+    await userEvent.keyboard('{Escape}');
+
+    act(() => useGame.getState().select({ type: 'item', id: desk.id }));
+    await userEvent.click(screen.getByRole('button', { name: /Couleur : Bleu/ }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Rose' }));
+    expect(useGame.getState().view!.items.find((i) => i.id === desk.id)?.color).toBe('pink');
+  });
+
+  it('pose un accessoire sur un bureau, pas au sol', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    const desk = useGame.getState().view!.items.find((i) => i.kind === 'ikea-desk')!;
+    await userEvent.click(screen.getByRole('tab', { name: /Accessoires/ }));
+    await userEvent.click(screen.getByTestId('catalog-rubber-duck'));
+    act(() => useGame.getState().setBuildCell(freeCell()));
+    expect(screen.getByTestId('place')).toBeDisabled();
+    expect(screen.getByTestId('placement-bar')).toHaveTextContent('meuble à plateau');
+
+    act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
+    await userEvent.click(screen.getByTestId('place'));
+    const duck = useGame.getState().view!.items.find((i) => i.kind === 'rubber-duck');
+    expect(duck?.host).toMatchObject({ id: desk.id });
+    // Toujours en main : le deuxième canard prend l'autre emplacement du bureau.
+    act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
+    await userEvent.click(screen.getByTestId('place'));
+    const ducks = useGame.getState().view!.items.filter((i) => i.kind === 'rubber-duck');
+    expect(new Set(ducks.map((d) => d.host?.slot))).toEqual(new Set([0, 1]));
+    act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
+    expect(screen.getByTestId('placement-bar')).toHaveTextContent('Plus de place sur ce meuble');
   });
 
   it('refuse une case occupée et explique pourquoi', async () => {

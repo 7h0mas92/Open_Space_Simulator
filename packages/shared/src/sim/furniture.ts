@@ -46,7 +46,34 @@ export interface FurnitureDefinition {
   /** Nombre maximum d'exemplaires (les effets ne se cumulent pas au-delà). */
   maxCount: number;
   effects: FurnitureEffects;
+  /**
+   * Meuble à plateau : nombre d'accessoires qu'on peut poser dessus (lampe, mug, canard…).
+   * Les emplacements eux-mêmes (position sur le plateau) sont une affaire de rendu.
+   */
+  surfaceSlots?: number;
+  /** Accessoire : il se pose sur un meuble à plateau, jamais au sol. */
+  accessory?: boolean;
 }
+
+/**
+ * Couleurs proposées pour le mobilier. Purement esthétique : la simulation retient seulement
+ * l'identifiant, le rendu choisit la teinte. `natural` garde les couleurs d'origine du modèle.
+ */
+export const FURNITURE_COLORS = [
+  'natural',
+  'white',
+  'graphite',
+  'walnut',
+  'red',
+  'orange',
+  'yellow',
+  'green',
+  'teal',
+  'blue',
+  'purple',
+  'pink',
+] as const;
+export type FurnitureColor = (typeof FURNITURE_COLORS)[number];
 
 const t = (fr: string, en: string): LocalizedText => ({ fr, en });
 
@@ -64,6 +91,7 @@ export const FURNITURE_CATALOG = [
     minPhase: 'GARAGE',
     maxCount: 40,
     effects: { seatProductivity: 0.04, seats: 1 },
+    surfaceSlots: 2,
   },
   {
     id: 'ikea-desk',
@@ -78,6 +106,7 @@ export const FURNITURE_CATALOG = [
     minPhase: 'GARAGE',
     maxCount: 40,
     effects: { seatProductivity: 0.02, seats: 1 },
+    surfaceSlots: 2,
   },
   {
     id: 'ergonomic-chair',
@@ -201,6 +230,7 @@ export const FURNITURE_CATALOG = [
     minPhase: 'SERIES_A',
     maxCount: 30,
     effects: { seatProductivity: 0.05, seatEnergySaving: 0.1, seats: 1 },
+    surfaceSlots: 2,
   },
   {
     id: 'sofa',
@@ -229,6 +259,7 @@ export const FURNITURE_CATALOG = [
     minPhase: 'GARAGE',
     maxCount: 3,
     effects: { quality: 0.03 },
+    surfaceSlots: 2,
   },
   {
     id: 'tv-dashboard',
@@ -271,6 +302,7 @@ export const FURNITURE_CATALOG = [
     minPhase: 'SEED',
     maxCount: 4,
     effects: { stabilityPerDay: 0.25 },
+    surfaceSlots: 1,
   },
   {
     id: 'trashcan',
@@ -310,6 +342,7 @@ export const FURNITURE_CATALOG = [
     minPhase: 'SEED',
     maxCount: 2,
     effects: { coffeeRestock: 15, moral: 0.1 },
+    surfaceSlots: 1,
   },
   {
     id: 'nap-pod',
@@ -349,6 +382,185 @@ export const FURNITURE_CATALOG = [
     minPhase: 'UNICORN',
     maxCount: 4,
     effects: { moral: 0.2, coffeeRestock: 10 },
+    surfaceSlots: 4,
+  },
+  // --- Accessoires : posés sur les meubles à plateau (bureaux, bibliothèque, frigo…). ---
+  {
+    id: 'desk-lamp',
+    name: t('Lampe de bureau', 'Desk lamp'),
+    description: t(
+      'On voit enfin les bugs : +0,5 % de qualité. Se pose sur un meuble.',
+      'Bugs are finally visible: +0.5% quality. Goes on furniture.',
+    ),
+    price: 40,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 6,
+    accessory: true,
+    effects: { quality: 0.005 },
+  },
+  {
+    id: 'coffee-mug',
+    name: t('Mug « It works on my machine »', '"It works on my machine" mug'),
+    description: t(
+      'Toujours à moitié plein de café froid : +2 café chaque matin.',
+      'Always half full of cold coffee: +2 coffee every morning.',
+    ),
+    price: 15,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 10,
+    accessory: true,
+    effects: { coffeeRestock: 2 },
+  },
+  {
+    id: 'rubber-duck',
+    name: t('Canard en plastique', 'Rubber duck'),
+    description: t(
+      'Rubber duck debugging : on lui explique le bug, il le résout. −dette chaque jour.',
+      'Rubber duck debugging: explain the bug, it fixes it. −debt every day.',
+    ),
+    price: 10,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 5,
+    accessory: true,
+    effects: { debtPerDay: -0.02 },
+  },
+  {
+    id: 'succulent',
+    name: t('Succulente', 'Succulent'),
+    description: t(
+      'La seule plante qui survit au code review. Très léger +moral.',
+      'The only plant that survives code review. Tiny +morale.',
+    ),
+    price: 25,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 10,
+    accessory: true,
+    effects: { moral: 0.02 },
+  },
+  {
+    id: 'book-stack',
+    name: t('Pile de livres', 'Stack of books'),
+    description: t(
+      'Sert surtout à surélever l’écran : +0,4 % de qualité.',
+      'Mostly used to raise the monitor: +0.4% quality.',
+    ),
+    price: 35,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 6,
+    accessory: true,
+    effects: { quality: 0.004 },
+  },
+  {
+    id: 'teddy-bear',
+    name: t('Nounours', 'Teddy bear'),
+    description: t('Pour les rétros difficiles. +moral.', 'For tough retrospectives. +morale.'),
+    price: 30,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 4,
+    accessory: true,
+    effects: { moral: 0.03 },
+  },
+  {
+    id: 'radio',
+    name: t('Radio vintage', 'Vintage radio'),
+    description: t(
+      'Les infos tech en continu : +moral, −0,3 % de prod.',
+      'Non-stop tech news: +morale, −0.3% productivity.',
+    ),
+    price: 60,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    accessory: true,
+    effects: { moral: 0.04, teamProductivity: -0.003 },
+  },
+  {
+    id: 'second-screen',
+    name: t('Deuxième écran', 'Second monitor'),
+    description: t(
+      'Un écran pour le code, un pour Slack : +0,4 % de productivité.',
+      'One screen for code, one for Slack: +0.4% productivity.',
+    ),
+    price: 250,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 10,
+    accessory: true,
+    effects: { teamProductivity: 0.004 },
+  },
+  {
+    id: 'mini-speaker',
+    name: t('Petite enceinte Bluetooth', 'Bluetooth speaker'),
+    description: t(
+      'Se connecte toujours au mauvais téléphone. Léger +moral.',
+      'Always pairs with the wrong phone. Slight +morale.',
+    ),
+    price: 45,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    accessory: true,
+    effects: { moral: 0.02 },
+  },
+  {
+    id: 'trophy',
+    name: t('Trophée de hackathon', 'Hackathon trophy'),
+    description: t(
+      'Gagné en 2019 avec une todo-list en blockchain : +hype.',
+      'Won in 2019 with a blockchain to-do list: +hype.',
+    ),
+    price: 120,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 3,
+    accessory: true,
+    effects: { hypePerDay: 0.02 },
+  },
+  {
+    id: 'toaster',
+    name: t('Grille-pain', 'Toaster'),
+    description: t(
+      'Odeur de pain grillé dans l’open space : +moral.',
+      'Smell of toast across the open space: +morale.',
+    ),
+    price: 50,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 2,
+    accessory: true,
+    effects: { moral: 0.03 },
+  },
+  {
+    id: 'blender',
+    name: t('Blender à smoothies', 'Smoothie blender'),
+    description: t(
+      'Kale, gingembre, spiruline. +moral, +3 café (oui, c’est du café).',
+      'Kale, ginger, spirulina. +morale, +3 coffee (yes, it counts).',
+    ),
+    price: 90,
+    width: 1,
+    depth: 1,
+    minPhase: 'SERIES_A',
+    maxCount: 2,
+    accessory: true,
+    effects: { moral: 0.03, coffeeRestock: 3 },
   },
 ] as const satisfies readonly FurnitureDefinition[];
 

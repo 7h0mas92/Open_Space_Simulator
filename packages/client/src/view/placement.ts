@@ -5,12 +5,13 @@
  * des bornes et des chevauchements ; les cloisons et l'entrée sont des contraintes du décor.
  */
 import { PHASES } from '@oss/shared';
-import { itemCells } from '../ai/grid';
+import { itemCells, type ItemPlacement } from '../ai/grid';
 import { catalogItem, footprint, type CatalogItem } from './catalog';
 import type { Cell, OfficeLayout } from './layout';
-import type { GameView, PlacedItemView, Rotation } from './types';
+import type { GameView, ItemHost, PlacedItemView, Rotation } from './types';
 
-export type PlacementError = 'unknownItem' | 'outOfBounds' | 'wall' | 'overlap' | 'entrance';
+export type PlacementError =
+  'unknownItem' | 'outOfBounds' | 'wall' | 'overlap' | 'entrance' | 'noSurface' | 'surfaceFull';
 
 export interface PlacementRequest {
   readonly kind: string;
@@ -28,6 +29,10 @@ export function checkPlacement(
 ): PlacementError | null {
   const def = catalogItem(request.kind);
   if (!def) return 'unknownItem';
+  if (def.accessory) {
+    const resolved = resolveAccessory(items, request);
+    return 'error' in resolved ? resolved.error : null;
+  }
   const [w, d] = footprint(def, request.rotation);
   if (
     request.x < 0 ||
@@ -47,11 +52,72 @@ export function checkPlacement(
   }
   // Même règle que la simulation : aucun chevauchement, tapis compris.
   for (const other of items) {
-    if (other.id === request.ignoreId) continue;
+    if (other.id === request.ignoreId || other.host) continue;
     const otherCells = itemCells(other);
     if (cells.some((cell) => has(otherCells, cell.x, cell.z))) return 'overlap';
   }
   return null;
+}
+
+/**
+ * Position d'un emplacement d'accessoire dans le monde [x, hauteur, z] : le point `surface`
+ * du catalogue, tourné avec le meuble (même convention que `itemMatrix` du rendu).
+ */
+export function slotPosition(
+  host: ItemPlacement,
+  slot: number,
+): readonly [number, number, number] | null {
+  const def = catalogItem(host.kind);
+  const local = def?.surface?.[slot];
+  if (!def || !local) return null;
+  const [w, d] = footprint(def, host.rotation);
+  const angle = (host.rotation * Math.PI) / 2;
+  const cos = Math.round(Math.cos(angle));
+  const sin = Math.round(Math.sin(angle));
+  const [x, y, z] = local;
+  return [host.x + (w - 1) / 2 + x * cos + z * sin, y, host.z + (d - 1) / 2 - x * sin + z * cos];
+}
+
+/** Emplacements libres d'un meuble (celui de l'accessoire déplacé compte comme libre). */
+export function freeSlots(
+  items: readonly PlacedItemView[],
+  host: PlacedItemView,
+  ignoreId?: string,
+): number[] {
+  const count = catalogItem(host.kind)?.surface?.length ?? 0;
+  const used = new Set(
+    items
+      .filter((item) => item.host?.id === host.id && item.id !== ignoreId)
+      .map((item) => item.host?.slot),
+  );
+  return Array.from({ length: count }, (_, slot) => slot).filter((slot) => !used.has(slot));
+}
+
+/**
+ * Où poser un accessoire visé sur la case (x, z) : le meuble à plateau qui couvre la case, et
+ * son emplacement libre le plus proche du centre de la case.
+ */
+export function resolveAccessory(
+  items: readonly PlacedItemView[],
+  request: Pick<PlacementRequest, 'x' | 'z' | 'ignoreId'>,
+): { readonly host: ItemHost } | { readonly error: 'noSurface' | 'surfaceFull' } {
+  const host = items.find(
+    (item) =>
+      !item.host && itemCells(item).some((cell) => cell.x === request.x && cell.z === request.z),
+  );
+  if (!host || !catalogItem(host.kind)?.surface?.length) return { error: 'noSurface' };
+  let best: ItemHost | null = null;
+  let bestDistance = Infinity;
+  for (const slot of freeSlots(items, host, request.ignoreId)) {
+    const position = slotPosition(host, slot);
+    if (!position) continue;
+    const distance = (position[0] - request.x) ** 2 + (position[2] - request.z) ** 2;
+    if (distance < bestDistance) {
+      best = { id: host.id, slot };
+      bestDistance = distance;
+    }
+  }
+  return best ? { host: best } : { error: 'surfaceFull' };
 }
 
 /**
