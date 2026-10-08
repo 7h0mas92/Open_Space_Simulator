@@ -9,8 +9,11 @@ export const GAME = {
   totalSprints: 39,
   /** Durée d'un sprint en semaines simulées. */
   sprintWeeks: 2,
-  /** Durée réelle approximative d'un sprint à vitesse x1, en secondes. */
-  sprintRealSecondsAtX1: 180,
+  /**
+   * Durée réelle approximative d'un sprint à vitesse x1, en secondes (5 minutes : une minute de
+   * jeu dure environ 15 ms, l'horloge défile donc minute par minute à l'écran).
+   */
+  sprintRealSecondsAtX1: 300,
   /** Fonds levés au démarrage, en euros. */
   startingTreasury: 2_000_000,
   /** Nombre d'emplacements de sauvegarde par joueur. */

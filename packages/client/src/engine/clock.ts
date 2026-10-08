@@ -1,6 +1,6 @@
 import { GAME, SPEEDS, TIME, type Speed } from '@oss/shared';
 
-/** Durée réelle d'un tick à vitesse x1 : un sprint (672 ticks) dure environ 3 minutes. */
+/** Durée réelle d'un tick à vitesse x1 : un sprint (672 ticks) dure environ 5 minutes. */
 export const TICK_MS_AT_X1 = (GAME.sprintRealSecondsAtX1 * 1000) / TIME.ticksPerSprint;
 
 /** Nombre maximum de ticks rattrapés en une fois (onglet en arrière-plan, gros ralentissement). */

@@ -13,6 +13,7 @@ import {
   sprintProgress,
 } from './format';
 import { Tooltip } from './Tooltip';
+import { useLiveTime } from './useLiveTime';
 
 /*
  * HUD de la partie, en deux bandes :
@@ -165,13 +166,15 @@ export function Clock({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const days = t('time.days', { returnObjects: true }) as unknown as string[];
   const { time } = view;
-  const percent = Math.round(sprintProgress(time) * 100);
+  // L'heure défile minute par minute entre deux pas de simulation (30 min).
+  const live = useLiveTime(time);
+  const percent = Math.round(sprintProgress(live) * 100);
   return (
     <div className="clock" data-tutorial="clock" aria-live="off">
       <p className="clock-line">
         <strong>{t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}</strong>
-        <span className={`clock-time ${isFridayFive(time) ? 'friday' : ''}`}>
-          {t('time.day', { day: days[weekday(time.day)] ?? '', time: formatClock(time.minute) })}
+        <span className={`clock-time ${isFridayFive(live) ? 'friday' : ''}`}>
+          {t('time.day', { day: days[weekday(live.day)] ?? '', time: formatClock(live.minute) })}
         </span>
       </p>
       <p className="clock-line">

@@ -258,6 +258,8 @@ flowchart LR
 - **Écran de jeu** : en haut ce qu'on lit (phase, équipe, mois de trésorerie restants, six
   jauges avec icône, tendance et couleur, horloge et avancement du sprint) ; en bas ce qu'on
   fait (dock d'actions et commande de l'étape : lancer le sprint, lever des fonds, vitesses).
+  L'horloge défile minute par minute (environ 5 min réelles par sprint à x1) alors que la
+  simulation avance par pas de 30 min : l'affichage interpole entre deux pas.
   Les cartes d'événement gardent les jauges visibles, montrent les effets en pastilles et se
   choisissent aussi avec les touches 1 à 3.
 - **Télétravail automatique** : chaque matin de semaine, la simulation envoie en télétravail

@@ -49,6 +49,10 @@ export interface ViewContext {
   readonly card: (id: string) => EventCard | undefined;
   /** Progression du replay (null pour une partie jouée). */
   readonly replay?: { readonly played: number; readonly total: number } | null;
+  /** Durée réelle d'un tick à la vitesse actuelle, en ms (horloge continue). */
+  readonly tickDurationMs?: number;
+  /** Instant de réception du snapshot (performance.now), en ms. */
+  readonly receivedAt?: number;
 }
 
 const COLUMNS: Record<TaskColumn, KanbanColumn> = {
@@ -247,6 +251,11 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       day: clock.dayInSprint,
       minute: minutes,
       speed: context.speed,
+      tickMs:
+        context.running && context.tickDurationMs !== undefined
+          ? context.tickDurationMs
+          : Number.POSITIVE_INFINITY,
+      syncedAt: context.receivedAt ?? 0,
     },
     phase: state.phase,
     step: state.stage,

@@ -146,6 +146,13 @@ export interface GameTime {
   /** Minute de la journée, de 0 à 1439. */
   readonly minute: number;
   readonly speed: Speed;
+  /**
+   * Durée réelle du tick en cours, en ms (Infinity quand le temps est arrêté). La simulation
+   * avance par pas de 30 minutes ; l'affichage s'en sert pour faire défiler l'horloge en continu.
+   */
+  readonly tickMs: number;
+  /** Instant (performance.now) où ce snapshot a été reçu : début du tick en cours. */
+  readonly syncedAt: number;
 }
 
 export const SPRINT_STEPS = ['PLANNING', 'EXECUTION', 'DEMO', 'PITCH', 'ENDED'] as const;
@@ -278,6 +285,6 @@ export function isWeekend(day: number): boolean {
 }
 
 /** Vendredi 17h : moment où la prod tombe traditionnellement. */
-export function isFridayFive(time: GameTime): boolean {
+export function isFridayFive(time: Pick<GameTime, 'day' | 'minute'>): boolean {
   return weekday(time.day) === 4 && time.minute >= 17 * 60 && time.minute < 18 * 60;
 }

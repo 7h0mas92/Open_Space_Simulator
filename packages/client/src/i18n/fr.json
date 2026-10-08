@@ -798,7 +798,7 @@
           },
           "hardcoreEvents": {
             "title": "Les crises n’attendent pas",
-            "body": "En Hardcore, une carte d'événement n'arrête pas le temps. Si tu ne choisis pas dans les 2 heures de jeu (environ une seconde à x1), la dernière réponse est choisie pour toi : « tu n'as rien décidé, le problème a décidé pour toi ».\n\nCette dernière réponse est souvent la pire. Reste en x1 pendant les heures de bureau pour avoir le temps de lire, et garde x2 ou x4 pour les nuits et les week-ends."
+            "body": "En Hardcore, une carte d'événement n'arrête pas le temps. Si tu ne choisis pas dans les 2 heures de jeu (un peu moins de 2 secondes à x1), la dernière réponse est choisie pour toi : « tu n'as rien décidé, le problème a décidé pour toi ».\n\nCette dernière réponse est souvent la pire. Reste en x1 pendant les heures de bureau pour avoir le temps de lire, et garde x2 ou x4 pour les nuits et les week-ends."
           },
           "interns": {
             "title": "Le mode Stagiaires Only",
@@ -831,7 +831,7 @@
         "steps": {
           "sprint": {
             "title": "Un sprint en 4 temps",
-            "body": "Chaque sprint dure deux semaines de jeu, environ 3 minutes réelles à vitesse x1. Il se déroule en 4 temps :\n\n1. Planification : tu choisis le travail. Le temps est arrêté.\n2. Exécution : les devs travaillent dans l'open space.\n3. Crises : des cartes d'événements tombent pendant l'exécution.\n4. Démo : le bilan du sprint.\n\nOn est en planification : prépare ton premier sprint."
+            "body": "Chaque sprint dure deux semaines de jeu, environ 5 minutes réelles à vitesse x1. Il se déroule en 4 temps :\n\n1. Planification : tu choisis le travail. Le temps est arrêté.\n2. Exécution : les devs travaillent dans l'open space.\n3. Crises : des cartes d'événements tombent pendant l'exécution.\n4. Démo : le bilan du sprint.\n\nOn est en planification : prépare ton premier sprint."
           },
           "openKanban": {
             "title": "Le Kanban",
