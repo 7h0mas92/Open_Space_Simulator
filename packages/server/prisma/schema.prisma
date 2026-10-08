@@ -190,3 +190,11 @@ model AiQuota {
 
   @@id([userId, date])
 }
+
+/// Pack de personnages thématiques (Noël, Halloween…) activé ou non depuis le back-office.
+/// Un pack sans ligne garde son état par défaut (« Base » actif, les autres non).
+model CharacterPack {
+  id        String   @id
+  enabled   Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}

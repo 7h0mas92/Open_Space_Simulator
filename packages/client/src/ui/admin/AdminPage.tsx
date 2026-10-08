@@ -4,12 +4,15 @@ import {
   type AdminCardListItem,
   type AdminStatsResponse,
   type CardGauge,
+  type CharacterPack,
+  type CharacterPackId,
   type EventCard,
 } from '@oss/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiRequestError } from '../../api/client';
 import { metaApi } from '../../api/meta';
+import { useCharacterPacks } from '../../save/packs';
 import { localized } from '../game/format';
 import { CardEditor, editableCard, NEW_CARD } from './CardEditor';
 import {
@@ -624,14 +627,112 @@ function StatsTab() {
   );
 }
 
+/** Aperçu 3D d'un pack : rendu à la demande, Three.js n'est chargé qu'à ce moment-là. */
+function PackPreview({ id }: { id: CharacterPackId }) {
+  const { t } = useTranslation();
+  const [image, setImage] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    let cancelled = false;
+    import('../../render/packPreview')
+      .then(({ packPreview }) => packPreview(id))
+      .then(
+        (url) => !cancelled && setImage(url),
+        () => !cancelled && setImage(null),
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+  if (image === undefined) return <div className="admin-pack-preview" aria-busy="true" />;
+  if (image === null) return null;
+  return (
+    <img
+      className="admin-pack-preview"
+      src={image}
+      alt={t('admin.packs.previewAlt', { pack: t(`packs.${id}.name`) })}
+    />
+  );
+}
+
+/** Packs de personnages thématiques : costumes portés par toute l'équipe, désactivés au départ. */
+function PacksTab() {
+  const { t } = useTranslation();
+  const [packs, setPacks] = useState<CharacterPack[] | null>(null);
+  const [error, setError] = useState(false);
+  const [message, setMessage] = useState<Message>(null);
+  useEffect(() => {
+    metaApi.admin.characterPacks().then(setPacks, () => setError(true));
+  }, []);
+
+  const toggle = async (pack: CharacterPack) => {
+    const name = t(`packs.${pack.id}.name`);
+    try {
+      const updated = await metaApi.admin.setCharacterPack(pack.id, !pack.enabled);
+      setPacks((list) => list?.map((item) => (item.id === updated.id ? updated : item)) ?? null);
+      setMessage({
+        text: t(updated.enabled ? 'admin.packs.enabled' : 'admin.packs.disabled', { pack: name }),
+        tone: 'up',
+      });
+      // La partie en cours (même onglet) rhabille aussitôt son équipe.
+      void useCharacterPacks.getState().refresh();
+    } catch (cause) {
+      setMessage({
+        text: cause instanceof ApiRequestError ? cause.message : t('leaderboard.error'),
+        tone: 'error',
+      });
+    }
+  };
+
+  if (error)
+    return (
+      <p className="error" role="alert">
+        {t('leaderboard.error')}
+      </p>
+    );
+  if (!packs) return <p aria-live="polite">{t('auth.loading')}</p>;
+  return (
+    <div className="admin-packs">
+      <p className="admin-packs-intro">{t('admin.packs.intro')}</p>
+      {message && (
+        <p className={message.tone} role="status">
+          {message.text}
+        </p>
+      )}
+      <ul className="admin-pack-list">
+        {packs.map((pack) => (
+          <li key={pack.id} className={`admin-card${pack.enabled ? '' : ' inactive'}`}>
+            <div className="admin-card-head">
+              <h3>{t(`packs.${pack.id}.name`)}</h3>
+              <span className={`admin-state ${pack.enabled ? 'on' : 'off'}`}>
+                {t(pack.enabled ? 'admin.packs.on' : 'admin.packs.off')}
+              </span>
+            </div>
+            <p className="admin-card-desc">{t(`packs.${pack.id}.description`)}</p>
+            <PackPreview id={pack.id} />
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={pack.enabled}
+                onChange={() => void toggle(pack)}
+                data-testid={`pack-${pack.id}`}
+              />
+              {t('admin.packs.toggle')}
+            </label>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** Back-office (rôle ADMIN, vérifié aussi par le serveur sur chaque route). */
 export function AdminPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'cards' | 'stats'>('cards');
+  const [tab, setTab] = useState<'cards' | 'packs' | 'stats'>('cards');
   return (
     <div className="admin">
       <div className="tabs" role="tablist" aria-label={t('admin.heading')}>
-        {(['cards', 'stats'] as const).map((id) => (
+        {(['cards', 'packs', 'stats'] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -643,7 +744,7 @@ export function AdminPage() {
           </button>
         ))}
       </div>
-      {tab === 'cards' ? <CardsTab /> : <StatsTab />}
+      {tab === 'cards' ? <CardsTab /> : tab === 'packs' ? <PacksTab /> : <StatsTab />}
     </div>
   );
 }

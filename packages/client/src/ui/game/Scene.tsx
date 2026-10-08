@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GameRenderer } from '../../render/GameRenderer';
+import { useCharacterPacks } from '../../save/packs';
 import { setThumbnailSource } from '../build/thumbnails';
 import { onGameNotifications, useGame } from '../store/game';
 import { useSettings } from '../store/settings';
@@ -78,6 +79,12 @@ export function Scene() {
       renderer.setEdgePan(state.edgePan);
       renderer.setZoomSpeed(state.zoomSpeed);
     });
+    // Costumes des packs de personnages activés au back-office (Noël, Halloween…).
+    renderer.setCharacterPacks(useCharacterPacks.getState().enabled);
+    const unsubscribePacks = useCharacterPacks.subscribe((state) =>
+      renderer.setCharacterPacks(state.enabled),
+    );
+    void useCharacterPacks.getState().refresh();
     const initial = useGame.getState();
     if (initial.view) renderer.setView(initial.view);
 
@@ -85,6 +92,7 @@ export function Scene() {
       unsubscribeGame();
       unsubscribeNotifications();
       unsubscribeSettings();
+      unsubscribePacks();
       setThumbnailSource(null);
       renderer.dispose();
       rendererRef.current = null;

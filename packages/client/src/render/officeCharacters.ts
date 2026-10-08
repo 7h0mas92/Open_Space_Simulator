@@ -25,7 +25,7 @@ export const BLOCKY_HEIGHT = 2.7;
  * La tête des GLB Kenney est modélisée 10 fois trop grande puis réduite par un `scale` de 0.1
  * (que certains clips animent). Nos têtes suivent la même convention.
  */
-const HEAD_SCALE = 0.1;
+export const HEAD_SCALE = 0.1;
 
 /** Accessoires Three.js, posés sur la tête ou le torse. */
 export const ACCESSORIES = [
@@ -355,7 +355,7 @@ export function lookKey(look: CharacterLook): string {
 // ---------------------------------------------------------------------------------------------
 
 /** Boîtes d'une même partie, fusionnées en un seul maillage à la fin. */
-class Parts {
+export class Parts {
   private readonly geometries: THREE.BufferGeometry[] = [];
 
   add(w: number, h: number, d: number, color: number, x: number, y: number, z: number): this {
@@ -386,7 +386,7 @@ class Parts {
   }
 }
 
-const solid = new THREE.MeshStandardMaterial({
+export const solid = new THREE.MeshStandardMaterial({
   vertexColors: true,
   roughness: 0.85,
   metalness: 0.05,
@@ -413,7 +413,7 @@ const glowing = new THREE.MeshStandardMaterial({
   emissiveIntensity: 0.9,
 });
 
-const EYE = 0x262a36;
+export const EYE = 0x262a36;
 const MOUTH = 0x8a3b32;
 const CRAB = 0xe8582c;
 
@@ -588,7 +588,7 @@ function armAccessory(parts: Parts, accessories: readonly Accessory[], side: 1 |
   if (accessories.includes('blazer')) parts.add(0.42, 0.8, 0.42, 0x2f3f6b, side * 0.2, -0.32, 0);
 }
 
-function darker(color: number): number {
+export function darker(color: number): number {
   return new THREE.Color(color).multiplyScalar(0.75).getHex();
 }
 

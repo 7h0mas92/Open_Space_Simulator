@@ -3,6 +3,7 @@
  * construit en Three.js, voir `officeCharacters.ts`), animé par les clips des GLB Kenney, ou
  * personnage de secours animé de façon procédurale (bob, rotation, petits sauts).
  */
+import type { CharacterPackId } from '@oss/shared';
 import * as THREE from 'three';
 import type { AgentPose, AgentSnapshot } from '../ai/agents';
 import type { DevRole } from '../view/types';
@@ -43,6 +44,7 @@ export class CharacterView {
     role: DevRole,
     look: number,
     assets: AssetLibrary,
+    packs: readonly CharacterPackId[] = [],
   ) {
     this.body = fallbackCharacter(ROLE_COLORS[look % ROLE_COLORS.length] ?? PALETTE.blue);
     this.root.add(this.body);
@@ -55,7 +57,7 @@ export class CharacterView {
     this.root.add(this.hitBox);
     this.root.name = `dev:${id}`;
 
-    void assets.character(role, look).then((asset) => {
+    void assets.character(role, look, packs).then((asset) => {
       if (!asset || this.disposed) return;
       this.root.remove(this.body);
       this.body = asset.scene;

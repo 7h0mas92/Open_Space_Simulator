@@ -612,6 +612,7 @@
     "heading": "Back office",
     "tabs": {
       "cards": "Cards",
+      "packs": "Character packs",
       "stats": "Statistics"
     },
     "search": "Search a card",
@@ -693,7 +694,16 @@
     "editing": "Edit: {{title}}",
     "creating": "New card",
     "showResults_one": "Show {{count}} card",
-    "showResults_other": "Show {{count}} cards"
+    "showResults_other": "Show {{count}} cards",
+    "packs": {
+      "intro": "A pack dresses the team in its costumes. Only “Base” (the usual looks) is on by default; when several packs are on, the team is split between them, and when none is, the usual looks come back. Players see changes when they start their next game.",
+      "toggle": "Pack enabled",
+      "enabled": "“{{pack}}” pack enabled.",
+      "disabled": "“{{pack}}” pack disabled.",
+      "previewAlt": "The 8 profiles dressed for the {{pack}} pack",
+      "on": "On",
+      "off": "Off"
+    }
   },
   "guide": {
     "title": "Tutorial",
@@ -1097,5 +1107,51 @@
     "sprintProgress": "Sprint progress: {{percent}}%",
     "system": "Game",
     "runwayLong": "Cash: {{months}} months left"
+  },
+  "packs": {
+    "BASE": {
+      "name": "Base",
+      "description": "The team's usual looks, no costume. On by default; mixed with a themed pack, part of the team stays in regular clothes."
+    },
+    "CHRISTMAS": {
+      "name": "Christmas",
+      "description": "Bearded Santa, elves, Rudolph the Rustacean, ugly sweaters and a fairy-light robot."
+    },
+    "HALLOWEEN": {
+      "name": "Halloween",
+      "description": "Bearded wizard, 10x vampire, pumpkin-headed interns, skeleton, witch, devil and robot mummy."
+    },
+    "EASTER": {
+      "name": "Easter",
+      "description": "Bunny ears, chicks, flower crowns and painted eggs on pastel outfits."
+    },
+    "SUPERHEROES": {
+      "name": "Superheroes",
+      "description": "Capes, masks and made-up emblems: an unlicensed hero squad (no existing characters)."
+    },
+    "SUMMER": {
+      "name": "Summer",
+      "description": "Straw hats, sunglasses, Hawaiian shirts, sailor stripes and a swim ring."
+    },
+    "SPACE": {
+      "name": "Space",
+      "description": "Bubble-helmet astronauts, an alien intern and a neon robot."
+    },
+    "PIRATES": {
+      "name": "Pirates",
+      "description": "Bearded captain and his parrot, bandanas, eye patches and striped shirts."
+    },
+    "MEDIEVAL": {
+      "name": "Medieval",
+      "description": "Wizard, armoured knights, jester, princess and a crowned PO."
+    },
+    "RETRO_80S": {
+      "name": "80s",
+      "description": "Neon tracksuits, headbands, walkmans and a Miami-style white jacket."
+    },
+    "CYBERPUNK": {
+      "name": "Cyberpunk",
+      "description": "Glowing visors, neon mohawks and dark suits with neon stripes."
+    }
   }
 }

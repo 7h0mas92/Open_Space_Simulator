@@ -5,6 +5,7 @@
  * deux pas et dessine. Il ne modifie jamais l'état du jeu : les clics sont remontés à
  * l'interface par des callbacks, qui décide de la commande à envoyer.
  */
+import type { CharacterPackId } from '@oss/shared';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
@@ -101,6 +102,8 @@ export class GameRenderer {
   private outlinePass: OutlinePass | null = null;
 
   private view: GameView | null = null;
+  /** Packs de personnages actifs (costumes de Noël, d'Halloween…). */
+  private characterPacks: readonly CharacterPackId[] = [];
   private layout: OfficeLayout = officeLayout('GARAGE');
   private quality: QualityLevel;
   private reducedMotion: boolean;
@@ -207,7 +210,13 @@ export class GameRenderer {
     }
     for (const dev of view.devs) {
       if (!this.characters.has(dev.id)) {
-        const character = new CharacterView(dev.id, dev.role, dev.look, this.assets);
+        const character = new CharacterView(
+          dev.id,
+          dev.role,
+          dev.look,
+          this.assets,
+          this.characterPacks,
+        );
         this.characters.set(dev.id, character);
         this.scene.add(character.root);
       }
@@ -225,6 +234,18 @@ export class GameRenderer {
     this.quality = level;
     this.applyQuality();
     this.resize();
+  }
+
+  /** Change les packs de personnages actifs : toute l'équipe est rhabillée. */
+  setCharacterPacks(packs: readonly CharacterPackId[]): void {
+    if (packs.join() === this.characterPacks.join()) return;
+    this.characterPacks = [...packs];
+    for (const character of this.characters.values()) {
+      this.scene.remove(character.root);
+      character.dispose();
+    }
+    this.characters.clear();
+    if (this.view) this.setView(this.view);
   }
 
   setReducedMotion(reduced: boolean): void {

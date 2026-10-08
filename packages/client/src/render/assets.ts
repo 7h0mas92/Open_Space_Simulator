@@ -4,21 +4,15 @@
  * Chaque modèle n'est téléchargé qu'une fois ; les instances sont ensuite dessinées par
  * InstancedMesh (meubles) ou clonées avec leur squelette (personnages animés).
  */
+import type { CharacterPackId } from '@oss/shared';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { catalogItem, type ItemModel } from '../view/catalog';
 import type { DevRole } from '../view/types';
+import { dressUp, themedLookFor, themedLookKey, type ThemedLook } from './characterPacks';
 import { characterUrl, furnitureUrl, type CharacterId, type FurnitureModel } from './assetManifest';
-import {
-  addAccessories,
-  BLOCKY_HEIGHT,
-  buildCharacter,
-  KENNEY_COLORS,
-  lookFor,
-  lookKey,
-  type CharacterLook,
-} from './officeCharacters';
+import { addAccessories, BLOCKY_HEIGHT, buildCharacter, KENNEY_COLORS } from './officeCharacters';
 import { buildPrimitive, fallbackBox } from './primitives';
 
 /**
@@ -115,14 +109,19 @@ export class AssetLibrary {
 
   /**
    * Personnage animé d'un dev (une copie indépendante) : le look dépend de son profil, voir
-   * `officeCharacters.ts`. Les personnages construits en Three.js empruntent les clips Kenney.
+   * `officeCharacters.ts`, et il porte le costume d'un pack actif s'il y en a un, voir
+   * `characterPacks.ts`. Les personnages construits en Three.js empruntent les clips Kenney.
    */
-  async character(role: DevRole, look: number): Promise<CharacterAsset | null> {
-    const chosen = lookFor(role, look);
-    const key = lookKey(chosen);
+  async character(
+    role: DevRole,
+    look: number,
+    packs: readonly CharacterPackId[] = [],
+  ): Promise<CharacterAsset | null> {
+    const themed = themedLookFor(role, look, packs);
+    const key = themedLookKey(themed);
     let promise = this.characters.get(key);
     if (!promise) {
-      promise = this.buildCharacter(chosen);
+      promise = this.buildCharacter(themed);
       this.characters.set(key, promise);
     }
     const asset = await promise;
@@ -130,17 +129,22 @@ export class AssetLibrary {
     return { scene: SkeletonUtils.clone(asset.scene), animations: asset.animations };
   }
 
-  private async buildCharacter(look: CharacterLook): Promise<CharacterAsset | null> {
+  private async buildCharacter({ look, costume }: ThemedLook): Promise<CharacterAsset | null> {
+    let scene: THREE.Object3D;
+    let animations: readonly THREE.AnimationClip[];
     if (look.kind === 'built') {
       const donor = await this.kenneyCharacter(CLIP_DONOR);
-      const scene = buildCharacter(look.outfit, look.accessories);
-      return { scene: normalizeCharacter(scene), animations: donor?.animations ?? [] };
+      scene = buildCharacter(look.outfit, look.accessories);
+      animations = donor?.animations ?? [];
+    } else {
+      const base = await this.kenneyCharacter(look.id);
+      if (!base) return null;
+      scene = SkeletonUtils.clone(base.scene);
+      addAccessories(scene, look.accessories, KENNEY_COLORS[look.id] ?? DEFAULT_COLORS);
+      animations = base.animations;
     }
-    const base = await this.kenneyCharacter(look.id);
-    if (!base) return null;
-    const scene = SkeletonUtils.clone(base.scene);
-    addAccessories(scene, look.accessories, KENNEY_COLORS[look.id] ?? DEFAULT_COLORS);
-    return { scene: normalizeCharacter(scene), animations: base.animations };
+    if (costume) dressUp(scene, costume);
+    return { scene: normalizeCharacter(scene), animations };
   }
 
   /** GLB Kenney brut (chargé une seule fois). */
