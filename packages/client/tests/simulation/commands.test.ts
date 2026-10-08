@@ -217,6 +217,113 @@ describe('Aménagement', () => {
   });
 });
 
+describe('Accessoires et couleurs', () => {
+  function deskOf(simulation: ReturnType<typeof newSimulation>): string {
+    return Object.entries(simulation.state.components.furniture).find(
+      ([, f]) => f.itemId === 'ikea-desk',
+    )![0];
+  }
+
+  it('pose un accessoire sur un emplacement libre d’un meuble à plateau', () => {
+    const simulation = newSimulation('accessory');
+    const hostId = deskOf(simulation);
+    const cash = simulation.state.gauges.treasury;
+    const buy = (slot: number, host = hostId) =>
+      simulation.dispatch({
+        type: 'BUY_ACCESSORY',
+        itemId: 'rubber-duck',
+        hostId: host,
+        slot,
+        rotation: 0,
+        color: 'pink',
+      }).result;
+    expect(buy(0)).toEqual({ ok: true });
+    expect(simulation.state.gauges.treasury).toBe(cash - 10);
+    const duck = Object.values(simulation.state.components.furniture).find(
+      (f) => f.itemId === 'rubber-duck',
+    );
+    expect(duck).toMatchObject({ hostId, slot: 0, color: 'pink' });
+    // Emplacement pris, emplacement inexistant, meuble sans plateau, accessoire au sol.
+    expect(buy(0)).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    expect(buy(2)).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    const plantId = Object.entries(simulation.state.components.furniture).find(
+      ([, f]) => f.itemId === 'small-plant',
+    )![0];
+    expect(buy(0, plantId)).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    expect(
+      simulation.dispatch({ type: 'BUY_FURNITURE', itemId: 'rubber-duck', x: 5, y: 3, rotation: 0 })
+        .result,
+    ).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    // Un meuble ne se pose pas sur un autre, un accessoire n'occupe pas le sol.
+    expect(
+      simulation.dispatch({
+        type: 'BUY_ACCESSORY',
+        itemId: 'plant',
+        hostId,
+        slot: 1,
+        rotation: 0,
+      }).result,
+    ).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    expect(buy(1)).toEqual({ ok: true });
+  });
+
+  it('les accessoires suivent leur meuble, et partent avec lui à la revente', () => {
+    const simulation = newSimulation('accessory-host');
+    const hostId = deskOf(simulation);
+    simulation.dispatch({
+      type: 'BUY_ACCESSORY',
+      itemId: 'desk-lamp',
+      hostId,
+      slot: 1,
+      rotation: 0,
+    });
+    const [lampId, lamp] = Object.entries(simulation.state.components.furniture).find(
+      ([, f]) => f.itemId === 'desk-lamp',
+    )!;
+    // Un accessoire ne se déplace pas comme un meuble, mais d'emplacement en emplacement.
+    expect(
+      simulation.dispatch({ type: 'MOVE_FURNITURE', furnitureId: lampId, x: 4, y: 4, rotation: 0 })
+        .result.ok,
+    ).toBe(false);
+    expect(
+      simulation.dispatch({
+        type: 'MOVE_ACCESSORY',
+        furnitureId: lampId,
+        hostId,
+        slot: 0,
+        rotation: 2,
+      }).result.ok,
+    ).toBe(true);
+    expect(lamp).toMatchObject({ slot: 0, rotation: 2 });
+    expect(
+      simulation.dispatch({ type: 'MOVE_FURNITURE', furnitureId: hostId, x: 4, y: 5, rotation: 0 })
+        .result.ok,
+    ).toBe(true);
+    expect(lamp).toMatchObject({ x: 4, y: 5 });
+
+    const cash = simulation.state.gauges.treasury;
+    simulation.dispatch({ type: 'SELL_FURNITURE', furnitureId: hostId });
+    expect(simulation.state.components.furniture[lampId]).toBeUndefined();
+    expect(simulation.state.gauges.treasury).toBe(cash + 20);
+  });
+
+  it('repeint un objet posé sans rien payer', () => {
+    const simulation = newSimulation('paint');
+    const hostId = deskOf(simulation);
+    const cash = simulation.state.gauges.treasury;
+    const paint = (color: 'blue' | 'natural') =>
+      simulation.dispatch({ type: 'PAINT_FURNITURE', furnitureId: hostId, color }).result;
+    expect(paint('blue')).toEqual({ ok: true });
+    expect(simulation.state.components.furniture[hostId]?.color).toBe('blue');
+    expect(paint('natural')).toEqual({ ok: true });
+    expect(simulation.state.components.furniture[hostId]?.color).toBeUndefined();
+    expect(simulation.state.gauges.treasury).toBe(cash);
+    expect(
+      simulation.dispatch({ type: 'PAINT_FURNITURE', furnitureId: 'e999', color: 'red' }).result,
+    ).toEqual({ ok: false, error: 'NOT_FOUND' });
+  });
+});
+
 describe('Levée de fonds', () => {
   it('plafonne le chèque à quelques mois de dépenses, trésorerie comprise', () => {
     const { state } = stateWithTeam(['TEN_X', 'SENIOR_BEARD']);

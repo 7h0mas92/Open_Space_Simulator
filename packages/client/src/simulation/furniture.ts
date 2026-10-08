@@ -4,6 +4,7 @@ import {
   getFurniture,
   type CommandResult,
   type EntityId,
+  type FurnitureColor,
   type FurnitureDefinition,
   type GameState,
   type Phase,
@@ -51,7 +52,8 @@ export function canPlace(
     if (id === ignoreId) continue;
     const placed = state.components.furniture[id];
     const definition = placed ? getFurniture(placed.itemId) : undefined;
-    if (!placed || !definition) continue;
+    // Les accessoires sont posés sur les meubles : ils n'occupent pas le sol.
+    if (!placed || !definition || placed.hostId !== undefined) continue;
     if (overlaps(area, footprint(definition, placed.x, placed.y, placed.rotation))) return false;
   }
   return true;
@@ -70,10 +72,27 @@ export function placeFurniture(
   y: number,
   rotation: number,
   price = 0,
+  color?: FurnitureColor,
 ): EntityId {
   const id = createEntity(state);
-  addComponent(state, id, 'furniture', { itemId, x, y, rotation, purchasePrice: price });
+  addComponent(state, id, 'furniture', {
+    itemId,
+    x,
+    y,
+    rotation,
+    purchasePrice: price,
+    ...(color && color !== 'natural' ? { color } : {}),
+  });
   return id;
+}
+
+/** Vérifications communes à tout achat : objet connu, débloqué, pas au maximum, payable. */
+function checkPurchase(state: GameState, item: FurnitureDefinition | undefined): CommandResult {
+  if (!item) return { ok: false, error: 'NOT_FOUND' };
+  if (phaseIndex(state.phase) < phaseIndex(item.minPhase)) return { ok: false, error: 'LOCKED' };
+  if (countOf(state, item.id) >= item.maxCount) return { ok: false, error: 'NOT_ELIGIBLE' };
+  if (state.gauges.treasury < item.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
+  return { ok: true };
 }
 
 export function buyFurniture(
@@ -82,15 +101,92 @@ export function buyFurniture(
   x: number,
   y: number,
   rotation: number,
+  color?: FurnitureColor,
 ): CommandResult {
   const item = getFurniture(itemId);
-  if (!item) return { ok: false, error: 'NOT_FOUND' };
-  if (phaseIndex(state.phase) < phaseIndex(item.minPhase)) return { ok: false, error: 'LOCKED' };
-  if (countOf(state, itemId) >= item.maxCount) return { ok: false, error: 'NOT_ELIGIBLE' };
-  if (state.gauges.treasury < item.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
-  if (!canPlace(state, item, x, y, rotation)) return { ok: false, error: 'INVALID_PLACEMENT' };
+  const check = checkPurchase(state, item);
+  if (!check.ok || !item) return check;
+  if (item.accessory || !canPlace(state, item, x, y, rotation))
+    return { ok: false, error: 'INVALID_PLACEMENT' };
   addMoney(state, -item.price);
-  placeFurniture(state, itemId, x, y, rotation, item.price);
+  placeFurniture(state, itemId, x, y, rotation, item.price, color);
+  return { ok: true };
+}
+
+/** Accessoires posés sur un meuble. */
+function accessoriesOf(state: GameState, hostId: EntityId): EntityId[] {
+  return query(state, 'furniture').filter(
+    (id) => state.components.furniture[id]?.hostId === hostId,
+  );
+}
+
+/** L'emplacement `slot` du meuble `hostId` existe-t-il et est-il libre ? */
+function canHost(state: GameState, hostId: EntityId, slot: number, ignoreId?: EntityId): boolean {
+  const host = state.components.furniture[hostId];
+  if (!host || host.hostId !== undefined) return false;
+  const slots = getFurniture(host.itemId)?.surfaceSlots ?? 0;
+  if (slot >= slots) return false;
+  return accessoriesOf(state, hostId).every(
+    (id) => id === ignoreId || state.components.furniture[id]?.slot !== slot,
+  );
+}
+
+/** Achète un accessoire et le pose sur un meuble à plateau. */
+export function buyAccessory(
+  state: GameState,
+  itemId: string,
+  hostId: EntityId,
+  slot: number,
+  rotation: number,
+  color?: FurnitureColor,
+): CommandResult {
+  const item = getFurniture(itemId);
+  const check = checkPurchase(state, item);
+  if (!check.ok || !item) return check;
+  const host = state.components.furniture[hostId];
+  if (!host) return { ok: false, error: 'NOT_FOUND' };
+  if (!item.accessory || !canHost(state, hostId, slot))
+    return { ok: false, error: 'INVALID_PLACEMENT' };
+  addMoney(state, -item.price);
+  const id = placeFurniture(state, itemId, host.x, host.y, rotation, item.price, color);
+  const placed = state.components.furniture[id];
+  if (placed) {
+    placed.hostId = hostId;
+    placed.slot = slot;
+  }
+  return { ok: true };
+}
+
+export function moveAccessory(
+  state: GameState,
+  furnitureId: EntityId,
+  hostId: EntityId,
+  slot: number,
+  rotation: number,
+): CommandResult {
+  const placed = state.components.furniture[furnitureId];
+  const host = state.components.furniture[hostId];
+  if (!placed || !host) return { ok: false, error: 'NOT_FOUND' };
+  if (placed.hostId === undefined || !canHost(state, hostId, slot, furnitureId))
+    return { ok: false, error: 'INVALID_PLACEMENT' };
+  placed.hostId = hostId;
+  placed.slot = slot;
+  placed.x = host.x;
+  placed.y = host.y;
+  placed.rotation = rotation;
+  return { ok: true };
+}
+
+/** Repeint un objet posé (gratuit). */
+export function paintFurniture(
+  state: GameState,
+  furnitureId: EntityId,
+  color: FurnitureColor,
+): CommandResult {
+  const placed = state.components.furniture[furnitureId];
+  if (!placed) return { ok: false, error: 'NOT_FOUND' };
+  if (color === 'natural') delete placed.color;
+  else placed.color = color;
   return { ok: true };
 }
 
@@ -104,17 +200,30 @@ export function moveFurniture(
   const placed = state.components.furniture[furnitureId];
   const item = placed ? getFurniture(placed.itemId) : undefined;
   if (!placed || !item) return { ok: false, error: 'NOT_FOUND' };
-  if (!canPlace(state, item, x, y, rotation, furnitureId))
+  if (placed.hostId !== undefined || !canPlace(state, item, x, y, rotation, furnitureId))
     return { ok: false, error: 'INVALID_PLACEMENT' };
   placed.x = x;
   placed.y = y;
   placed.rotation = rotation;
+  // Les accessoires suivent leur meuble (leurs emplacements tournent avec lui).
+  for (const id of accessoriesOf(state, furnitureId)) {
+    const accessory = state.components.furniture[id];
+    if (accessory) {
+      accessory.x = x;
+      accessory.y = y;
+    }
+  }
   return { ok: true };
 }
 
 export function sellFurniture(state: GameState, furnitureId: EntityId): CommandResult {
   const placed = state.components.furniture[furnitureId];
   if (!placed) return { ok: false, error: 'NOT_FOUND' };
+  // Revendre un meuble revend aussi ce qui est posé dessus.
+  for (const id of accessoriesOf(state, furnitureId)) {
+    addMoney(state, (state.components.furniture[id]?.purchasePrice ?? 0) * RESALE_RATIO);
+    destroyEntity(state, id);
+  }
   addMoney(state, placed.purchasePrice * RESALE_RATIO);
   destroyEntity(state, furnitureId);
   return { ok: true };

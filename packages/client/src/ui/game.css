@@ -2529,3 +2529,129 @@ legend {
   color: var(--text-muted);
   font-size: 0.85rem;
 }
+
+/* --- Nuancier du mode construction -------------------------------------------------- */
+
+.color-picker {
+  position: relative;
+  display: flex;
+}
+
+.color-picker > button {
+  flex: 1;
+  gap: 6px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.swatch {
+  display: inline-block;
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgb(255 255 255 / 85%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 35%);
+}
+
+.color-swatches {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(6, var(--touch));
+  gap: 4px;
+  padding: 8px;
+  background: rgb(27 31 46 / 97%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+}
+
+.swatch-button {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  min-width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+}
+
+.swatch-button .swatch {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.swatch-button[aria-checked='true'] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.placement-count {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Dans la barre de sélection, le nuancier s'ouvre au-dessus, aligné à droite. */
+.selection-bar .color-swatches {
+  right: 0;
+  left: auto;
+}
+
+/* Téléphone en portrait : six rayons et quatre actions doivent tenir sur la largeur. */
+@media (max-width: 479px) {
+  .catalog-tabs button {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 2px 1px;
+    font-size: 0.7rem;
+  }
+
+  .catalog-tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .placement-actions button {
+    min-width: 0;
+    padding: 0 6px;
+  }
+
+  .placement-actions .color-picker > button {
+    flex: none;
+    width: var(--touch);
+    padding: 0;
+  }
+
+  .placement-actions .color-picker .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Téléphone : le nuancier se centre sur sa barre au lieu de déborder de l'écran. */
+@media (max-width: 479px) {
+  .placement-bar,
+  .build-bottom .selection-bar {
+    position: relative;
+  }
+
+  .color-picker {
+    position: static;
+  }
+
+  .color-swatches,
+  .selection-bar .color-swatches {
+    right: 0;
+    left: 0;
+    width: max-content;
+    margin-inline: auto;
+  }
+}

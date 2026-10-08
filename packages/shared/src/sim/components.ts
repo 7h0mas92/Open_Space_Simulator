@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { LocalizedTextSchema } from '../i18n.js';
+<<<<<<< HEAD
 import { BirthdaySchema } from './calendar.js';
+=======
+import { FURNITURE_COLORS } from './furniture.js';
+>>>>>>> 7c0c52e (feat(construction): pose en série, accessoires sur les meubles et couleurs)
 
 /**
  * Composants de l'ECS (Entity Component System) de la simulation.
@@ -166,6 +170,8 @@ export type Task = z.infer<typeof TaskSchema>;
 
 export const ROTATIONS = [0, 1, 2, 3] as const;
 
+export const FurnitureColorSchema = z.enum(FURNITURE_COLORS);
+
 /** Objet posé sur la grille du bureau. */
 export const FurnitureSchema = z.object({
   itemId: z.string(),
@@ -174,6 +180,14 @@ export const FurnitureSchema = z.object({
   /** Quart de tour (0 à 3). */
   rotation: z.number().int().min(0).max(3),
   purchasePrice: z.number().nonnegative(),
+  /** Couleur choisie par le joueur (absente = couleurs d'origine). */
+  color: FurnitureColorSchema.optional(),
+  /**
+   * Accessoire : le meuble qui le porte et l'emplacement occupé sur son plateau. Un accessoire
+   * suit son meuble (x, y recopiés) et n'occupe aucune case au sol.
+   */
+  hostId: EntityIdSchema.optional(),
+  slot: z.number().int().nonnegative().optional(),
 });
 export type Furniture = z.infer<typeof FurnitureSchema>;
 

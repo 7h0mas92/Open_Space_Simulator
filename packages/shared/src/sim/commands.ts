@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EntityIdSchema } from './components.js';
+import { EntityIdSchema, FurnitureColorSchema } from './components.js';
 
 /**
  * Commandes typées envoyées par l'interface à la simulation. C'est le SEUL moyen de
@@ -35,6 +35,30 @@ export const CommandSchema = z.discriminatedUnion('type', [
     x: z.number().int().nonnegative(),
     y: z.number().int().nonnegative(),
     rotation: z.number().int().min(0).max(3),
+    color: FurnitureColorSchema.optional(),
+  }),
+  /** Achète un accessoire et le pose sur l'emplacement `slot` du meuble `hostId`. */
+  z.object({
+    type: z.literal('BUY_ACCESSORY'),
+    itemId: z.string(),
+    hostId: EntityIdSchema,
+    slot: z.number().int().nonnegative().max(15),
+    rotation: z.number().int().min(0).max(3),
+    color: FurnitureColorSchema.optional(),
+  }),
+  /** Déplace un accessoire vers un autre emplacement (du même meuble ou d'un autre). */
+  z.object({
+    type: z.literal('MOVE_ACCESSORY'),
+    furnitureId: EntityIdSchema,
+    hostId: EntityIdSchema,
+    slot: z.number().int().nonnegative().max(15),
+    rotation: z.number().int().min(0).max(3),
+  }),
+  /** Change la couleur d'un objet posé (gratuit, purement esthétique). */
+  z.object({
+    type: z.literal('PAINT_FURNITURE'),
+    furnitureId: EntityIdSchema,
+    color: FurnitureColorSchema,
   }),
   z.object({
     type: z.literal('MOVE_FURNITURE'),

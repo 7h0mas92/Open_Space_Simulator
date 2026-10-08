@@ -27,7 +27,14 @@ export const PALETTE = {
   cactus: 0x5c9e52,
   screen: 0x1d2a44,
   pink: 0xf28fb1,
+  gold: 0xe8b93c,
+  orange: 0xf08a2e,
 } as const;
+
+/** Nom de chaque couleur de la palette : il sert à repérer les matériaux à repeindre. */
+const PALETTE_NAMES = new Map<number, string>(
+  Object.entries(PALETTE).map(([name, color]) => [color, name]),
+);
 
 const materials = new Map<number, THREE.MeshStandardMaterial>();
 
@@ -41,6 +48,7 @@ export function material(color: number): THREE.MeshStandardMaterial {
       metalness: 0.05,
       flatShading: true,
     });
+    found.name = PALETTE_NAMES.get(color) ?? '';
     materials.set(color, found);
   }
   return found;
@@ -411,6 +419,55 @@ function ramen(): THREE.Group {
   return group;
 }
 
+/** Mug de dev : corps, anse et un fond de café froid. */
+function mug(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(post(0.07, 0.065, 0.14, PALETTE.white, 0, 0, 0));
+  group.add(post(0.06, 0.06, 0.005, PALETTE.coffee, 0, 0.125, 0));
+  const handle = new THREE.Mesh(
+    new THREE.TorusGeometry(0.04, 0.012, 6, 10),
+    material(PALETTE.white),
+  );
+  handle.position.set(0.075, 0.07, 0);
+  group.add(handle);
+  // Le logo du mug, une bande colorée.
+  group.add(post(0.071, 0.067, 0.03, PALETTE.blue, 0, 0.05, 0));
+  return group;
+}
+
+/** Canard en plastique jaune, le meilleur outil de débogage. */
+function rubberDuck(): THREE.Group {
+  const group = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), material(PALETTE.yellow));
+  body.scale.set(1.25, 0.8, 1);
+  body.position.set(0, 0.07, 0);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), material(PALETTE.yellow));
+  head.position.set(0.06, 0.17, 0);
+  const beak = box(0.05, 0.025, 0.04, PALETTE.orange, 0.12, 0.155, 0);
+  group.add(body, head, beak);
+  for (const z of [-0.03, 0.03]) group.add(box(0.012, 0.012, 0.012, PALETTE.dark, 0.1, 0.185, z));
+  // Tourné vers le dev assis devant le bureau (l'avant des objets est +z).
+  group.rotation.y = -Math.PI / 2;
+  return group;
+}
+
+/** Coupe de hackathon dorée sur un socle en bois. */
+function trophy(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(box(0.16, 0.06, 0.16, PALETTE.woodDark, 0, 0, 0));
+  group.add(post(0.02, 0.03, 0.1, PALETTE.gold, 0, 0.06, 0));
+  group.add(post(0.08, 0.035, 0.14, PALETTE.gold, 0, 0.16, 0));
+  for (const x of [-0.085, 0.085]) {
+    const handle = new THREE.Mesh(
+      new THREE.TorusGeometry(0.03, 0.008, 5, 8),
+      material(PALETTE.gold),
+    );
+    handle.position.set(x, 0.25, 0);
+    group.add(handle);
+  }
+  return group;
+}
+
 const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   babyfoot,
   slide,
@@ -424,6 +481,9 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   cactus,
   metricsScreen,
   ramen,
+  mug,
+  rubberDuck,
+  trophy,
   officeCharacters: null,
   seasonalDecor: null,
   uiPack: null,

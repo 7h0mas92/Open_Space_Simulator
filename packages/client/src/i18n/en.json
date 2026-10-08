@@ -403,7 +403,8 @@
       "comfort": "Comfort",
       "kitchen": "Kitchen",
       "fun": "Fun",
-      "decor": "Decor"
+      "decor": "Decor",
+      "accessory": "Accessories"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -426,7 +427,31 @@
     "placed": "{{item}}: placed!",
     "moved": "{{item}}: moved.",
     "pause": "Pause",
-    "resume": "Resume"
+    "resume": "Resume",
+    "color": "Color",
+    "colorOf": "Color: {{color}}",
+    "paint": "Paint",
+    "colors": {
+      "natural": "Original colors",
+      "white": "White",
+      "graphite": "Graphite",
+      "walnut": "Walnut",
+      "red": "Red",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green",
+      "teal": "Teal",
+      "blue": "Blue",
+      "purple": "Purple",
+      "pink": "Pink"
+    },
+    "placedCount_one": "{{count}} placed",
+    "placedCount_other": "{{count}} placed",
+    "again": "Still in hand: place another one, or ✕ to pick another item.",
+    "hintAccessory": "Aim at furniture with a top (desk, bookcase, fridge…).",
+    "onFurniture": "Goes on furniture",
+    "stopSoldOut": "{{item}}: limit reached, back to the catalog.",
+    "stopMoney": "{{item}}: not enough cash left, back to the catalog."
   },
   "results": {
     "INVALID_COMMAND": "That can't be done.",
@@ -446,7 +471,9 @@
     "wall": "There's a wall here.",
     "overlap": "That spot is taken.",
     "entrance": "Don't block the entrance!",
-    "unknownItem": "Unknown item."
+    "unknownItem": "Unknown item.",
+    "noSurface": "Accessories go on furniture with a top (desk, bookcase, fridge…).",
+    "surfaceFull": "No room left on this furniture."
   },
   "dashboard": {
     "intro": "Gauge history, one point per day.",
@@ -503,7 +530,10 @@
       "officeCharacters": "Three.js office characters (bearded seniors, Rustaceans, designers, robot, ghost…) and accessories for the Kenney characters",
       "uiPack": "Kenney UI pack (CSS interface)",
       "soundPacks": "Kenney sound packs (audio coming later)",
-      "seasonalDecor": "Seasonal decorations (12 themes) and the birthday table: Three.js cake, presents and balloons on the Furniture Kit's tablecloth table"
+      "seasonalDecor": "Seasonal decorations (12 themes) and the birthday table: Three.js cake, presents and balloons on the Furniture Kit's tablecloth table",
+      "mug": "Dev mug",
+      "rubberDuck": "Rubber duck",
+      "trophy": "Hackathon trophy"
     },
     "back": "Back"
   },
@@ -1091,12 +1121,12 @@
           },
           "place": {
             "title": "Placing an item",
-            "body": "Pick an item from the catalog at the bottom of the screen: the catalog folds away and the item shows up on a free tile, in green. Click a tile to place it (on touch: tap a tile or drag the item, then \"Place\"). A €60 plant is a good start.",
+            "body": "Pick an item from the catalog at the bottom of the screen: the catalog folds away and the item shows up on a free tile, in green. Click a tile to place it (on touch: tap a tile or drag the item, then \"Place\"). The item stays in hand: place more in a row, \"Cancel\" to pick another one. The Color button picks its shade. A €60 plant is a good start.",
             "do": "Buy and place an item."
           },
           "manage": {
-            "title": "Rotate, move, sell",
-            "body": "In build mode, tap an item already placed to move or sell it (selling refunds half the price). With an item in hand, R rotates it and Esc puts it back in the catalog. \"Done\" closes build mode.\n\nSome items only unlock in later stages, when the office grows."
+            "title": "Rotate, paint, move, sell",
+            "body": "In build mode, tap an item already placed to rotate, paint, move or sell it (selling refunds half the price). With an item in hand, R rotates it and Esc puts it back in the catalog. \"Done\" closes build mode.\n\nThe Accessories shelf (lamp, mug, rubber duck…) goes on desks, the bookcase or the fridge, and follows its furniture.\n\nSome items only unlock in later stages, when the office grows."
           },
           "items": {
             "title": "Useful items",

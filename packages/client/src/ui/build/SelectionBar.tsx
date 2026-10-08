@@ -5,6 +5,7 @@ import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { moodEmoji } from '../team/StatBars';
 import { ItemThumbnail } from './Catalog';
+import { ColorPicker } from './ColorPicker';
 
 /**
  * Barre contextuelle au-dessus de la barre d'actions (ou du catalogue en construction) :
@@ -47,6 +48,13 @@ export function SelectionBar({ view }: { view: GameView }) {
         >
           ⟳ {t('build.rotate')}
         </button>
+        {def.paint.length > 0 && (
+          <ColorPicker
+            value={item.color}
+            label={t('build.paint')}
+            onChange={(color) => void dispatch({ type: 'paintItem', itemId: item.id, color })}
+          />
+        )}
         <button type="button" onClick={() => startMove(item.id)}>
           ✥ {t('build.move')}
         </button>

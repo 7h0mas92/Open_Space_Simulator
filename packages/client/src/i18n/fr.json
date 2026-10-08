@@ -403,7 +403,8 @@
       "comfort": "Confort",
       "kitchen": "Cuisine",
       "fun": "Détente",
-      "decor": "Déco"
+      "decor": "Déco",
+      "accessory": "Accessoires"
     },
     "price": "{{price}} €",
     "owned": "{{count}}/{{max}}",
@@ -426,7 +427,31 @@
     "placed": "{{item}} : posé !",
     "moved": "{{item}} : déplacé.",
     "pause": "Mettre en pause",
-    "resume": "Reprendre"
+    "resume": "Reprendre",
+    "color": "Couleur",
+    "colorOf": "Couleur : {{color}}",
+    "paint": "Peindre",
+    "colors": {
+      "natural": "Couleur d’origine",
+      "white": "Blanc",
+      "graphite": "Graphite",
+      "walnut": "Noyer",
+      "red": "Rouge",
+      "orange": "Orange",
+      "yellow": "Jaune",
+      "green": "Vert",
+      "teal": "Turquoise",
+      "blue": "Bleu",
+      "purple": "Violet",
+      "pink": "Rose"
+    },
+    "placedCount_one": "{{count}} posé",
+    "placedCount_other": "{{count}} posés",
+    "again": "Objet gardé en main : pose-en un autre, ou ✕ pour changer d’objet.",
+    "hintAccessory": "Vise un meuble à plateau (bureau, bibliothèque, frigo…).",
+    "onFurniture": "Se pose sur un meuble",
+    "stopSoldOut": "{{item}} : maximum atteint, retour au catalogue.",
+    "stopMoney": "{{item}} : plus assez de trésorerie, retour au catalogue."
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -446,7 +471,9 @@
     "wall": "Il y a un mur ici.",
     "overlap": "La place est déjà prise.",
     "entrance": "Ne bloque pas l'entrée !",
-    "unknownItem": "Objet inconnu."
+    "unknownItem": "Objet inconnu.",
+    "noSurface": "Un accessoire se pose sur un meuble à plateau (bureau, bibliothèque, frigo…).",
+    "surfaceFull": "Plus de place sur ce meuble."
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
@@ -503,7 +530,10 @@
       "officeCharacters": "Personnages de bureau en Three.js (barbus, Rustacés, designeuses, robot, fantôme…) et accessoires des personnages Kenney",
       "uiPack": "Pack UI Kenney (interface en CSS)",
       "soundPacks": "Packs sons Kenney (audio à venir)",
-      "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit"
+      "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit",
+      "mug": "Mug de dev",
+      "rubberDuck": "Canard en plastique",
+      "trophy": "Trophée de hackathon"
     },
     "back": "Retour"
   },
@@ -1091,12 +1121,12 @@
           },
           "place": {
             "title": "Poser un objet",
-            "body": "Choisis un objet dans le catalogue en bas de l'écran : il se replie et l'objet apparaît sur une case libre, en vert. Clique sur une case pour le poser (au doigt : touche une case ou fais glisser l'objet, puis « Poser »). Une plante à 60 € est un bon début.",
+            "body": "Choisis un objet dans le catalogue en bas de l'écran : il se replie et l'objet apparaît sur une case libre, en vert. Clique sur une case pour le poser (au doigt : touche une case ou fais glisser l'objet, puis « Poser »). L'objet reste en main : pose-en d'autres à la suite, « Annuler » pour en changer. Le bouton Couleur choisit sa teinte. Une plante à 60 € est un bon début.",
             "do": "Achète et pose un objet."
           },
           "manage": {
-            "title": "Tourner, déplacer, revendre",
-            "body": "En construction, touche un objet déjà posé pour le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
+            "title": "Tourner, peindre, déplacer, revendre",
+            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
           },
           "items": {
             "title": "Les objets utiles",
