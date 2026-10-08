@@ -3,16 +3,33 @@ import { useTranslation } from 'react-i18next';
 import type { EventView, GameView, GaugeName, PitchView } from '../../view/types';
 import { useGame } from '../store/game';
 import { formatGauge, formatMoney, localized } from './format';
+import { GAUGE_ICONS } from './Hud';
 
 /**
  * Écrans qui interrompent la partie : carte d'événement, levée de fonds, démo de fin de
  * sprint et fin de partie. Ils dépendent seulement de l'étape de la simulation.
  */
 export function StageScreens({ view }: { view: GameView }) {
-  if (view.step === 'ENDED') return <EndScreen view={view} />;
-  if (view.step === 'PITCH' && view.pitch) return <PitchScreen pitch={view.pitch} />;
-  if (view.step === 'DEMO') return <DemoScreen view={view} />;
-  if (view.event) return <EventCardScreen event={view.event} />;
+  switch (stageScreen(view)) {
+    case 'end':
+      return <EndScreen view={view} />;
+    case 'pitch':
+      return view.pitch && <PitchScreen pitch={view.pitch} />;
+    case 'demo':
+      return <DemoScreen view={view} />;
+    case 'event':
+      return view.event && <EventCardScreen event={view.event} />;
+    default:
+      return null;
+  }
+}
+
+/** Écran d'étape affiché pour cet instantané, ou `null` quand la partie est jouable. */
+export function stageScreen(view: GameView): 'end' | 'pitch' | 'demo' | 'event' | null {
+  if (view.step === 'ENDED') return 'end';
+  if (view.step === 'PITCH' && view.pitch) return 'pitch';
+  if (view.step === 'DEMO') return 'demo';
+  if (view.event) return 'event';
   return null;
 }
 
@@ -78,6 +95,7 @@ function EffectChips({ effects }: { effects: EventView['choices'][number]['effec
         const label = key === 'moral' ? t('event.moral') : t(`gauges.${key}.name`);
         return (
           <li key={key} className={good ? 'up' : 'down'}>
+            <span aria-hidden="true">{key === 'moral' ? '🙂' : GAUGE_ICONS[key]} </span>
             {label} {sign}
             {amount}
           </li>
@@ -91,9 +109,24 @@ function EventCardScreen({ event }: { event: EventView }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
   const title = localized(event.title, i18n.language);
+  const count = event.choices.length;
+
+  // Touches 1, 2, 3… : choisir sans quitter le clavier.
+  useEffect(() => {
+    const onKey = (keyEvent: KeyboardEvent) => {
+      const index = Number(keyEvent.key) - 1;
+      if (!Number.isInteger(index) || index < 0 || index >= count) return;
+      keyEvent.preventDefault();
+      void dispatch({ type: 'resolveEvent', choiceIndex: index });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [count, dispatch]);
+
   return (
     <Dialog title={title} className="event-card" tutorial="event">
       <p className="eyebrow">
+        <span aria-hidden="true">⚡ </span>
         {t('event.kicker')}
         {event.level > 0 && (
           <span className="badge"> {t('event.worse', { level: event.level })}</span>
@@ -107,10 +140,16 @@ function EventCardScreen({ event }: { event: EventView }) {
             <button
               type="button"
               className="choice"
+              aria-keyshortcuts={String(index + 1)}
               onClick={() => void dispatch({ type: 'resolveEvent', choiceIndex: index })}
             >
-              <strong>{localized(choice.label, i18n.language)}</strong>
-              <EffectChips effects={choice.effects} />
+              <span className="choice-key" aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className="choice-body">
+                <strong>{localized(choice.label, i18n.language)}</strong>
+                <EffectChips effects={choice.effects} />
+              </span>
             </button>
           </li>
         ))}

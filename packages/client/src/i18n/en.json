@@ -164,27 +164,33 @@
   "gauges": {
     "treasury": {
       "name": "Cash",
-      "help": "Pays the salaries. At 0: bankruptcy, game over."
+      "help": "Pays the salaries. At 0: bankruptcy, game over.",
+      "short": "Cash"
     },
     "coffee": {
       "name": "Coffee",
-      "help": "The team's fuel. At 0: productivity divided by 3."
+      "help": "The team's fuel. At 0: productivity divided by 3.",
+      "short": "Coffee"
     },
     "debt": {
       "name": "Tech debt",
-      "help": "Goes up with every shortcut. Too high: bugs and unstable prod."
+      "help": "Goes up with every shortcut. Too high: bugs and unstable prod.",
+      "short": "Debt"
     },
     "stability": {
       "name": "Prod stability",
-      "help": "Product reliability. At 0: users leave."
+      "help": "Product reliability. At 0: users leave.",
+      "short": "Stability"
     },
     "hype": {
       "name": "Hype",
-      "help": "Appeal to investors. At 0: no more fundraising."
+      "help": "Appeal to investors. At 0: no more fundraising.",
+      "short": "Hype"
     },
     "users": {
       "name": "Users",
-      "help": "Your user base. Grows with features, leaks when prod goes down."
+      "help": "Your user base. Grows with features, leaks when prod goes down.",
+      "short": "Users"
     },
     "morale": {
       "name": "Morale",
@@ -234,7 +240,15 @@
     "menu": "Menu",
     "actions": "Game actions",
     "slack": "Slack",
-    "saves": "Saves"
+    "saves": "Saves",
+    "short": {
+      "kanban": "Kanban",
+      "team": "Team",
+      "hiring": "Hire",
+      "build": "Build",
+      "dashboard": "Stats",
+      "slack": "Slack"
+    }
   },
   "kanban": {
     "columns": {
@@ -431,7 +445,8 @@
     "round": "Argument {{round}} of {{total}}: what do you say?",
     "success": "Signed! €{{amount}} raised for {{share}}% of the company.",
     "failure": "The investor will \"circle back\". They won't.",
-    "close": "Back to the office"
+    "close": "Back to the office",
+    "short": "Raise"
   },
   "demo": {
     "title": "Sprint {{sprint}} demo",
@@ -1014,5 +1029,20 @@
         }
       }
     }
+  },
+  "hud": {
+    "company": "Your startup",
+    "phase": "Stage: {{phase}}",
+    "mode": "{{mode}} mode",
+    "team": "Team: {{count}} of {{max}} seats",
+    "runway": "{{months}} mo",
+    "runwayHelp": "Months of cash left at the current pace (expenses minus revenue).",
+    "runwayNone": "Profitable: your cash is no longer going down.",
+    "valuation": "Valuation: {{value}}",
+    "trendUp": "Up since yesterday",
+    "trendDown": "Down since yesterday",
+    "sprintProgress": "Sprint progress: {{percent}}%",
+    "system": "Game",
+    "runwayLong": "Cash: {{months}} months left"
   }
 }

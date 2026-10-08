@@ -20,6 +20,7 @@ import {
   type TaskColumn,
 } from '@oss/shared';
 import { badEffectFactor, escalate } from '../events/effects';
+import { runwayMonths } from '../simulation/economy';
 import { countDesks, RESALE_RATIO } from '../simulation/furniture';
 import { devIds } from '../simulation/helpers';
 import { tasksInColumn } from '../simulation/tasks';
@@ -233,6 +234,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const minutes = Math.round(clock.hour * 60);
   const lastIncident = state.notifications.findLast((n) => n.kind === 'PROD_DOWN');
+  const runway = runwayMonths(state);
   const pitch = state.pitch;
   const investor = pitch ? getInvestor(pitch.investor) : null;
   return {
@@ -270,6 +272,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     teamMax: TEAM_MAX[state.phase],
     desks: countDesks(state),
     valuation: state.valuation,
+    runwayMonths: Number.isFinite(runway) ? runway : null,
     ownership: state.ownership,
     event: eventView(state, context),
     lastReport: state.history.sprints.at(-1) ?? null,

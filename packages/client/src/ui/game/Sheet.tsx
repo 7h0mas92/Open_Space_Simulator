@@ -8,10 +8,13 @@ import { useTranslation } from 'react-i18next';
  */
 export function Sheet({
   title,
+  icon,
   onClose,
   children,
 }: {
   title: string;
+  /** Icône décorative devant le titre (celle du bouton qui a ouvert le panneau). */
+  icon?: string;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -21,7 +24,8 @@ export function Sheet({
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
-    ref.current?.focus();
+    // Sans `preventScroll`, le focus pendant l'animation d'ouverture fait défiler l'écran de jeu.
+    ref.current?.focus({ preventScroll: true });
     return () => previous?.focus?.();
   }, []);
 
@@ -44,6 +48,11 @@ export function Sheet({
       >
         <header className="sheet-header">
           <span className="sheet-grip" aria-hidden="true" />
+          {icon && (
+            <span className="sheet-icon" aria-hidden="true">
+              {icon}
+            </span>
+          )}
           <h2 id={titleId}>{title}</h2>
           <button
             type="button"

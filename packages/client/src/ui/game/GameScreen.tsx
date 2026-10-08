@@ -9,15 +9,24 @@ import { SaveSlots } from '../menu/SaveSlots';
 import { SlackPanel } from '../slack/SlackPanel';
 import { SlackDock } from '../slack/SlackDock';
 import { SettingsPanel } from '../settings/SettingsPanel';
-import { useGame, type PanelId } from '../store/game';
+import { useGame, type PanelId, type Toast } from '../store/game';
 import { useSettings } from '../store/settings';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
-import { ActionBar, Alerts, Gauges, TimeControls } from './Hud';
+import {
+  ActionBar,
+  Alerts,
+  PANEL_ICONS,
+  Clock,
+  Company,
+  Gauges,
+  StepControls,
+  SystemButtons,
+} from './Hud';
 import { Scene } from './Scene';
 import { Sheet } from './Sheet';
-import { StageScreens } from './StageScreens';
+import { StageScreens, stageScreen } from './StageScreens';
 import { localized } from './format';
 import { useGameFeeds } from './useGameFeeds';
 import type { GameView } from '../../view/types';
@@ -42,6 +51,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Credits />;
   }
 }
+
+const TOAST_ICONS: Record<Toast['tone'], string> = { info: 'ℹ️', success: '✅', error: '⚠️' };
 
 /** Flèches du clavier → déplacement de l'aperçu sur la grille (objet en main). */
 const ARROWS: Record<string, readonly [number, number]> = {
@@ -119,7 +130,9 @@ export function GameScreen() {
   if (!view) return null;
   return (
     <div
-      className={`game ${panel ? 'has-panel' : ''} ${building ? 'is-building' : ''}`}
+      className={`game ${panel ? 'has-panel' : ''} ${building ? 'is-building' : ''} ${
+        stageScreen(view) ? 'has-stage' : ''
+      }`}
       data-testid="game"
     >
       <Scene />
@@ -130,19 +143,28 @@ export function GameScreen() {
         <BuildMode view={view} />
       ) : (
         <div className="hud">
-          <div className="hud-top">
+          {/* En haut ce qu'on lit, en bas ce qu'on fait. */}
+          <header className="hud-top">
+            <Company view={view} />
             <Gauges view={view} />
-            <TimeControls view={view} />
-          </div>
+            <Clock view={view} />
+            <SystemButtons />
+          </header>
           <div className="hud-bottom">
             <SelectionBar view={view} />
-            <ActionBar />
+            <div className="command-dock">
+              <ActionBar />
+              <StepControls view={view} />
+            </div>
           </div>
         </div>
       )}
       {showFps && <p className="fps">{t('settings.fps', { fps })}</p>}
       {toast && (
         <p key={toast.id} className={`toast toast-${toast.tone}`} role="status">
+          <span className="toast-icon" aria-hidden="true">
+            {TOAST_ICONS[toast.tone]}
+          </span>
           {toast.text
             ? localized(toast.text, i18n.language)
             : String(t((toast.key ?? '') as never, toast.params as never))}
@@ -163,7 +185,11 @@ export function GameScreen() {
       {!replayOf && <Guide view={view} />}
       <StageScreens view={view} />
       {panel && (
-        <Sheet title={t(`panels.${panel}`)} onClose={() => openPanel(null)}>
+        <Sheet
+          title={t(`panels.${panel}`)}
+          icon={PANEL_ICONS[panel]}
+          onClose={() => openPanel(null)}
+        >
           <PanelContent panel={panel} view={view} />
         </Sheet>
       )}

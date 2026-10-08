@@ -164,27 +164,33 @@
   "gauges": {
     "treasury": {
       "name": "Trésorerie",
-      "help": "Sert à payer les salaires. À 0 : faillite, game over."
+      "help": "Sert à payer les salaires. À 0 : faillite, game over.",
+      "short": "Trésorerie"
     },
     "coffee": {
       "name": "Café",
-      "help": "Le carburant de l'équipe. À 0 : productivité divisée par 3."
+      "help": "Le carburant de l'équipe. À 0 : productivité divisée par 3.",
+      "short": "Café"
     },
     "debt": {
       "name": "Dette technique",
-      "help": "Monte à chaque raccourci. Trop haute : bugs et prod instable."
+      "help": "Monte à chaque raccourci. Trop haute : bugs et prod instable.",
+      "short": "Dette"
     },
     "stability": {
       "name": "Stabilité prod",
-      "help": "Fiabilité du produit. À 0 : les utilisateurs fuient."
+      "help": "Fiabilité du produit. À 0 : les utilisateurs fuient.",
+      "short": "Stabilité"
     },
     "hype": {
       "name": "Hype",
-      "help": "Attractivité pour les investisseurs. À 0 : plus de levée de fonds."
+      "help": "Attractivité pour les investisseurs. À 0 : plus de levée de fonds.",
+      "short": "Hype"
     },
     "users": {
       "name": "Utilisateurs",
-      "help": "Ta base d'utilisateurs. Elle grandit avec les features et fuit si la prod tombe."
+      "help": "Ta base d'utilisateurs. Elle grandit avec les features et fuit si la prod tombe.",
+      "short": "Utilisateurs"
     },
     "morale": {
       "name": "Moral",
@@ -234,7 +240,15 @@
     "menu": "Menu",
     "actions": "Actions du jeu",
     "slack": "Slack",
-    "saves": "Sauvegardes"
+    "saves": "Sauvegardes",
+    "short": {
+      "kanban": "Kanban",
+      "team": "Équipe",
+      "hiring": "Recruter",
+      "build": "Bâtir",
+      "dashboard": "Stats",
+      "slack": "Slack"
+    }
   },
   "kanban": {
     "columns": {
@@ -431,7 +445,8 @@
     "round": "Argument {{round}} sur {{total}} : que dis-tu ?",
     "success": "Signé ! {{amount}} € levés contre {{share}} % du capital.",
     "failure": "L'investisseur « va revenir vers toi ». Il ne reviendra pas.",
-    "close": "Retour au bureau"
+    "close": "Retour au bureau",
+    "short": "Lever"
   },
   "demo": {
     "title": "Démo du sprint {{sprint}}",
@@ -1014,5 +1029,20 @@
         }
       }
     }
+  },
+  "hud": {
+    "company": "Ta startup",
+    "phase": "Phase : {{phase}}",
+    "mode": "Mode {{mode}}",
+    "team": "Équipe : {{count}} sur {{max}} postes",
+    "runway": "{{months}} mois",
+    "runwayHelp": "Mois de trésorerie restants au rythme actuel (dépenses moins revenus).",
+    "runwayNone": "Rentable : la trésorerie ne baisse plus.",
+    "valuation": "Valorisation : {{value}}",
+    "trendUp": "En hausse depuis hier",
+    "trendDown": "En baisse depuis hier",
+    "sprintProgress": "Avancement du sprint : {{percent}} %",
+    "system": "Partie",
+    "runwayLong": "Trésorerie : {{months}} mois restants"
   }
 }

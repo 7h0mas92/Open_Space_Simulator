@@ -153,7 +153,7 @@ export const LESSONS: readonly Lesson[] = [
       { id: 'select', goal: ({ selectedDev }) => selectedDev },
       { id: 'sheet' },
       { id: 'roles' },
-      { id: 'clock', target: 'speed' },
+      { id: 'clock', target: 'clock' },
     ],
   },
   {
