@@ -16,6 +16,7 @@ import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents
 import { catalogItem, footprint } from '../view/catalog';
 import { officeLayout, type Cell, type OfficeLayout } from '../view/layout';
 import { checkPlacement, nearestValidCell } from '../view/placement';
+import { liveSprintMinutes } from '../view/liveTime';
 import type { GameView, Rotation } from '../view/types';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
@@ -76,6 +77,8 @@ export interface RendererOptions {
 }
 
 const MAX_STEPS_PER_FRAME = 8;
+/** Écart d'heure suivi tel quel par l'éclairage ; au-delà, il le rattrape en douceur. */
+const SMOOTH_SNAP_MINUTES = 45;
 const SELECTION_COLOR = 0xf5b942;
 const VALID_COLOR = 0x4caf6e;
 const INVALID_COLOR = 0xe0584a;
@@ -426,7 +429,10 @@ export class GameRenderer {
       this.characters.get(agent.id)?.update(shown, delta * speed, this.reducedMotion);
     }
 
-    if (view) this.applyLighting(this.smoothMinute(view.time.minute, delta));
+    if (view) {
+      const minute = liveSprintMinutes(view.time, now) % 1440;
+      this.applyLighting(this.smoothMinute(minute, delta));
+    }
     this.smoke.update(delta);
     this.confetti.update(delta);
     for (const event of this.gestures.poll(now)) this.handleGesture(event);
@@ -536,8 +542,8 @@ export class GameRenderer {
   }
 
   /**
-   * La simulation avance par pas de 30 minutes : l'éclairage rattrape l'heure cible en douceur
-   * (par le chemin le plus court sur le cadran, minuit compris).
+   * L'heure suit l'horloge continue (view/liveTime.ts). Un grand saut (chargement, nouveau
+   * sprint) est rattrapé en douceur, par le chemin le plus court sur le cadran, minuit compris.
    */
   private smoothMinute(target: number, delta: number): number {
     if (this.displayMinute === null || this.reducedMotion) {
@@ -545,6 +551,10 @@ export class GameRenderer {
       return target;
     }
     const diff = ((target - this.displayMinute + 2160) % 1440) - 720;
+    if (Math.abs(diff) <= SMOOTH_SNAP_MINUTES) {
+      this.displayMinute = target;
+      return target;
+    }
     this.displayMinute = (this.displayMinute + diff * Math.min(1, delta * 4) + 1440) % 1440;
     return this.displayMinute;
   }

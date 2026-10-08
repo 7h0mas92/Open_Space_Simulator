@@ -791,7 +791,7 @@
           },
           "hardcoreEvents": {
             "title": "Crises do not wait",
-            "body": "In Hardcore, an event card does not stop time. If you do not choose within 2 in-game hours (about one second at x1), the last answer is picked for you: “you did not decide, so the problem decided for you”.\n\nThat last answer is often the worst one. Stay at x1 during office hours so you have time to read, and keep x2 or x4 for nights and weekends."
+            "body": "In Hardcore, an event card does not stop time. If you do not choose within 2 in-game hours (a little under 2 seconds at x1), the last answer is picked for you: “you did not decide, so the problem decided for you”.\n\nThat last answer is often the worst one. Stay at x1 during office hours so you have time to read, and keep x2 or x4 for nights and weekends."
           },
           "interns": {
             "title": "Interns Only mode",
@@ -824,7 +824,7 @@
         "steps": {
           "sprint": {
             "title": "A sprint in 4 parts",
-            "body": "Each sprint lasts two in-game weeks, about 3 real minutes at x1 speed. It has 4 parts:\n\n1. Planning: you choose the work. Time is stopped.\n2. Execution: the devs work in the open space.\n3. Crises: event cards come up during execution.\n4. Demo: the sprint's results.\n\nWe are in planning: get your first sprint ready."
+            "body": "Each sprint lasts two in-game weeks, about 5 real minutes at x1 speed. It has 4 parts:\n\n1. Planning: you choose the work. Time is stopped.\n2. Execution: the devs work in the open space.\n3. Crises: event cards come up during execution.\n4. Demo: the sprint's results.\n\nWe are in planning: get your first sprint ready."
           },
           "openKanban": {
             "title": "The Kanban",
