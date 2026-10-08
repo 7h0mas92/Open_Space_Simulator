@@ -24,7 +24,7 @@ pnpm install         # génère aussi le client Prisma (postinstall)
 cp packages/server/.env.example packages/server/.env   # puis adapter si besoin
 pnpm db:up          # PostgreSQL 16 dans Docker
 pnpm db:migrate     # applique les migrations Prisma
-pnpm db:seed        # compile @oss/shared, puis crée admin@oss.local / admin-dev-password et les 100 cartes
+pnpm db:seed        # compile @oss/shared, puis crée admin@oss.local / admin-dev-password et les 130 cartes
 pnpm dev            # client sur http://localhost:5173, API sur http://localhost:3000
 ```
 
@@ -177,9 +177,9 @@ packages/
 │   ├── src/config/      variables d'environnement validées par Zod
 │   ├── src/plugins/     sécurité, erreurs, JWT, Prisma, Swagger
 │   ├── src/routes/      auth, me, saves, events, scores, daily, achievements,
-│   │                    slack-ai, admin, health
+│   │                    slack-ai, admin, packs, decor, health
 │   ├── src/services/    sessions, GitHub OAuth, cartes, rejeu anti-triche, scores,
-│   │                    succès, Slack IA (Claude)
+│   │                    succès, Slack IA (Claude), packs de personnages, décorations
 │   └── tests/           tests d'intégration (vraie base PostgreSQL)
 └── client/   Vite + React + Three.js + i18next, PWA
     ├── src/             voir src/README.md pour le rôle de chaque dossier
@@ -287,6 +287,13 @@ flowchart LR
   tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
   construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
   sur ordinateur, bottom sheets plein écran sur mobile.
+- **Calendrier, saisons et anniversaires** : la partie commence le lundi de la semaine réelle
+  (date inscrite dans la graine). L'année est découpée en 12 périodes d'environ une semaine
+  (Nouvel An, Saint-Valentin, Pâques, espace, Moyen Âge, super-héros, années 80, été, pirates,
+  Halloween, cyberpunk, Noël) : pendant chacune, ses cartes de saison (24 au total) passent en
+  priorité et le bureau se décore à son thème. Chaque dev a un anniversaire tiré de la graine
+  sans toucher au tirage du jeu : table de fête, +moral, confettis et message Slack (fêté le
+  lundi s'il tombe un week-end).
 - **Filiales (Investir)** : à partir de la Série A, la startup peut investir sa trésorerie pour
   créer jusqu'à trois autres startups (trois projets proposés par sprint : prudent, audacieux,
   moonshot). Elle garde 80 % de chaque filiale, dont la valorisation évolue à chaque démo ;
@@ -336,7 +343,7 @@ sequenceDiagram
 - **Versions des cartes** : l'ordre et le contenu des cartes changent le tirage. Chaque jeu de
   cartes servi par `GET /api/events` porte une empreinte (`version`) gardée en base : une partie
   se rejoue toujours avec les cartes qu'elle a connues, même après une modification dans le
-  back-office. Hors ligne, le jeu utilise le cache ou les 100 cartes intégrées (`builtin`).
+  back-office. Hors ligne, le jeu utilise le cache ou les 130 cartes intégrées (`builtin`).
 - **Replays** : `GET /api/scores/:id/replay` renvoie graine, commandes et cartes ; le moteur les
   rejoue en accéléré (les commandes du joueur sont bloquées).
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
@@ -344,7 +351,7 @@ sequenceDiagram
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion.
 - **Succès** : 65 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
-  légendaire) ; 21 sont secrets : leur nom est visible et compté avec les autres, mais leur
+  légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
   condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
   depuis le menu principal ; `pnpm balance` mesure le taux de déblocage de chacun par les bots
   pour vérifier la difficulté annoncée.
@@ -451,7 +458,7 @@ Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prê
 
 Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur GitHub Pages à
 chaque push sur `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
-Sans serveur, le jeu se joue en invité avec les 100 cartes intégrées et les sauvegardes
+Sans serveur, le jeu se joue en invité avec les 130 cartes intégrées et les sauvegardes
 locales ; le compte, les classements, le Daily en ligne et le Slack IA demandent le serveur
 Render. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
 
@@ -461,7 +468,7 @@ Render et Vercel. Toutes les variables sont décrites dans
 
 ## Ce que l'application fait et ne fait pas
 
-Elle fait : un jeu de gestion solo complet (5 modes, 39 sprints, 100 cartes, 8 profils de
+Elle fait : un jeu de gestion solo complet (6 modes, 39 sprints, 100 cartes, 8 profils de
 devs, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
 anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
 Daily, par mode), replays vérifiés par le serveur, 65 succès (dont 22 secrets), un back-office et un Slack
