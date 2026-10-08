@@ -424,6 +424,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   cactus,
   metricsScreen,
   ramen,
+  officeCharacters: null,
   uiPack: null,
   soundPacks: null,
 };
