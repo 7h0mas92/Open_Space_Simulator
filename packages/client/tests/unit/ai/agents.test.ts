@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AgentWorld, MIN_BREAK_STEPS } from '../../../src/ai/agents';
+import { AgentWorld, MIN_STAY_STEPS } from '../../../src/ai/agents';
 import { ALL_THOUGHTS, pickThought } from '../../../src/ai/thoughts';
 import { Random } from '../../../src/ai/random';
 import { officeLayout, roomAt } from '../../../src/view/layout';
@@ -112,10 +112,20 @@ describe('IA des personnages', () => {
       world.sync(working);
       ate += world.snapshot().filter((a) => a.pose === 'eat').length;
     }
-    expect(ate).toBeGreaterThanOrEqual(MIN_BREAK_STEPS);
+    expect(ate).toBeGreaterThanOrEqual(MIN_STAY_STEPS);
     // Puis tout le monde retourne à son bureau.
     const snapshot = run(world, working, 400);
     expect(snapshot.filter((a) => a.visible).every((a) => a.pose === 'work')).toBe(true);
+  });
+
+  it('le matin, chacun réapparaît directement à son bureau', () => {
+    const world = new AgentWorld(4);
+    run(world, withActivity(view, 'LEAVING'), 400);
+    // Quelques pas suffisent : personne ne traverse l'open space depuis l'entrée.
+    const snapshot = run(world, withActivity(view, 'WORKING'), 5);
+    const visible = snapshot.filter((a) => a.visible);
+    expect(visible.length).toBe(view.devs.length - 1);
+    expect(visible.every((a) => a.pose === 'work')).toBe(true);
   });
 
   it('la soirée interrompt une pause tout de suite', () => {
