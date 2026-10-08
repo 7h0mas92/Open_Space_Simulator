@@ -383,6 +383,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   pour un joueur connecté sur un serveur qui a une clé d'API. Débit du Slack limité
   (`packages/client/src/slack/pacing.ts` : 2 messages d'affilée puis 1 toutes les 20 s,
   urgences toujours publiées, IA appelée au plus toutes les 45 s).
+- Personnages selon le profil (`render/officeCharacters.ts`) : les 10 Blocky Characters hors
+  thème (pirate, ninja, zombies…) ne sont plus tirés ; looks Kenney avec accessoires Three.js et
+  13 personnages construits en Three.js, animés par les clips Kenney.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
