@@ -342,7 +342,7 @@ sequenceDiagram
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion.
-- **Succès** : 61 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
+- **Succès** : 65 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 21 sont secrets : leur nom est visible et compté avec les autres, mais leur
   condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
@@ -462,9 +462,9 @@ Render et Vercel. Toutes les variables sont décrites dans
 ## Ce que l'application fait et ne fait pas
 
 Elle fait : un jeu de gestion solo complet (5 modes, 39 sprints, 100 cartes, 8 profils de
-devs, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période et les
-anniversaires des devs), jouable hors ligne en invité, avec classements en ligne (global,
-Daily, par mode), replays vérifiés par le serveur, 61 succès (dont 21 secrets), un back-office et un Slack
+devs, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
+anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
+Daily, par mode), replays vérifiés par le serveur, 65 succès (dont 22 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 
 Elle ne fait pas : de multijoueur en temps réel, d'achats intégrés ni de publicité, de chat
