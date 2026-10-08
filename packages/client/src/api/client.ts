@@ -67,9 +67,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions<T>): P
   const json: unknown = await response.json().catch(() => null);
   if (!response.ok) {
     const parsed = ApiErrorSchema.safeParse(json);
+    // Une réponse sans le format { error } ne vient pas du serveur du jeu : page 404 d'un
+    // hébergement statique (version en ligne sans serveur), proxy sans API derrière…
     throw parsed.success
       ? new ApiRequestError(response.status, parsed.data.error.code, parsed.data.error.message)
-      : new ApiRequestError(response.status, 'INTERNAL_ERROR', `HTTP ${response.status}`);
+      : new ApiRequestError(response.status, 'NETWORK_ERROR', `HTTP ${response.status}`);
   }
   return schema.parse(json);
 }

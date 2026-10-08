@@ -46,23 +46,32 @@
     "github": "Continue with GitHub",
     "or": "or",
     "loading": "Loading…",
-    "githubSuccess": "Logged in with GitHub."
+    "githubSuccess": "Logged in with GitHub.",
+    "invalid": {
+      "email": "That doesn't look like an email. Maybe the @ is missing.",
+      "pseudo": "Username rejected: 3 to 24 characters, only letters, digits, _ . or -. No spaces.",
+      "password": "Password too short: 8 characters minimum. \"qwerty\" doesn't count.",
+      "passwordMissing": "The password is missing."
+    },
+    "offlineTitle": "Accounts unavailable on this version",
+    "offlineText": "This game runs here without a server: you play as a guest and your games stay on this device. Sign-up, login and online leaderboards arrive once the server is deployed. Locally, start the server with pnpm dev, then try again.",
+    "retry": "Try again"
   },
   "errors": {
-    "VALIDATION_ERROR": "Some fields are invalid.",
-    "UNAUTHORIZED": "You need to be logged in.",
-    "FORBIDDEN": "Access denied.",
+    "VALIDATION_ERROR": "A field failed code review. Check your email, username and password.",
+    "UNAUTHORIZED": "You need to be logged in for that. Even the intern has a badge.",
+    "FORBIDDEN": "Admins only. Your badge doesn't open this door.",
     "NOT_FOUND": "Not found.",
     "CONFLICT": "Conflicts with existing data.",
-    "INVALID_CREDENTIALS": "Wrong email or password.",
-    "EMAIL_TAKEN": "An account already exists with this email.",
-    "PSEUDO_TAKEN": "This username is already taken.",
-    "INVALID_REFRESH_TOKEN": "Session expired, please log in again.",
-    "OAUTH_FAILED": "GitHub login failed.",
-    "OAUTH_NOT_CONFIGURED": "GitHub login is not configured on this server.",
-    "RATE_LIMITED": "Too many attempts, wait a minute.",
-    "INTERNAL_ERROR": "The server crashed. Like prod on a Friday at 5pm.",
-    "NETWORK_ERROR": "Server unreachable. Check your connection.",
+    "INVALID_CREDENTIALS": "Wrong email or password. Check caps lock, it happens to the best seniors.",
+    "EMAIL_TAKEN": "This email already has an account. Use the Log in tab instead.",
+    "PSEUDO_TAKEN": "This username is taken. Add \"_10x\" at the end, nobody will check.",
+    "INVALID_REFRESH_TOKEN": "Your session expired during a meeting. Please log in again.",
+    "OAUTH_FAILED": "GitHub didn't let us in. Try again, or sign up with your email.",
+    "OAUTH_NOT_CONFIGURED": "GitHub login isn't wired up on this server yet. Use your email for now.",
+    "RATE_LIMITED": "Too many attempts in a row. Grab a coffee and try again in a minute.",
+    "INTERNAL_ERROR": "The server crashed, like prod on a Friday at 5pm. Try again in a moment.",
+    "NETWORK_ERROR": "The game server isn't answering. Check your connection, then try again.",
     "PAYLOAD_TOO_LARGE": "Data too large.",
     "GAME_NOT_FINISHED": "The game is not finished.",
     "REPLAY_REJECTED": "The server could not replay this game.",
@@ -265,7 +274,27 @@
     "empty": "Nobody. Not even an intern.",
     "energy": "Energy",
     "noHistory": "Nothing to report yet.",
-    "sprint": "Sprint {{sprint}}"
+    "sprint": "Sprint {{sprint}}",
+    "workplace": "Workplace",
+    "atOffice": "🏢 At the office",
+    "remoteBadge": "🏠 Remote",
+    "officeSummary": "{{office}} at the office · {{remote}} remote · {{desks}} desks",
+    "noDeskHint": "Not enough desks: buy some in build mode to bring the team back.",
+    "remoteHint": "Remote work is automatic. From home: no office coffee or desk needed, less fatigue, but −{{productivity}}% productivity, −{{quality}}% quality and weaker ties with the team."
+  },
+  "remoteReasons": {
+    "GHOST": "Always remote, they are a ghost",
+    "FATIGUE": "Exhausted, recovering at home",
+    "CONFLICT": "Avoiding a colleague they clash with",
+    "NO_COFFEE": "No coffee left at the office",
+    "NO_DESK": "No free desk"
+  },
+  "remoteShort": {
+    "GHOST": "ghost",
+    "FATIGUE": "fatigue",
+    "CONFLICT": "conflict",
+    "NO_COFFEE": "no coffee",
+    "NO_DESK": "no desk"
   },
   "hiring": {
     "intro": "3 candidates this sprint. Make an offer: too low and they refuse.",
@@ -805,7 +834,7 @@
           },
           "morale": {
             "title": "Morale",
-            "body": "Each dev has their own morale. It drops with debt, fatigue, lack of coffee and conflicts; it recovers at the weekend, and with plants, foosball or the sofa.\n\nAt zero, the dev quits, with a fake LinkedIn post to go with it.\n\nYou can fire a dev from their profile: you pay one month of salary and the whole team loses morale, especially their friends."
+            "body": "Each dev has their own morale. It drops with debt, fatigue, lack of coffee and conflicts; it recovers at the weekend, and with plants, foosball or the sofa.\n\nAt zero, the dev quits, with a fake LinkedIn post to go with it.\n\nYou can fire a dev from their profile: you pay one month of salary and the whole team loses morale, especially their friends.\n\nRemote work is automatic: a dev who is exhausted, clashing with a colleague or without a free desk stays home. They disappear from the office and skip your coffee, but work more slowly."
           },
           "openHiring": {
             "title": "Hiring",

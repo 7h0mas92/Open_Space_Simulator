@@ -20,7 +20,7 @@ import {
   type TaskColumn,
 } from '@oss/shared';
 import { badEffectFactor, escalate } from '../events/effects';
-import { RESALE_RATIO } from '../simulation/furniture';
+import { countDesks, RESALE_RATIO } from '../simulation/furniture';
 import { devIds } from '../simulation/helpers';
 import { tasksInColumn } from '../simulation/tasks';
 import { getClock } from '../simulation/time';
@@ -34,6 +34,7 @@ import type {
   GaugeName,
   KanbanColumn,
   PlacedItemView,
+  RemoteReason,
   Rotation,
   TaskType,
   TaskView,
@@ -99,6 +100,12 @@ function activityOf(state: GameState, id: string): DevActivity {
   }
 }
 
+function remoteReasonOf(state: GameState, id: string): RemoteReason | null {
+  if (!(id in state.components.remote)) return null;
+  // Les sauvegardes d'avant le télétravail automatique n'ont que le Dev Fantôme à distance.
+  return state.components.remoteReason[id] ?? 'GHOST';
+}
+
 function devView(state: GameState, id: string): DevView | null {
   const c = state.components;
   const identity = c.identity[id];
@@ -119,6 +126,7 @@ function devView(state: GameState, id: string): DevView | null {
     morale: mood?.moral ?? 50,
     energy: mood?.energy ?? 100,
     activity: activityOf(state, id),
+    remoteReason: remoteReasonOf(state, id),
     relations: c.relations[id] ?? {},
     history: [...(c.devLog[id] ?? [])].reverse(),
     look: identity.look,
@@ -167,6 +175,7 @@ function candidateViews(state: GameState): CandidateView[] {
         morale: 70,
         energy: 100,
         activity: 'WORKING',
+        remoteReason: null,
         relations: {},
         history: [],
         look: candidate.identity.look,
@@ -259,6 +268,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       lastIncident !== undefined &&
       state.tick - lastIncident.tick < INCIDENT_TICKS,
     teamMax: TEAM_MAX[state.phase],
+    desks: countDesks(state),
     valuation: state.valuation,
     ownership: state.ownership,
     event: eventView(state, context),

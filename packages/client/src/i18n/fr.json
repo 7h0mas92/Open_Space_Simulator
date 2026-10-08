@@ -46,23 +46,32 @@
     "github": "Continuer avec GitHub",
     "or": "ou",
     "loading": "Chargement…",
-    "githubSuccess": "Connecté avec GitHub."
+    "githubSuccess": "Connecté avec GitHub.",
+    "invalid": {
+      "email": "Cette adresse ne ressemble pas à un email. Il manque peut-être le @.",
+      "pseudo": "Pseudo refusé : de 3 à 24 caractères, avec seulement des lettres, des chiffres, _ . ou -. Pas d'espace.",
+      "password": "Mot de passe trop court : 8 caractères minimum. « azerty » ne compte pas.",
+      "passwordMissing": "Il manque le mot de passe."
+    },
+    "offlineTitle": "Comptes indisponibles sur cette version",
+    "offlineText": "Ce jeu tourne ici sans serveur : tu joues en invité et tes parties restent sur cet appareil. Création de compte, connexion et classements en ligne arrivent quand le serveur sera déployé. En local, lance le serveur avec pnpm dev puis réessaie.",
+    "retry": "Réessayer"
   },
   "errors": {
-    "VALIDATION_ERROR": "Certains champs sont invalides.",
-    "UNAUTHORIZED": "Tu dois être connecté.",
-    "FORBIDDEN": "Accès refusé.",
+    "VALIDATION_ERROR": "Un champ ne passe pas la code review. Vérifie l'email, le pseudo et le mot de passe.",
+    "UNAUTHORIZED": "Il faut être connecté pour faire ça. Même le stagiaire a un badge.",
+    "FORBIDDEN": "Accès réservé aux admins. Ton badge ne passe pas ce portique.",
     "NOT_FOUND": "Introuvable.",
     "CONFLICT": "Conflit avec des données existantes.",
-    "INVALID_CREDENTIALS": "Email ou mot de passe incorrect.",
-    "EMAIL_TAKEN": "Un compte existe déjà avec cet email.",
-    "PSEUDO_TAKEN": "Ce pseudo est déjà pris.",
-    "INVALID_REFRESH_TOKEN": "Session expirée, reconnecte-toi.",
-    "OAUTH_FAILED": "La connexion GitHub a échoué.",
-    "OAUTH_NOT_CONFIGURED": "La connexion GitHub n'est pas configurée sur ce serveur.",
-    "RATE_LIMITED": "Trop de tentatives, patiente une minute.",
-    "INTERNAL_ERROR": "Le serveur a planté. Comme la prod un vendredi à 17h.",
-    "NETWORK_ERROR": "Serveur injoignable. Vérifie ta connexion.",
+    "INVALID_CREDENTIALS": "Email ou mot de passe incorrect. Vérifie les majuscules, ça arrive aux meilleurs seniors.",
+    "EMAIL_TAKEN": "Cet email a déjà un compte. Passe par l'onglet Connexion.",
+    "PSEUDO_TAKEN": "Ce pseudo est déjà pris. Ajoute « _10x » à la fin, personne ne vérifiera.",
+    "INVALID_REFRESH_TOKEN": "Ta session a expiré pendant une réunion. Reconnecte-toi.",
+    "OAUTH_FAILED": "GitHub ne nous a pas laissés entrer. Réessaie, ou crée un compte avec ton email.",
+    "OAUTH_NOT_CONFIGURED": "La connexion GitHub n'est pas encore branchée sur ce serveur. Utilise ton email en attendant.",
+    "RATE_LIMITED": "Trop de tentatives d'affilée. Va te chercher un café et réessaie dans une minute.",
+    "INTERNAL_ERROR": "Le serveur a planté, comme la prod un vendredi à 17h. Réessaie dans un instant.",
+    "NETWORK_ERROR": "Le serveur du jeu ne répond pas. Vérifie ta connexion, puis réessaie.",
     "PAYLOAD_TOO_LARGE": "Données trop volumineuses.",
     "GAME_NOT_FINISHED": "La partie n'est pas terminée.",
     "REPLAY_REJECTED": "Le serveur n'a pas pu rejouer cette partie.",
@@ -265,7 +274,27 @@
     "empty": "Personne. Même pas un stagiaire.",
     "energy": "Énergie",
     "noHistory": "Rien à signaler pour l'instant.",
-    "sprint": "Sprint {{sprint}}"
+    "sprint": "Sprint {{sprint}}",
+    "workplace": "Lieu de travail",
+    "atOffice": "🏢 Au bureau",
+    "remoteBadge": "🏠 Télétravail",
+    "officeSummary": "{{office}} au bureau · {{remote}} en télétravail · {{desks}} bureaux",
+    "noDeskHint": "Pas assez de bureaux : achète-en en mode construction pour faire revenir l’équipe.",
+    "remoteHint": "Le télétravail est automatique. À distance : pas de café ni de poste au bureau, moins de fatigue, mais −{{productivity}} % de productivité, −{{quality}} % de qualité et des liens qui s’effacent avec l’équipe."
+  },
+  "remoteReasons": {
+    "GHOST": "Toujours à distance, c’est un fantôme",
+    "FATIGUE": "Épuisé·e, récupère chez soi",
+    "CONFLICT": "Évite un collègue en conflit",
+    "NO_COFFEE": "Plus de café au bureau",
+    "NO_DESK": "Pas de bureau libre"
+  },
+  "remoteShort": {
+    "GHOST": "fantôme",
+    "FATIGUE": "fatigue",
+    "CONFLICT": "conflit",
+    "NO_COFFEE": "pas de café",
+    "NO_DESK": "pas de bureau"
   },
   "hiring": {
     "intro": "3 candidats ce sprint. Fais une offre : trop basse, ils refusent.",
@@ -805,7 +834,7 @@
           },
           "morale": {
             "title": "Le moral",
-            "body": "Chaque dev a son propre moral. Il baisse avec la dette, la fatigue, le manque de café et les conflits ; il remonte le week-end, avec les plantes, le babyfoot ou le canapé.\n\nÀ zéro, le dev démissionne, avec un faux post LinkedIn à la clé.\n\nTu peux licencier un dev depuis sa fiche : tu paies un mois de salaire et toute l'équipe perd du moral, surtout ses amis."
+            "body": "Chaque dev a son propre moral. Il baisse avec la dette, la fatigue, le manque de café et les conflits ; il remonte le week-end, avec les plantes, le babyfoot ou le canapé.\n\nÀ zéro, le dev démissionne, avec un faux post LinkedIn à la clé.\n\nTu peux licencier un dev depuis sa fiche : tu paies un mois de salaire et toute l'équipe perd du moral, surtout ses amis.\n\nLe télétravail est automatique : un dev épuisé, brouillé avec un collègue ou sans bureau libre reste chez lui. Il disparaît de l'open space, ne boit pas ton café, mais avance moins vite."
           },
           "openHiring": {
             "title": "Le recrutement",

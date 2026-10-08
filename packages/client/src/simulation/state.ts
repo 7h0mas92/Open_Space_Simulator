@@ -48,6 +48,7 @@ export function createEmptyState(config: GameConfig): GameState {
       task: {},
       furniture: {},
       remote: {},
+      remoteReason: {},
       rustConverted: {},
     },
     gauges: {
@@ -95,6 +96,7 @@ export function createEmptyState(config: GameConfig): GameState {
       coffeeShortageDays: 0,
       maxValuation: 0,
       maxUsers: 0,
+      remoteDays: 0,
     },
     achievements: [],
     notifications: [],

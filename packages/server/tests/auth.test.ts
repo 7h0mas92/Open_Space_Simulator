@@ -106,7 +106,7 @@ describe('POST /api/auth/login', () => {
     expect(response.statusCode).toBe(401);
     expect(response.json().error).toEqual({
       code: 'INVALID_CREDENTIALS',
-      message: 'Email ou mot de passe incorrect',
+      message: 'Email ou mot de passe incorrect, vérifie ta saisie',
     });
   });
 });

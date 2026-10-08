@@ -35,7 +35,11 @@ export class GithubService {
   private credentials(): { clientId: string; clientSecret: string } {
     const { GITHUB_CLIENT_ID: clientId, GITHUB_CLIENT_SECRET: clientSecret } = this.env;
     if (!clientId || !clientSecret) {
-      throw new AppError(503, 'OAUTH_NOT_CONFIGURED', 'Connexion GitHub non configurée');
+      throw new AppError(
+        503,
+        'OAUTH_NOT_CONFIGURED',
+        'Connexion GitHub non configurée sur ce serveur (GITHUB_CLIENT_ID et GITHUB_CLIENT_SECRET manquants)',
+      );
     }
     return { clientId, clientSecret };
   }
@@ -64,7 +68,8 @@ export class GithubService {
       }),
     });
     const token = TokenResponseSchema.safeParse(await tokenResponse.json());
-    if (!tokenResponse.ok || !token.success) throw oauthFailed('Code GitHub invalide');
+    if (!tokenResponse.ok || !token.success)
+      throw oauthFailed('GitHub a refusé le code d’autorisation, recommence la connexion');
 
     const headers = {
       Accept: 'application/vnd.github+json',
@@ -76,7 +81,8 @@ export class GithubService {
       this.fetchFn('https://api.github.com/user/emails', { headers }),
     ]);
     const user = UserResponseSchema.safeParse(await userResponse.json());
-    if (!userResponse.ok || !user.success) throw oauthFailed('Profil GitHub illisible');
+    if (!userResponse.ok || !user.success)
+      throw oauthFailed('Impossible de lire le profil GitHub, recommence la connexion');
 
     // L'email est facultatif : un utilisateur peut masquer ses emails.
     const emails = emailsResponse.ok

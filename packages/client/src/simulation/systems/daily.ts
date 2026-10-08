@@ -84,7 +84,9 @@ function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
     if (clock.isWeekend) gain += m.weekendRecovery;
     let loss = state.gauges.debt / m.debtDivider + Math.max(0, -affinity) / m.affinityDivider;
     if (mood.energy < 30) loss += m.lowEnergyPenalty;
-    if (coffeeEmpty && identity.role !== 'GHOST') loss += m.coffeeEmptyPenalty;
+    const remote = id in state.components.remote;
+    if (coffeeEmpty && !remote) loss += m.coffeeEmptyPenalty;
+    if (remote) gain += BALANCE.remote.dailyMoral;
     const taskId = state.components.worker[id]?.taskId;
     if (identity.role === 'SENIOR_BEARD' && taskId && state.components.task[taskId]?.shinyFramework)
       loss += 1;
@@ -100,10 +102,13 @@ function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
 
 /** Les affinités s'estompent doucement vers 0 (on oublie les disputes... et les amitiés). */
 function relations(state: GameState): void {
-  const drift = BALANCE.relations.dailyDrift;
   for (const id of devIds(state)) {
     const relations = state.components.relations[id];
     if (!relations) continue;
+    // Loin de l'open space, les liens (bons comme mauvais) s'effacent plus vite.
+    const drift =
+      BALANCE.relations.dailyDrift +
+      (id in state.components.remote ? BALANCE.remote.isolationDrift : 0);
     for (const [otherId, affinity] of Object.entries(relations)) {
       relations[otherId] =
         affinity > 0 ? Math.max(0, affinity - drift) : Math.min(0, affinity + drift);

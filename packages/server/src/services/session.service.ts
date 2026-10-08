@@ -66,7 +66,11 @@ export async function rotateSession(
   reply: FastifyReply,
   refreshToken: string | undefined,
 ): Promise<User> {
-  const invalid = new AppError(401, 'INVALID_REFRESH_TOKEN', 'Session expirée, reconnecte-toi');
+  const invalid = new AppError(
+    401,
+    'INVALID_REFRESH_TOKEN',
+    'Session expirée ou révoquée, reconnecte-toi',
+  );
   if (!refreshToken) throw invalid;
 
   const stored = await app.prisma.refreshToken.findUnique({
