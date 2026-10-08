@@ -411,6 +411,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   économiseur quand il dort) : `render/screens.ts`. Éclairage de la salle : appliques Kenney et
   halos, plafonniers, fenêtres couleur du ciel, taches de soleil le jour (`render/officeLights.ts`) ;
   vraies lampes selon la qualité (0 bas, 3 moyen, 6 haut).
+- Construction : pose en série (l'objet reste en main jusqu'à « Terminer », arrêt automatique au
+  maximum ou si la trésorerie manque) ; 12 accessoires posés sur les meubles (`surfaceSlots`,
+  commandes `BUY_ACCESSORY` / `MOVE_ACCESSORY`, revendus et déplacés avec leur meuble) ; 12 couleurs
+  au choix à l'achat ou via « Peindre » (`PAINT_FURNITURE`, `client/src/view/colors.ts`).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
