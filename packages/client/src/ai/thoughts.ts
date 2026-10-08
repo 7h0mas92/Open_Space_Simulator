@@ -14,6 +14,8 @@ const BY_ACTIVITY: Record<DevActivity, readonly string[]> = {
   SLEEPING: ['zzz'],
   YELLING: ['whyNotWorks', 'aaargh'],
   BABYFOOT: ['goal', 'gamelle'],
+  BREAK: ['snack', 'stretch', 'fridgeThief'],
+  LUNCH: ['ramen', 'lunchDebate', 'fridgeThief'],
   LEAVING: ['seeYouTomorrow'],
   REMOTE: [],
 };

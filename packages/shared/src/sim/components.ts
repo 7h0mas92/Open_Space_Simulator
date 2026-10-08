@@ -56,6 +56,10 @@ export const ACTIVITIES = [
   'SLEEPING',
   'YELLING',
   'BABYFOOT',
+  /** Pause : balade dans la cuisine, grignotage, étirements. */
+  'BREAK',
+  /** Pause déjeuner, à la cuisine ou à la cantine. */
+  'LUNCH',
   'GONE',
 ] as const;
 export const ActivitySchema = z.enum(ACTIVITIES);

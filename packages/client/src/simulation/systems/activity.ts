@@ -1,4 +1,11 @@
-import { BALANCE, type Activity, type DevTrait, type EntityId, type GameState } from '@oss/shared';
+import {
+  BALANCE,
+  TIME,
+  type Activity,
+  type DevTrait,
+  type EntityId,
+  type GameState,
+} from '@oss/shared';
 import { clamp, devIds, devsWithRole, type SimContext } from '../helpers';
 import { autoAssign } from '../tasks';
 import type { SimClock } from '../time';
@@ -13,6 +20,48 @@ export function isPresent(trait: DevTrait, clock: SimClock): boolean {
     clock.hour >= BALANCE.work.arrivalHour + shift &&
     clock.hour < BALANCE.work.leaveHour + shift + extra
   );
+}
+
+export const BREAK_SLOTS = ['morning', 'lunch', 'afternoon'] as const;
+export type BreakSlot = (typeof BREAK_SLOTS)[number];
+
+/**
+ * Vraie pause à heure fixe en cours pour un dev, ou null. `rank` (son rang dans l'équipe)
+ * décale un dev sur deux d'une demi-heure. Le bourreau de travail saute les pauses courtes,
+ * mais pas le déjeuner.
+ */
+export function scheduledBreak(
+  trait: DevTrait,
+  rank: number,
+  clock: SimClock,
+): { slot: BreakSlot; endHour: number } | null {
+  if (clock.isWeekend) return null;
+  const shift =
+    (trait === 'NIGHT_OWL' ? BALANCE.work.nightOwlShift : 0) + (rank % 2) * BALANCE.breaks.stagger;
+  for (const slot of BREAK_SLOTS) {
+    if (slot !== 'lunch' && trait === 'WORKAHOLIC') continue;
+    const { hour, hours } = BALANCE.breaks[slot];
+    const start = hour + shift;
+    if (clock.hour >= start && clock.hour < start + hours) return { slot, endHour: start + hours };
+  }
+  return null;
+}
+
+/** Que faire d'une pause courte ? Café, babyfoot ou balade dans la cuisine, selon le caractère. */
+function pickShortBreak(state: GameState, ctx: SimContext, trait: DevTrait): Activity {
+  const b = BALANCE.breaks;
+  const options: readonly (readonly [Activity, number])[] = [
+    ['COFFEE', state.gauges.coffee > 0 ? b.coffeeWeight * (trait === 'COFFEE_ADDICT' ? 2 : 1) : 0],
+    ['BABYFOOT', ctx.office.babyfoot ? b.babyfootWeight * (trait === 'GAMER' ? 3 : 1) : 0],
+    ['BREAK', b.strollWeight * (trait === 'CHATTERBOX' ? 2 : 1)],
+  ];
+  const total = options.reduce((sum, [, weight]) => sum + weight, 0);
+  let roll = ctx.rng.next() * total;
+  for (const [kind, weight] of options) {
+    roll -= weight;
+    if (roll < 0) return kind;
+  }
+  return 'BREAK';
 }
 
 /** Heure de réunion du Product Owner (4 par jour). */
@@ -61,7 +110,8 @@ function pickColleague(
 
 /**
  * Système « activité » : décide à chaque tick ce que fait chaque personnage
- * (travailler, café, réunion, discuter, se disputer, dormir, crier, babyfoot, rentrer).
+ * (travailler, pause, déjeuner, café, réunion, discuter, se disputer, dormir, crier,
+ * babyfoot, rentrer).
  * C'est la partie « décision » des behavior trees ; le déplacement à l'écran (A*)
  * est l'affaire du rendu, qui lit `activity.kind` et `activity.withId`.
  */
@@ -87,12 +137,21 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
     return false;
   };
 
+  // Pause à heure fixe de chaque dev en ce moment (l'IA Agent n'en prend jamais).
+  const pauses = new Map<EntityId, NonNullable<ReturnType<typeof scheduledBreak>>>();
+  ids.forEach((id, rank) => {
+    const identity = state.components.identity[id];
+    if (!identity || identity.role === 'AI_AGENT') return;
+    const pause = scheduledBreak(identity.trait, rank, clock);
+    if (pause) pauses.set(id, pause);
+  });
+
   // Devs disponibles pour une discussion ou une dispute (au bureau, pas en pause).
   const available = new Set<EntityId>();
   for (const id of ids) {
     const identity = state.components.identity[id];
     const current = state.components.activity[id];
-    if (!identity || !current || id in state.components.remote) continue;
+    if (!identity || !current || id in state.components.remote || pauses.has(id)) continue;
     if (
       isPresent(identity.trait, clock) &&
       (current.untilTick <= state.tick || current.kind === 'WORKING' || current.kind === 'IDLE')
@@ -123,8 +182,22 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
     }
     const work: Activity = worker.taskId && state.stage === 'EXECUTION' ? 'WORKING' : 'IDLE';
 
-    // Les télétravailleurs et l'IA Agent ne font jamais de pause visible
-    // (un télétravailleur épuisé fait quand même la sieste sur son canapé).
+    // Vraie pause à heure fixe : elle dure jusqu'à la fin du créneau, réunion ou pas.
+    const pause = pauses.get(id);
+    if (pause) {
+      const ticks = Math.max(1, Math.ceil((pause.endHour - clock.hour) * TIME.ticksPerHour));
+      const kind: Activity =
+        pause.slot === 'lunch'
+          ? 'LUNCH'
+          : id in state.components.remote
+            ? 'BREAK'
+            : pickShortBreak(state, ctx, identity.trait);
+      setActivity(state, id, kind, ticks);
+      continue;
+    }
+
+    // Hors des pauses à heure fixe, les télétravailleurs et l'IA Agent ne font pas de pause
+    // imprévue (un télétravailleur épuisé fait quand même la sieste sur son canapé).
     if (id in state.components.remote || identity.role === 'AI_AGENT') {
       const nap = mood.energy < BALANCE.energy.sleepThreshold && identity.role !== 'AI_AGENT';
       setActivity(state, id, nap ? 'SLEEPING' : work, 1);

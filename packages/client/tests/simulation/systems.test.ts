@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { generateCandidates, spawnDev } from '../../src/simulation/devs';
 import { computeValuation, monthlyExpenses, runwayMonths } from '../../src/simulation/economy';
 import { teamSize } from '../../src/simulation/helpers';
-import { activitySystem, isMeetingTime, isPresent } from '../../src/simulation/systems/activity';
+import {
+  activitySystem,
+  isMeetingTime,
+  isPresent,
+  scheduledBreak,
+} from '../../src/simulation/systems/activity';
 import { dailySystem, hypeDrift } from '../../src/simulation/systems/daily';
 import { incidentSystem } from '../../src/simulation/systems/incidents';
 import { coffeeSystem, energySystem } from '../../src/simulation/systems/needs';
@@ -120,7 +125,7 @@ describe('Activité (behavior trees)', () => {
 
     state.tick += 10;
     state.components.mood[ids[1]!]!.energy = 0;
-    activitySystem(state, ctx, at(0, 13));
+    activitySystem(state, ctx, at(0, 17));
     expect(state.components.activity[ids[1]!]?.kind).toBe('SLEEPING');
 
     state.tick += 10;
@@ -153,6 +158,87 @@ describe('Activité (behavior trees)', () => {
     for (const kind of ['WORKING', 'COFFEE', 'CHATTING', 'ARGUING', 'YELLING', 'BABYFOOT']) {
       expect(seen).toContain(kind);
     }
+  });
+});
+
+describe('Vraies pauses', () => {
+  const { morning, lunch, afternoon, stagger } = BALANCE.breaks;
+
+  it('trois pauses à heure fixe, un dev sur deux décalé d’une demi-heure', () => {
+    expect(scheduledBreak('ZEN', 0, at(0, morning.hour))?.slot).toBe('morning');
+    expect(scheduledBreak('ZEN', 1, at(0, morning.hour))).toBeNull();
+    expect(scheduledBreak('ZEN', 1, at(0, morning.hour + stagger))?.slot).toBe('morning');
+    expect(scheduledBreak('ZEN', 0, at(0, lunch.hour))).toEqual({
+      slot: 'lunch',
+      endHour: lunch.hour + lunch.hours,
+    });
+    expect(scheduledBreak('ZEN', 0, at(0, afternoon.hour))?.slot).toBe('afternoon');
+    expect(scheduledBreak('ZEN', 0, at(0, 9))).toBeNull();
+    // Pas de pause le week-end ; le noctambule décale tout, le bourreau de travail ne garde
+    // que le déjeuner.
+    expect(scheduledBreak('ZEN', 0, at(5, lunch.hour))).toBeNull();
+    expect(scheduledBreak('NIGHT_OWL', 0, at(0, lunch.hour))).toBeNull();
+    expect(
+      scheduledBreak('NIGHT_OWL', 0, at(0, lunch.hour + BALANCE.work.nightOwlShift))?.slot,
+    ).toBe('lunch');
+    expect(scheduledBreak('WORKAHOLIC', 0, at(0, morning.hour))).toBeNull();
+    expect(scheduledBreak('WORKAHOLIC', 0, at(0, lunch.hour))?.slot).toBe('lunch');
+  });
+
+  it('le déjeuner dure tout le créneau, réunion comprise ; l’IA Agent ne s’arrête pas', () => {
+    const { state, ids } = stateWithTeam(['SENIOR_BEARD', 'TEN_X', 'AI_AGENT', 'PRODUCT_OWNER']);
+    state.stage = 'EXECUTION';
+    for (const id of ids) state.components.identity[id]!.trait = 'ZEN';
+    const ctx = makeContext(state);
+    for (const id of ids) assignTask(state, createTask(state, ctx.rng, 'FEATURE'), id);
+    state.tick = 100;
+    activitySystem(state, ctx, at(0, lunch.hour));
+    const lunching = state.components.activity[ids[0]!]!;
+    expect(lunching.kind).toBe('LUNCH');
+    expect(lunching.untilTick).toBe(100 + lunch.hours * 2);
+    expect(state.components.activity[ids[1]!]!.kind).not.toBe('LUNCH'); // décalé
+    expect(state.components.activity[ids[2]!]!.kind).toBe('WORKING');
+    // Une demi-heure plus tard : le premier mange encore, le second le rejoint.
+    state.tick = 101;
+    activitySystem(state, ctx, at(0, lunch.hour + stagger));
+    expect(state.components.activity[ids[0]!]!.kind).toBe('LUNCH');
+    expect(state.components.activity[ids[1]!]!.kind).toBe('LUNCH');
+  });
+
+  it('pause courte : café, babyfoot ou balade, selon le bureau et le caractère', () => {
+    const { state, ids } = stateWithTeam(['SENIOR_BEARD']);
+    state.stage = 'EXECUTION';
+    const id = ids[0]!;
+    state.components.identity[id]!.trait = 'GAMER';
+    const ctx = makeContext(state);
+    ctx.office.babyfoot = true;
+    const seen = new Set<string>();
+    for (let day = 0; day < 40; day++) {
+      state.tick = day * 48;
+      activitySystem(state, ctx, at(day % 5, morning.hour));
+      seen.add(state.components.activity[id]!.kind);
+    }
+    expect([...seen].sort()).toEqual(['BABYFOOT', 'BREAK', 'COFFEE']);
+    // Sans café ni babyfoot, il reste la balade dans la cuisine.
+    state.gauges.coffee = 0;
+    ctx.office.babyfoot = false;
+    state.tick += 48;
+    activitySystem(state, ctx, at(0, morning.hour));
+    expect(state.components.activity[id]!.kind).toBe('BREAK');
+  });
+
+  it('les télétravailleurs font leurs pauses chez eux', () => {
+    const { state, ids } = stateWithTeam(['SENIOR_BEARD']);
+    state.stage = 'EXECUTION';
+    const id = ids[0]!;
+    state.components.identity[id]!.trait = 'ZEN';
+    state.components.remote[id] = true;
+    const ctx = makeContext(state);
+    activitySystem(state, ctx, at(0, morning.hour));
+    expect(state.components.activity[id]!.kind).toBe('BREAK');
+    state.tick += 10;
+    activitySystem(state, ctx, at(0, lunch.hour));
+    expect(state.components.activity[id]!.kind).toBe('LUNCH');
   });
 });
 

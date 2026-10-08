@@ -44,6 +44,8 @@ export const DEV_ACTIVITIES = [
   'SLEEPING',
   'YELLING',
   'BABYFOOT',
+  'BREAK',
+  'LUNCH',
   'LEAVING',
   'REMOTE',
 ] as const;

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { AgentWorld } from '../../../src/ai/agents';
+import { AgentWorld, MIN_BREAK_STEPS } from '../../../src/ai/agents';
 import { ALL_THOUGHTS, pickThought } from '../../../src/ai/thoughts';
 import { Random } from '../../../src/ai/random';
+import { officeLayout, roomAt } from '../../../src/view/layout';
 import type { DevActivity, GameView } from '../../../src/view/types';
 import fr from '../../../src/i18n/fr.json';
 import en from '../../../src/i18n/en.json';
@@ -76,6 +77,52 @@ describe('IA des personnages', () => {
     // Sans babyfoot en phase Seed, les joueurs se rabattent sur la machine à café.
     const snapshot = run(new AgentWorld(5), withActivity(view, 'BABYFOOT'), 500);
     expect(snapshot.filter((a) => a.visible).every((a) => a.pose === 'play')).toBe(true);
+  });
+
+  it('en pause, on flâne dans la cuisine ; au déjeuner, on y mange', () => {
+    const layout = officeLayout('SEED');
+    const inKitchen = (a: { x: number; z: number }) =>
+      roomAt(layout, { x: Math.round(a.x), z: Math.round(a.z) })?.kind === 'kitchen';
+    for (const [activity, pose] of [
+      ['BREAK', 'drink'],
+      ['LUNCH', 'eat'],
+    ] as const) {
+      const world = new AgentWorld(6);
+      // Les poses de pause apparaissent dans la cuisine (toutes en même temps, ça se bouscule).
+      let seen = false;
+      world.sync(withActivity(view, activity));
+      for (let i = 0; i < 800 && !seen; i++) {
+        world.step();
+        seen = world.snapshot().some((a) => a.visible && a.pose === pose && inKitchen(a));
+      }
+      expect(seen, activity).toBe(true);
+    }
+  });
+
+  it('une pause se voit jusqu’au bout, même si la simulation est déjà repassée au travail', () => {
+    const world = new AgentWorld(2);
+    world.sync(withActivity(view, 'LUNCH'));
+    world.step();
+    // La demi-heure de jeu est passée avant que les devs n'aient atteint la cuisine.
+    const working = withActivity(view, 'WORKING');
+    world.sync(working);
+    let ate = 0;
+    for (let i = 0; i < 300; i++) {
+      world.step();
+      world.sync(working);
+      ate += world.snapshot().filter((a) => a.pose === 'eat').length;
+    }
+    expect(ate).toBeGreaterThanOrEqual(MIN_BREAK_STEPS);
+    // Puis tout le monde retourne à son bureau.
+    const snapshot = run(world, working, 400);
+    expect(snapshot.filter((a) => a.visible).every((a) => a.pose === 'work')).toBe(true);
+  });
+
+  it('la soirée interrompt une pause tout de suite', () => {
+    const world = new AgentWorld(2);
+    run(world, withActivity(view, 'BREAK'), 5);
+    const snapshot = run(world, withActivity(view, 'LEAVING'), 400);
+    expect(snapshot.every((a) => !a.visible)).toBe(true);
   });
 
   it('suit les changements de bureau et de phase', () => {

@@ -167,12 +167,32 @@ export const BALANCE = {
       number
     >,
   },
+  /**
+   * Petites envies imprévues, tirées à chaque tick. Les vraies pauses, elles, sont à
+   * heure fixe (`breaks`) : ces probabilités ne couvrent plus que les extras.
+   */
   activity: {
-    coffeeBreak: 0.05,
+    coffeeBreak: 0.02,
     chat: 0.03,
     argue: 0.02,
     yell: 0.015,
-    babyfoot: 0.03,
+    babyfoot: 0.01,
+  },
+  /**
+   * Vraies pauses de la journée, à heure fixe (heures décimales, durées en heures).
+   * Chaque dev est décalé de 0 ou `stagger` heure selon son rang, pour que la cuisine
+   * ne soit pas prise d'assaut d'un coup. Le noctambule décale tout de `nightOwlShift`.
+   * Pendant une pause courte, le dev choisit : café, babyfoot ou balade dans la cuisine.
+   */
+  breaks: {
+    morning: { hour: 10.5, hours: 0.5 },
+    lunch: { hour: 12, hours: 1 },
+    afternoon: { hour: 15, hours: 0.5 },
+    stagger: 0.5,
+    /** Poids des choix d'une pause courte (multipliés par les traits). */
+    coffeeWeight: 3,
+    babyfootWeight: 2,
+    strollWeight: 2,
   },
   moral: {
     dailyBase: 0.4,
