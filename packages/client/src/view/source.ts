@@ -87,6 +87,8 @@ export class EngineSource implements GameSource {
     return toGameView(snapshot.state, {
       speed: snapshot.speed,
       running: snapshot.running,
+      tickDurationMs: snapshot.tickDurationMs,
+      receivedAt: performance.now(),
       card: (id) => this.cards.get(id),
       replay: snapshot.replay,
     });

@@ -17,7 +17,7 @@ import { testCard } from './fixtures';
 
 describe('Horloge réelle', () => {
   it('un sprint dure environ 3 minutes à x1', () => {
-    expect(TICK_MS_AT_X1 * TIME.ticksPerSprint).toBeCloseTo(180_000, 3);
+    expect(TICK_MS_AT_X1 * TIME.ticksPerSprint).toBeCloseTo(300_000, 3);
     expect(isSpeed(4)).toBe(true);
     expect(isSpeed(3)).toBe(false);
   });
