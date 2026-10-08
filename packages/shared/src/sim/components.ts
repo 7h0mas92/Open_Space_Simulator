@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { LocalizedTextSchema } from '../i18n.js';
-<<<<<<< HEAD
 import { BirthdaySchema } from './calendar.js';
-=======
 import { FURNITURE_COLORS } from './furniture.js';
->>>>>>> 7c0c52e (feat(construction): pose en série, accessoires sur les meubles et couleurs)
 
 /**
  * Composants de l'ECS (Entity Component System) de la simulation.
