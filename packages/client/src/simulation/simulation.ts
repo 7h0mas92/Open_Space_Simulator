@@ -25,6 +25,7 @@ import { coffeeSystem, energySystem } from './systems/needs';
 import { remoteSystem } from './systems/remote';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
+import { emergencySale } from './ventures';
 
 /** Un système = une fonction qui fait évoluer l'état pendant un tick. */
 export type System = (state: GameState, ctx: SimContext, clock: SimClock) => void;
@@ -120,7 +121,8 @@ export class Simulation {
     if (state.stage !== 'ENDED') {
       state.tick += 1;
       state.sprintTick += 1;
-      if (state.gauges.treasury < 0) endGame(state, ctx, 'BANKRUPTCY');
+      if (state.gauges.treasury < 0 && !emergencySale(state, ctx))
+        endGame(state, ctx, 'BANKRUPTCY');
       else if (state.sprintTick >= TIME.ticksPerSprint) endSprint(state, ctx);
     }
     checkAchievements(state, ctx);

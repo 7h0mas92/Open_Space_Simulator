@@ -1,6 +1,7 @@
 import {
   BALANCE,
   TEAM_MAX,
+  VENTURES,
   type EntityId,
   type GameState,
   type LocalizedText,
@@ -78,8 +79,10 @@ export function teamSize(state: GameState): number {
   return devIds(state).length;
 }
 
+/** Équipe maximale : celle de la phase, plus quelques places par aile des filiales. */
 export function teamMax(state: GameState): number {
-  return TEAM_MAX[state.phase];
+  const wings = Math.min(state.ventures.length, VENTURES.maxFounded);
+  return TEAM_MAX[state.phase] + wings * VENTURES.teamPerWing;
 }
 
 /** Moral moyen de l'équipe (100 si l'équipe est vide : personne ne se plaint). */

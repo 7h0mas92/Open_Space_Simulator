@@ -2,8 +2,32 @@ import { BALANCE, type GameState, type LocalizedText, type Outcome } from '@oss/
 import { BUYERS } from './data/flavor';
 import { moneyText, notify, text, type SimContext } from './helpers';
 
-/** Phrase partageable de l'écran de fin. */
+/** Phrase partageable de l'écran de fin, complétée par le bilan des filiales. */
 function headline(
+  state: GameState,
+  outcome: Outcome,
+  amount: number,
+  buyer: LocalizedText | null,
+): LocalizedText {
+  const main = mainHeadline(state, outcome, amount, buyer);
+  const founded = state.ventures.length;
+  if (founded === 0) return main;
+  const suffix =
+    founded === 1
+      ? text([' Le groupe a aussi créé 1 filiale.', ' The group also founded 1 subsidiary.'])
+      : text(
+          [
+            ' Le groupe a aussi créé {count} filiales.',
+            ' The group also founded {count} subsidiaries.',
+          ],
+          {
+            count: founded,
+          },
+        );
+  return { fr: main.fr + suffix.fr, en: main.en + suffix.en };
+}
+
+function mainHeadline(
   state: GameState,
   outcome: Outcome,
   amount: number,

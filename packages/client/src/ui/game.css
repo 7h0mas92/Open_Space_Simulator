@@ -2655,3 +2655,113 @@ legend {
     margin-inline: auto;
   }
 }
+
+/* --- Investir : filiales ---------------------------------------------------------------- */
+.group-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.group-heading {
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+}
+
+.venture-offers,
+.ventures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.venture-offer,
+.venture {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.venture-offer h4,
+.venture h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.venture-offer > button {
+  margin-top: auto;
+}
+
+.risk-SAFE {
+  border-left-color: #7fd18b;
+}
+
+.risk-BOLD {
+  border-left-color: var(--accent);
+}
+
+.risk-MOONSHOT {
+  border-left-color: #b49cff;
+}
+
+.venture.status-DEAD {
+  opacity: 0.75;
+  border-left-color: var(--danger);
+}
+
+.venture.status-SOLD {
+  border-left-color: var(--text-muted);
+}
+
+.venture.status-ACTIVE {
+  border-left-color: #7fd18b;
+}
+
+.venture-status {
+  margin-left: auto;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.venture-risk {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.venture dd.up {
+  color: #7fd18b;
+}
+
+.venture dd.down {
+  color: var(--danger);
+}
+
+.venture .sparkline {
+  width: 100%;
+  height: 32px;
+  color: var(--accent);
+}
+
+.venture-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

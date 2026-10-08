@@ -20,6 +20,7 @@ const FLOOR_COLORS: Record<RoomKind, readonly [number, number]> = {
   kitchen: [0xe8e3d6, 0xc9c2b2],
   lounge: [0xc6b3d9, 0xbca8cf],
   canteen: [0xe3c9a0, 0xd8bd92],
+  incubator: [0xc4dbc0, 0xb8d0b3],
 };
 const WALL_HEIGHT = 2.2;
 const PARTITION_HEIGHT = 1.3;
@@ -125,12 +126,41 @@ function extrasFor(item: PlacedItemView): { kind: string; matrix: THREE.Matrix4 
   ];
 }
 
+/** Enseigne d'une aile « incubateur » : l'emoji et le nom de la filiale. */
+export interface WingSign {
+  readonly label: string;
+  /** Filiale coulée ou revendue : enseigne éteinte. */
+  readonly closed: boolean;
+}
+
+/** Texture de l'enseigne, dessinée sur un canvas (repli : panneau uni sans texte). */
+function signTexture(sign: WingSign): THREE.Texture | null {
+  if (typeof document === 'undefined') return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 128;
+  const context = canvas.getContext('2d');
+  if (!context) return null;
+  context.fillStyle = sign.closed ? '#5b5f6e' : '#1f6f5c';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = sign.closed ? '#c4c0b6' : '#f4f1ea';
+  context.font = 'bold 54px system-ui, sans-serif';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(sign.label, canvas.width / 2, canvas.height / 2, canvas.width - 32);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 export class OfficeView {
   readonly root = new THREE.Group();
   /** Maillages cliquables (mobilier), pour le raycasting. */
   readonly pickables: THREE.Object3D[] = [];
   private readonly structure = new THREE.Group();
   private readonly furniture = new THREE.Group();
+  private readonly signs = new THREE.Group();
+  private signsKey = '';
   private readonly decor: THREE.Object3D[] = [];
   private readonly templates = new Map<string, Promise<TemplatePart[]>>();
   private layoutKey = '';
@@ -138,7 +168,7 @@ export class OfficeView {
   private buildId = 0;
 
   constructor(private readonly assets: AssetLibrary) {
-    this.root.add(this.structure, this.furniture);
+    this.root.add(this.structure, this.furniture, this.signs);
   }
 
   /** Reconstruit sol et murs si la phase change. */
@@ -148,6 +178,40 @@ export class OfficeView {
     this.layoutKey = key;
     disposeChildren(this.structure);
     this.structure.add(buildFloor(layout), buildWalls(layout));
+  }
+
+  /** Enseignes des ailes des filiales, accrochées au mur du fond de chaque aile. */
+  setWingSigns(layout: OfficeLayout, signs: readonly WingSign[]): void {
+    const key = `${this.layoutKey}|${signs.map((s) => `${s.label}:${s.closed}`).join('|')}`;
+    if (key === this.signsKey) return;
+    this.signsKey = key;
+    for (const child of [...this.signs.children]) {
+      this.signs.remove(child);
+      if (child instanceof THREE.Mesh) {
+        child.geometry.dispose();
+        const mat = child.material as THREE.MeshStandardMaterial;
+        mat.map?.dispose();
+        mat.dispose();
+      }
+    }
+    const wings = layout.rooms.filter((room) => room.kind === 'incubator');
+    wings.forEach((room, index) => {
+      const sign = signs[index];
+      if (!sign) return;
+      const texture = signTexture(sign);
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(Math.min(3.6, room.width - 0.6), 0.9, 0.06),
+        new THREE.MeshStandardMaterial({
+          color: texture ? 0xffffff : sign.closed ? 0x5b5f6e : 0x1f6f5c,
+          map: texture,
+          emissive: sign.closed ? 0x000000 : 0x0d2f27,
+          roughness: 0.6,
+        }),
+      );
+      mesh.position.set(room.x + (room.width - 1) / 2, 1.45, -0.46);
+      mesh.name = `wing-sign-${index}`;
+      this.signs.add(mesh);
+    });
   }
 
   /** Reconstruit le mobilier (instances) si les objets posés ont changé. */
@@ -225,6 +289,7 @@ export class OfficeView {
 
   dispose(): void {
     disposeChildren(this.structure);
+    disposeChildren(this.signs);
     disposeChildren(this.furniture, false);
   }
 

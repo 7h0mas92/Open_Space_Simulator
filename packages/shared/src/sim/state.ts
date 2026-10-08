@@ -9,6 +9,7 @@ import {
 } from './components.js';
 import { CommandLogSchema } from './commands.js';
 import { InvestorArchetypeSchema } from './pitch.js';
+import { VentureSchema } from './ventures.js';
 
 /**
  * État complet d'une partie. Il est 100 % sérialisable en JSON : une sauvegarde est
@@ -164,6 +165,9 @@ export const GameStatsSchema = z.object({
   maxUsers: z.number(),
   /** Journées de télétravail cumulées (hors Dev Fantôme). */
   remoteDays: z.number().int().default(0),
+  /** Filiales créées, et dividendes et reventes encaissés. */
+  venturesFounded: z.number().int().default(0),
+  ventureCashIn: z.number().default(0),
 });
 export type GameStats = z.infer<typeof GameStatsSchema>;
 
@@ -192,6 +196,10 @@ export const NOTIFICATION_KINDS = [
   'PHASE_UP',
   'SEASON_STARTED',
   'ACQUISITION_OFFER',
+  'VENTURE_FOUNDED',
+  'VENTURE_DIED',
+  'VENTURE_SOLD',
+  'VENTURE_DIVIDENDS',
   'SPRINT_LOST',
   'GAME_OVER',
   'ACHIEVEMENT_UNLOCKED',
@@ -254,6 +262,9 @@ export const GameStateSchema = z.object({
   candidates: z.array(CandidateSchema),
   events: EventsStateSchema,
   acquisitionOffer: AcquisitionOfferSchema.nullable(),
+  /** Filiales créées par la startup (actives, coulées ou revendues). */
+  ventures: z.array(VentureSchema).default([]),
+  lastVentureSprint: z.number().int().nullable().default(null),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

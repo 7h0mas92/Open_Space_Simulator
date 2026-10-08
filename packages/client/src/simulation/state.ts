@@ -70,6 +70,8 @@ export function createEmptyState(config: GameConfig): GameState {
     candidates: [],
     events: { pending: null, lastSeenSprint: {}, queue: [], drawnThisSprint: 0, choices: [] },
     acquisitionOffer: null,
+    ventures: [],
+    lastVentureSprint: null,
     lostSprintsPending: 0,
     tracker: {
       usersAtStart: 0,
@@ -99,6 +101,8 @@ export function createEmptyState(config: GameConfig): GameState {
       maxValuation: 0,
       maxUsers: 0,
       remoteDays: 0,
+      venturesFounded: 0,
+      ventureCashIn: 0,
     },
     achievements: [],
     notifications: [],

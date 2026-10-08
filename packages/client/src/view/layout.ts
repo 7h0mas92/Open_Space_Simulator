@@ -5,14 +5,14 @@
  * Les cloisons occupent des cases entières (plus simple pour le pathfinding) ; les portes sont
  * des trous dans ces cloisons. Les murs extérieurs sont dessinés autour de la grille.
  */
-import type { Phase } from '@oss/shared';
+import { VENTURES, officeWidthWithWings, type Phase } from '@oss/shared';
 
 export interface Cell {
   readonly x: number;
   readonly z: number;
 }
 
-export const ROOM_KINDS = ['open', 'meeting', 'kitchen', 'lounge', 'canteen'] as const;
+export const ROOM_KINDS = ['open', 'meeting', 'kitchen', 'lounge', 'canteen', 'incubator'] as const;
 export type RoomKind = (typeof ROOM_KINDS)[number];
 
 export interface Room {
@@ -114,8 +114,39 @@ const LAYOUTS: Record<Phase, OfficeLayout> = {
   // La phase finale garde le décor de la Licorne.
   END: { ...UNICORN, phase: 'END' },
 };
-export function officeLayout(phase: Phase): OfficeLayout {
-  return LAYOUTS[phase];
+/**
+ * Plan du bureau. Chaque filiale fondée ajoute une aile « incubateur » à droite du bureau :
+ * une cloison percée de deux portes, puis une salle de toute la profondeur.
+ */
+export function officeLayout(phase: Phase, wings = 0): OfficeLayout {
+  const base = LAYOUTS[phase];
+  const count = Math.max(0, Math.min(wings, VENTURES.maxFounded));
+  if (count === 0) return base;
+  const rooms: Room[] = [...base.rooms];
+  const partitions: Cell[] = [...base.partitions];
+  const blocked = (cell: Cell) => partitions.some((p) => p.x === cell.x && p.z === cell.z);
+  for (let i = 0; i < count; i++) {
+    const wall = base.width + i * VENTURES.wingWidth;
+    // Deux portes, décalées si la case voisine de l'autre côté est une cloison.
+    const doors = [2, base.depth - 3].map((z) =>
+      blocked({ x: wall - 1, z }) ? Math.min(base.depth - 1, z + 1) : z,
+    );
+    partitions.push(...wallZ(wall, 0, base.depth - 1, doors));
+    rooms.push({
+      kind: 'incubator',
+      x: wall + 1,
+      z: 0,
+      width: VENTURES.wingWidth - 1,
+      depth: base.depth,
+    });
+  }
+  return {
+    ...base,
+    width: officeWidthWithWings(base.width, count),
+    maxTeam: base.maxTeam + count * VENTURES.teamPerWing,
+    rooms,
+    partitions,
+  };
 }
 
 export function roomAt(layout: OfficeLayout, cell: Cell): Room | undefined {

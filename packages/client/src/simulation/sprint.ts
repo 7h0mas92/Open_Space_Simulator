@@ -18,6 +18,7 @@ import {
 } from './helpers';
 import { hypeDrift } from './systems/daily';
 import { refillBacklog } from './tasks';
+import { emergencySale, ventureSprint } from './ventures';
 
 /** Remise à zéro des compteurs du sprint. */
 function resetTracker(state: GameState): void {
@@ -116,6 +117,7 @@ export function endSprint(state: GameState, ctx: SimContext): void {
     'hype',
     featurePoints * u.hypePerFeaturePoint * hypeRoom + refactoPoints * u.hypePerRefactoPoint,
   );
+  ventureSprint(state, ctx);
   state.valuation = computeValuation(state);
 
   state.history.sprints.push({
@@ -201,6 +203,7 @@ function loseSprint(state: GameState, ctx: SimContext): void {
   const churn = state.gauges.users * BALANCE.users.baseDailyChurn * days;
   addUsers(state, -churn);
   for (let day = 0; day < days; day++) addGauge(state, 'hype', hypeDrift(state.gauges.hype));
+  ventureSprint(state, ctx);
   state.valuation = computeValuation(state);
   state.history.sprints.push({
     sprint: state.sprint,
@@ -251,7 +254,7 @@ export function endDemo(state: GameState, ctx: SimContext): CommandResult {
     if (state.sprint >= state.totalSprints) break;
     state.sprint += 1;
     loseSprint(state, ctx);
-    if (state.gauges.treasury < 0) {
+    if (state.gauges.treasury < 0 && !emergencySale(state, ctx)) {
       state.lostSprintsPending = 0;
       endGame(state, ctx, 'BANKRUPTCY');
       return { ok: true };

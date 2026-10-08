@@ -91,7 +91,7 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
 
   const cell = build.cell ?? null;
   const error = cell
-    ? checkPlacement(officeLayout(view.phase), view.items, {
+    ? checkPlacement(officeLayout(view.phase, view.group.wings), view.items, {
         kind: def.kind,
         x: cell.x,
         z: cell.z,

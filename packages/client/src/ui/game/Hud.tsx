@@ -27,7 +27,7 @@ import { useLiveTime } from './useLiveTime';
  */
 
 /** Boutons du dock : le jeu lui-même. Sauvegardes et Options vont dans la barre du haut. */
-const GAME_ACTIONS = ['kanban', 'team', 'hiring', 'build', 'dashboard', 'slack'] as const;
+const GAME_ACTIONS = ['kanban', 'team', 'hiring', 'group', 'build', 'dashboard', 'slack'] as const;
 type GameAction = (typeof GAME_ACTIONS)[number];
 const SYSTEM_PANELS = ['saves', 'settings'] as const;
 
@@ -36,6 +36,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   kanban: '🗂️',
   team: '🧑‍💻',
   hiring: '🤝',
+  group: '🏛️',
   build: '🛠️',
   dashboard: '📈',
   slack: '💬',
@@ -78,6 +79,7 @@ export function Company({ view }: { view: GameView }) {
           t('hud.team', { count: view.devs.length, max: view.teamMax }),
           months === null ? t('hud.runwayNone') : t('hud.runwayLong', { months }),
           t('hud.valuation', { value: valuation }),
+          ...(view.group.wings > 0 ? [t('hud.group', { count: view.group.ventures.length })] : []),
         ].join(' · ')}
       >
         <span className="company-phase" aria-hidden="true">
@@ -86,6 +88,12 @@ export function Company({ view }: { view: GameView }) {
         <span className="company-text">
           <strong className="company-name" aria-hidden="true">
             {phase}
+            {view.group.wings > 0 && (
+              <span className="company-group" title={t('hud.groupShort')}>
+                {' '}
+                🏛️
+              </span>
+            )}
           </strong>
           <span className="visually-hidden">{t('hud.phase', { phase })}</span>
           {view.mode !== 'NORMAL' && (

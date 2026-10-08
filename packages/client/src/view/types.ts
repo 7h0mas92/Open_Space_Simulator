@@ -21,6 +21,8 @@ import type {
   NotificationKind,
   Phase,
   PitchResult,
+  VentureRisk,
+  VentureStatus,
   SprintReport,
   Speed,
 } from '@oss/shared';
@@ -259,6 +261,56 @@ export interface PitchView {
   readonly result: PitchResult | null;
 }
 
+/** Projet de filiale proposé pendant la planification. */
+export interface VentureOfferView {
+  readonly id: string;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly pitch: LocalizedText;
+  readonly risk: VentureRisk;
+  readonly cost: number;
+  /** Assez de trésorerie (en gardant quelques mois de salaires) pour ce projet. */
+  readonly affordable: boolean;
+}
+
+/** Filiale du groupe. */
+export interface VentureView {
+  readonly id: string;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly risk: VentureRisk;
+  readonly status: VentureStatus;
+  readonly invested: number;
+  readonly stake: number;
+  readonly valuation: number;
+  /** Valeur de nos parts (valorisation × part détenue). */
+  readonly stakeValue: number;
+  readonly dividends: number;
+  readonly salePrice: number;
+  readonly soldFor: number | null;
+  readonly foundedAtSprint: number;
+  readonly history: readonly number[];
+}
+
+/** Le groupe : filiales, projets du sprint, et ce qui empêche d'en créer. */
+export interface GroupView {
+  /** Débloqué à partir de la Série A. */
+  readonly unlocked: boolean;
+  /** Raison pour laquelle on ne peut pas créer de filiale maintenant, sinon null. */
+  readonly blocker: 'LOCKED' | 'WRONG_STAGE' | 'VENTURE_LIMIT' | 'TOO_LATE' | 'COOLDOWN' | null;
+  /** Sprint à partir duquel on pourra recréer une filiale (cooldown), sinon null. */
+  readonly nextSprint: number | null;
+  readonly offers: readonly VentureOfferView[];
+  readonly ventures: readonly VentureView[];
+  /** Ailes ajoutées au bureau (une par filiale fondée). */
+  readonly wings: number;
+  readonly maxVentures: number;
+  /** Trésorerie investissable (on garde toujours quelques mois de salaires). */
+  readonly investable: number;
+  /** Valeur des parts dans les filiales actives, comprise dans la valorisation. */
+  readonly portfolio: number;
+}
+
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
 export interface GameNotification {
   readonly tick: number;
@@ -312,6 +364,8 @@ export interface GameView {
   /** Peut-on lancer une levée de fonds maintenant ? Sinon, la raison. */
   readonly pitchBlocker: 'WRONG_STAGE' | 'NO_HYPE' | 'COOLDOWN' | null;
   readonly acquisitionOffer: AcquisitionOffer | null;
+  /** Filiales (débloquées en Série A). */
+  readonly group: GroupView;
   readonly canIpo: boolean;
   readonly result: GameResult | null;
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */
@@ -372,7 +426,9 @@ export type GameCommand =
   | { readonly type: 'closePitch' }
   | { readonly type: 'endDemo' }
   | { readonly type: 'answerAcquisition'; readonly accept: boolean }
-  | { readonly type: 'launchIpo' };
+  | { readonly type: 'launchIpo' }
+  | { readonly type: 'foundVenture'; readonly ideaId: string }
+  | { readonly type: 'sellVenture'; readonly ventureId: string };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

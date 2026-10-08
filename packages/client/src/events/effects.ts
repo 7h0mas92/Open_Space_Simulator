@@ -10,12 +10,14 @@ import {
   devsWithRole,
   type SimContext,
 } from '../simulation/helpers';
+import { changeVentureValuation, latestActiveVenture } from '../simulation/ventures';
 
 /** Sens « négatif » de chaque effet chiffré : c'est lui qu'on aggrave en cas de report. */
 const BAD_DIRECTION: Record<
-  'treasury' | 'coffee' | 'hype' | 'debt' | 'stability' | 'users' | 'moral',
+  'treasury' | 'coffee' | 'hype' | 'debt' | 'stability' | 'users' | 'moral' | 'ventureValue',
   1 | -1
 > = {
+  ventureValue: -1,
   treasury: -1,
   coffee: -1,
   hype: -1,
@@ -94,4 +96,7 @@ export function applyEffects(
     if (pool.length > 0) fireDev(state, ctx, ctx.rng.pick(pool));
   }
   if (effects.unlockAchievement) unlockAchievement(state, ctx, effects.unlockAchievement);
+  const venture = latestActiveVenture(state);
+  if (effects.ventureValue !== undefined && venture)
+    changeVentureValuation(venture, 1 + scaled('ventureValue') / 100);
 }

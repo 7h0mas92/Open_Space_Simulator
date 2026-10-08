@@ -280,6 +280,15 @@ flowchart LR
   tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
   construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
   sur ordinateur, bottom sheets plein écran sur mobile.
+- **Filiales (Investir)** : à partir de la Série A, la startup peut investir sa trésorerie pour
+  créer jusqu'à trois autres startups (trois projets proposés par sprint : prudent, audacieux,
+  moonshot). Elle garde 80 % de chaque filiale, dont la valorisation évolue à chaque démo ;
+  une filiale verse des dividendes, peut couler, et ses parts se revendent à tout moment en
+  planification. L'entreprise devient un groupe : ses parts comptent dans la valorisation
+  (Licorne, IPO, rachat, classement), chaque filiale ajoute une aile « incubateur » au bureau
+  avec son enseigne et deux places dans l'équipe, et six cartes « filiales » peuvent tomber.
+  Le hasard des filiales est tiré sur une graine à part (graine + filiale + sprint) : une partie
+  sans filiale reste identique au bit près, donc les anciens replays et le Daily restent valides.
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une
@@ -395,8 +404,8 @@ bouton 🛠 du menu principal.
 
 ## Équilibrage
 
-`pnpm balance` joue 10 000 parties avec quatre stratégies automatiques (aléatoire, « ship it »,
-équilibrée, prudente) et produit un rapport : taux de faillite (global et par phase),
+`pnpm balance` joue 10 000 parties avec cinq stratégies automatiques (aléatoire, « ship it »,
+équilibrée, prudente, investisseuse qui crée des filiales) et produit un rapport : taux de faillite (global et par phase),
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires

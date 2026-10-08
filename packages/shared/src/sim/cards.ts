@@ -43,6 +43,8 @@ export const CardConditionsSchema = z.strictObject({
   requiresSeen: z.string().optional(),
   /** La carte ne tombe que pendant la période de ce thème (Halloween, Noël…). */
   season: DecorThemeSchema.optional(),
+  /** La startup doit avoir (true) ou ne pas avoir (false) une filiale active. */
+  hasVenture: z.boolean().optional(),
 });
 export type CardConditions = z.infer<typeof CardConditionsSchema>;
 
@@ -83,6 +85,8 @@ export const CardEffectsSchema = z.strictObject({
   /** Un dev de ce profil (ou au hasard) quitte l'entreprise. */
   fireDev: z.union([DevRoleSchema, z.literal('RANDOM')]).optional(),
   unlockAchievement: z.string().optional(),
+  /** Variation de la valorisation de la dernière filiale active, en pourcentage. */
+  ventureValue: z.number().min(-100).optional(),
 });
 export type CardEffects = z.infer<typeof CardEffectsSchema>;
 
