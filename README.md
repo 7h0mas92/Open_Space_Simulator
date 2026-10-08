@@ -266,6 +266,13 @@ flowchart LR
   les devs sans bureau libre, épuisés, en conflit avec un collègue ou accros privés de café (le
   Dev Fantôme l'est toujours). Ils disparaissent de l'open space, se fatiguent moins mais
   perdent 15 % de vitesse et 5 % de qualité ; la fiche, l'équipe et Slack l'affichent.
+- **Performance des devs** : chaque dev a une note globale de S à D (sur 100), mesurée sur ses
+  2 derniers sprints (50 % productivité, 35 % qualité, 15 % endurance, bonus du Product Owner et
+  de la Designeuse, −5 par panne provoquée). La productivité est le travail produit par heure
+  passée sur une tâche, 100 % = un dev standard (référence mesurée sur des parties simulées,
+  `BALANCE.performance`). La fiche montre les 2 derniers sprints côte à côte, l'ancienneté,
+  l'XP, la tâche en cours, l'allié et la bête noire ; chaque candidat affiche sa performance
+  estimée, le salaire du marché et ses chances d'accepter l'offre.
 - **Interface** : jauges avec infobulles, vitesses, Kanban en glisser-déposer (souris et
   tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
   construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
