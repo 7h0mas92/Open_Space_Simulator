@@ -246,6 +246,13 @@ const MODAL_LESSONS: ReadonlySet<LessonId> = new Set(['events', 'demo']);
 /** Chapitres qui remplacent l'ancien tutoriel court : une fois lus, le jeu est connu. */
 export const CORE_LESSONS: readonly LessonId[] = ['basics', 'rules', 'planning', 'execution'];
 
+/** Le sommaire du Guide du jeu (Options), en trois parties repliables. */
+export const LESSON_GROUPS = [
+  { id: 'start', lessons: ['basics', 'rules', 'planning', 'execution'] },
+  { id: 'crises', lessons: ['team', 'events', 'incident', 'demo'] },
+  { id: 'growth', lessons: ['build', 'dashboard', 'funding', 'endings', 'tools'] },
+] as const satisfies readonly { id: string; lessons: readonly LessonId[] }[];
+
 export function getLesson(id: LessonId): Lesson {
   const lesson = LESSONS.find((candidate) => candidate.id === id);
   if (!lesson) throw new Error(`Leçon inconnue : ${id}`);

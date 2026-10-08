@@ -1,6 +1,8 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { metaApi } from '../../../src/api/meta';
+import { useSlack } from '../../../src/slack/store';
 import i18n from '../../../src/i18n';
 import { sparklinePoints } from '../../../src/ui/dashboard/Dashboard';
 import {
@@ -14,6 +16,7 @@ import {
 } from '../../../src/ui/game/format';
 import { GameScreen } from '../../../src/ui/game/GameScreen';
 import { useGame } from '../../../src/ui/store/game';
+import { useSession } from '../../../src/ui/store/session';
 import { useSettings } from '../../../src/ui/store/settings';
 import type { Simulation } from '../../../src/simulation/simulation';
 import { officeLayout } from '../../../src/view/layout';
@@ -277,6 +280,47 @@ describe('Options et accessibilité', () => {
       quality: 'high',
       textScale: 1.25,
     });
+  });
+
+  it('cache le Slack IA tant qu’il ne peut pas marcher (invité)', async () => {
+    const status = vi.spyOn(metaApi.slackAi, 'status');
+    useSession.setState({ status: 'guest' });
+    await startGame();
+    await userEvent.click(screen.getByRole('button', { name: /Options/ }));
+    expect(screen.queryByRole('checkbox', { name: /Slack/ })).not.toBeInTheDocument();
+    expect(status).not.toHaveBeenCalled();
+    status.mockRestore();
+  });
+
+  it('propose le Slack IA au joueur connecté quand le serveur l’active', async () => {
+    const status = vi
+      .spyOn(metaApi.slackAi, 'status')
+      .mockResolvedValue({ enabled: true, dailyQuota: 50 });
+    useSession.setState({ status: 'authenticated' });
+    await startGame();
+    await userEvent.click(screen.getByRole('button', { name: /Options/ }));
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Slack/ }));
+    expect(useSettings.getState().slackAi).toBe(true);
+    await waitFor(() => expect(useSlack.getState().ai).toBe('on'));
+    useSession.setState({ status: 'guest' });
+    status.mockRestore();
+  });
+
+  it('cache le Slack IA quand le serveur n’a pas de clé', async () => {
+    const status = vi
+      .spyOn(metaApi.slackAi, 'status')
+      .mockResolvedValue({ enabled: false, dailyQuota: 0 });
+    useSession.setState({ status: 'authenticated' });
+    useSettings.setState({ slackAi: true });
+    await startGame();
+    await userEvent.click(screen.getByRole('button', { name: /Options/ }));
+    await waitFor(() => expect(status).toHaveBeenCalled());
+    expect(screen.queryByRole('checkbox', { name: /Slack/ })).not.toBeInTheDocument();
+    // Même coché auparavant, l'option reste sans effet : aucun appel à l'IA.
+    expect(useSlack.getState().ai).toBe('off');
+    useSession.setState({ status: 'guest' });
+    useSettings.setState({ slackAi: false });
+    status.mockRestore();
   });
 
   it('affiche les crédits Kenney et les assets manquants', async () => {

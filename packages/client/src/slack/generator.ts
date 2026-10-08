@@ -29,7 +29,7 @@ export type Random = () => number;
  * finies, cartes tirées) ne doivent pas noyer le canal.
  */
 const CHANCE: Partial<Record<SlackTrigger, number>> = {
-  TASK_DONE: 0.25,
+  TASK_DONE: 0.15,
   FEATURE_DONE: 0.6,
   CARD_DRAWN: 0.4,
   CARD_RESOLVED: 0.7,
@@ -37,6 +37,9 @@ const CHANCE: Partial<Record<SlackTrigger, number>> = {
   DEV_LEVEL_UP: 0.6,
   DEV_REMOTE: 0.6,
 };
+
+/** Probabilité qu'un déclencheur donne lieu à un message (1 si rien n'est précisé). */
+export const chanceOf = (trigger: SlackTrigger): number => CHANCE[trigger] ?? 1;
 
 const BOT_NAMES = {
   oncall: 'OnCall Bot',
@@ -116,7 +119,7 @@ export function messagesForNotifications(
 ): SlackMessage[] {
   const messages: SlackMessage[] = [];
   for (const notification of notifications) {
-    if (random() > (CHANCE[notification.kind] ?? 1)) continue;
+    if (random() > chanceOf(notification.kind)) continue;
     const message = templateMessage(notification.kind, view, random, notification.text);
     if (message) messages.push(message);
   }
@@ -154,14 +157,18 @@ export function ambientTriggers(previous: GameView, view: GameView): AmbientTrig
   return triggers;
 }
 
+/** Part des moments d'ambiance qui donnent lieu à un message. */
+export const AMBIENT_CHANCE = 0.35;
+
 /** Messages d'ambiance (on n'en garde qu'une partie pour laisser respirer le canal). */
 export function ambientMessages(
   previous: GameView,
   view: GameView,
   random: Random,
+  accept: () => boolean = () => true,
 ): SlackMessage[] {
   return ambientTriggers(previous, view).flatMap((trigger) => {
-    if (random() > 0.5) return [];
+    if (random() > AMBIENT_CHANCE || !accept()) return [];
     const message = templateMessage(trigger, view, random);
     return message ? [message] : [];
   });

@@ -19,6 +19,12 @@ import {
   useSlack,
 } from '../../../src/slack/store';
 import {
+  isUrgent,
+  MESSAGE_BURST,
+  MESSAGE_INTERVAL_MS,
+  SlackPacer,
+} from '../../../src/slack/pacing';
+import {
   TEMPLATES_BY_TRIGGER,
   type SlackChannel,
   type SlackTemplate,
@@ -394,5 +400,62 @@ describe('SlackFeed', () => {
   it('publie les messages d’ambiance entre deux instantanés', () => {
     new SlackFeed({ random: () => 0 }).onView(at(0, 8 * 60), at(0, 9 * 60));
     expect(Object.values(useSlack.getState().messages).flat().length).toBeGreaterThan(0);
+  });
+});
+
+describe('Débit du Slack', () => {
+  it('laisse passer une rafale, puis un message toutes les 20 s', () => {
+    let now = 0;
+    const pacer = new SlackPacer(() => now);
+    for (let i = 0; i < MESSAGE_BURST; i++) expect(pacer.take()).toBe(true);
+    expect(pacer.take()).toBe(false);
+    now += MESSAGE_INTERVAL_MS - 1;
+    expect(pacer.take()).toBe(false);
+    now += 1;
+    expect(pacer.take()).toBe(true);
+    expect(pacer.take()).toBe(false);
+  });
+
+  it('ne dépasse jamais la rafale après un long calme', () => {
+    let now = 0;
+    const pacer = new SlackPacer(() => now);
+    pacer.take();
+    now += 10 * MESSAGE_INTERVAL_MS;
+    const sent = Array.from({ length: 10 }, () => pacer.take()).filter(Boolean);
+    expect(sent).toHaveLength(MESSAGE_BURST);
+  });
+
+  it('laisse toujours passer un message urgent', () => {
+    const pacer = new SlackPacer(() => 0);
+    while (pacer.take());
+    expect(pacer.take(true)).toBe(true);
+    expect(isUrgent('PROD_DOWN')).toBe(true);
+    expect(isUrgent('TASK_DONE')).toBe(false);
+  });
+
+  it('ne noie pas le canal sous une rafale de notifications', () => {
+    const feed = new SlackFeed({ random: () => 0, now: () => 1_000 });
+    for (let i = 0; i < 20; i++)
+      feed.onNotifications(view, [notification('TASK_DONE'), notification('CARD_DRAWN')]);
+    feed.onView(at(0, 8 * 60), at(0, 18 * 60));
+    const all = Object.values(useSlack.getState().messages).flat();
+    expect(all.length).toBeLessThanOrEqual(MESSAGE_BURST);
+  });
+
+  it('publie l’incident en premier, même quand le canal est saturé', () => {
+    const feed = new SlackFeed({ random: () => 0, now: () => 1_000 });
+    feed.onNotifications(view, [notification('TASK_DONE'), notification('TASK_DONE')]);
+    feed.onNotifications(view, [notification('TASK_DONE'), notification('PROD_DOWN')]);
+    expect(useSlack.getState().messages.incidents.length).toBeGreaterThan(0);
+  });
+
+  it('limite les messages écrits par l’IA au débit restant', async () => {
+    useSlack.getState().setAi('on');
+    const replies = [1, 2, 3].map((n) => ({ ...message('random', `IA ${n}`), ai: true }));
+    const feed = new SlackFeed({ random: () => 0, callAi: async () => replies, now: () => 1_000 });
+    feed.onNotifications(view, [notification('PROD_DOWN')]);
+    await vi.waitFor(() =>
+      expect(useSlack.getState().messages.random.filter((m) => m.ai)).toHaveLength(MESSAGE_BURST),
+    );
   });
 });

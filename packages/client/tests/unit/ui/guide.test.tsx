@@ -10,6 +10,7 @@ import { useGame } from '../../../src/ui/store/game';
 import { useGuide } from '../../../src/ui/store/guide';
 import { useSettings } from '../../../src/ui/store/settings';
 import {
+  LESSON_GROUPS,
   LESSON_IDS,
   LESSONS,
   getLesson,
@@ -272,7 +273,9 @@ describe('Tutoriel en jeu', () => {
     expect(screen.queryByTestId('guide')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Options/ }));
     const index = screen.getByRole('region', { name: /Guide du jeu/ });
-    await userEvent.click(within(index).getAllByRole('button', { name: 'Lire' })[7]!);
+    // Les chapitres sont rangés en parties repliables.
+    await userEvent.click(within(index).getByText('Équipe et crises'));
+    await userEvent.click(within(index).getByRole('button', { name: /^La démo/ }));
     expect(screen.getByRole('heading', { name: 'La fin du sprint' })).toBeVisible();
   });
 
@@ -338,5 +341,11 @@ describe('Tutoriel en jeu', () => {
         name: 'Bienvenue, fondateur',
       }),
     ).toBeVisible();
+  });
+});
+
+describe('Sommaire du Guide du jeu', () => {
+  it('range chaque chapitre dans une seule partie, dans l’ordre du tutoriel', () => {
+    expect(LESSON_GROUPS.flatMap((group) => group.lessons)).toEqual([...LESSON_IDS]);
   });
 });

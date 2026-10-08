@@ -9,8 +9,8 @@ import { AudioPlayer } from '../../audio/player';
 import { aiMessage, type SlackMessage } from '../../slack/generator';
 import { SlackFeed, useSlack } from '../../slack/store';
 import { onGameNotifications, useGame } from '../store/game';
-import { useSession } from '../store/session';
 import { useSettings, type Settings } from '../store/settings';
+import { useSlackAiAvailable } from '../slack/useSlackAiAvailable';
 
 const volumesOf = (settings: Settings) => ({
   music: settings.musicVolume,
@@ -24,25 +24,16 @@ async function callAi(request: SlackAiRequest): Promise<SlackMessage[]> {
   return view ? response.messages.map((message) => aiMessage(message, view)) : [];
 }
 
-/** Mode IA : seulement si le joueur l'a activé, est connecté, et si le serveur a une clé. */
+/**
+ * Mode IA : seulement si le serveur le propose (joueur connecté, clé d'API) et si le joueur
+ * a coché l'option. Décoché ou indisponible, aucun appel n'est fait : templates seulement.
+ */
 function useAiState() {
   const wanted = useSettings((s) => s.slackAi);
-  const online = useSession((s) => s.status === 'authenticated');
+  const available = useSlackAiAvailable();
   useEffect(() => {
-    const slack = useSlack.getState();
-    if (!wanted || !online) {
-      slack.setAi('off');
-      return;
-    }
-    let cancelled = false;
-    metaApi.slackAi
-      .status()
-      .then((status) => !cancelled && slack.setAi(status.enabled ? 'on' : 'unavailable'))
-      .catch(() => !cancelled && slack.setAi('unavailable'));
-    return () => {
-      cancelled = true;
-    };
-  }, [wanted, online]);
+    useSlack.getState().setAi(wanted && available ? 'on' : 'off');
+  }, [wanted, available]);
 }
 
 export function useGameFeeds() {

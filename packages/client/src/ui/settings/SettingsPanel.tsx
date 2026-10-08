@@ -3,8 +3,8 @@ import { ZOOM_SPEEDS } from '../../render/isoCamera';
 import { QUALITY_LEVELS } from '../../render/quality';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useGame } from '../store/game';
-import { useGuide } from '../store/guide';
 import { TEXT_SCALES, useSettings, VOLUME_KEYS } from '../store/settings';
+import { useSlackAiAvailable } from '../slack/useSlackAiAvailable';
 import { GuideIndex } from '../tutorial/Guide';
 
 /**
@@ -17,6 +17,8 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
   const settings = useSettings();
   const quit = useGame((s) => s.quit);
   const openPanel = useGame((s) => s.openPanel);
+  // Sans compte ou sans clé d'API côté serveur, le Slack IA ne peut pas marcher : on le cache.
+  const slackAiAvailable = useSlackAiAvailable();
 
   return (
     <div className="settings">
@@ -107,33 +109,25 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
           </label>
         ))}
       </fieldset>
-      <label className="switch">
-        <input
-          type="checkbox"
-          checked={settings.slackAi}
-          onChange={(e) => settings.update({ slackAi: e.target.checked })}
-        />
-        <span>
-          {t('settings.slackAi')}
-          <small>{t('settings.slackAiHint')}</small>
-        </span>
-      </label>
+      {slackAiAvailable && (
+        <label className="switch">
+          <input
+            type="checkbox"
+            checked={settings.slackAi}
+            onChange={(e) => settings.update({ slackAi: e.target.checked })}
+          />
+          <span>
+            {t('settings.slackAi')}
+            <small>{t('settings.slackAiHint')}</small>
+          </span>
+        </label>
+      )}
       <fieldset>
         <legend>{t('settings.language')}</legend>
         <LanguageSwitcher />
       </fieldset>
       {inGame && (
         <>
-          <button
-            type="button"
-            onClick={() => {
-              settings.update({ tutorialDone: false });
-              useGuide.getState().restart();
-              openPanel(null);
-            }}
-          >
-            {t('settings.tutorial')}
-          </button>
           <GuideIndex />
           <button type="button" onClick={() => openPanel('credits')}>
             {t('panels.credits')}
