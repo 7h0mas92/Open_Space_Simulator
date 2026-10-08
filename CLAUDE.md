@@ -390,6 +390,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   personnages » du back-office : Base (looks habituels, actif par défaut), Noël, Halloween,
   Pâques, Super-héros (inventés), Été, Espace, Pirates, Moyen Âge, Années 80, Cyberpunk. Les
   packs actifs se mélangent dans l'équipe ; table `CharacterPack`, `GET /api/character-packs`.
+- Horloge continue : la simulation garde son pas de 30 min (replays, Daily, sauvegardes
+  inchangés) mais l'heure, la barre de sprint et l'éclairage défilent minute par minute
+  (`packages/client/src/view/liveTime.ts`). Un sprint dure environ 5 min à x1
+  (`GAME.sprintRealSecondsAtX1` = 300).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
