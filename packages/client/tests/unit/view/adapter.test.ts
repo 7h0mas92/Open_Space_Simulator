@@ -18,7 +18,7 @@ describe('adaptateur simulation → vue', () => {
       'WORKING',
     ]);
     expect(view.tasks.every((task) => task.column === 'BACKLOG')).toBe(true);
-    expect(view.candidates).toHaveLength(3);
+    expect(view.candidates).toHaveLength(5);
     expect(view.items.find((item) => item.kind === 'premium-coffee-machine')).toMatchObject({
       x: 12,
       z: 1,

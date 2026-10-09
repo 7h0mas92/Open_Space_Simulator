@@ -19,6 +19,7 @@ import {
   type TradeTaskTemplate,
   type TradeTitles,
 } from './data/tasks';
+import { QA_TASKS } from './data/qaTasks';
 import { calendarDay } from './systems/calendar';
 import { getClock } from './time';
 
@@ -56,6 +57,7 @@ function tradeTitles(templates: readonly TradeTaskTemplate[], extra: TradeTitles
 export function titlePool(state: GameState, trade: TaskTrade, type: TaskType): TitlePair[] {
   if (trade === 'DESIGN') return tradeTitles(DESIGN_TASKS, DESIGN_EXTRA_TITLES, type);
   if (trade === 'PRODUCT') return tradeTitles(PRODUCT_TASKS, PRODUCT_EXTRA_TITLES, type);
+  if (trade === 'QA') return tradeTitles(QA_TASKS, {}, type);
   const reached = PHASES.indexOf(state.phase);
   const growth = GROWTH_PHASES.filter((phase) => PHASES.indexOf(phase) <= reached).flatMap(
     (phase) => GROWTH_TASK_TITLES[phase][type],

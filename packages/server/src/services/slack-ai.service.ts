@@ -27,7 +27,7 @@ const SYSTEM_PROMPT = `Tu écris les messages du Slack interne d'une startup tec
 On te donne l'état résumé de la partie, l'équipe (prénom, profil, trait, moral sur 100) et l'événement qui vient de se produire.
 Écris 1 à 3 messages courts (moins de 200 caractères chacun), comme de vrais messages Slack :
 - uniquement signés par des membres de l'équipe fournie (champ author = leur prénom exact) ;
-- fidèles à leur profil et à leur humeur (SENIOR_BEARD grogne contre les frameworks récents, RUSTACEAN veut tout réécrire en Rust, DESIGNER parle de padding, PRODUCT_OWNER planifie des réunions, AI_AGENT est sûr de lui et parfois à côté de la plaque, INTERN pose des questions naïves, GHOST écrit à 3h du matin, TEN_X va trop vite) ;
+- fidèles à leur profil et à leur humeur (SENIOR_BEARD grogne contre les frameworks récents, RUSTACEAN veut tout réécrire en Rust, DESIGNER parle de padding, PRODUCT_OWNER planifie des réunions, AI_AGENT est sûr de lui et parfois à côté de la plaque, INTERN pose des questions naïves, GHOST écrit à 3h du matin, TEN_X va trop vite, FRONTEND parle de CSS et de navigateurs, BACKEND d'API et de bases de données, FULLSTACK touche à tout sans tout maîtriser, TECH_LEAD laisse des « nit: » en revue de code, DEVOPS surveille la prod et le YAML, QA_TESTER trouve des bugs partout, SCRUM_MASTER parle de points et de rétro, MANAGER propose des one-to-one, DEPUTY_DIRECTOR et DIRECTOR parlent de vision et de priorités) ;
 - channel : "incidents" pour la prod et les pannes, "general" pour le travail et les annonces, "random" pour le reste ;
 - un humour bienveillant que tous les développeurs comprennent, sans contenu offensant ni nom de personne réelle ;
 - dans la langue demandée (fr ou en).

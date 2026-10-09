@@ -15,7 +15,10 @@ import {
   FUNDING_TIERS,
   PITCH_QUESTIONS,
   ROLE_PROFILES,
+  ROLE_STACK,
   ROLE_TRADE,
+  hasOpening,
+  taskStack,
   annexCount,
   fundingTier,
   fundingTierIndex,
@@ -45,6 +48,7 @@ import { financingOffers } from '../simulation/financing';
 import { currentTier } from '../simulation/fundraising';
 import { softSigmoid } from '../simulation/math';
 import { countDesks, RESALE_RATIO } from '../simulation/furniture';
+import { leadershipEffects, teamShape } from '../simulation/leadership';
 import { devIds, teamMax } from '../simulation/helpers';
 import {
   expectedProductivity,
@@ -91,6 +95,7 @@ import type {
   PetsView,
   GaugeName,
   KanbanColumn,
+  LeadershipView,
   ObjectiveView,
   PlacedItemView,
   StoredItemView,
@@ -218,6 +223,8 @@ function devView(state: GameState, id: string): DevView | null {
     age: identity.age,
     role: identity.role,
     trade: ROLE_TRADE[identity.role],
+    stack: ROLE_STACK[identity.role] ?? null,
+    specialty: identity.specialty ?? null,
     trait: identity.trait,
     bio: identity.bio,
     stats,
@@ -280,6 +287,7 @@ function taskViews(state: GameState): TaskView[] {
         title: task.title,
         type,
         trade: taskTrade(task),
+        stack: taskStack(task),
         size: task.size,
         column: COLUMNS[task.column],
         assigneeId: task.assigneeId,
@@ -323,6 +331,31 @@ function objectiveView(state: GameState): ObjectiveView | null {
   };
 }
 
+/** Postes affichés dans « Encadrement » (les devs front, back et fullstack sont illimités). */
+const LEADERSHIP_ROLES = [
+  'DIRECTOR',
+  'DEPUTY_DIRECTOR',
+  'MANAGER',
+  'SCRUM_MASTER',
+  'TECH_LEAD',
+  'QA_TESTER',
+  'DEVOPS',
+] as const;
+
+function leadershipView(state: GameState): LeadershipView {
+  const effects = leadershipEffects(state);
+  const shape = teamShape(state);
+  return {
+    productivity: Math.round(effects.productivity * 100),
+    coverage: Math.round(effects.coverage * 100),
+    lighterMeetings: effects.meetingFactor < 1,
+    featureDebtCut: Math.round((1 - effects.featureDebtFactor) * 100),
+    dailyStability: effects.dailyStability,
+    dailyMoral: effects.dailyMoral,
+    openings: LEADERSHIP_ROLES.filter((role) => hasOpening(role, shape)),
+  };
+}
+
 function candidateViews(state: GameState): CandidateView[] {
   return state.candidates
     .filter((candidate) => candidate.status === 'OPEN')
@@ -336,6 +369,8 @@ function candidateViews(state: GameState): CandidateView[] {
         age: candidate.identity.age,
         role: candidate.identity.role,
         trade: ROLE_TRADE[candidate.identity.role],
+        stack: ROLE_STACK[candidate.identity.role] ?? null,
+        specialty: candidate.identity.specialty ?? null,
         trait: candidate.identity.trait,
         bio: candidate.identity.bio,
         stats: candidate.stats,
@@ -638,6 +673,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     devs: devIds(state)
       .map((id) => devView(state, id))
       .filter((dev): dev is DevView => dev !== null),
+    leadership: leadershipView(state),
     tasks: taskViews(state),
     candidates: candidateViews(state),
     items: itemViews(state),

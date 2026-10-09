@@ -13,6 +13,8 @@ import type {
   Birthday,
   CalendarDate,
   DecorTheme,
+  DevSpecialty,
+  DevStack,
   DevTrait,
   FinancingBlocker,
   FinancingKind,
@@ -33,10 +35,15 @@ import type {
   SprintReport,
   Speed,
   TaskKind,
+  TaskStack,
   TaskTrade,
 } from '@oss/shared';
 
-/** Les 8 profils de développeurs du cahier des charges. */
+/**
+ * Les 8 profils de développeurs du cahier des charges, puis les métiers de l'équipe web
+ * (front, back, fullstack, tech lead, DevOps, testeur, scrum master, manager, sous-directeur,
+ * directeur technique).
+ */
 export const DEV_ROLES = [
   'SENIOR_BEARD',
   'TEN_X',
@@ -46,6 +53,16 @@ export const DEV_ROLES = [
   'PRODUCT_OWNER',
   'AI_AGENT',
   'GHOST',
+  'FRONTEND',
+  'BACKEND',
+  'FULLSTACK',
+  'TECH_LEAD',
+  'DEVOPS',
+  'QA_TESTER',
+  'SCRUM_MASTER',
+  'MANAGER',
+  'DEPUTY_DIRECTOR',
+  'DIRECTOR',
 ] as const;
 export type DevRole = (typeof DEV_ROLES)[number];
 
@@ -144,8 +161,12 @@ export interface DevView {
   readonly name: string;
   readonly age: number;
   readonly role: DevRole;
-  /** Métier (code, design, produit) : les tâches qu'il prend tout seul. */
-  readonly trade: TaskTrade;
+  /** Métier (code, design, produit, recette) : les tâches qu'il prend tout seul (null : aucune). */
+  readonly trade: TaskTrade | null;
+  /** Côté de la stack (front, back, les deux), ou null pour les profils sans côté. */
+  readonly stack: DevStack | null;
+  /** Spécialité d'un dev front, back ou DevOps (React, bases de données...), sinon null. */
+  readonly specialty: DevSpecialty | null;
   /** Trait de personnalité (traduit par i18n : `traits.<trait>`). */
   readonly trait: DevTrait;
   /** Mini-bio drôle, dans les deux langues. */
@@ -189,6 +210,8 @@ export interface TaskView {
   readonly type: TaskType;
   /** Métier : seuls ses membres la prennent d'eux-mêmes (le joueur peut la confier à tous). */
   readonly trade: TaskTrade;
+  /** Côté d'une tâche de code (front ou back), null pour les autres métiers. */
+  readonly stack: TaskStack | null;
   /** Taille en points (1, 2, 3, 5, 8). */
   readonly size: number;
   readonly column: KanbanColumn;
@@ -216,6 +239,24 @@ export interface ObjectiveView {
   /** Vrai si la cible est atteinte à cet instant (pour « aucune panne » : pas encore de panne). */
   readonly reached: boolean;
   readonly reward: SprintObjective['reward'];
+}
+
+/** Effets de l'encadrement (directeur, managers, scrum master, tech lead, testeurs, DevOps). */
+export interface LeadershipView {
+  /** Bonus de productivité de toute l'équipe, en % (0 sans encadrement). */
+  readonly productivity: number;
+  /** Part de l'équipe encadrée par un manager, en %. */
+  readonly coverage: number;
+  /** Les réunions du Product Owner pèsent moitié moins (scrum master). */
+  readonly lighterMeetings: boolean;
+  /** Dette en moins sur les features livrées (tech lead, testeurs), en %. */
+  readonly featureDebtCut: number;
+  /** Stabilité gagnée chaque jour (DevOps). */
+  readonly dailyStability: number;
+  /** Moral gagné chaque jour par chacun (sous-directeur, managers). */
+  readonly dailyMoral: number;
+  /** Postes d'encadrement et de qualité encore ouverts (testeur, manager, directeur...). */
+  readonly openings: readonly DevRole[];
 }
 
 export interface CandidateView {
@@ -520,6 +561,8 @@ export interface GameView {
   /** Historique des jauges, un point par jour simulé. */
   readonly history: readonly Gauges[];
   readonly devs: readonly DevView[];
+  /** Ce que l'encadrement apporte à l'équipe, et les postes ouverts au recrutement. */
+  readonly leadership: LeadershipView;
   readonly tasks: readonly TaskView[];
   readonly candidates: readonly CandidateView[];
   readonly items: readonly PlacedItemView[];

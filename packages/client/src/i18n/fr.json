@@ -116,7 +116,17 @@
     "boo": "Bouh",
     "prodDown": "La prod est down !!",
     "fridayDeploy": "On déploie vendredi 17h ?",
-    "quit": "Je vais démissionner"
+    "quit": "Je vais démissionner",
+    "centerDiv": "Centrer cette div…",
+    "itDepends": "Ça dépend",
+    "bothSides": "Front ? Back ? Les deux ?",
+    "nitpick": "nit: renommer",
+    "yaml": "Une indentation YAML de trop",
+    "cannotReproduce": "Pas reproduit",
+    "storyPoints": "Ça fait combien de points ?",
+    "oneToOne": "On fait un point ?",
+    "reportUp": "Je remonte ça",
+    "synergy": "Synergies !"
   },
   "roles": {
     "SENIOR_BEARD": "Senior Barbu",
@@ -126,7 +136,17 @@
     "DESIGNER": "Designeuse",
     "PRODUCT_OWNER": "Product Owner",
     "AI_AGENT": "IA Agent",
-    "GHOST": "Dev Fantôme"
+    "GHOST": "Dev Fantôme",
+    "FRONTEND": "Dev Front",
+    "BACKEND": "Dev Back",
+    "FULLSTACK": "Dev Fullstack",
+    "TECH_LEAD": "Tech Lead",
+    "DEVOPS": "DevOps",
+    "QA_TESTER": "Testeur·se QA",
+    "SCRUM_MASTER": "Scrum Master",
+    "MANAGER": "Manager",
+    "DEPUTY_DIRECTOR": "Sous-directeur·rice",
+    "DIRECTOR": "Directeur·rice technique"
   },
   "roleDescriptions": {
     "SENIOR_BEARD": "+50 % de qualité, refuse les frameworks de moins de 5 ans.",
@@ -136,7 +156,17 @@
     "DESIGNER": "Bloque les releases si le padding est faux, +qualité perçue aux démos.",
     "PRODUCT_OWNER": "4 réunions par jour : -10 % de productivité pour tous, +hype.",
     "AI_AGENT": "Ultra rapide, 30 % de chance d'halluciner une feature.",
-    "GHOST": "En télétravail, invisible au bureau, mais ses tickets se ferment."
+    "GHOST": "En télétravail, invisible au bureau, mais ses tickets se ferment.",
+    "FRONTEND": "Code l'interface : +15 % de vitesse sur le front, -40 % sur le back. Sa spécialité accélère un type de tâche.",
+    "BACKEND": "Code le serveur : +15 % de vitesse sur le back, -40 % sur le front. Sa spécialité accélère un type de tâche.",
+    "FULLSTACK": "Prend le front comme le back, mais à 85 % et avec une qualité plus limitée.",
+    "TECH_LEAD": "Code lentement, relit tout : -15 % de dette sur chaque feature livrée.",
+    "DEVOPS": "Dev back spécialiste du cloud : infra plus rapide, +stabilité chaque jour.",
+    "QA_TESTER": "Fait la recette (tâches de test) : -10 % de dette par testeur sur les features, -30 % au plus.",
+    "SCRUM_MASTER": "Ne prend pas de tâches. Les réunions du PO pèsent moitié moins, +2 % de productivité.",
+    "MANAGER": "Ne prend pas de tâches. Encadre 6 personnes : jusqu'à +6 % de productivité, +moral, conflits apaisés.",
+    "DEPUTY_DIRECTOR": "Ne prend pas de tâches. +3 % de productivité et +moral pour toute l'équipe.",
+    "DIRECTOR": "Ne prend pas de tâches. +6 % de productivité pour tous et un peu de hype chaque jour."
   },
   "activities": {
     "WORKING": "Travaille",
@@ -181,7 +211,8 @@
   "trades": {
     "DEV": "Code",
     "DESIGN": "Design",
-    "PRODUCT": "Produit"
+    "PRODUCT": "Produit",
+    "QA": "Recette"
   },
   "gauges": {
     "treasury": {
@@ -375,7 +406,9 @@
     "bestFriend": "Meilleur·e allié·e : {{name}}",
     "rival": "Bête noire : {{name}}",
     "leaving": "🚪 A démissionné : part au début du sprint {{sprint}}.",
-    "leavingShort": "🚪 part au sprint {{sprint}}"
+    "leavingShort": "🚪 part au sprint {{sprint}}",
+    "specialty": "Spécialité : {{specialty}} (+20 % sur les {{focus}})",
+    "stack": "Côté de la stack : {{stack}}"
   },
   "teamFilters": {
     "sortLabel": "Trier par",
@@ -427,7 +460,7 @@
     "NO_DESK": "pas de bureau"
   },
   "hiring": {
-    "intro": "3 candidats ce sprint. Fais une offre : trop basse, ils refusent.",
+    "intro": "3 profils habituels et 2 de l'équipe web (front, back, fullstack, encadrement) ce sprint. Fais une offre : trop basse, ils refusent.",
     "asking": "Demande {{salary}} €/mois",
     "offer": "Ton offre : {{salary}} €/mois",
     "hire": "Faire l'offre",
@@ -753,7 +786,17 @@
       "DESIGNER": "« Mon salaire, c'est comme ton padding : il manque 8 px partout. »",
       "PRODUCT_OWNER": "« J'ai mis une réunion de 1 h dans ton agenda pour en parler. Et une autre pour en reparler. »",
       "AI_AGENT": "« Mes tokens coûtent plus cher que prévu. J'ai calculé ma hausse moi-même : fais-moi confiance. »",
-      "GHOST": "« Tu ne me vois jamais, mais mes tickets se ferment. Mon salaire, lui, ne bouge pas. »"
+      "GHOST": "« Tu ne me vois jamais, mais mes tickets se ferment. Mon salaire, lui, ne bouge pas. »",
+      "FRONTEND": "« Je centre des divs toute la journée. Ça mérite au moins un écran 4K et une augmentation. »",
+      "BACKEND": "« Si mon salaire était une requête SQL, il lui manquerait un index. »",
+      "FULLSTACK": "« Je fais le travail de deux personnes. À moitié, d'accord, mais deux personnes. »",
+      "TECH_LEAD": "« nit: ce salaire mériterait d'être refactoré. »",
+      "DEVOPS": "« Je suis d'astreinte la nuit, le week-end et pendant cet entretien. »",
+      "QA_TESTER": "« J'ai testé ma fiche de paie : le bug est reproductible tous les mois. »",
+      "SCRUM_MASTER": "« J'estime ma demande à 13 points. On peut la mettre dans le sprint ? »",
+      "MANAGER": "« Parlons de ma trajectoire. J'ai préparé 14 slides et un OKR. »",
+      "DEPUTY_DIRECTOR": "« Je remplace le directeur dans toutes ses réunions. Je voudrais aussi remplacer son salaire. »",
+      "DIRECTOR": "« Mon package est en dessous du marché. Et de celui de mes trois anciennes startups. »"
     }
   },
   "end": {
@@ -1597,6 +1640,40 @@
       "TOO_MUCH_DEBT": "Trop de dette technique : le dossier serait refusé.",
       "TOO_BIG": "Ta startup est trop grosse pour une subvention."
     }
+  },
+  "stacks": {
+    "FRONT": "Front",
+    "BACK": "Back",
+    "FULL": "Fullstack"
+  },
+  "specialties": {
+    "REACT": "React",
+    "ACCESSIBILITY": "Accessibilité",
+    "WEB_PERF": "Performance web",
+    "MOBILE": "Mobile",
+    "NODE": "Node.js",
+    "DATABASE": "Bases de données",
+    "SECURITY": "Sécurité",
+    "CLOUD": "Cloud"
+  },
+  "specialtyFocus": {
+    "FEATURE": "features",
+    "REFACTO": "refactos",
+    "BUGFIX": "bugs",
+    "INFRA": "infra"
+  },
+  "leadership": {
+    "title": "Encadrement",
+    "none": "Pas encore d'encadrement : recrute un directeur, des managers ou un scrum master quand l'équipe grandit.",
+    "productivity": "+{{value}} % de productivité pour toute l’équipe",
+    "coverage": "{{value}} % de l’équipe encadrée par un manager",
+    "meetings": "Réunions du PO allégées (scrum master)",
+    "debt": "-{{value}} % de dette sur les features (relecture et recette)",
+    "stability": "+{{value}} de stabilité par jour (DevOps)",
+    "moral": "+{{value}} de moral par jour pour chacun",
+    "openings": "Postes ouverts : {{roles}}",
+    "noOpenings": "Aucun poste d'encadrement ouvert pour la taille actuelle de l'équipe.",
+    "short": "+{{value}} % de productivité"
   },
   "pets": {
     "intro": "Un chat dans l’open space remonte le moral et fait le buzz sur les réseaux, mais il dort sur les claviers. Avant d’en adopter un, pose dans le bureau une litière, une gamelle et un arbre à chat (onglet Animaux du mode construction).",
