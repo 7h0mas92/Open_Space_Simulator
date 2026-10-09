@@ -318,13 +318,53 @@ describe('Construction', () => {
     await userEvent.click(screen.getByTestId('place'));
     const duck = useGame.getState().view!.items.find((i) => i.kind === 'rubber-duck');
     expect(duck?.host).toMatchObject({ id: desk.id });
-    // Toujours en main : le deuxième canard prend l'autre emplacement du bureau.
-    act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
-    await userEvent.click(screen.getByTestId('place'));
+    // Toujours en main : les canards suivants prennent les autres emplacements du bureau.
+    for (let i = 0; i < 2; i++) {
+      act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
+      await userEvent.click(screen.getByTestId('place'));
+    }
     const ducks = useGame.getState().view!.items.filter((i) => i.kind === 'rubber-duck');
-    expect(new Set(ducks.map((d) => d.host?.slot))).toEqual(new Set([0, 1]));
+    expect(new Set(ducks.map((d) => d.host?.slot))).toEqual(new Set([0, 1, 2]));
     act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
     expect(screen.getByTestId('placement-bar')).toHaveTextContent('Plus de place sur ce meuble');
+  });
+
+  it('range un meuble dans l’inventaire puis le repose gratuitement', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    const plant = useGame.getState().view!.items.find((i) => i.kind === 'small-plant')!;
+    const cash = useGame.getState().view!.gauges.treasury;
+    act(() => useGame.getState().select({ type: 'item', id: plant.id }));
+    await userEvent.click(screen.getByTestId('store-item'));
+    expect(screen.getByText('Cactus en pot : rangé dans l’inventaire.')).toBeInTheDocument();
+    expect(useGame.getState().view!.items.some((i) => i.id === plant.id)).toBe(false);
+    expect(screen.getByTestId('inventory-count')).toHaveTextContent('1');
+
+    await userEvent.click(screen.getByTestId('catalog-tab-inventory'));
+    expect(screen.getByTestId('inventory')).toHaveTextContent('1 en stock');
+    await userEvent.click(screen.getByTestId('stored-small-plant'));
+    expect(useGame.getState().build).toMatchObject({ kind: 'small-plant', fromStock: true });
+    expect(screen.getByTestId('stock-count')).toHaveTextContent('Gratuit');
+    const cell = freeCell('small-plant');
+    act(() => useGame.getState().setBuildCell(cell));
+    await userEvent.click(screen.getByTestId('place'));
+    const view = useGame.getState().view!;
+    expect(view.items.some((i) => i.kind === 'small-plant' && i.x === cell.x)).toBe(true);
+    expect(view.inventory).toEqual([]);
+    expect(view.gauges.treasury).toBe(cash);
+    // Plus rien en stock : retour à l'inventaire, désormais vide.
+    expect(useGame.getState().build).toMatchObject({ kind: null });
+    expect(screen.getByTestId('inventory')).toHaveTextContent('L’inventaire est vide');
+  });
+
+  it('revend un objet depuis l’inventaire', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    const plant = useGame.getState().view!.items.find((i) => i.kind === 'small-plant')!;
+    await act(() => useGame.getState().dispatch({ type: 'storeItem', itemId: plant.id }));
+    await userEvent.click(screen.getByTestId('catalog-tab-inventory'));
+    await userEvent.click(screen.getByTestId('sell-stored-small-plant'));
+    expect(useGame.getState().view!.inventory).toEqual([]);
   });
 
   it('refuse une case occupée et explique pourquoi', async () => {
@@ -454,7 +494,11 @@ describe('Étapes du sprint', () => {
     const card = screen.getByRole('dialog', { name: /machine à café/i });
     const choices = within(card).getAllByRole('button');
     expect(choices.length).toBeGreaterThanOrEqual(2);
-    expect(choices[0]).toHaveFocus();
+    // Le focus va sur la carte, pas sur un choix : Espace ou Entrée ne tranchent rien par mégarde.
+    expect(card).toHaveFocus();
+    await userEvent.keyboard(' ');
+    expect(useGame.getState().view!.event).not.toBeNull();
+    expect(within(card).getByTestId('event-clock')).toHaveTextContent(/en pause/);
     await userEvent.click(choices[0]!);
     expect(useGame.getState().view!.event).toBeNull();
     expect(screen.queryByRole('dialog', { name: /machine à café/i })).not.toBeInTheDocument();
@@ -484,8 +528,12 @@ describe('Étapes du sprint', () => {
   it('joue le mini-jeu de levée de fonds jusqu’à la décision', async () => {
     await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Lever des fonds/ }));
+    // Le panneau présente le prochain tour de table (Seed) et les autres financements.
+    expect(screen.getByText(/Prochain tour de table : Seed/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Pitcher' }));
     for (let round = 0; round < 3; round++) {
       const pitch = screen.getByRole('dialog', { name: 'Levée de fonds' });
+      expect(within(pitch).getByText(`Question ${round + 1} sur 3`)).toBeInTheDocument();
       const options = within(pitch).getAllByRole('button');
       await userEvent.click(options[0]!);
     }
@@ -497,7 +545,9 @@ describe('Étapes du sprint', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Retour au bureau' }));
     expect(useGame.getState().view!.step).toBe('PLANNING');
     // Une seule levée tous les 3 sprints.
-    expect(screen.getByRole('button', { name: /Lever des fonds/ })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: /Lever des fonds/ }));
+    expect(screen.getByRole('button', { name: 'Pitcher' })).toBeDisabled();
+    expect(screen.getByText(/prochain pitch au sprint 4/)).toBeInTheDocument();
   });
 
   it('annonce la faillite et revient au menu', async () => {
@@ -549,5 +599,39 @@ describe('formatage', () => {
     expect(sparklinePoints([])).toBe('');
     expect(sparklinePoints([1, 1], 100, 10)).toBe('0.0,6.0 100.0,6.0');
     expect(sparklinePoints([0, 10], 100, 10)).toBe('0.0,6.0 100.0,4.0');
+  });
+});
+
+describe('Filtres de l’équipe', () => {
+  it('filtre les devs en conflit et garde les filtres en rouvrant le panneau', async () => {
+    const simulation = officeSimulation(SEED_OFFICE);
+    const ids = Object.keys(simulation.state.components.identity);
+    const [a, b] = ids;
+    // Pas d'autre conflit que celui-ci : les relations de départ sont tirées au hasard.
+    for (const id of ids) simulation.state.components.relations[id] = {};
+    simulation.state.components.relations[a!] = { [b!]: -70 };
+    simulation.state.components.relations[b!] = { [a!]: -70 };
+    await startGame(simulation);
+    const view = useGame.getState().view!;
+    const names = (ids: string[]) => ids.map((id) => view.devs.find((d) => d.id === id)!.name);
+    const [nameA, nameB] = names([a!, b!]);
+    await userEvent.click(screen.getByRole('button', { name: /Équipe/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }));
+    await userEvent.click(screen.getByRole('button', { name: 'En conflit' }));
+    const list = screen.getByRole('list', { name: "Membres de l'équipe" });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(list).getByText(nameA!)).toBeInTheDocument();
+    expect(within(list).getByText(nameB!)).toBeInTheDocument();
+    expect(screen.getByText(`2 devs sur ${view.devs.length}`)).toBeInTheDocument();
+    // Les filtres survivent à la fermeture du panneau.
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(screen.getByRole('button', { name: /Équipe/ }));
+    expect(
+      within(screen.getByRole('list', { name: "Membres de l'équipe" })).getAllByRole('listitem'),
+    ).toHaveLength(2);
+    await userEvent.click(screen.getByRole('button', { name: 'Tout afficher' }));
+    expect(
+      within(screen.getByRole('list', { name: "Membres de l'équipe" })).getAllByRole('listitem'),
+    ).toHaveLength(view.devs.length);
   });
 });

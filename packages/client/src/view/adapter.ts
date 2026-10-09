@@ -8,9 +8,15 @@
  * Ce sont des fonctions pures : aucun accès au DOM, à Three.js ni au Web Worker.
  */
 import {
+  ANNEXES,
   BALANCE,
   MEETING_FORMATS,
+  FUNDING_TIERS,
+  PITCH_QUESTIONS,
   ROLE_PROFILES,
+  annexCount,
+  fundingTier,
+  fundingTierIndex,
   TIME,
   VENTURES,
   birthdayFromKey,
@@ -21,8 +27,10 @@ import {
   getPitchArgument,
   type Command,
   type EventCard,
+  type FurnitureColor,
   type GameState,
   type Identity,
+  type PitchState,
   type Speed,
   type SprintPerformance,
   type Stats,
@@ -30,6 +38,9 @@ import {
 } from '@oss/shared';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
+import { financingOffers } from '../simulation/financing';
+import { currentTier } from '../simulation/fundraising';
+import { softSigmoid } from '../simulation/math';
 import { countDesks, RESALE_RATIO } from '../simulation/furniture';
 import { devIds, teamMax } from '../simulation/helpers';
 import {
@@ -56,20 +67,27 @@ import {
   ventureOffers,
   venturesUnlocked,
 } from '../simulation/ventures';
+import { leavingAtSprint } from '../simulation/raises';
 import type {
   CandidateView,
   DevActivity,
   DevView,
   PerformanceView,
+  PitchAnswerView,
+  PitchArgumentView,
+  PitchView,
   SprintPerformanceView,
   EventView,
   GameCommand,
+  FundingView,
   GroupView,
   GameView,
   MeetingRoomView,
   GaugeName,
   KanbanColumn,
   PlacedItemView,
+  StoredItemView,
+  RaiseRequestView,
   RemoteReason,
   Rotation,
   TaskType,
@@ -222,6 +240,23 @@ function devView(state: GameState, id: string): DevView | null {
           currentTask: (taskId && c.task[taskId]?.title) || null,
         }
       : null,
+    leavingAtSprint: leavingAtSprint(state, id),
+  };
+}
+
+function raiseRequestView(state: GameState): RaiseRequestView | null {
+  const request = state.raises.pending;
+  if (!request) return null;
+  const { raises } = BALANCE;
+  return {
+    devId: request.devId,
+    currentSalary: request.currentSalary,
+    requestedSalary: request.requestedSalary,
+    acceptMoral: raises.acceptMoral,
+    skillsGained: raises.skillsGained,
+    resignChance: raises.resignChance,
+    skillsLost: raises.skillsLost,
+    noticeSprints: raises.noticeSprints,
   };
 }
 
@@ -275,6 +310,7 @@ function candidateViews(state: GameState): CandidateView[] {
         birthday: candidate.identity.birthday ?? birthdayFromKey(`${state.seed}:${candidate.id}`),
         performance: performanceView(candidate.identity, candidate.stats, 1),
         career: null,
+        leavingAtSprint: null,
       },
     }));
 }
@@ -291,6 +327,30 @@ function itemViews(state: GameState): PlacedItemView[] {
     host: item.hostId !== undefined ? { id: item.hostId, slot: item.slot ?? 0 } : null,
   }));
 }
+
+function inventoryView(state: GameState): StoredItemView[] {
+  const stacks = new Map<string, StoredItemView>();
+  for (const stored of state.inventory) {
+    const color = stored.color ?? 'natural';
+    const key = `${stored.itemId}#${color}`;
+    const stack = stacks.get(key);
+    stacks.set(
+      key,
+      stack
+        ? { ...stack, count: stack.count + 1 }
+        : {
+            kind: stored.itemId,
+            color,
+            count: 1,
+            resale: Math.round(stored.purchasePrice * RESALE_RATIO),
+          },
+    );
+  }
+  return [...stacks.values()];
+}
+
+/** Couleur d'une commande d'inventaire : `natural` n'est pas transmise. */
+const storedColor = (color: FurnitureColor) => (color === 'natural' ? {} : { color });
 
 function eventView(state: GameState, context: ViewContext): EventView | null {
   const pending = state.events.pending;
@@ -325,6 +385,79 @@ function pitchBlocker(state: GameState): GameView['pitchBlocker'] {
     return 'COOLDOWN';
   }
   return null;
+}
+
+/** Argument du pitch tel que l'interface l'affiche. */
+function pitchArgumentView(id: string): PitchArgumentView | null {
+  const argument = getPitchArgument(id);
+  return argument
+    ? { id, label: argument.label, category: argument.category, bluff: argument.bluff ?? false }
+    : null;
+}
+
+/** Réaction de l'investisseur à une réponse, d'après son effet sur l'intérêt. */
+function reaction(delta: number): PitchAnswerView['reaction'] {
+  return delta >= 0.5 ? 'good' : delta <= -0.3 ? 'bad' : 'neutral';
+}
+
+function pitchView(state: GameState, pitch: PitchState): PitchView {
+  const investor = getInvestor(pitch.investor);
+  const tier = currentTier(state);
+  const question = pitch.question
+    ? PITCH_QUESTIONS.filter((q) => q.category === pitch.question?.category)[pitch.question.index]
+    : undefined;
+  return {
+    investor: { name: investor.name, intro: investor.intro },
+    roundName: tier.name,
+    tier: pitch.tier,
+    tiers: FUNDING_TIERS.length,
+    round: pitch.round,
+    rounds: pitch.manches,
+    question: question ? { text: question.text, category: question.category } : null,
+    options: pitch.options.flatMap((id) => pitchArgumentView(id) ?? []),
+    chosen: pitch.chosen.flatMap((id, index) => {
+      const argument = pitchArgumentView(id);
+      const entry = pitch.log[index];
+      if (!argument) return [];
+      return [
+        {
+          ...argument,
+          reaction: entry ? reaction(entry.delta) : 'neutral',
+          offTopic: entry ? !entry.onTopic : false,
+          bluffCaught: entry?.bluffCaught ?? false,
+        },
+      ];
+    }),
+    interest: Math.round(softSigmoid(pitch.interest - tier.bar) * 100) / 100,
+    walkedOut: pitch.walkedOut,
+    result: pitch.result,
+  };
+}
+
+/** Levées de fonds : prochain tour de table, autres financements, prêt et annexes. */
+function fundingView(state: GameState): FundingView {
+  const next = fundingTier(state.fundingRounds);
+  const loan = state.financing.loan;
+  return {
+    nextRound: {
+      name: next.name,
+      tier: fundingTierIndex(state.fundingRounds),
+      manches: next.manches,
+      options: next.options,
+    },
+    tiers: FUNDING_TIERS.length,
+    nextPitchSprint:
+      state.lastPitchSprint !== null &&
+      state.sprint - state.lastPitchSprint < BALANCE.fundraising.cooldownSprints
+        ? state.lastPitchSprint + BALANCE.fundraising.cooldownSprints
+        : null,
+    offers: financingOffers(state),
+    loan: loan ? { remaining: Math.round(loan.remaining), monthly: loan.monthly } : null,
+    rounds: state.fundingRounds,
+    totalRaised: state.totalRaised,
+    annexes: annexCount(state.fundingRounds),
+    maxAnnexes: ANNEXES.max,
+  };
 }
 
 /** Les filiales du groupe et les projets du sprint. */
@@ -418,7 +551,6 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
   const lastIncident = state.notifications.findLast((n) => n.kind === 'PROD_DOWN');
   const runway = runwayMonths(state);
   const pitch = state.pitch;
-  const investor = pitch ? getInvestor(pitch.investor) : null;
   return {
     seed: state.seed,
     mode: state.mode,
@@ -457,6 +589,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     tasks: taskViews(state),
     candidates: candidateViews(state),
     items: itemViews(state),
+    inventory: inventoryView(state),
     incident:
       state.stage === 'EXECUTION' &&
       lastIncident !== undefined &&
@@ -468,25 +601,11 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     ownership: state.ownership,
     event: eventView(state, context),
     lastReport: state.history.sprints.at(-1) ?? null,
-    pitch:
-      pitch && investor
-        ? {
-            investor: { name: investor.name, intro: investor.intro },
-            round: pitch.round,
-            rounds: BALANCE.fundraising.rounds,
-            options: pitch.options.flatMap((id) => {
-              const argument = getPitchArgument(id);
-              return argument ? [{ id, label: argument.label }] : [];
-            }),
-            chosen: pitch.chosen.flatMap((id) => {
-              const argument = getPitchArgument(id);
-              return argument ? [argument.label] : [];
-            }),
-            result: pitch.result,
-          }
-        : null,
+    pitch: pitch ? pitchView(state, pitch) : null,
     pitchBlocker: pitchBlocker(state),
+    funding: fundingView(state),
     acquisitionOffer: state.acquisitionOffer,
+    raiseRequest: raiseRequestView(state),
     group: groupView(state),
     meetingRoom: meetingRoomView(state),
     canIpo:
@@ -582,6 +701,28 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
     }
     case 'sellItem':
       return { type: 'SELL_FURNITURE', furnitureId: command.itemId };
+    case 'storeItem':
+      return { type: 'STORE_FURNITURE', furnitureId: command.itemId };
+    case 'placeStored':
+      return {
+        type: 'PLACE_STORED',
+        itemId: command.kind,
+        ...storedColor(command.color),
+        x: command.x,
+        y: command.z,
+        rotation: command.rotation,
+      };
+    case 'placeStoredAccessory':
+      return {
+        type: 'PLACE_STORED_ACCESSORY',
+        itemId: command.kind,
+        ...storedColor(command.color),
+        hostId: command.host.id,
+        slot: command.host.slot,
+        rotation: command.rotation,
+      };
+    case 'sellStored':
+      return { type: 'SELL_STORED', itemId: command.kind, ...storedColor(command.color) };
     case 'startSprint':
       return { type: 'START_SPRINT' };
     case 'resolveEvent':
@@ -592,10 +733,14 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'PITCH_ARGUMENT', argumentId: command.argumentId };
     case 'closePitch':
       return { type: 'CLOSE_PITCH' };
+    case 'takeFinancing':
+      return { type: 'TAKE_FINANCING', kind: command.kind };
     case 'endDemo':
       return { type: 'END_DEMO' };
     case 'answerAcquisition':
       return { type: 'ANSWER_ACQUISITION', accept: command.accept };
+    case 'answerRaise':
+      return { type: 'ANSWER_RAISE', accept: command.accept };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
     case 'foundVenture':

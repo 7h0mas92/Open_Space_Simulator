@@ -22,9 +22,10 @@ import { metaApi } from '../../api/meta';
 import i18n from '../../i18n';
 import type { PickTarget } from '../../render/GameRenderer';
 import { catalogItem } from '../../view/catalog';
-import { officeLayout, type Cell } from '../../view/layout';
+import { layoutOf, type Cell } from '../../view/layout';
 import { checkPlacement, nearestValidCell, resolveAccessory } from '../../view/placement';
 import { localized } from '../game/format';
+import { DEFAULT_TEAM_FILTERS, type TeamFilters } from '../team/filters';
 import type { GameSource } from '../../view/source';
 import type {
   CommandResult,
@@ -43,6 +44,7 @@ export const PANELS = [
   'hiring',
   'group',
   'meetings',
+  'funding',
   'dashboard',
   'slack',
   'saves',
@@ -69,6 +71,11 @@ export interface BuildState {
   readonly color: FurnitureColor;
   /** Exemplaires déjà posés depuis la prise en main (pose en série). */
   readonly placed: number;
+  /**
+   * Objet sorti de l'inventaire : la pose est gratuite et prend le premier exemplaire rangé de
+   * ce type et de cette couleur (`color`).
+   */
+  readonly fromStock?: boolean;
 }
 
 /** Rien en main : le catalogue est ouvert. */
@@ -104,6 +111,9 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   OFFER_REFUSED: 'error',
   DEV_FIRED: 'info',
   DEV_RESIGNED: 'error',
+  RAISE_GRANTED: 'success',
+  RAISE_REFUSED: 'info',
+  DEV_NOTICE: 'error',
   DEV_LEVEL_UP: 'success',
   DEV_BIRTHDAY: 'success',
   DEV_REMOTE: 'info',
@@ -162,6 +172,8 @@ interface GameStore {
   /** Pseudo du joueur dont on regarde le replay (null pour une partie jouée). */
   replayOf: string | null;
   submission: Submission;
+  /** Filtres et tri de la liste de l'équipe, gardés d'une ouverture du panneau à l'autre. */
+  teamFilters: TeamFilters;
   start(options?: StartOptions): Promise<void>;
   quit(): void;
   dispatch(command: GameCommand): Promise<CommandResult>;
@@ -173,6 +185,8 @@ interface GameStore {
   exitBuild(): void;
   /** Prend un objet du catalogue en main : le catalogue se replie. */
   pickItem(kind: string): void;
+  /** Prend en main un objet rangé dans l'inventaire (type et couleur). */
+  pickStored(kind: string, color: FurnitureColor): void;
   /** Reprend en main un objet déjà posé pour le déplacer. */
   startMove(itemId: string): void;
   setBuildCell(cell: Cell | null): void;
@@ -188,6 +202,7 @@ interface GameStore {
   placeAt(cell?: Cell): Promise<boolean>;
   notify(key: string, tone?: Toast['tone'], params?: Toast['params']): void;
   setFps(fps: number): void;
+  setTeamFilters(filters: TeamFilters): void;
 }
 
 let toastId = 0;
@@ -255,6 +270,7 @@ export const useGame = create<GameStore>((set, get) => ({
   fps: 0,
   replayOf: null,
   submission: { status: 'idle' },
+  teamFilters: DEFAULT_TEAM_FILTERS,
 
   async start(options = {}) {
     get().quit();
@@ -285,6 +301,7 @@ export const useGame = create<GameStore>((set, get) => ({
       selected: null,
       build: null,
       replayOf: options.replay?.pseudo ?? null,
+      teamFilters: DEFAULT_TEAM_FILTERS,
       submission: { status: options.replay ? 'replay' : 'idle' },
     });
   },
@@ -346,6 +363,10 @@ export const useGame = create<GameStore>((set, get) => ({
     });
   },
 
+  pickStored(kind, color) {
+    set({ build: { ...EMPTY_BUILD, kind, color, fromStock: true }, selected: null });
+  },
+
   startMove(itemId) {
     const item = get().view?.items.find((i) => i.id === itemId);
     if (!item) return;
@@ -379,6 +400,7 @@ export const useGame = create<GameStore>((set, get) => ({
   setBuildColor(color) {
     const { build } = get();
     if (!build?.kind) return;
+    if (build.fromStock) return; // un objet rangé garde sa couleur (« Peindre » une fois posé)
     if (!build.movingItemId) lastColors.set(build.kind, color);
     set({ build: { ...build, color } });
   },
@@ -394,7 +416,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const def = catalogItem(build.kind);
     if (!def) return false;
     // Cloisons et entrée sont des contraintes du décor : vérifiées avant d'envoyer.
-    const layout = officeLayout(view.phase, view.group.wings);
+    const layout = layoutOf(view);
     const request = {
       kind: build.kind,
       x: cell.x,
@@ -412,26 +434,51 @@ export const useGame = create<GameStore>((set, get) => ({
     const host = resolved && 'host' in resolved ? resolved.host : null;
     if (def.accessory && !host) return false;
     const moving = build.movingItemId;
-    const command: GameCommand | null = host
-      ? moving
-        ? { type: 'moveAccessory', itemId: moving, host, rotation: build.rotation }
-        : {
-            type: 'placeAccessory',
-            kind: build.kind,
+    // Objet sorti de l'inventaire : la pile de ce type et de cette couleur.
+    const stock = build.fromStock
+      ? view.inventory.find((stored) => stored.kind === build.kind && stored.color === build.color)
+      : undefined;
+    if (build.fromStock && !stock) {
+      get().cancelPlacement();
+      return false;
+    }
+    const command: GameCommand | null = stock
+      ? host
+        ? {
+            type: 'placeStoredAccessory',
+            kind: stock.kind,
+            color: stock.color,
             host,
             rotation: build.rotation,
-            color: build.color,
           }
-      : moving
-        ? { type: 'moveItem', itemId: moving, x: cell.x, z: cell.z, rotation: build.rotation }
         : {
-            type: 'placeItem',
-            kind: build.kind,
+            type: 'placeStored',
+            kind: stock.kind,
+            color: stock.color,
             x: cell.x,
             z: cell.z,
             rotation: build.rotation,
-            color: build.color,
-          };
+          }
+      : host
+        ? moving
+          ? { type: 'moveAccessory', itemId: moving, host, rotation: build.rotation }
+          : {
+              type: 'placeAccessory',
+              kind: build.kind,
+              host,
+              rotation: build.rotation,
+              color: build.color,
+            }
+        : moving
+          ? { type: 'moveItem', itemId: moving, x: cell.x, z: cell.z, rotation: build.rotation }
+          : {
+              type: 'placeItem',
+              kind: build.kind,
+              x: cell.x,
+              z: cell.z,
+              rotation: build.rotation,
+              color: build.color,
+            };
     const result = await dispatch(command);
     if (!result.ok) return false;
     const name = localized(def.name, i18n.language);
@@ -442,9 +489,20 @@ export const useGame = create<GameStore>((set, get) => ({
       return true;
     }
 
+    if (stock) {
+      // Pose en série depuis l'inventaire : tant qu'il en reste en stock.
+      if (stock.count <= 1) {
+        notify('build.stopInventory', 'info', { item: name });
+        get().cancelPlacement();
+        return true;
+      }
+    }
     // Pose en série : l'objet reste en main tant qu'on peut en acheter un autre.
-    const owned = view.items.filter((item) => item.kind === build.kind).length + 1;
-    if (owned >= def.maxCount || view.gauges.treasury - def.price < def.price) {
+    const owned =
+      view.items.filter((item) => item.kind === build.kind).length +
+      view.inventory.reduce((sum, s) => sum + (s.kind === build.kind ? s.count : 0), 0) +
+      1;
+    if (!stock && (owned >= def.maxCount || view.gauges.treasury - def.price < def.price)) {
       notify(owned >= def.maxCount ? 'build.stopSoldOut' : 'build.stopMoney', 'info', {
         item: name,
       });
@@ -483,5 +541,9 @@ export const useGame = create<GameStore>((set, get) => ({
 
   setFps(fps) {
     set({ fps });
+  },
+
+  setTeamFilters(teamFilters) {
+    set({ teamFilters });
   },
 }));

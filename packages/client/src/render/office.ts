@@ -12,16 +12,65 @@ import { slotPosition } from '../view/placement';
 import type { OfficeLayout, RoomKind } from '../view/layout';
 import type { PlacedItemView } from '../view/types';
 import { paintObject, type AssetLibrary } from './assets';
+import { buildFixture } from './annexDecor';
 import { material, PALETTE } from './primitives';
 
-const FLOOR_COLORS: Record<RoomKind, readonly [number, number]> = {
-  open: [0xd9cbb4, 0xd0c1a8],
-  meeting: [0xa9c0d9, 0x9fb6cf],
-  kitchen: [0xe8e3d6, 0xc9c2b2],
-  lounge: [0xc6b3d9, 0xbca8cf],
-  canteen: [0xe3c9a0, 0xd8bd92],
-  incubator: [0xc4dbc0, 0xb8d0b3],
+/** Un sol : deux teintes posées en damier, ou en lames (parquet, tapis de scène). */
+interface FloorStyle {
+  readonly colors: readonly [number, number];
+  readonly pattern: 'checker' | 'planks';
+}
+
+const checker = (a: number, b: number): FloorStyle => ({ colors: [a, b], pattern: 'checker' });
+const planks = (a: number, b: number): FloorStyle => ({ colors: [a, b], pattern: 'planks' });
+
+/**
+ * Décors de sol de chaque type de pièce. Le premier est le décor d'origine ; les autres sont
+ * tirés de la graine (`Room.style`) : d'une partie à l'autre, les pièces changent de look.
+ * Le nombre de décors doit correspondre à `ROOM_STYLES` (view/layout.ts), un test le vérifie.
+ */
+export const FLOOR_STYLES: Record<RoomKind, readonly FloorStyle[]> = {
+  open: [
+    checker(0xd9cbb4, 0xd0c1a8),
+    planks(0xb98f64, 0xae855b), // parquet chêne
+    checker(0xbfc2c8, 0xb8bbc1), // moquette grise
+    checker(0xcfccc5, 0xc6c3bc), // béton ciré
+  ],
+  meeting: [
+    checker(0xa9c0d9, 0x9fb6cf),
+    checker(0x9fc4a8, 0x96bb9f), // moquette verte
+    planks(0xc8a27a, 0xbe976f), // parquet
+  ],
+  kitchen: [
+    checker(0xe8e3d6, 0xc9c2b2),
+    checker(0xf1efe9, 0x4a4e57), // damier noir et blanc
+    checker(0xd38b5d, 0xc97f52), // terre cuite
+  ],
+  lounge: [
+    checker(0xc6b3d9, 0xbca8cf),
+    checker(0xe5a874, 0xdb9e6a), // moquette orange
+    checker(0x6a77a6, 0x63709e), // velours bleu nuit
+  ],
+  canteen: [
+    checker(0xe3c9a0, 0xd8bd92),
+    checker(0xc96f4f, 0xbd6545), // tomettes
+    checker(0xbfe3d4, 0xb2d8c8), // carrelage menthe
+  ],
+  incubator: [
+    checker(0xc4dbc0, 0xb8d0b3),
+    planks(0xe0c9a2, 0xd7bf97), // parquet clair
+    checker(0xbdbab3, 0xb6b3ac), // béton
+  ],
+  arcade: [checker(0x4a4380, 0x403a72)], // moquette d'arcade violette
+  garden: [checker(0x8cc277, 0x82b86d)], // pelouse
+  auditorium: [planks(0xb5525a, 0xa94a52)], // moquette rouge
 };
+
+/** Décor de sol d'une pièce (le décor d'origine si son style est inconnu). */
+export function floorStyle(kind: RoomKind, style = 0): FloorStyle {
+  const styles = FLOOR_STYLES[kind];
+  return styles[style] ?? (styles[0] as FloorStyle);
+}
 const WALL_HEIGHT = 2.2;
 const PARTITION_HEIGHT = 1.3;
 
@@ -161,6 +210,8 @@ export class OfficeView {
   private readonly furniture = new THREE.Group();
   private readonly signs = new THREE.Group();
   private signsKey = '';
+  private readonly fixtures = new THREE.Group();
+  private fixturesId = 0;
   private readonly decor: THREE.Object3D[] = [];
   private readonly templates = new Map<string, Promise<TemplatePart[]>>();
   private layoutKey = '';
@@ -168,16 +219,43 @@ export class OfficeView {
   private buildId = 0;
 
   constructor(private readonly assets: AssetLibrary) {
-    this.root.add(this.structure, this.furniture, this.signs);
+    this.root.add(this.structure, this.furniture, this.signs, this.fixtures);
   }
 
-  /** Reconstruit sol et murs si la phase change. */
+  /** Reconstruit sol, murs et décor fixe si le plan change (phase, aile, annexe, décor). */
   setLayout(layout: OfficeLayout): void {
-    const key = `${layout.phase}:${layout.width}x${layout.depth}`;
+    const styles = layout.rooms.map((room) => room.style ?? 0).join('');
+    const key = `${layout.phase}:${layout.width}x${layout.depth}:${styles}`;
     if (key === this.layoutKey) return;
     this.layoutKey = key;
     disposeChildren(this.structure);
     this.structure.add(buildFloor(layout), buildWalls(layout));
+    void this.buildFixtures(layout);
+  }
+
+  /** Décor fixe des annexes (arcade, jardin, auditorium), chargé en arrière-plan. */
+  private async buildFixtures(layout: OfficeLayout): Promise<void> {
+    const buildId = ++this.fixturesId;
+    const fixtures = layout.fixtures ?? [];
+    const objects = await Promise.all(
+      fixtures.map((fixture) => buildFixture(fixture.kind, this.assets)),
+    );
+    if (buildId !== this.fixturesId) return; // un plan plus récent a été demandé
+    // Les modèles Kenney partagent leur géométrie avec le cache : on ne la libère pas.
+    disposeChildren(this.fixtures, false);
+    objects.forEach((object, index) => {
+      const fixture = fixtures[index];
+      if (!fixture) return;
+      object.position.set(fixture.x, 0, fixture.z);
+      object.traverse((node) => {
+        if (node instanceof THREE.Mesh) {
+          node.castShadow = true;
+          node.receiveShadow = true;
+        }
+      });
+      object.name = `fixture-${fixture.kind}`;
+      this.fixtures.add(object);
+    });
   }
 
   /** Enseignes des ailes des filiales, accrochées au mur du fond de chaque aile. */
@@ -291,6 +369,7 @@ export class OfficeView {
     disposeChildren(this.structure);
     disposeChildren(this.signs);
     disposeChildren(this.furniture, false);
+    disposeChildren(this.fixtures, false);
   }
 
   private template(kind: string): Promise<TemplatePart[]> {
@@ -333,8 +412,9 @@ function buildFloor(layout: OfficeLayout): THREE.Object3D {
       const room = [...layout.rooms]
         .reverse()
         .find((r) => x >= r.x && x < r.x + r.width && z >= r.z && z < r.z + r.depth);
-      const [a, b] = FLOOR_COLORS[room?.kind ?? 'open'];
-      mesh.setColorAt(index, color.setHex((x + z) % 2 === 0 ? a : b));
+      const { colors, pattern } = floorStyle(room?.kind ?? 'open', room?.style);
+      const even = pattern === 'planks' ? x % 2 === 0 : (x + z) % 2 === 0;
+      mesh.setColorAt(index, color.setHex(even ? colors[0] : colors[1]));
       index++;
     }
   }

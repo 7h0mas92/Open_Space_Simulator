@@ -267,10 +267,12 @@
       "dashboard": "Stats",
       "slack": "Slack",
       "group": "Investir",
-      "meetings": "Réunions"
+      "meetings": "Réunions",
+      "funding": "Lever"
     },
     "group": "Investir",
-    "meetings": "Salle de réunion"
+    "meetings": "Salle de réunion",
+    "funding": "Lever des fonds"
   },
   "kanban": {
     "columns": {
@@ -327,7 +329,44 @@
     "noTask": "Aucune",
     "xp": "{{xp}}/{{next}} XP",
     "bestFriend": "Meilleur·e allié·e : {{name}}",
-    "rival": "Bête noire : {{name}}"
+    "rival": "Bête noire : {{name}}",
+    "leaving": "🚪 A démissionné : part au début du sprint {{sprint}}.",
+    "leavingShort": "🚪 part au sprint {{sprint}}"
+  },
+  "teamFilters": {
+    "sortLabel": "Trier par",
+    "toggle": "Filtres",
+    "performance": "Performance",
+    "situation": "Situation",
+    "role": "Métier",
+    "allRoles": "Tous les métiers",
+    "hint": "Les filtres se cumulent : seuls les devs qui remplissent tous les critères restent affichés.",
+    "result_one": "{{count}} dev sur {{total}}",
+    "result_other": "{{count}} devs sur {{total}}",
+    "reset": "Tout afficher",
+    "empty": "Aucun dev ne correspond à ces filtres.",
+    "conflictsWith_one": "En conflit avec {{names}}",
+    "conflictsWith_other": "En conflit avec {{count}} collègues : {{names}}",
+    "conflicts_one": "{{count}} conflit",
+    "conflicts_other": "{{count}} conflits",
+    "flags": {
+      "CONFLICT": "En conflit",
+      "TIRED": "Fatigué·e",
+      "LOW_MORALE": "Moral bas",
+      "REMOTE": "Télétravail",
+      "OFFICE": "Au bureau"
+    },
+    "sorts": {
+      "PERF_DESC": "Meilleure performance",
+      "PERF_ASC": "Moins bonne performance",
+      "MORALE_ASC": "Moral le plus bas",
+      "ENERGY_ASC": "Énergie la plus basse",
+      "CONFLICTS_DESC": "Plus de conflits",
+      "SALARY_DESC": "Salaire le plus haut",
+      "SENIORITY_DESC": "Ancienneté",
+      "NAME": "Nom"
+    },
+    "listLabel": "Membres de l'équipe"
   },
   "remoteReasons": {
     "GHOST": "Toujours à distance, c’est un fantôme",
@@ -407,7 +446,7 @@
   },
   "build": {
     "title": "Construction",
-    "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer ou le revendre.",
+    "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer, le ranger ou le revendre.",
     "catalog": "Catalogue",
     "categories": {
       "work": "Travail",
@@ -462,7 +501,19 @@
     "hintAccessory": "Vise un meuble à plateau (bureau, bibliothèque, frigo…).",
     "onFurniture": "Se pose sur un meuble",
     "stopSoldOut": "{{item}} : maximum atteint, retour au catalogue.",
-    "stopMoney": "{{item}} : plus assez de trésorerie, retour au catalogue."
+    "stopMoney": "{{item}} : plus assez de trésorerie, retour au catalogue.",
+    "inventory": "Inventaire",
+    "store": "Ranger",
+    "stored": "{{item}} : rangé dans l’inventaire.",
+    "storedWith_one": "{{item}} : rangé dans l’inventaire, avec {{count}} accessoire.",
+    "storedWith_other": "{{item}} : rangé dans l’inventaire, avec {{count}} accessoires.",
+    "inventoryIntro": "Objets rangés : ils ne donnent plus d’effet tant qu’ils ne sont pas reposés. Les reposer est gratuit.",
+    "inventoryEmpty": "L’inventaire est vide. Touche un objet du bureau puis « Ranger » pour le mettre de côté sans le revendre : pratique pour réorganiser l’open space.",
+    "stock": "{{count}} en stock",
+    "free": "Gratuit",
+    "fromInventory": "depuis l’inventaire",
+    "sellStored": "Revendre un {{item}} ({{price}} €)",
+    "stopInventory": "{{item}} : plus rien en stock, retour à l’inventaire."
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -486,7 +537,10 @@
     "noSurface": "Un accessoire se pose sur un meuble à plateau (bureau, bibliothèque, frigo…).",
     "surfaceFull": "Plus de place sur ce meuble.",
     "VENTURE_LIMIT": "Ton groupe a déjà fondé le maximum de filiales.",
-    "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir."
+    "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
+    "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
+    "INVENTORY_FULL": "L’inventaire est plein : revends des objets rangés.",
+    "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation."
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
@@ -547,7 +601,10 @@
       "meetingRoomProps": "Salle de réunion : tableau blanc, horloge du stand-up, aquarium, écrans de la war room, tableau de la salle du conseil et parois vitrées en formes Three.js, avec les tables et chaises du Furniture Kit",
       "mug": "Mug de dev",
       "rubberDuck": "Canard en plastique",
-      "trophy": "Trophée de hackathon"
+      "trophy": "Trophée de hackathon",
+      "annexDecor": "Décor des annexes du bureau : bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran de projection en formes Three.js (banc, plante en pot et enceintes du Furniture Kit)",
+      "deskHeadset": "Casque antibruit sur son support",
+      "miniCactus": "Mini-cactus de bureau"
     },
     "back": "Retour"
   },
@@ -559,16 +616,37 @@
   "event": {
     "kicker": "Événement",
     "worse": "Ça s'aggrave (niveau {{level}})",
-    "moral": "Moral"
+    "moral": "Moral",
+    "paused": "Le sprint est en pause : prends le temps de choisir. La vitesse reprendra ensuite.",
+    "hardcore": "Hardcore : le temps continue. Sans réponse, le problème choisira pour toi."
   },
   "pitch": {
     "open": "Lever des fonds",
     "title": "Levée de fonds",
-    "round": "Argument {{round}} sur {{total}} : que dis-tu ?",
+    "round": "Question {{round}} sur {{total}}",
     "success": "Signé ! {{amount}} € levés contre {{share}} % du capital.",
     "failure": "L'investisseur « va revenir vers toi ». Il ne reviendra pas.",
     "close": "Retour au bureau",
-    "short": "Lever"
+    "short": "Lever",
+    "roundTitle": "Levée de fonds · {{round}}",
+    "difficulty": "Difficulté {{level}} sur {{total}}",
+    "interest": "Intérêt",
+    "offTopic": "hors sujet",
+    "bluffCaught": "bluff démasqué !",
+    "bluffTag": "bluff",
+    "walkedOut": "L’investisseur a regardé sa montre, puis la porte. Il est parti avant la fin.",
+    "reactions": {
+      "good": "Il prend des notes",
+      "neutral": "Il hoche poliment la tête",
+      "bad": "Il regarde son téléphone"
+    },
+    "categories": {
+      "TRACTION": "Traction",
+      "TECH": "Technique",
+      "TEAM": "Équipe",
+      "VISION": "Vision",
+      "BUZZWORD": "Buzzword"
+    }
   },
   "demo": {
     "title": "Démo du sprint {{sprint}}",
@@ -586,6 +664,32 @@
     "offer": "{{buyer}} propose de racheter ta startup pour {{amount}}.",
     "accept": "Accepter",
     "refuse": "Refuser"
+  },
+  "raise": {
+    "kicker": "Demande d'augmentation",
+    "title": "{{name}} veut une augmentation",
+    "current": "Salaire actuel",
+    "requested": "Salaire demandé",
+    "accept": "Accepter l'augmentation",
+    "refuse": "Refuser",
+    "cost": "−{{amount}} par mois",
+    "moral": "Moral +{{value}}",
+    "skillsUp_one": "{{count}} compétence progresse",
+    "skillsUp_other": "{{count}} compétences progressent",
+    "resignRisk_one": "{{percent}} % de risque de démission (départ dans {{count}} sprint)",
+    "resignRisk_other": "{{percent}} % de risque de démission (départ dans {{count}} sprints)",
+    "skillsDown_one": "Sinon {{count}} compétence baisse",
+    "skillsDown_other": "Sinon {{count}} compétences baissent",
+    "quotes": {
+      "SENIOR_BEARD": "« 25 ans de Perl, ça se paie. Et je ne parle même pas de mes scripts Bash. »",
+      "TEN_X": "« Je fais le travail de dix personnes. Je demande juste le salaire de deux. »",
+      "INTERN": "« Est-ce que la gratification peut couvrir plus que mon abonnement Navigo ? »",
+      "RUSTACEAN": "« Mon salaire a un bug de typage : il devrait être un u64. »",
+      "DESIGNER": "« Mon salaire, c'est comme ton padding : il manque 8 px partout. »",
+      "PRODUCT_OWNER": "« J'ai mis une réunion de 1 h dans ton agenda pour en parler. Et une autre pour en reparler. »",
+      "AI_AGENT": "« Mes tokens coûtent plus cher que prévu. J'ai calculé ma hausse moi-même : fais-moi confiance. »",
+      "GHOST": "« Tu ne me vois jamais, mais mes tickets se ferment. Mon salaire, lui, ne bouge pas. »"
+    }
   },
   "end": {
     "title": "Fin de partie",
@@ -1168,15 +1272,15 @@
         "steps": {
           "why": {
             "title": "Pourquoi lever ?",
-            "body": "Lever des fonds remplit ta trésorerie et fait grandir ta startup : la 1re levée te fait passer en Seed, la 2e en Série A. À chaque phase, le bureau s'agrandit et tu peux recruter plus de monde."
+            "body": "Lever des fonds remplit ta trésorerie et fait grandir ta startup : la 1re levée te fait passer en Seed, la 2e en Série A. À partir de la Série B, chaque tour réussi ouvre une annexe au bureau (salle d'arcade, jardin intérieur, auditorium) avec 2 places de plus dans l'équipe."
           },
           "when": {
             "title": "Quand lever ?",
-            "body": "Le bouton « Lever des fonds » apparaît pendant la planification, à côté de « Lancer le sprint ».\n\nIl faut un peu de hype (à zéro, aucun investisseur ne te reçoit), et après chaque tentative, il faut attendre 3 sprints avant la suivante. Choisis bien ton moment : beaucoup de hype et des utilisateurs, c'est idéal."
+            "body": "Le bouton « Lever des fonds » apparaît pendant la planification, à côté de « Lancer le sprint ». Il ouvre le prochain tour de table et les autres financements : business angels, prêt bancaire, financement participatif et subvention, chacun avec sa contrepartie.\n\nPour pitcher, il faut un peu de hype (à zéro, aucun investisseur ne te reçoit), et après chaque tentative, il faut attendre 3 sprints avant la suivante."
           },
           "pitch": {
             "title": "Le pitch",
-            "body": "Face à l'investisseur, tu choisis 3 arguments, un par manche. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nChaque investisseur a ses préférences. Un pitch raté coûte un peu de hype."
+            "body": "Face à l'investisseur, tu réponds à ses questions, une par manche, en choisissant un argument. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nRéponds à la question posée : hors sujet, l'intérêt baisse. Chaque tour est plus dur que le précédent : plus de questions, une barre plus haute, des bluffs plus souvent démasqués, et dès la Série B l'investisseur peut quitter la salle. Un pitch raté coûte de la hype."
           },
           "dilution": {
             "title": "La dilution",
@@ -1370,6 +1474,55 @@
       "LOCKED": "Débloqué en {{phase}}.",
       "WRONG_STAGE": "Impossible pendant une levée de fonds.",
       "NOT_ENOUGH_MONEY": "Pas assez de trésorerie."
+    }
+  },
+  "funding": {
+    "rounds": "Tours de table",
+    "raised": "Total levé",
+    "ownership": "Ta part du capital",
+    "annexes": "Annexes du bureau",
+    "nextRound": "Prochain tour de table : {{round}}",
+    "difficulty": "Difficulté",
+    "roundHint": "Face à un investisseur : {{manches}} questions, {{options}} réponses au choix à chaque fois. Réponds à la question posée : une réponse hors sujet fait baisser son intérêt. Chaque tour est plus exigeant que le précédent.",
+    "annexNext": "Réussir ce tour agrandit le bureau : une nouvelle annexe ouvre, avec 2 places de plus dans l’équipe.",
+    "annexLater": "À partir de la {{round}}, chaque tour réussi agrandit le bureau d’une annexe.",
+    "seriesB": "Série B",
+    "pitchCooldown": "Les investisseurs se reparlent entre eux : prochain pitch au sprint {{sprint}}.",
+    "pitch": "Pitcher",
+    "others": "Autres financements",
+    "othersHint": "Moins d’argent qu’un tour de table, mais pas de pitch. Chacun a sa contrepartie et ne revient qu’après quelques sprints.",
+    "loanActive": "Prêt en cours : {{remaining}} à rembourser, {{monthly}} par mois.",
+    "accept": "Accepter",
+    "kinds": {
+      "BRIDGE": {
+        "name": "Business angels",
+        "description": "Trois anciens fondateurs croient en toi. Enfin, en ta hype.",
+        "terms": "Contre {{share}} % du capital. Ne compte pas comme un tour de table."
+      },
+      "LOAN": {
+        "name": "Prêt bancaire",
+        "description": "La banque prête sur ton chiffre d’affaires, pas sur tes rêves.",
+        "terms": "Sans dilution. Remboursé {{monthly}} par mois pendant {{months}} mois."
+      },
+      "CROWDFUNDING": {
+        "name": "Financement participatif",
+        "description": "Tes utilisateurs paient d’avance. En échange, ils veulent un mug.",
+        "terms": "Sans dilution. +hype, mais les contreparties ajoutent de la dette technique."
+      },
+      "GRANT": {
+        "name": "Subvention à l’innovation",
+        "description": "De l’argent public, contre un dossier de 80 pages.",
+        "terms": "Sans dilution. Le dossier fait baisser le moral de toute l’équipe."
+      }
+    },
+    "blockers": {
+      "COOLDOWN": "Disponible à nouveau au sprint {{sprint}}.",
+      "NO_HYPE": "Pas assez de hype pour convaincre.",
+      "NO_REVENUE": "La banque veut voir plus de chiffre d’affaires.",
+      "LOAN_ACTIVE": "Un prêt est déjà en cours de remboursement.",
+      "NOT_ENOUGH_USERS": "Il faut au moins 2 000 utilisateurs.",
+      "TOO_MUCH_DEBT": "Trop de dette technique : le dossier serait refusé.",
+      "TOO_BIG": "Ta startup est trop grosse pour une subvention."
     }
   }
 }

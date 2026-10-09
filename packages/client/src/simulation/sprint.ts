@@ -2,7 +2,7 @@ import { BALANCE, TIME, type CommandResult, type GameState, type LocalizedText }
 import { BUYERS, FEEDBACK_BAD, FEEDBACK_GOOD, FEEDBACK_NEUTRAL } from './data/flavor';
 import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
-import { computeValuation, monthlyExpenses, monthlyRevenue } from './economy';
+import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
 import { endGame, endOfTime } from './endings';
 import { phaseIndex } from './furniture';
 import { closeSprintPerformance } from './performance';
@@ -18,6 +18,7 @@ import {
 } from './helpers';
 import { hypeDrift } from './systems/daily';
 import { refillBacklog } from './tasks';
+import { raisePlanning } from './raises';
 import { emergencySale, ventureSprint } from './ventures';
 
 /** Remise à zéro des compteurs du sprint. */
@@ -40,11 +41,14 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
   generateCandidates(state, ctx);
   refillBacklog(state, ctx.rng);
   resetTracker(state);
+  raisePlanning(state, ctx);
 }
 
 /** Fin de la planification : le sprint démarre. */
 export function startSprint(state: GameState, ctx: SimContext): CommandResult {
   if (state.stage !== 'PLANNING') return { ok: false, error: 'WRONG_STAGE' };
+  // Une demande d'augmentation attend une réponse avant de lancer le sprint.
+  if (state.raises.pending) return { ok: false, error: 'RAISE_PENDING' };
   state.stage = 'EXECUTION';
   notify(
     state,
@@ -200,6 +204,7 @@ function loseSprint(state: GameState, ctx: SimContext): void {
   const days = TIME.daysPerSprint;
   addMoney(state, (-monthlyExpenses(state) * days) / 30);
   addMoney(state, (monthlyRevenue(state) * days) / 30);
+  repayLoan(state, days);
   const churn = state.gauges.users * BALANCE.users.baseDailyChurn * days;
   addUsers(state, -churn);
   for (let day = 0; day < days; day++) addGauge(state, 'hype', hypeDrift(state.gauges.hype));

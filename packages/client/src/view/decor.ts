@@ -8,7 +8,14 @@
  */
 import type { DecorTheme, MeetingFormatId } from '@oss/shared';
 import { accessCell, buildNavGrid, NEIGHBORS_4, type NavGrid } from '../ai/grid';
-import { roomAt, type Cell, type OfficeLayout, type Room, type RoomKind } from './layout';
+import {
+  fixtureCells,
+  roomAt,
+  type Cell,
+  type OfficeLayout,
+  type Room,
+  type RoomKind,
+} from './layout';
 import type { PlacedItemView } from './types';
 
 /** Une décoration posée au sol : `index` choisit le modèle parmi ceux du thème. */
@@ -95,7 +102,7 @@ class Planner {
     private readonly items: readonly PlacedItemView[],
   ) {
     this.targets = [layout.entrance, ...items.map((item) => accessCell(item))];
-    for (const cell of layout.partitions) this.taken.add(key(cell));
+    for (const cell of [...layout.partitions, ...fixtureCells(layout)]) this.taken.add(key(cell));
     for (const target of this.targets) this.taken.add(key(target));
     // L'entrée et ses abords restent dégagés.
     for (const [dx, dz] of NEIGHBORS_4)

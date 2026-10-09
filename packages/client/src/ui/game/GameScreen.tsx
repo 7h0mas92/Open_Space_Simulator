@@ -11,6 +11,7 @@ import { SlackDock } from '../slack/SlackDock';
 import { SettingsPanel } from '../settings/SettingsPanel';
 import { useGame, type PanelId, type Toast } from '../store/game';
 import { useSettings } from '../store/settings';
+import { Funding } from '../funding/Funding';
 import { Group } from '../group/Group';
 import { MeetingRoom } from '../meetings/MeetingRoom';
 import { Hiring } from '../team/Hiring';
@@ -45,6 +46,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Group view={view} />;
     case 'meetings':
       return <MeetingRoom view={view} />;
+    case 'funding':
+      return <Funding view={view} />;
     case 'dashboard':
       return <Dashboard view={view} />;
     case 'slack':
@@ -102,6 +105,8 @@ function useShortcuts() {
         event.key === ' ' &&
         game.view?.step === 'EXECUTION' &&
         game.view.mode !== 'HARDCORE' &&
+        // Une carte ouverte tient déjà le temps en pause jusqu'à la réponse.
+        !game.view.event &&
         target?.tagName !== 'BUTTON'
       ) {
         event.preventDefault();

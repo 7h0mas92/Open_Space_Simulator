@@ -830,6 +830,83 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── RAISE_REQUESTED ──────────────────────────────────────────────────────
+  {
+    trigger: 'RAISE_REQUESTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Quelqu’un vient d’entrer dans le bureau du fondateur avec un tableau Excel. Ça sent la négo.',
+      'Someone just walked into the founder’s office with a spreadsheet. Smells like a negotiation.',
+    ),
+  },
+  {
+    trigger: 'RAISE_REQUESTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Si ça passe, je demande aussi. Je dis ça, je dis rien.',
+      'If that works, I’m asking too. Just saying.',
+    ),
+  },
+
+  // ─── RAISE_GRANTED ────────────────────────────────────────────────────────
+  {
+    trigger: 'RAISE_GRANTED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t('{event} Fiche de paie mise à jour. 💸', '{event} Payslip updated. 💸'),
+  },
+  {
+    trigger: 'RAISE_GRANTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Augmentation accordée ? Je prépare mon tableau Excel pour le prochain sprint.',
+      'Raise granted? I’m preparing my own spreadsheet for next sprint.',
+    ),
+  },
+
+  // ─── RAISE_REFUSED ────────────────────────────────────────────────────────
+  {
+    trigger: 'RAISE_REFUSED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Ambiance glaciale près de la machine à café. Il paraît que c’est « non ».',
+      'Chilly vibes by the coffee machine. Word is it’s a “no”.',
+    ),
+  },
+  {
+    trigger: 'RAISE_REFUSED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      'Rappel : la reconnaissance passe aussi par les emojis 🙏. C’est gratuit.',
+      'Reminder: recognition also comes in emoji form 🙏. It’s free.',
+    ),
+  },
+
+  // ─── DEV_NOTICE ───────────────────────────────────────────────────────────
+  {
+    trigger: 'DEV_NOTICE',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '{event} Merci de lui laisser ses tickets en cours, et pas les vôtres.',
+      '{event} Please leave them their own tickets, not yours.',
+    ),
+  },
+  {
+    trigger: 'DEV_NOTICE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Son statut LinkedIn est déjà passé en « Open to work ». Rapide.',
+      'Their LinkedIn already says “Open to work”. Fast.',
+    ),
+  },
+
   // ─── DEV_RESIGNED ─────────────────────────────────────────────────────────
   {
     trigger: 'DEV_RESIGNED',

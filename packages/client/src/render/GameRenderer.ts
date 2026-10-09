@@ -22,7 +22,7 @@ import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents
 import { itemCells } from '../ai/grid';
 import { catalogItem, footprint } from '../view/catalog';
 import { decorKey, planDecor } from '../view/decor';
-import { officeLayout, type Cell, type OfficeLayout } from '../view/layout';
+import { layoutOf, officeLayout, type Cell, type OfficeLayout } from '../view/layout';
 import { liveSprintMinutes } from '../view/liveTime';
 import type { FurnitureColor } from '../view/colors';
 import {
@@ -241,9 +241,12 @@ export class GameRenderer {
 
   setView(view: GameView): void {
     const phaseChanged =
-      !this.view || this.view.phase !== view.phase || this.view.group.wings !== view.group.wings;
+      !this.view ||
+      this.view.phase !== view.phase ||
+      this.view.group.wings !== view.group.wings ||
+      this.view.funding.annexes !== view.funding.annexes;
     this.view = view;
-    this.layout = officeLayout(view.phase, view.group.wings);
+    this.layout = layoutOf(view);
     this.office.setLayout(this.layout);
     const english = document.documentElement.lang.startsWith('en');
     this.office.setWingSigns(

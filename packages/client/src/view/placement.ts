@@ -7,7 +7,7 @@
 import { PHASES } from '@oss/shared';
 import { itemCells, type ItemPlacement } from '../ai/grid';
 import { catalogItem, footprint, type CatalogItem } from './catalog';
-import type { Cell, OfficeLayout } from './layout';
+import { fixtureCells, type Cell, type OfficeLayout } from './layout';
 import type { GameView, ItemHost, PlacedItemView, Rotation } from './types';
 
 export type PlacementError =
@@ -47,7 +47,8 @@ export function checkPlacement(
     list.some((cell) => cell.x === x && cell.z === z);
 
   for (const cell of cells) {
-    if (has(layout.partitions, cell.x, cell.z)) return 'wall';
+    if (has(layout.partitions, cell.x, cell.z) || has(fixtureCells(layout), cell.x, cell.z))
+      return 'wall';
     if (cell.x === layout.entrance.x && cell.z === layout.entrance.z) return 'entrance';
   }
   // Même règle que la simulation : aucun chevauchement, tapis compris.
@@ -163,7 +164,10 @@ export interface ShopStatus {
 
 /** Disponibilité d'un objet de la boutique pour la partie en cours. */
 export function shopStatus(item: CatalogItem, view: GameView): ShopStatus {
-  const owned = view.items.filter((placed) => placed.kind === item.kind).length;
+  // Les objets rangés dans l'inventaire comptent aussi dans le maximum.
+  const owned =
+    view.items.filter((placed) => placed.kind === item.kind).length +
+    view.inventory.reduce((sum, stored) => sum + (stored.kind === item.kind ? stored.count : 0), 0);
   const block: ShopBlock | null =
     PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
       ? 'locked'

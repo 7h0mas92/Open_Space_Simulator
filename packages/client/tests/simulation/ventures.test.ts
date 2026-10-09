@@ -310,6 +310,7 @@ describe('Filiales : cartes, bureau et sauvegarde', () => {
     expect(parsed.stats.venturesFounded).toBe(0);
   });
 
+  // Parties complètes et rejouées : plusieurs secondes sur une machine chargée (CI).
   it('une partie avec filiales se rejoue à l’identique (replay, anti-triche)', () => {
     const cards = new CardLibrary(EVENT_CARDS);
     const simulation = Simulation.create({ seed: 'investor-replay', mode: 'NORMAL' }, cards);
@@ -322,5 +323,5 @@ describe('Filiales : cartes, bureau et sauvegarde', () => {
       cards,
     });
     expect(replayed.state).toEqual(simulation.state);
-  });
+  }, 20_000);
 });

@@ -1,9 +1,17 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { EventView, GameView, GaugeName, PitchView } from '../../view/types';
+import type {
+  DevView,
+  EventView,
+  GameView,
+  GaugeName,
+  PitchView,
+  RaiseRequestView,
+} from '../../view/types';
 import { useGame } from '../store/game';
 import { formatGauge, formatMoney, localized } from './format';
 import { GAUGE_ICONS } from './Hud';
+import { moodEmoji, StatBars } from '../team/StatBars';
 
 /**
  * Écrans qui interrompent la partie : carte d'événement, levée de fonds, démo de fin de
@@ -18,18 +26,26 @@ export function StageScreens({ view }: { view: GameView }) {
     case 'demo':
       return <DemoScreen view={view} />;
     case 'event':
-      return view.event && <EventCardScreen event={view.event} />;
+      return (
+        view.event && <EventCardScreen event={view.event} hardcore={view.mode === 'HARDCORE'} />
+      );
+    case 'raise': {
+      const request = view.raiseRequest;
+      const dev = request && view.devs.find((candidate) => candidate.id === request.devId);
+      return request && dev ? <RaiseScreen request={request} dev={dev} /> : null;
+    }
     default:
       return null;
   }
 }
 
 /** Écran d'étape affiché pour cet instantané, ou `null` quand la partie est jouable. */
-export function stageScreen(view: GameView): 'end' | 'pitch' | 'demo' | 'event' | null {
+export function stageScreen(view: GameView): 'end' | 'pitch' | 'demo' | 'event' | 'raise' | null {
   if (view.step === 'ENDED') return 'end';
   if (view.step === 'PITCH' && view.pitch) return 'pitch';
   if (view.step === 'DEMO') return 'demo';
   if (view.event) return 'event';
+  if (view.step === 'PLANNING' && view.raiseRequest) return 'raise';
   return null;
 }
 
@@ -38,18 +54,25 @@ function Dialog({
   title,
   className,
   tutorial,
+  focusDialog = false,
   children,
 }: {
   title: string;
   className: string;
   /** Repère pour le tutoriel (attribut `data-tutorial`). */
   tutorial?: string;
+  /**
+   * Focus sur la boîte elle-même plutôt que sur son premier bouton : une carte qui surgit ne
+   * doit pas être tranchée par la touche Espace ou Entrée que le joueur tapait déjà.
+   */
+  focusDialog?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    ref.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus();
-  }, [title]);
+    if (focusDialog) ref.current?.focus();
+    else ref.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus();
+  }, [title, focusDialog]);
   return (
     <div className="stage-backdrop">
       <div
@@ -59,6 +82,7 @@ function Dialog({
         aria-modal="true"
         aria-label={title}
         data-tutorial={tutorial}
+        tabIndex={focusDialog ? -1 : undefined}
       >
         {children}
       </div>
@@ -105,7 +129,7 @@ function EffectChips({ effects }: { effects: EventView['choices'][number]['effec
   );
 }
 
-function EventCardScreen({ event }: { event: EventView }) {
+function EventCardScreen({ event, hardcore }: { event: EventView; hardcore: boolean }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
   const title = localized(event.title, i18n.language);
@@ -124,7 +148,7 @@ function EventCardScreen({ event }: { event: EventView }) {
   }, [count, dispatch]);
 
   return (
-    <Dialog title={title} className="event-card" tutorial="event">
+    <Dialog title={title} className="event-card" tutorial="event" focusDialog>
       <p className="eyebrow">
         <span aria-hidden="true">⚡ </span>
         {t('event.kicker')}
@@ -154,24 +178,157 @@ function EventCardScreen({ event }: { event: EventView }) {
           </li>
         ))}
       </ul>
+      {/* Hors Hardcore, le temps est arrêté le temps de choisir (engine/host.ts). */}
+      <p className={`event-clock ${hardcore ? 'is-running' : ''}`} data-testid="event-clock">
+        <span aria-hidden="true">{hardcore ? '⏱ ' : '❚❚ '}</span>
+        {t(hardcore ? 'event.hardcore' : 'event.paused')}
+      </p>
     </Dialog>
   );
 }
+
+/** Un dev demande une augmentation : accepter ou refuser, avec les conséquences annoncées. */
+function RaiseScreen({ request, dev }: { request: RaiseRequestView; dev: DevView }) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const money = (value: number) => `${formatMoney(value, i18n.language)} €`;
+  const raise = request.requestedSalary - request.currentSalary;
+  const percent = Math.round((raise / Math.max(1, request.currentSalary)) * 100);
+  const title = t('raise.title', { name: dev.name });
+  const answer = (accept: boolean) => void dispatch({ type: 'answerRaise', accept });
+
+  // Touches 1 et 2 : répondre sans quitter le clavier, comme pour les cartes.
+  useEffect(() => {
+    const onKey = (keyEvent: KeyboardEvent) => {
+      if (keyEvent.key !== '1' && keyEvent.key !== '2') return;
+      keyEvent.preventDefault();
+      void dispatch({ type: 'answerRaise', accept: keyEvent.key === '1' });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dispatch]);
+
+  return (
+    <Dialog title={title} className="raise-screen">
+      <p className="eyebrow">
+        <span aria-hidden="true">💰 </span>
+        {t('raise.kicker')}
+      </p>
+      <h2>{title}</h2>
+      <p className="role">
+        <span aria-hidden="true">{moodEmoji(dev.morale)} </span>
+        {t(`roles.${dev.role}`)} · {t('team.level', { level: dev.level })}
+      </p>
+      <blockquote>{t(`raise.quotes.${dev.role}`)}</blockquote>
+      <dl className="raise-salary">
+        <dt>{t('raise.current')}</dt>
+        <dd>{money(request.currentSalary)}</dd>
+        <dt>{t('raise.requested')}</dt>
+        <dd className="down">
+          {money(request.requestedSalary)} (+{percent} %)
+        </dd>
+      </dl>
+      <StatBars stats={dev.stats} />
+      <ul className="choices">
+        <li>
+          <button
+            type="button"
+            className="choice"
+            aria-keyshortcuts="1"
+            onClick={() => answer(true)}
+          >
+            <span className="choice-key" aria-hidden="true">
+              1
+            </span>
+            <span className="choice-body">
+              <strong>{t('raise.accept')}</strong>
+              <ul className="effects">
+                <li className="down">{t('raise.cost', { amount: money(raise) })}</li>
+                <li className="up">{t('raise.moral', { value: request.acceptMoral })}</li>
+                <li className="up">{t('raise.skillsUp', { count: request.skillsGained })}</li>
+              </ul>
+            </span>
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            className="choice"
+            aria-keyshortcuts="2"
+            onClick={() => answer(false)}
+          >
+            <span className="choice-key" aria-hidden="true">
+              2
+            </span>
+            <span className="choice-body">
+              <strong>{t('raise.refuse')}</strong>
+              <ul className="effects">
+                <li className="down">
+                  {t('raise.resignRisk', {
+                    percent: Math.round(request.resignChance * 100),
+                    count: request.noticeSprints,
+                  })}
+                </li>
+                <li className="down">{t('raise.skillsDown', { count: request.skillsLost })}</li>
+              </ul>
+            </span>
+          </button>
+        </li>
+      </ul>
+    </Dialog>
+  );
+}
+
+/** Pastilles de difficulté d'un tour de table (●●●○○○). */
+export function DifficultyDots({ tier, tiers }: { tier: number; tiers: number }) {
+  const { t } = useTranslation();
+  return (
+    <span
+      className="difficulty"
+      role="img"
+      aria-label={t('pitch.difficulty', { level: tier + 1, total: tiers })}
+    >
+      {Array.from({ length: tiers }, (_, index) => (
+        <span key={index} className={index <= tier ? 'on' : 'off'} aria-hidden="true" />
+      ))}
+    </span>
+  );
+}
+
+const REACTION_ICONS = { good: '👍', neutral: '😐', bad: '👎' } as const;
 
 function PitchScreen({ pitch }: { pitch: PitchView }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
   const name = localized(pitch.investor.name, i18n.language);
   const result = pitch.result;
+  const round = localized(pitch.roundName, i18n.language);
   return (
     <Dialog title={t('pitch.title')} className="pitch-screen">
-      <p className="eyebrow">{t('pitch.title')}</p>
+      <p className="eyebrow pitch-eyebrow">
+        <span>{t('pitch.roundTitle', { round })}</span>
+        <DifficultyDots tier={pitch.tier} tiers={pitch.tiers} />
+      </p>
       <h2>{name}</h2>
       <blockquote>{localized(pitch.investor.intro, i18n.language)}</blockquote>
+      <div className="pitch-interest">
+        <span>{t('pitch.interest')}</span>
+        <meter min={0} max={1} low={0.35} high={0.65} optimum={1} value={pitch.interest} />
+        <strong>{Math.round(pitch.interest * 100)} %</strong>
+      </div>
       {pitch.chosen.length > 0 && (
         <ol className="pitch-chosen">
-          {pitch.chosen.map((argument, index) => (
-            <li key={index}>{localized(argument, i18n.language)}</li>
+          {pitch.chosen.map((answer, index) => (
+            <li key={index} className={`reaction-${answer.reaction}`}>
+              <span aria-label={t(`pitch.reactions.${answer.reaction}`)} role="img">
+                {REACTION_ICONS[answer.reaction]}
+              </span>{' '}
+              {localized(answer.label, i18n.language)}
+              {answer.offTopic && <span className="tag tag-warning">{t('pitch.offTopic')}</span>}
+              {answer.bluffCaught && (
+                <span className="tag tag-warning">{t('pitch.bluffCaught')}</span>
+              )}
+            </li>
           ))}
         </ol>
       )}
@@ -183,7 +340,9 @@ function PitchScreen({ pitch }: { pitch: PitchView }) {
                   amount: formatMoney(result.amount, i18n.language),
                   share: Math.round(result.dilution * 1000) / 10,
                 })
-              : t('pitch.failure')}
+              : pitch.walkedOut
+                ? t('pitch.walkedOut')
+                : t('pitch.failure')}
           </p>
           <button
             type="button"
@@ -195,16 +354,36 @@ function PitchScreen({ pitch }: { pitch: PitchView }) {
         </>
       ) : (
         <>
-          <p>{t('pitch.round', { round: pitch.round + 1, total: pitch.rounds })}</p>
+          <p className="pitch-round">
+            {t('pitch.round', { round: pitch.round + 1, total: pitch.rounds })}
+          </p>
+          {pitch.question && (
+            <p className="pitch-question">
+              <span className={`tag category-${pitch.question.category}`}>
+                {t(`pitch.categories.${pitch.question.category}`)}
+              </span>
+              {localized(pitch.question.text, i18n.language)}
+            </p>
+          )}
           <ul className="choices">
             {pitch.options.map((option) => (
               <li key={option.id}>
                 <button
                   type="button"
-                  className="choice"
+                  className={`choice${option.bluff ? ' choice-bluff' : ''}`}
                   onClick={() => void dispatch({ type: 'pitchArgument', argumentId: option.id })}
                 >
-                  {localized(option.label, i18n.language)}
+                  <span className="choice-body">
+                    <strong>{localized(option.label, i18n.language)}</strong>
+                    <span className="choice-tags">
+                      <span className={`tag category-${option.category}`}>
+                        {t(`pitch.categories.${option.category}`)}
+                      </span>
+                      {option.bluff && (
+                        <span className="tag tag-warning">⚠ {t('pitch.bluffTag')}</span>
+                      )}
+                    </span>
+                  </span>
                 </button>
               </li>
             ))}
