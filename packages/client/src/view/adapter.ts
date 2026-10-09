@@ -50,9 +50,10 @@ import {
   productivityOf,
   qualityOf,
 } from '../simulation/performance';
+import { objectiveReached, objectiveValue, sprintTime } from '../simulation/taskFlow';
 import { tasksInColumn } from '../simulation/tasks';
 import { birthdayOf, birthdayPartyIds, calendarDay } from '../simulation/systems/calendar';
-import { getClock } from '../simulation/time';
+import { clockAt, getClock } from '../simulation/time';
 import {
   investableCash,
   officeWings,
@@ -78,6 +79,7 @@ import type {
   GameView,
   GaugeName,
   KanbanColumn,
+  ObjectiveView,
   PlacedItemView,
   StoredItemView,
   RaiseRequestView,
@@ -268,12 +270,43 @@ function taskViews(state: GameState): TaskView[] {
         column: COLUMNS[task.column],
         assigneeId: task.assigneeId,
         progress: Math.min(1, task.progress / task.work),
-        impact: TASK_IMPACT[type],
+        // Urgences et tâches de la semaine : seule leur récompense compte, pas l'effet du type.
+        impact: task.kind ? {} : TASK_IMPACT[type],
         hallucinated: task.hallucinated,
+        kind: task.kind ?? null,
+        ...dueOf(state, task.deadline),
       });
     }
   }
   return tasks;
+}
+
+/** Échéance d'une tâche spéciale, lisible : « avant mardi 14h », « encore 6 h ». */
+function dueOf(
+  state: GameState,
+  deadline: number | undefined,
+): Pick<TaskView, 'due' | 'hoursLeft'> {
+  if (deadline === undefined) return { due: null, hoursLeft: null };
+  const sprint = Math.floor(deadline / TIME.ticksPerSprint);
+  const clock = clockAt(sprint, deadline - sprint * TIME.ticksPerSprint);
+  return {
+    due: { dayOfWeek: clock.dayOfWeek, hour: clock.hour },
+    hoursLeft: Math.max(0, (deadline - sprintTime(state)) / TIME.ticksPerHour),
+  };
+}
+
+function objectiveView(state: GameState): ObjectiveView | null {
+  const objective = state.objective;
+  if (!objective || objective.status !== 'ACTIVE' || objective.sprint !== state.sprint) return null;
+  const value = objectiveValue(state, objective);
+  return {
+    kind: objective.kind,
+    difficulty: objective.difficulty,
+    target: objective.target,
+    value,
+    reached: objectiveReached(objective, value),
+    reward: objective.reward,
+  };
 }
 
 function candidateViews(state: GameState): CandidateView[] {
@@ -561,6 +594,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     ownership: state.ownership,
     event: eventView(state, context),
     lastReport: state.history.sprints.at(-1) ?? null,
+    objective: objectiveView(state),
     pitch: pitch ? pitchView(state, pitch) : null,
     pitchBlocker: pitchBlocker(state),
     funding: fundingView(state),

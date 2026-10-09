@@ -233,13 +233,14 @@ describe('Autres financements', () => {
   });
 
   // Parties complètes et rejouées : plusieurs secondes sur une machine chargée (CI).
+  // Graine choisie pour que le bot prenne bien des financements (3 dans cette partie).
   it('une partie avec financements se rejoue à l’identique (replay, anti-triche)', () => {
     const cards = new CardLibrary(EVENT_CARDS);
-    const simulation = Simulation.create({ seed: 'financier-replay', mode: 'NORMAL' }, cards);
-    playWithBot(simulation, createBot('financier', 'financier-replay'), cards);
+    const simulation = Simulation.create({ seed: 'fin-30', mode: 'NORMAL' }, cards);
+    playWithBot(simulation, createBot('financier', 'fin-30'), cards);
     expect(simulation.commands.some((entry) => entry.command.type === 'TAKE_FINANCING')).toBe(true);
     const replayed = replay({
-      seed: 'financier-replay',
+      seed: 'fin-30',
       mode: 'NORMAL',
       commands: simulation.commands,
       cards,

@@ -184,12 +184,12 @@ export const LESSONS: readonly Lesson[] = [
   {
     id: 'incident',
     trigger: (view, seen) => seen.has('basics') && view.incident,
-    steps: [{ id: 'outage' }, { id: 'fix' }],
+    steps: [{ id: 'outage' }, { id: 'urgent' }, { id: 'fix' }],
   },
   {
     id: 'demo',
     trigger: (view, seen) => seen.has('basics') && view.step === 'DEMO',
-    steps: [{ id: 'report', target: 'demo' }, { id: 'read' }, { id: 'next' }],
+    steps: [{ id: 'report', target: 'demo' }, { id: 'read' }, { id: 'goals' }, { id: 'next' }],
   },
   {
     id: 'build',
