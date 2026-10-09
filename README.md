@@ -416,7 +416,10 @@ sequenceDiagram
   rejoue en accéléré (les commandes du joueur sont bloquées).
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
-  gardés dans IndexedDB puis synchronisés avec le serveur à la connexion.
+  gardés dans IndexedDB puis synchronisés avec le serveur à la connexion. « Continuer » reprend
+  la sauvegarde la plus récente d'une partie en cours : à la fin d'une partie, sa sauvegarde
+  automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
+  dans « Charger une partie »).
 - **Succès** : 65 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
