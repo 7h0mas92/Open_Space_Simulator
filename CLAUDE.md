@@ -477,6 +477,14 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   (`BALANCE.work.offTradeMultiplier`). Bouton « Tout en À faire » (`MOVE_ALL_TO_TODO`). Champ
   `trade` optionnel (code par défaut). Effet sur `pnpm balance` : plus de licornes pour les bons bots
   (le PO ne prend plus les urgences), faillite inchangée.
+- Salles de réunion (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, panneau
+  « 🗓️ Réunion ») : dès la Seed, 6 formules avec bonus et malus (stand-up, brainstorming,
+  aquarium ; zen et war room en Série A ; salle du conseil en Licorne), rendu 3D distinct
+  (`render/meetingRoom.ts`), chaises attribuées aux devs. Réunion d'équipe chaque matin de semaine
+  à 9h30, utile ou inutile, sur une graine à part (`seed#meeting#tick`) ; changer ou vider la
+  salle rend 50 %. Commandes `FIT_MEETING_ROOM` / `CLEAR_MEETING_ROOM`, état `meetingRoom` (null
+  par défaut). Bot « organizer » : environ +33 % de valorisation médiane face à « balanced ».
+  À 375 px, les 8 boutons du dock tiennent sans défilement (libellé court « Réunion »).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

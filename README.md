@@ -349,6 +349,16 @@ flowchart LR
   métiers sont rangés à part dans la liste) : hors métier, elle avance à 60 %. Une carte dont le
   métier n'a personne dans l'équipe le signale. Le bouton « Tout en À faire » passe tout le
   backlog dans la colonne À faire en un clic (une seule commande, rejouable).
+- **Salles de réunion** : dès la Seed, le bouton « 🗓️ Réunion » du dock ouvre le panneau de la
+  salle de réunion. Six formules, chacune avec un bonus et un malus : stand-up (réunions du PO
+  deux fois moins chères, léger −moral), brainstorming (+qualité, réunions du PO qui débordent),
+  aquarium vitré (+hype, −productivité), puis en Série A salle zen (+moral et récupération,
+  −productivité) et war room (+stabilité, −moral), et en Licorne salle du conseil (+hype et
+  qualité, petits-fours hors de prix). Chaque matin de semaine à 9h30, l'équipe s'y réunit :
+  utile, la réunion rapporte (dette, hype, stabilité ou moral) ; inutile, elle coûte. Changer de
+  formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
+  formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
+  part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
 - **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
   dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
   les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
@@ -476,9 +486,9 @@ bouton 🛠 du menu principal.
 
 ## Équilibrage
 
-`pnpm balance` joue 10 000 parties avec six stratégies automatiques (aléatoire, « ship it »,
+`pnpm balance` joue 10 000 parties avec sept stratégies automatiques (aléatoire, « ship it »,
 équilibrée, prudente, investisseuse qui crée des filiales, financière qui use des
-financements hors tour de table) et produit un rapport : taux de faillite (global et par phase),
+financements hors tour de table, organisatrice qui aménage la salle de réunion) et produit un rapport : taux de faillite (global et par phase),
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
@@ -549,7 +559,8 @@ génère que des messages Slack.
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, ville et baies vitrées, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
+  pupitre et écran de projection des annexes, ville et baies vitrées, tableau blanc, horloge,
+  aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
   ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
   lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
