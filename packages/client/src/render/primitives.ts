@@ -12,6 +12,13 @@ import * as THREE from 'three';
 import type { MissingAssetId } from './assetManifest';
 import { detailedBookcase, detailedSofa } from './furnitureDetail';
 import {
+  canteenTable,
+  coffeeCounter,
+  drinksFridge,
+  espressoCounter,
+  microwaveCounter,
+} from './kitchenFurniture';
+import {
   ergonomicChair,
   headsetRack,
   mediaConsole,
@@ -56,6 +63,8 @@ export const PALETTE = {
   birchDark: 0xc9a46f,
   chairFabric: 0x4f5668,
   chairFabricDark: 0x3a4050,
+  cabinet: 0xe4e8e1,
+  cushion: 0xd9734e,
 } as const;
 
 /** Nom de chaque couleur de la palette : il sert à repérer les matériaux à repeindre. */
@@ -94,7 +103,7 @@ function glow(color: number): THREE.MeshStandardMaterial {
 }
 
 /** Verre teinté, partagé (porte du frigo, verseuse de la cafetière). */
-const glass = new THREE.MeshStandardMaterial({
+export const glass = new THREE.MeshStandardMaterial({
   color: 0xbfe3f2,
   roughness: 0.1,
   metalness: 0.1,
@@ -271,89 +280,6 @@ function mousePad(): THREE.Group {
   const group = new THREE.Group();
   group.add(box(0.26, 0.008, 0.24, PALETTE.blue, 0, 0, 0));
   group.add(box(0.24, 0.012, 0.22, PALETTE.dark, 0, 0, 0));
-  return group;
-}
-
-/** Baie de serveurs : armoire noire, serveurs empilés et voyants qui clignotent. */
-/** Cafetière à filtre, petite et bon marché : socle noir, verseuse en verre à moitié pleine. */
-function dripCoffeeMaker(): THREE.Group {
-  const group = new THREE.Group();
-  group.add(box(0.34, 0.04, 0.32, PALETTE.dark, 0, 0, 0));
-  group.add(box(0.34, 0.46, 0.12, PALETTE.dark, 0, 0, -0.1));
-  group.add(box(0.34, 0.1, 0.3, PALETTE.dark, 0, 0.4, -0.01));
-  group.add(post(0.1, 0.11, 0.02, 0x1a1e2b, 0, 0.04, 0.05));
-  group.add(post(0.1, 0.1, 0.2, glass, 0, 0.06, 0.05));
-  group.add(post(0.09, 0.09, 0.09, PALETTE.coffee, 0, 0.065, 0.05));
-  group.add(box(0.03, 0.12, 0.03, PALETTE.dark, 0, 0.1, 0.17));
-  group.add(light(0.03, 0.03, 0.01, PALETTE.red, 0.12, 0.42, 0.145));
-  return group;
-}
-
-/** Machine à expresso de barista : chrome, deux groupes, manomètre, tasses et moulin. */
-function espressoMachine(): THREE.Group {
-  const group = new THREE.Group();
-  const body = new THREE.Group();
-  body.add(box(0.56, 0.36, 0.4, PALETTE.chrome, 0, 0, -0.02));
-  for (const x of [-0.285, 0.285]) body.add(box(0.02, 0.32, 0.36, PALETTE.red, x, 0.02, -0.02));
-  body.add(box(0.5, 0.03, 0.12, PALETTE.metal, 0, 0, 0.22));
-  body.add(box(0.58, 0.04, 0.42, PALETTE.metal, 0, 0.36, -0.02));
-  // Manomètre sur la façade.
-  const gauge = post(0.055, 0.055, 0.02, PALETTE.white);
-  gauge.rotation.x = Math.PI / 2;
-  gauge.position.set(0, 0.27, 0.19);
-  body.add(gauge);
-  body.add(box(0.005, 0.04, 0.005, PALETTE.red, 0.01, 0.26, 0.2));
-  // Deux groupes et leurs porte-filtres noirs, une tasse sous chacun.
-  for (const x of [-0.15, 0.15]) {
-    body.add(post(0.045, 0.05, 0.06, PALETTE.metal, x, 0.12, 0.2));
-    body.add(box(0.03, 0.03, 0.14, PALETTE.dark, x, 0.11, 0.3));
-    body.add(post(0.03, 0.025, 0.05, PALETTE.white, x, 0.03, 0.22));
-  }
-  // Buse vapeur.
-  const wand = cylinder(0.008, 0.16, PALETTE.metal);
-  wand.rotation.z = 0.3;
-  wand.position.set(0.25, 0.16, 0.2);
-  body.add(wand);
-  // Tasses qui chauffent sur le dessus.
-  for (const [x, z] of [
-    [-0.17, -0.1],
-    [-0.08, -0.1],
-    [0.01, -0.1],
-    [-0.12, 0.02],
-  ] as const) {
-    body.add(post(0.03, 0.025, 0.05, PALETTE.white, x, 0.4, z));
-  }
-  body.position.x = -0.1;
-  group.add(body);
-  // Moulin à café : corps noir, trémie en verre pleine de grains.
-  group.add(box(0.14, 0.24, 0.16, PALETTE.dark, 0.3, 0, -0.06));
-  group.add(post(0.09, 0.05, 0.14, glass, 0.3, 0.24, -0.06));
-  group.add(post(0.07, 0.045, 0.08, PALETTE.coffee, 0.3, 0.25, -0.06));
-  return group;
-}
-
-/** Frigo à boissons vitré : canettes de toutes les couleurs, bandeau lumineux. */
-function drinksFridge(): THREE.Group {
-  const group = new THREE.Group();
-  // Caisson ouvert à l'avant : fond, côtés, socle et chapeau.
-  group.add(box(0.84, 1.82, 0.06, PALETTE.red, 0, 0, -0.36));
-  for (const x of [-0.39, 0.39]) group.add(box(0.06, 1.82, 0.7, PALETTE.red, x, 0, -0.04));
-  group.add(box(0.84, 0.14, 0.7, 0x9f2f25, 0, 0, -0.04));
-  group.add(box(0.84, 0.32, 0.7, PALETTE.red, 0, 1.5, -0.04));
-  group.add(box(0.72, 1.36, 0.02, PALETTE.white, 0, 0.14, -0.32));
-  group.add(light(0.7, 0.14, 0.02, PALETTE.white, 0, 1.6, 0.32));
-  // Étagères et canettes, derrière la porte vitrée.
-  const cans = [PALETTE.red, PALETTE.green, PALETTE.yellow, PALETTE.blue, PALETTE.white];
-  for (let row = 0; row < 4; row++) {
-    const y = 0.16 + row * 0.35;
-    group.add(box(0.7, 0.02, 0.5, PALETTE.white, 0, y, 0));
-    for (let i = 0; i < 6; i++) {
-      const color = cans[(row * 2 + i) % cans.length] ?? PALETTE.red;
-      group.add(post(0.045, 0.045, 0.15, color, -0.28 + i * 0.112, y + 0.02, 0.12, 6));
-    }
-  }
-  group.add(box(0.72, 1.36, 0.02, glass, 0, 0.14, 0.31));
-  group.add(box(0.04, 0.5, 0.05, PALETTE.metal, 0.33, 0.7, 0.34));
   return group;
 }
 
@@ -792,9 +718,11 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   standingDesk,
   headphones: headsetRack,
   serverRack,
-  dripCoffeeMaker,
-  espressoMachine,
+  coffeeCounter,
+  espressoCounter,
+  microwaveCounter,
   drinksFridge,
+  canteenTable,
   cactus,
   metricsScreen,
   ramen,
