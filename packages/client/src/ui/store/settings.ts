@@ -35,6 +35,21 @@ interface SettingsStore extends Settings {
 
 const STORAGE_KEY = 'oss.settings';
 
+/** Nom du moteur WebGL, lu une fois sur un canvas jetable (`undefined` si WebGL est absent). */
+function gpuRenderer(): string | undefined {
+  if (typeof WebGLRenderingContext === 'undefined') return undefined;
+  try {
+    const gl = document.createElement('canvas').getContext('webgl');
+    if (!gl) return undefined;
+    const debug = gl.getExtension('WEBGL_debug_renderer_info');
+    const name: unknown = gl.getParameter(debug ? debug.UNMASKED_RENDERER_WEBGL : gl.RENDERER);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    return typeof name === 'string' ? name : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function detectDefaults(): Settings {
   const media = (query: string) =>
     typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
@@ -43,6 +58,7 @@ function detectDefaults(): Settings {
       coarsePointer: media('(pointer: coarse)'),
       screenWidth: window.screen?.width ?? window.innerWidth,
       hardwareConcurrency: navigator.hardwareConcurrency,
+      gpuRenderer: gpuRenderer(),
     }),
     reducedMotion: media('(prefers-reduced-motion: reduce)'),
     zoomSpeed: 'normal',

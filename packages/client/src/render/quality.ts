@@ -71,10 +71,24 @@ export interface DeviceHints {
   readonly coarsePointer: boolean;
   readonly screenWidth: number;
   readonly hardwareConcurrency?: number;
+  /** Nom du moteur WebGL (« SwiftShader », « llvmpipe »…) quand le navigateur le donne. */
+  readonly gpuRenderer?: string;
 }
 
-/** Qualité par défaut selon l'appareil : mobile = bas (sans ombres), tablette = moyen. */
+/**
+ * Rendu WebGL fait par le processeur, sans carte graphique (machines virtuelles, serveurs de
+ * test, pilotes absents) : chaque pixel coûte cher, la vue sur la ville comprise.
+ */
+export function isSoftwareRenderer(renderer: string | undefined): boolean {
+  return /swiftshader|llvmpipe|softpipe|software|basic render driver/i.test(renderer ?? '');
+}
+
+/**
+ * Qualité par défaut selon l'appareil : mobile ou rendu logiciel = bas (sans ombres ni
+ * post-processing), tablette = moyen.
+ */
 export function defaultQuality(device: DeviceHints): QualityLevel {
+  if (isSoftwareRenderer(device.gpuRenderer)) return 'low';
   if (device.coarsePointer && device.screenWidth < 600) return 'low';
   if (device.coarsePointer || (device.hardwareConcurrency ?? 8) <= 4) return 'medium';
   return 'high';
