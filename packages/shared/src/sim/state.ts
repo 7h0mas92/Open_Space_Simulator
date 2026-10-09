@@ -220,6 +220,8 @@ export const GameStatsSchema = z.object({
   /** Réunions d'équipe du matin jugées utiles, puis inutiles (salle de réunion aménagée). */
   meetingsUseful: z.number().int().default(0),
   meetingsUseless: z.number().int().default(0),
+  /** Réunions de crise tenues dans la salle quand la prod tombe. */
+  crisisMeetings: z.number().int().default(0),
   /** Tâches urgentes et hebdomadaires terminées à temps ou ratées, objectifs de sprint. */
   urgentDone: z.number().int().default(0),
   urgentMissed: z.number().int().default(0),
@@ -268,6 +270,7 @@ export const NOTIFICATION_KINDS = [
   'MEETING_ROOM_FITTED',
   'MEETING_USEFUL',
   'MEETING_USELESS',
+  'CRISIS_MEETING',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',

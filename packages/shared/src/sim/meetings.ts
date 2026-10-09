@@ -5,8 +5,12 @@ import type { LocalizedText } from '../i18n.js';
 /**
  * Salle de réunion : dès la première levée (Seed), le bureau a une salle de réunion vide. Le
  * joueur choisit comment l'aménager. Chaque formule a un bonus ET un malus, et change la
- * réunion d'équipe du matin (9h30, en semaine) : utile, elle rapporte quelque chose ; inutile,
- * elle coûte du moral (« cette réunion aurait pu être un mail »).
+ * réunion d'équipe du matin (9h, dès l'arrivée, 20 minutes, en semaine) : utile, elle rapporte
+ * quelque chose ; inutile, elle coûte du moral (« cette réunion aurait pu être un mail »).
+ *
+ * Quand la prod tombe, la salle sert aussi de cellule de crise : les personnes concernées (le
+ * coupable s'il y en a un, les devs les plus solides et le Product Owner) s'y réunissent une
+ * demi-heure, et la réparation démarre avec une avance qui dépend de la formule.
  *
  * Le hasard des réunions est tiré sur une graine à part (graine de la partie + tick) : une partie
  * sans salle aménagée consomme exactement les mêmes nombres aléatoires qu'avant l'ajout de la
@@ -65,6 +69,8 @@ export interface MeetingFormat {
   poPenalty: number;
   /** Chance que la réunion d'équipe du matin soit utile. */
   usefulOdds: number;
+  /** Réunion de crise : part de « Réparer la prod » déjà faite en sortant de la salle. */
+  crisisHeadStart: number;
   useful: MeetingOutcomeEffects;
   useless: MeetingOutcomeEffects;
   /** Message affiché après une réunion utile, puis inutile. */
@@ -75,8 +81,16 @@ export interface MeetingFormat {
 /** Réglages communs à toutes les salles. */
 export const MEETINGS = {
   unlockPhase: 'SEED' as Phase,
-  /** Heure de la réunion d'équipe quotidienne (en semaine). */
-  dailyHour: 9.5,
+  /** Heure de la réunion d'équipe quotidienne (en semaine) : dès l'arrivée de l'équipe. */
+  dailyHour: 9,
+  /** Durée de la réunion du matin : le reste de la demi-heure, on travaille. */
+  dailyMinutes: 20,
+  /** Réunion de crise : nombre de devs réunis (coupable compris), plus le Product Owner. */
+  crisisDevs: 3,
+  /** Durée de la réunion de crise, en ticks (une demi-heure après celle de la panne). */
+  crisisTicks: 1,
+  /** Moral perdu par le coupable, sous le regard de toute la cellule de crise. */
+  crisisCulpritMoral: -3,
   /** Part du prix remboursée quand on démonte la salle (ou qu'on change de formule). */
   refundRatio: 0.5,
 } as const;
@@ -98,6 +112,7 @@ export const MEETING_FORMATS: readonly MeetingFormat[] = [
     effects: { moral: -0.06 },
     poPenalty: 0.5,
     usefulOdds: 0.7,
+    crisisHeadStart: 0.3,
     useful: { debt: -0.4 },
     useless: { moral: -0.5 },
     usefulText: t(
@@ -126,6 +141,7 @@ export const MEETING_FORMATS: readonly MeetingFormat[] = [
     effects: { quality: 0.03 },
     poPenalty: 1.5,
     usefulOdds: 0.6,
+    crisisHeadStart: 0.15,
     useful: { hype: 0.15 },
     useless: { moral: -1 },
     usefulText: t(
@@ -154,6 +170,7 @@ export const MEETING_FORMATS: readonly MeetingFormat[] = [
     effects: { hypePerDay: 0.05, teamProductivity: -0.02 },
     poPenalty: 1,
     usefulOdds: 0.5,
+    crisisHeadStart: 0.2,
     useful: { hype: 0.15 },
     useless: { moral: -0.8 },
     usefulText: t(
@@ -182,6 +199,7 @@ export const MEETING_FORMATS: readonly MeetingFormat[] = [
     effects: { moral: 0.25, restBonus: 0.5, teamProductivity: -0.01 },
     poPenalty: 1,
     usefulOdds: 0.6,
+    crisisHeadStart: 0.2,
     useful: { moral: 1.5 },
     useless: { debt: 0.2 },
     usefulText: t(
@@ -210,6 +228,7 @@ export const MEETING_FORMATS: readonly MeetingFormat[] = [
     effects: { stabilityPerDay: 0.1, moral: -0.12 },
     poPenalty: 1,
     usefulOdds: 0.6,
+    crisisHeadStart: 0.5,
     useful: { stability: 0.4 },
     useless: { moral: -1 },
     usefulText: t(
@@ -238,6 +257,7 @@ export const MEETING_FORMATS: readonly MeetingFormat[] = [
     effects: { hypePerDay: 0.05, quality: 0.02 },
     poPenalty: 1.25,
     usefulOdds: 0.5,
+    crisisHeadStart: 0.25,
     useful: { hype: 0.2 },
     useless: { treasury: -3000 },
     usefulText: t(

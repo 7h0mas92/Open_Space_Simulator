@@ -12,11 +12,16 @@ import {
 import { CardLibrary } from '../../src/events/library';
 import { createBot, playWithBot } from '../../src/simulation/bots';
 import { computeOfficeEffects } from '../../src/simulation/furniture';
-import { holdTeamMeeting, meetingFormatBlocker } from '../../src/simulation/meetings';
+import {
+  crisisAttendees,
+  holdTeamMeeting,
+  meetingFormatBlocker,
+} from '../../src/simulation/meetings';
+import { prodDown } from '../../src/simulation/systems/incidents';
 import { replay } from '../../src/simulation/replay';
 import type { Simulation } from '../../src/simulation/simulation';
-import { productivity } from '../../src/simulation/systems/work';
-import { getClock } from '../../src/simulation/time';
+import { productivity, workSystem } from '../../src/simulation/systems/work';
+import { clockAt, getClock } from '../../src/simulation/time';
 import { toGameView } from '../../src/view/adapter';
 import { makeContext, newSimulation, stateWithTeam } from './fixtures';
 
@@ -28,7 +33,7 @@ function richSeed(): Simulation {
   return simulation;
 }
 
-/** Avance jusqu'à la réunion d'équipe du lundi matin (9h30). */
+/** Avance jusqu'à la réunion d'équipe du lundi matin (9h, dès l'arrivée). */
 function runToMorningMeeting(simulation: Simulation): void {
   expect(simulation.dispatch({ type: 'START_SPRINT' }).result.ok).toBe(true);
   for (let i = 0; i < 48; i++) {
@@ -148,7 +153,7 @@ describe('Salle de réunion : réunion d’équipe du matin', () => {
     expect(simulation.state.stats.meetingsUseful + simulation.state.stats.meetingsUseless).toBe(0);
   });
 
-  it('réunit l’équipe à 9h30, utile ou inutile, et la même graine donne le même verdict', () => {
+  it('réunit l’équipe à 9h, utile ou inutile, et la même graine donne le même verdict', () => {
     const play = () => {
       const simulation = richSeed();
       expect(simulation.dispatch({ type: 'FIT_MEETING_ROOM', format: 'aquarium' }).result.ok).toBe(
@@ -193,6 +198,154 @@ describe('Salle de réunion : réunion d’équipe du matin', () => {
   });
 });
 
+describe('Salle de réunion : réunion du matin de 20 minutes', () => {
+  it('a lieu à l’arrivée de l’équipe', () => {
+    expect(MEETINGS.dailyHour).toBe(BALANCE.work.arrivalHour);
+    expect(MEETINGS.dailyMinutes).toBe(20);
+  });
+
+  it('laisse les 10 dernières minutes de la demi-heure pour coder', () => {
+    const { state, ids } = stateWithTeam(['SENIOR_BEARD']);
+    const dev = ids[0] ?? '';
+    state.stage = 'EXECUTION';
+    state.meetingRoom = { format: 'standup', paid: 0, fittedAtSprint: 1 };
+    const taskId = 'task-test';
+    const task: Task = {
+      title: { fr: 'Tâche', en: 'Task' },
+      type: 'FEATURE',
+      size: 13,
+      progress: 0,
+      work: 1000,
+      column: 'IN_PROGRESS',
+      order: 0,
+      assigneeId: dev,
+      qualitySum: 0,
+      debtFactor: 0,
+      shinyFramework: false,
+      designApproved: true,
+      hallucinated: false,
+      createdAtSprint: 1,
+      doneAtSprint: null,
+    };
+    state.components.task[taskId] = task;
+    const worker = state.components.worker[dev];
+    const activity = state.components.activity[dev];
+    if (!worker || !activity) throw new Error('dev incomplet');
+    worker.taskId = taskId;
+    const ctx = makeContext(state);
+    const full = productivity(state, ctx, dev, task);
+    // Lundi 9h : réunion du matin.
+    const nine = clockAt(1, 2);
+    expect(nine.hour).toBe(9);
+    activity.kind = 'MEETING';
+    workSystem(state, ctx, nine);
+    expect(state.components.task[taskId]?.progress).toBeCloseTo(full / 3);
+    // Une autre réunion (celle du PO, à une autre heure) : rien n'avance.
+    workSystem(state, ctx, clockAt(1, 6));
+    expect(state.components.task[taskId]?.progress).toBeCloseTo(full / 3);
+  });
+});
+
+describe('Salle de réunion : réunion de crise quand la prod tombe', () => {
+  const cause = { fr: 'Panne', en: 'Outage' };
+
+  function crisisTeam() {
+    const team = stateWithTeam([
+      'INTERN',
+      'SENIOR_BEARD',
+      'TEN_X',
+      'RUSTACEAN',
+      'DESIGNER',
+      'PRODUCT_OWNER',
+    ]);
+    const { state, ids } = team;
+    state.stage = 'EXECUTION';
+    for (const id of ids) {
+      const activity = state.components.activity[id];
+      if (activity) activity.kind = 'WORKING';
+    }
+    // Qualités fixées pour savoir qui est le plus solide.
+    const qualities = [3, 9, 6, 4, 8, 5];
+    ids.forEach((id, index) => {
+      const stats = state.components.stats[id];
+      if (stats) stats.quality = qualities[index] ?? 5;
+    });
+    return team;
+  }
+
+  const fixTask = (state: GameState) =>
+    Object.entries(state.components.task).find(([, task]) => task.template === 'prod-fix');
+
+  it('réunit le coupable, les devs les plus solides et le PO, sans la designeuse', () => {
+    const { state, ids } = crisisTeam();
+    const [intern, senior, tenX, rust, designer, po] = ids;
+    const { attendees, leadId } = crisisAttendees(state, intern ?? null);
+    expect(attendees).toEqual([intern, senior, tenX, po]);
+    expect(attendees).not.toContain(designer);
+    expect(attendees).not.toContain(rust);
+    expect(leadId).toBe(senior);
+  });
+
+  it('avance la réparation, la confie au meneur et garde l’équipe en salle', () => {
+    const { state, ids } = crisisTeam();
+    const [intern, senior] = ids;
+    state.meetingRoom = { format: 'war-room', paid: 0, fittedAtSprint: 1 };
+    const ctx = makeContext(state);
+    const rng = [...state.rng];
+    const moral = state.components.mood[intern ?? '']?.moral ?? 0;
+    prodDown(state, ctx, cause, intern ?? null);
+    const entry = fixTask(state);
+    expect(entry).toBeDefined();
+    const [taskId, task] = entry ?? ['', undefined];
+    expect(task?.progress).toBeCloseTo((task?.work ?? 0) * 0.5);
+    expect(task?.assigneeId).toBe(senior);
+    expect(state.components.worker[senior ?? '']?.taskId).toBe(taskId);
+    expect(state.components.activity[intern ?? '']).toMatchObject({
+      kind: 'MEETING',
+      untilTick: state.tick + 1 + MEETINGS.crisisTicks,
+    });
+    expect(state.components.activity[ids[4] ?? '']?.kind).toBe('WORKING');
+    expect(state.components.mood[intern ?? '']?.moral).toBe(
+      Math.max(0, moral + MEETINGS.crisisCulpritMoral),
+    );
+    expect(state.stats.crisisMeetings).toBe(1);
+    expect(state.notifications.at(-1)?.kind).toBe('CRISIS_MEETING');
+    // Aucun nombre tiré sur le générateur de la partie.
+    expect(state.rng).toEqual(rng);
+    const view = toGameView(state, { speed: 1, running: true, card: () => undefined });
+    expect(view.meetingRoom.crisis).toBe(1);
+    expect(view.meetingRoom.recent[0]?.crisis).toBe(true);
+  });
+
+  it('chaque formule fait avancer la réparation, la war room plus que les autres', () => {
+    const warRoom = getMeetingFormat('war-room')?.crisisHeadStart ?? 0;
+    for (const format of MEETING_FORMATS) {
+      expect(format.crisisHeadStart, format.id).toBeGreaterThan(0);
+      expect(format.crisisHeadStart, format.id).toBeLessThanOrEqual(warRoom);
+    }
+  });
+
+  it('n’a pas lieu sans salle aménagée, et n’invite ni les absents ni les télétravailleurs', () => {
+    const { state, ids } = crisisTeam();
+    const ctx = makeContext(state);
+    prodDown(state, ctx, cause, null);
+    expect(fixTask(state)?.[1].progress).toBe(0);
+    expect(state.stats.crisisMeetings).toBe(0);
+
+    const other = crisisTeam();
+    const [intern, senior, tenX] = other.ids;
+    other.state.components.remote[senior ?? ''] = true;
+    const activity = other.state.components.activity[tenX ?? ''];
+    if (activity) activity.kind = 'GONE';
+    const { attendees, leadId } = crisisAttendees(other.state, null);
+    expect(attendees).not.toContain(senior);
+    expect(attendees).not.toContain(tenX);
+    expect(attendees).toContain(intern);
+    expect(leadId).not.toBeNull();
+    expect(ids.length).toBe(6);
+  });
+});
+
 describe('Salle de réunion : sauvegardes et replays', () => {
   it('une sauvegarde d’avant les salles de réunion se recharge avec une salle vide', () => {
     const simulation = newSimulation('old-save');
@@ -201,9 +354,11 @@ describe('Salle de réunion : sauvegardes et replays', () => {
     const stats = old.stats as Record<string, unknown>;
     delete stats.meetingsUseful;
     delete stats.meetingsUseless;
+    delete stats.crisisMeetings;
     const parsed: GameState = GameStateSchema.parse(old);
     expect(parsed.meetingRoom).toBeNull();
     expect(parsed.stats.meetingsUseful).toBe(0);
+    expect(parsed.stats.crisisMeetings).toBe(0);
   });
 
   it('une partie avec salle de réunion se rejoue à l’identique (replay, anti-triche)', () => {

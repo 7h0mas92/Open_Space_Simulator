@@ -27,7 +27,8 @@ export function MeetingRoom({ view }: { view: GameView }) {
   const hour = `${Math.floor(MEETINGS.dailyHour)}h${String((MEETINGS.dailyHour % 1) * 60).padStart(2, '0')}`;
   return (
     <div className="meeting-panel">
-      <p className="hint">{t('meetings.intro', { hour })}</p>
+      <p className="hint">{t('meetings.intro', { hour, minutes: MEETINGS.dailyMinutes })}</p>
+      <p className="hint">{t('meetings.crisisIntro', { count: MEETINGS.crisisDevs })}</p>
       {!room.unlocked ? (
         <p className="warning" data-testid="meetings-locked">
           🔒 {t('meetings.locked')}
@@ -53,14 +54,28 @@ export function MeetingRoom({ view }: { view: GameView }) {
                     <dt>{t('meetings.useless')}</dt>
                     <dd className="down">{room.useless}</dd>
                   </div>
+                  <div>
+                    <dt>{t('meetings.crisis')}</dt>
+                    <dd>{room.crisis}</dd>
+                  </div>
                 </dl>
                 {room.recent.length > 0 && (
                   <ul className="meeting-log" aria-label={t('meetings.recent')}>
                     {room.recent.map((meeting) => (
-                      <li key={meeting.tick} className={meeting.useful ? 'up' : 'down'}>
-                        <span aria-hidden="true">{meeting.useful ? '✅ ' : '😩 '}</span>
+                      <li
+                        key={`${meeting.tick}-${meeting.crisis ? 'crisis' : 'daily'}`}
+                        className={meeting.crisis ? 'crisis' : meeting.useful ? 'up' : 'down'}
+                      >
+                        <span aria-hidden="true">
+                          {meeting.crisis ? '🚨 ' : meeting.useful ? '✅ ' : '😩 '}
+                        </span>
                         <span className="visually-hidden">
-                          {meeting.useful ? t('meetings.useful') : t('meetings.useless')} :{' '}
+                          {meeting.crisis
+                            ? t('meetings.crisisOne')
+                            : meeting.useful
+                              ? t('meetings.useful')
+                              : t('meetings.useless')}{' '}
+                          :{' '}
                         </span>
                         {localized(meeting.text, i18n.language)}
                       </li>
@@ -154,6 +169,9 @@ function FormatCard({
       </p>
       <p className="venture-risk">
         {t('meetings.odds', { percent: Math.round(format.usefulOdds * 100) })}
+      </p>
+      <p className="venture-risk">
+        {t('meetings.crisisOdds', { percent: Math.round(format.crisisHeadStart * 100) })}
       </p>
       {!current && (
         <>

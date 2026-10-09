@@ -285,9 +285,9 @@ export function taskFlowSystem(state: GameState, ctx: SimContext, clock: SimCloc
   if (clock.hour === 10) maybeRandomUrgent(state, ctx);
 }
 
-/** La prod tombe : une tâche urgente « Réparer la prod » apparaît. */
-export function urgentProdFix(state: GameState, ctx: SimContext): void {
-  raiseUrgent(state, ctx, PROD_FIX_TEMPLATE);
+/** La prod tombe : une tâche urgente « Réparer la prod » apparaît (null si déjà ouverte). */
+export function urgentProdFix(state: GameState, ctx: SimContext): EntityId | null {
+  return raiseUrgent(state, ctx, PROD_FIX_TEMPLATE);
 }
 
 // ─── Objectifs de sprint ────────────────────────────────────────────────────

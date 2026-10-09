@@ -554,10 +554,18 @@ const RECENT_MEETINGS = 4;
 
 function meetingRoomView(state: GameState): MeetingRoomView {
   const recent = state.notifications
-    .filter((n) => n.kind === 'MEETING_USEFUL' || n.kind === 'MEETING_USELESS')
+    .filter(
+      (n) =>
+        n.kind === 'MEETING_USEFUL' || n.kind === 'MEETING_USELESS' || n.kind === 'CRISIS_MEETING',
+    )
     .slice(-RECENT_MEETINGS)
     .reverse()
-    .map((n) => ({ tick: n.tick, useful: n.kind === 'MEETING_USEFUL', text: n.text }));
+    .map((n) => ({
+      tick: n.tick,
+      useful: n.kind !== 'MEETING_USELESS',
+      crisis: n.kind === 'CRISIS_MEETING',
+      text: n.text,
+    }));
   return {
     unlocked: meetingRoomUnlocked(state),
     format: state.meetingRoom?.format ?? null,
@@ -573,11 +581,13 @@ function meetingRoomView(state: GameState): MeetingRoomView {
         price: format.price,
         minPhase: format.minPhase,
         usefulOdds: format.usefulOdds,
+        crisisHeadStart: format.crisisHeadStart,
         blocker: blocker === 'NOT_FOUND' ? 'LOCKED' : blocker,
       };
     }),
     useful: state.stats.meetingsUseful,
     useless: state.stats.meetingsUseless,
+    crisis: state.stats.crisisMeetings,
     recent,
   };
 }

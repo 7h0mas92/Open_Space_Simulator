@@ -91,6 +91,9 @@
     "coffeeFuel": "Café = code",
     "thirdCup": "3e tasse, ça va",
     "couldBeEmail": "Ça aurait pu être un mail",
+    "whoDeployed": "Qui a déployé ?",
+    "rollback": "On rollback ?",
+    "postMortem": "Le post-mortem sera épique",
     "youAreMuted": "Tu es en sourdine",
     "didYouSee": "T'as vu la keynote ?",
     "newFramework": "Nouveau framework JS !",
@@ -1508,7 +1511,11 @@
     "sellWhen": "On revend ses parts pendant la planification ou la démo."
   },
   "meetings": {
-    "intro": "Aménage la salle de réunion du bureau. Chaque formule a un bonus et un malus, et l'équipe s'y retrouve chaque matin de semaine à {{hour}} : une réunion utile rapporte quelque chose, une réunion inutile coûte du moral.",
+    "intro": "Aménage la salle de réunion du bureau. Chaque formule a un bonus et un malus, et l'équipe s'y retrouve chaque matin de semaine à {{hour}}, dès son arrivée, pendant {{minutes}} minutes : une réunion utile rapporte quelque chose, une réunion inutile coûte du moral.",
+    "crisisIntro": "Quand la prod tombe, la salle devient une cellule de crise : le coupable s'il y en a un, les {{count}} devs les plus solides (coupable compris) et le Product Owner s'y réunissent une demi-heure. En sortant, le meilleur prend « Réparer la prod », déjà avancée.",
+    "crisis": "Réunions de crise",
+    "crisisOne": "Réunion de crise",
+    "crisisOdds": "Réunion de crise : réparation avancée de {{percent}} %",
     "locked": "Pas de salle de réunion au garage : elle arrive avec le bureau de la Seed, après ta 1re levée de fonds.",
     "current": "Salle actuelle",
     "empty": "La salle est vide : pas de réunion d'équipe le matin, et aucun effet. Choisis une formule ci-dessous.",
