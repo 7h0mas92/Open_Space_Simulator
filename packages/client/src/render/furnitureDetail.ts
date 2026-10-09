@@ -24,7 +24,7 @@ const BOOK_COLORS = [
 const SPINE_COLORS = [0xe8c66a, 0xf2efe8, 0x242830] as const;
 
 /** Générateur pseudo-aléatoire à graine fixe (mulberry32) : même meuble à chaque partie. */
-function seeded(seed: number): () => number {
+export function seeded(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
     state = (state + 0x6d2b79f5) >>> 0;
@@ -45,7 +45,7 @@ const bookMaterial = new THREE.MeshStandardMaterial({
 bookMaterial.name = 'books';
 
 /** Pièces d'un meuble, regroupées par matériau puis fusionnées. */
-class Pieces {
+export class Pieces {
   private readonly byMaterial = new Map<THREE.Material, THREE.BufferGeometry[]>();
 
   /** Ajoute une géométrie déjà placée (position, rotation) dans le repère du meuble. */
