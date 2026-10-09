@@ -524,12 +524,19 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   « Encadrement » du panneau Équipe. 3 candidats habituels inchangés + 2 de l'équipe web sur
   `seed#web-roles#sprint` (replays, Daily, sauvegardes inchangés). `pnpm balance` : faillite
   inchangée, licornes réparties autrement, car les bots ne savent pas composer une équipe web.
+- Musiques du propriétaire (`client/public/assets/music/`, 7 MP3 non réencodés, noms d'origine sans
+  espace ni accent) : tycoon au menu, tycoon 1 en planification et démo, les 4 Détente en playlist
+  pendant le sprint, aria math en levée de fonds et à l'écran de fin (`audio/music.ts`,
+  `musicMoodOf`, `ui/useMusic.ts`). Fondu de 1,5 s, reprise du morceau là où il était, lecture en
+  flux HTML5, démarrage au premier clic, volume « Musique » des options. Hors précache de la PWA
+  (25 Mo) : hors ligne, pas de musique. Crédits : « compositions originales de l'équipe du projet ».
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
   https://7h0mas92.github.io/Open_Space_Simulator/ et se redéploie à chaque fusion.
-- Bande son : le lecteur Howler est prêt, les fichiers audio Kenney restent à déposer.
+- Effets sonores et ambiance : le lecteur Howler est prêt (`audio/manifest.ts`), les fichiers
+  restent à déposer.
 
 Développement local : `pnpm db:up`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm dev` (jeu sur
 localhost:5173, API et Swagger sur localhost:3000/docs). Base : `pnpm --filter @oss/server
