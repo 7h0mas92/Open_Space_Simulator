@@ -84,6 +84,40 @@ describe('IA des chats', () => {
     expect(sleeping / total).toBeGreaterThan(0.25);
   });
 
+  it('deux chats ne se posent jamais au même endroit', () => {
+    // Cinq chats pour une seule gamelle et une seule litière : ils doivent attendre leur tour.
+    const crowded = {
+      ...view,
+      pets: {
+        ...view.pets,
+        pets: [
+          ...view.pets.pets,
+          { id: 'cat-4', name: 'Null', coat: 'black' as const, adoptedSprint: 1 },
+          { id: 'cat-5', name: 'Bug', coat: 'white' as const, adoptedSprint: 1 },
+        ],
+      },
+    };
+    for (const [seed, office] of [
+      [2, crowded],
+      [7, crowded],
+      [4, { ...crowded, time: { ...crowded.time, minute: 2 * 60 } }],
+    ] as const) {
+      let resting = 0;
+      run(new CatWorld(seed), office, 4000, (cats) => {
+        const places = cats
+          .filter((cat) => cat.pose !== 'walk')
+          .map((cat) =>
+            cat.y > 0 || !cat.visible
+              ? `${cat.x.toFixed(2)}:${cat.y.toFixed(2)}:${cat.z.toFixed(2)}`
+              : `${Math.round(cat.x)}:0:${Math.round(cat.z)}`,
+          );
+        resting += places.length;
+        expect(new Set(places).size).toBe(places.length);
+      });
+      expect(resting).toBeGreaterThan(0);
+    }
+  });
+
   it('place les perchoirs dans le repère tourné du meuble', () => {
     const item = { kind: 'cat-tree-large', x: 7, z: 6, rotation: 1 as const };
     // Tourné d'un quart de tour, l'arbre de 3 x 1 occupe 1 x 3 cases : son centre est (7, 7).

@@ -8,6 +8,10 @@
  *
  * Comme pour les personnages, l'IA avance par pas fixes avec un générateur seedé par chat :
  * mêmes instantanés de jeu ⇒ mêmes déplacements. Elle ne modifie jamais l'état du jeu.
+ *
+ * Deux chats ne se posent jamais au même endroit : une place (gamelle, litière, perchoir,
+ * bureau, coussin) est réservée par le chat qui y va, et une case au sol par le chat qui s'y
+ * repose ou qui s'y rend. En marchant, un chat contourne ceux qui se reposent par terre.
  */
 import { catalogItem, footprint } from '../view/catalog';
 import { layoutOf, type Cell } from '../view/layout';
@@ -52,6 +56,8 @@ export interface CatSnapshot {
 
 /** Un endroit où un chat va : la case où il arrive à pied, puis où il s'installe. */
 interface Spot {
+  /** Identifiant de la place, pour la réserver (une gamelle, un perchoir…). */
+  readonly key: string;
   readonly cell: Cell;
   /** Position finale (saut sur un meuble), sinon il reste sur la case. */
   readonly seat: { readonly x: number; readonly y: number; readonly z: number } | null;
@@ -78,6 +84,12 @@ interface Cat {
   /** Case au sol d'où il a sauté (il y redescend en partant). */
   ground: Cell | null;
 }
+
+const sameCell = (a: Cell, b: Cell) => a.x === b.x && a.z === b.z;
+const cellOf = (cat: Cat): Cell => ({ x: Math.round(cat.x), z: Math.round(cat.z) });
+
+/** Coût ajouté au chemin pour traverser la case d'un chat couché par terre. */
+const RESTING_CAT_COST = 6;
 
 /** Position d'un point du repère d'un meuble (centre de l'emprise, avant rotation) dans la scène. */
 export function itemPoint(
@@ -173,28 +185,38 @@ export class CatWorld {
         const seat =
           def.petNeed === 'litter' ? { x: center.x, y: hidden ? 0.1 : 0.06, z: center.z } : null;
         spots[def.petNeed === 'bowl' ? 'eat' : 'litter'].push({
+          key: item.id,
           cell,
           seat,
           hidden,
           lookAt: center,
         });
       } else if (def.perches) {
-        for (const perch of def.perches) {
+        def.perches.forEach((perch, index) => {
           const seat = itemPoint(item, perch);
           const cell = grid.nearestWalkable({ x: Math.round(seat.x), z: Math.round(seat.z) });
-          if (cell) spots.perch.push({ cell, seat, hidden: false, lookAt: accessCell(item) });
-        }
+          if (cell)
+            spots.perch.push({
+              key: `${item.id}#${index}`,
+              cell,
+              seat,
+              hidden: false,
+              lookAt: accessCell(item),
+            });
+        });
       } else if (def.use === 'desk' && def.surface?.[0]) {
         // Sur le bureau, à côté du clavier : le meilleur endroit pour une sieste.
         const top = def.surface[0][1];
         const seat = itemPoint(item, [0.35, top, 0]);
         const cell = reach(item, seat);
-        if (cell) spots.desk.push({ cell, seat, hidden: false, lookAt: accessCell(item) });
+        if (cell)
+          spots.desk.push({ key: item.id, cell, seat, hidden: false, lookAt: accessCell(item) });
       } else if (def.use === 'rest' || item.kind === 'rug') {
         const seat = item.kind === 'rug' ? center : { ...center, y: 0.42 };
         const cell = reach(item, center);
         if (cell)
           spots.nap.push({
+            key: item.id,
             cell,
             seat: item.kind === 'rug' ? null : seat,
             hidden: false,
@@ -211,7 +233,7 @@ export class CatWorld {
     for (const pet of pets) {
       if (this.cats.some((cat) => cat.id === pet.id)) continue;
       const random = new Random(hashString(`${this.seed}#${pet.id}`));
-      const start = this.randomFloor(random) ?? { x: 1, z: 1 };
+      const start = this.freeFloor(random, null) ?? { x: 1, z: 1 };
       this.cats.push({
         id: pet.id,
         random,
@@ -231,8 +253,37 @@ export class CatWorld {
     this.cats.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
-  private randomFloor(random: Random): Cell | null {
-    return this.floor.length > 0 ? random.pick(this.floor) : null;
+  /** Une case au sol libre au hasard (personne n'y est couché ni ne s'y rend). */
+  private freeFloor(random: Random, self: Cat | null): Cell | null {
+    const free = this.floor.filter((cell) => !this.cellTaken(cell, self));
+    return free.length > 0 ? random.pick(free) : null;
+  }
+
+  // --- Réservations -----------------------------------------------------------------------
+
+  /** Le chat est posé par terre, immobile et visible, sur cette case. */
+  private restsOn(cat: Cat, cell: Cell): boolean {
+    return cat.y === 0 && cat.visible && cat.path.length === 0 && sameCell(cellOf(cat), cell);
+  }
+
+  /** Un autre chat se repose sur la case, ou s'y rend pour s'y poser (sans meuble). */
+  private cellTaken(cell: Cell, self: Cat | null): boolean {
+    return this.cats.some(
+      (other) =>
+        other !== self &&
+        (this.restsOn(other, cell) ||
+          (other.spot !== null && other.spot.seat === null && sameCell(other.spot.cell, cell))),
+    );
+  }
+
+  /** La place est prise : un autre chat y est ou y va, ou quelqu'un est couché devant. */
+  private spotTaken(spot: Spot, self: Cat): boolean {
+    if (this.cats.some((other) => other !== self && other.spot?.key === spot.key)) return true;
+    return spot.seat === null && this.cellTaken(spot.cell, self);
+  }
+
+  private freeSpots(activity: Exclude<CatActivity, 'wander' | 'groom'>, self: Cat): Spot[] {
+    return this.spots[activity].filter((spot) => !this.spotTaken(spot, self));
   }
 
   // --- Comportement -----------------------------------------------------------------------
@@ -269,10 +320,16 @@ export class CatWorld {
       ['desk', night ? 0 : 2],
       ['nap', night ? 3 : 2],
     ];
+    const free = {
+      eat: this.freeSpots('eat', cat),
+      litter: this.freeSpots('litter', cat),
+      perch: this.freeSpots('perch', cat),
+      desk: this.freeSpots('desk', cat),
+      nap: this.freeSpots('nap', cat),
+    };
     const available = weights.filter(
       ([activity, weight]) =>
-        weight > 0 &&
-        (activity === 'wander' || activity === 'groom' || this.spots[activity].length > 0),
+        weight > 0 && (activity === 'wander' || activity === 'groom' || free[activity].length > 0),
     );
     const total = available.reduce((sum, [, weight]) => sum + weight, 0);
     let roll = cat.random.next() * total;
@@ -293,9 +350,7 @@ export class CatWorld {
       return;
     }
     const spot =
-      activity === 'wander'
-        ? this.wanderSpot(cat)
-        : (cat.random.pick(this.spots[activity]) ?? null);
+      activity === 'wander' ? this.wanderSpot(cat) : (cat.random.pick(free[activity]) ?? null);
     if (!spot) {
       cat.pose = 'sit';
       return;
@@ -307,26 +362,56 @@ export class CatWorld {
   /** Une case libre pas trop loin, pour flâner. */
   private wanderSpot(cat: Cat): Spot | null {
     for (let attempt = 0; attempt < 6; attempt++) {
-      const cell = this.randomFloor(cat.random);
+      const cell = this.freeFloor(cat.random, cat);
       if (!cell) return null;
       if (Math.abs(cell.x - cat.x) + Math.abs(cell.z - cat.z) <= 8)
-        return { cell, seat: null, hidden: false, lookAt: { x: cell.x, z: cell.z + 1 } };
+        return {
+          key: `floor:${cell.x}:${cell.z}`,
+          cell,
+          seat: null,
+          hidden: false,
+          lookAt: { x: cell.x, z: cell.z + 1 },
+        };
     }
     return null;
   }
 
   private goTo(cat: Cat, goal: Cell): void {
     if (!this.grid) return;
-    const start = { x: Math.round(cat.x), z: Math.round(cat.z) };
-    const path = findPath(this.grid, start, goal, { maxIterations: 4000 });
+    const start = cellOf(cat);
+    const path = findPath(this.grid, start, goal, {
+      maxIterations: 4000,
+      // Il contourne les chats couchés par terre quand il le peut.
+      extraCost: (cell) =>
+        this.cats.some((other) => other !== cat && this.restsOn(other, cell))
+          ? RESTING_CAT_COST
+          : 0,
+    });
     cat.path = path ?? [];
     cat.pose = cat.path.length > 0 || path !== null ? 'walk' : 'sit';
     if (path === null) cat.spot = null;
   }
 
   private walk(cat: Cat): void {
-    const next = cat.path[0];
+    let next = cat.path[0];
     if (!next) return;
+    // Au centre d'une case, si un chat s'est couché depuis sur la suivante, il recalcule son
+    // chemin pour le contourner (s'il n'y a pas d'autre passage, il l'enjambe).
+    const here = cellOf(cat);
+    const centered = cat.x === here.x && cat.z === here.z;
+    const goal = cat.path[cat.path.length - 1];
+    if (
+      centered &&
+      goal &&
+      !sameCell(next, goal) &&
+      this.cats.some((other) => other !== cat && this.restsOn(other, next as Cell))
+    ) {
+      const spot = cat.spot;
+      this.goTo(cat, goal);
+      if (cat.path.length > 0) cat.spot = spot;
+      next = cat.path[0];
+      if (!next) return;
+    }
     const dx = next.x - cat.x;
     const dz = next.z - cat.z;
     const distance = Math.hypot(dx, dz);
@@ -374,16 +459,19 @@ export class CatWorld {
     cat.visible = true;
     cat.spot = null;
     cat.path = [];
-    if (cat.y === 0 && this.grid?.walkable(Math.round(cat.x), Math.round(cat.z))) {
+    const here = cellOf(cat);
+    if (cat.y === 0 && this.grid?.walkable(here.x, here.z) && !this.cellTaken(here, cat)) {
       cat.x = Math.round(cat.x);
       cat.z = Math.round(cat.z);
       cat.ground = null;
       return;
     }
-    const from = cat.ground ?? { x: Math.round(cat.x), z: Math.round(cat.z) };
-    const cell = this.grid?.walkable(from.x, from.z)
-      ? from
-      : (this.grid?.nearestWalkable(from) ?? from);
+    const from = cat.ground ?? cellOf(cat);
+    // Il ne redescend pas sur un autre chat : case libre la plus proche de son point de départ.
+    const cell =
+      this.grid?.nearestWalkable(from, (c) => !this.cellTaken(c, cat)) ??
+      this.grid?.nearestWalkable(from) ??
+      from;
     cat.x = cell.x;
     cat.z = cell.z;
     cat.y = 0;
