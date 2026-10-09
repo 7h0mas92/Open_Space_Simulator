@@ -425,6 +425,10 @@ flowchart LR
   du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
   lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
   le jeu reste jouable sans musique.
+- **Poste de travail** : le bureau de dev porte un clavier QWERTY à vraies touches (61 touches
+  en relief avec leurs lettres, Entrée en bleu, un seul appel de dessin : `render/keyboard.ts`)
+  et une souris Kenney agrandie sur un tapis de souris sombre ; le portable du garage a aussi sa
+  souris et son tapis.
 - **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
   revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
   les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
@@ -604,11 +608,11 @@ génère que des messages Slack.
   sieste-pod, standing desk, casques antibruit et leur portant, baie de serveurs, cafetière à
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
-  mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
+  mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
   gamelles, arbres à chat et chats, canapé et bibliothèque détaillés, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
-  combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
+  combinent plusieurs modèles Kenney (bureau avec écran et souris, table de cantine et
   ses bancs…), pour que chacun ait un rendu qui lui est propre. Pour les
   effets sonores et l'ambiance, le lecteur audio (Howler.js) est prêt : il suffit de déposer les
   fichiers et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans la

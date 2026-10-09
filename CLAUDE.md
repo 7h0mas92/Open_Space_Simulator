@@ -545,6 +545,11 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   une graine fixe propre au fichier ; tissu repeignable (`fabric`, `fabricDark`), dessus de la
   bibliothèque à 1,58 et assise à 0,44 inchangés. Les modèles Kenney restent dans les salles de
   réunion.
+- Poste de travail : clavier QWERTY à vraies touches sur le bureau de dev (`render/keyboard.ts`,
+  forme `qwertyKeyboard` des assets manquants) : 61 touches en relief, police maison 3 x 5 dessinée
+  pixel par pixel, touches fusionnées en un seul appel de dessin. Souris Kenney agrandie (x1,35)
+  sur un tapis de souris sombre (forme `mousePad`), au bureau de dev et à côté du portable du
+  garage. Rendu seulement.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
