@@ -489,6 +489,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   effacée (appareil et serveur) et sa date de fin notée ; ses sauvegardes manuelles restent dans
   « Charger une partie » (`saves.markFinished`, `saves.latestResumable` dans
   `client/src/save/saves.ts`). Un Daily rejoué reste proposé.
+- Variété des tâches du Kanban (`client/src/simulation/taskTitles.ts`, catalogues dans
+  `client/src/simulation/data/tasks.ts`) : 114 titres de code de base, 28 débloqués par phase
+  (`GROWTH_TASK_TITLES` : Seed, Série A, Licorne), 48 de saison (`SEASON_TASK_TITLES`, une tâche de
+  code sur trois pendant la période), 23 pour la designeuse et 22 pour le PO ; 11 urgences et 12
+  tâches de la semaine. Jamais deux fois le même titre sur le tableau, les 60 derniers ne reviennent
+  pas tant qu'il en reste de neufs (état `recentTaskTitles`, vide par défaut). Le titre est
+  décoratif et ne consomme aucun tirage de plus dans le générateur de la partie.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
