@@ -324,6 +324,16 @@ flowchart LR
   places de plus dans l'équipe. Les sols des autres pièces changent d'une partie à l'autre
   (parquet, damier, terre cuite, moquette…), selon la graine (`view/layout.ts`,
   `render/annexDecor.ts`).
+- **Tâches dynamiques** : le backlog garde jusqu'à 2,5 idées par dev. Pendant le sprint, des
+  urgences tombent : « Réparer la prod » à chaque panne, et au hasard (plus souvent avec une
+  grande équipe) une faille de sécurité, le « petit bouton » du gros client, un paiement cassé,
+  une demande RGPD ou une démo qui plante. Chacune a un délai en heures ouvrées, un message et
+  un bandeau rouge qui ouvre le Kanban ; les devs libres la prennent en premier. Finie à temps,
+  petit bonus ; ratée, elle disparaît et sa pénalité tombe. Chaque lundi à 9h, 1 à 3 tâches de
+  la semaine sont à finir avant vendredi 18h. Environ 4 sprints sur 10 ont un objectif (livrer
+  N features, finir N tâches, zéro panne, baisser la dette, gagner N utilisateurs), facile,
+  moyen ou difficile, récompensé à la démo selon sa difficulté. Le hasard est tiré sur une
+  graine à part (`shared/sim/taskFlow.ts`, `client/src/simulation/taskFlow.ts`).
 - **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
   dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
   les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
@@ -457,7 +467,9 @@ financements hors tour de table) et produit un rapport : taux de faillite (globa
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
-Only, 3 sprints). Le dernier rapport est dans [`docs/balance.md`](docs/balance.md).
+Only, 3 sprints). Une section suit les tâches dynamiques : urgences et tâches de la semaine
+finies à temps, réussite des objectifs par type et difficulté. Le dernier rapport est dans
+[`docs/balance.md`](docs/balance.md).
 
 Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
 `packages/shared/src/sim/balance.ts`) :

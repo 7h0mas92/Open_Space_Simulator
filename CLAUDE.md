@@ -456,6 +456,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
 - Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
   tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
   `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.
+- Tâches dynamiques (`shared/sim/taskFlow.ts`, `client/src/simulation/taskFlow.ts`) : backlog
+  jusqu'à 2,5 idées par dev ; urgences avec délai en heures ouvrées, message et bandeau rouge
+  (« Réparer la prod » à chaque panne, 5 autres au hasard à 10h, plus fréquentes avec l'équipe),
+  servies en premier, bonus à temps, pénalité ratée ; 1 à 3 tâches de la semaine le lundi 9h, dues
+  vendredi 18h ; objectif de sprint (4 sprints sur 10 dès le 2e, facile, moyen ou difficile,
+  récompense à la démo) affiché en haut du Kanban. Seule la récompense propre compte pour ces
+  tâches. Hasard sur une graine à part (`seed#tasks#…`), champs `kind`, `objective` par défaut.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
