@@ -10,10 +10,9 @@
  * Les tirages (largeur, couleur des livres…) viennent d'un petit générateur à graine fixe, propre
  * à ce fichier : le meuble est identique à chaque partie et le RNG du jeu n'est jamais touché.
  */
-import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { material, PALETTE } from './primitives';
+import type * as THREE from 'three';
+import { Pieces, seeded } from './pieces';
+import { PALETTE } from './primitives';
 
 /** Couverture des livres : tons sourds de vraie bibliothèque (non repeints). */
 const BOOK_COLORS = [
@@ -23,126 +22,6 @@ const BOOK_COLORS = [
 /** Bandeaux de titre sur le dos des livres. */
 const SPINE_COLORS = [0xe8c66a, 0xf2efe8, 0x242830] as const;
 
-/** Générateur pseudo-aléatoire à graine fixe (mulberry32) : même meuble à chaque partie. */
-function seeded(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** Matériau des livres : une couleur par sommet, pour tous les dessiner d'un seul tenant. */
-const bookMaterial = new THREE.MeshStandardMaterial({
-  vertexColors: true,
-  roughness: 0.85,
-  metalness: 0.02,
-  flatShading: true,
-});
-bookMaterial.name = 'books';
-
-/** Pièces d'un meuble, regroupées par matériau puis fusionnées. */
-class Pieces {
-  private readonly byMaterial = new Map<THREE.Material, THREE.BufferGeometry[]>();
-
-  /** Ajoute une géométrie déjà placée (position, rotation) dans le repère du meuble. */
-  add(geometry: THREE.BufferGeometry, mat: THREE.Material): void {
-    const plain = geometry.index ? geometry.toNonIndexed() : geometry;
-    if (plain !== geometry) geometry.dispose();
-    const list = this.byMaterial.get(mat) ?? [];
-    list.push(plain);
-    this.byMaterial.set(mat, list);
-  }
-
-  /** Boîte posée sur `y` (sa base), centrée en (x, z), tournée de `turn` autour de y puis z. */
-  box(
-    w: number,
-    h: number,
-    d: number,
-    color: number | THREE.Material,
-    at: readonly [number, number, number],
-    tilt: { readonly x?: number; readonly y?: number; readonly z?: number } = {},
-  ): void {
-    this.place(new THREE.BoxGeometry(w, h, d), color, h, at, tilt);
-  }
-
-  /** Boîte aux arêtes arrondies (coussins, accoudoirs) : facettes douces, toujours low-poly. */
-  soft(
-    w: number,
-    h: number,
-    d: number,
-    radius: number,
-    color: number,
-    at: readonly [number, number, number],
-    tilt: { readonly x?: number; readonly y?: number; readonly z?: number } = {},
-  ): void {
-    this.place(new RoundedBoxGeometry(w, h, d, 2, radius), color, h, at, tilt);
-  }
-
-  /** Cylindre (ou tronc de cône) vertical posé sur `y`. */
-  post(
-    top: number,
-    bottom: number,
-    h: number,
-    color: number,
-    at: readonly [number, number, number],
-    segments = 8,
-  ): void {
-    this.place(new THREE.CylinderGeometry(top, bottom, h, segments), color, h, at);
-  }
-
-  /** Livre (ou objet multicolore) : boîte teintée par sommet, dessinée avec tous les livres. */
-  book(
-    w: number,
-    h: number,
-    d: number,
-    color: number,
-    at: readonly [number, number, number],
-    tilt: { readonly y?: number; readonly z?: number; readonly x?: number } = {},
-  ): void {
-    const geometry = new THREE.BoxGeometry(w, h, d);
-    const tint = new THREE.Color(color);
-    const count = geometry.getAttribute('position').count;
-    const colors = new Float32Array(count * 3);
-    for (let i = 0; i < count; i += 1) tint.toArray(colors, i * 3);
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    this.place(geometry, bookMaterial, h, at, tilt);
-  }
-
-  /** Un maillage par matériau. */
-  build(name: string): THREE.Group {
-    const group = new THREE.Group();
-    group.name = name;
-    for (const [mat, geometries] of this.byMaterial) {
-      const merged = mergeGeometries(geometries) ?? new THREE.BufferGeometry();
-      for (const geometry of geometries) geometry.dispose();
-      merged.computeBoundingSphere();
-      group.add(new THREE.Mesh(merged, mat));
-    }
-    return group;
-  }
-
-  private place(
-    geometry: THREE.BufferGeometry,
-    color: number | THREE.Material,
-    h: number,
-    [x, y, z]: readonly [number, number, number],
-    tilt: { readonly x?: number; readonly y?: number; readonly z?: number } = {},
-  ): void {
-    // La base de la pièce est à `y` : on la remonte de la moitié de sa hauteur avant de tourner,
-    // pour qu'un livre penché pivote sur son coin et non sur son centre.
-    geometry.translate(0, h / 2, 0);
-    if (tilt.x) geometry.rotateX(tilt.x);
-    if (tilt.z) geometry.rotateZ(tilt.z);
-    if (tilt.y) geometry.rotateY(tilt.y);
-    geometry.translate(x, y, z);
-    this.add(geometry, typeof color === 'number' ? material(color) : color);
-  }
-}
-
 // ---------------------------------------------------------------------------------------------
 // Canapé : 2 x 1 cases, tourné vers +z, assise à 0,44 (un chat s'y couche à 0,42).
 // ---------------------------------------------------------------------------------------------
@@ -151,7 +30,7 @@ class Pieces {
 const SOFA_SEAT_TOP = 0.44;
 
 export function detailedSofa(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces([PALETTE.fabric, PALETTE.fabricDark]);
   // Tissu : `fabric` (coussins) et `fabricDark` (structure), repeints au choix du joueur.
   const { fabric, fabricDark } = PALETTE;
   // Pieds fuselés en bois foncé, légèrement en retrait des angles.
@@ -313,7 +192,7 @@ function basket(p: Pieces, level: number, x: number, w: number): void {
 }
 
 export function detailedBookcase(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces([PALETTE.wood, PALETTE.woodDark]);
   const random = seeded(0xb00c);
   const half = CASE_WIDTH / 2;
   // Bâti : côtés, montant central, dessus mouluré, socle en retrait et fond plus foncé.

@@ -6,7 +6,7 @@
  */
 import * as THREE from 'three';
 import { accessCell, type ItemPlacement } from '../ai/grid';
-import { catalogItem, footprint } from '../view/catalog';
+import { catalogItem, DESK_CHAIR, footprint } from '../view/catalog';
 import type { FurnitureColor } from '../view/colors';
 import { slotPosition } from '../view/placement';
 import type { OfficeLayout, RoomKind } from '../view/layout';
@@ -15,6 +15,7 @@ import { wallLength, wallOpenings, type WallOpening, type WallSide } from '../vi
 import { paintObject, type AssetLibrary } from './assets';
 import { buildFixture } from './annexDecor';
 import {
+  buildPrimitive,
   material,
   PALETTE,
   WALL_AXIS,
@@ -415,8 +416,8 @@ export class OfficeView {
     // L'écran et le clavier font partie du bureau (voir `parts` dans le catalogue) ; seule la
     // chaise, posée sur la case d'accès, est un gabarit à part.
     if (kind === '@chair') {
-      const chair = (await this.assets.loadFurniture('chairDesk'))?.clone() ?? new THREE.Group();
-      paintObject(chair, ['carpet'], color);
+      const chair = buildPrimitive(DESK_CHAIR.model);
+      paintObject(chair, DESK_CHAIR.paint, color);
       return chair;
     }
     return this.assets.itemTemplate(kind, color);

@@ -671,9 +671,9 @@
       "babyfoot": "Foosball table",
       "slide": "Slide",
       "napPod": "Nap pod",
-      "standingDesk": "Standing desk",
+      "standingDesk": "Motorized standing desk: telescopic legs, control box, cable tray",
       "headphones": "Noise-cancelling headsets and their stand",
-      "serverRack": "Server rack",
+      "serverRack": "Server rack: rails, servers with LEDs, patch panel and cables",
       "dripCoffeeMaker": "Drip coffee maker",
       "espressoMachine": "Espresso machine and grinder",
       "drinksFridge": "Glass-door drinks fridge",
@@ -708,7 +708,12 @@
       "windowLarge": "Large three-tile window",
       "glassWall": "Floor-to-ceiling glass wall (building glass)",
       "sofa": "Fabric sofa: cushions, rolled arms, wooden legs, throw pillows and a plaid",
-      "bookcase": "Stocked bookcase: individual books, cupboard, baskets, plant, frame and trophy"
+      "bookcase": "Stocked bookcase: individual books, cupboard, baskets, plant, frame and trophy",
+      "officeDesk": "Dev desk: worktop, steel frame, drawer unit, cable grommet and power strip",
+      "trestleDesk": "Garage desk on wooden trestles",
+      "officeChair": "Office chair on casters: gas lift, padded seat, mesh back, armrests",
+      "ergonomicChair": "Ergonomic chair with headrest and lumbar support",
+      "mediaConsole": "TV console with slatted doors, game console, router and soundbar"
     },
     "back": "Back"
   },

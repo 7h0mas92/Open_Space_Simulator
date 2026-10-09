@@ -31,7 +31,7 @@ import {
   pixelRatioFor,
   QUALITY_PRESETS,
 } from '../../../src/render/quality';
-import { CATALOG, type ItemModel } from '../../../src/view/catalog';
+import { CATALOG, DESK_CHAIR, type ItemModel } from '../../../src/view/catalog';
 import { AGENT_POSES, type AgentSnapshot } from '../../../src/ai/agents';
 
 describe('qualité graphique', () => {
@@ -281,7 +281,8 @@ describe('manifeste des assets Kenney', () => {
     );
     expect(new Set(looks).size).toBe(CATALOG.length);
     // Et chaque forme Three.js de remplacement sert au moins une fois.
-    const used = new Set(looks.join('+').split('+'));
+    // La chaise des bureaux n'est pas au catalogue : `office.ts` la pose devant chaque bureau.
+    const used = new Set([...looks.join('+').split('+'), `primitive:${DESK_CHAIR.model}`]);
     for (const asset of MISSING_ASSETS) {
       if (asset.replacement === 'primitive')
         expect(used, asset.id).toContain(`primitive:${asset.id}`);

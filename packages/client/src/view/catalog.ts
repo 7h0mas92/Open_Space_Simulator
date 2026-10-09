@@ -127,12 +127,21 @@ const MOUSE_SCALE: readonly [number, number, number] = [1.35, 1.35, 1.35];
 
 type SimItemId = (typeof FURNITURE_CATALOG)[number]['id'];
 
+/**
+ * Chaise posée devant chaque bureau (case d'accès), repeinte à la couleur du bureau : ce n'est
+ * pas un objet du catalogue, `office.ts` l'ajoute d'office.
+ */
+export const DESK_CHAIR: { readonly model: MissingAssetId; readonly paint: readonly string[] } = {
+  model: 'officeChair',
+  paint: ['chairFabric'],
+};
+
 /** Habillage de chaque objet de la simulation (le typage oblige à n'en oublier aucun). */
 const LOOKS: Record<SimItemId, ItemLook> = {
   // Bureau de dev complet : écran, clavier, souris.
   desk: {
     category: 'work',
-    model: kenney('desk'),
+    model: primitive('officeDesk'),
     height: 0.75,
     use: 'desk',
     parts: [
@@ -152,8 +161,9 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   // Le bureau du garage : tréteaux, un portable avec sa souris et des ramen.
   'ikea-desk': {
     category: 'work',
-    model: kenney('tableCross'),
+    model: primitive('trestleDesk'),
     height: 0.65,
+    paint: ['birch', 'birchDark'],
     use: 'desk',
     parts: [
       part(kenney('laptop'), [-0.3, TRESTLE_TOP, 0], { turn: 0 }),
@@ -178,7 +188,12 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       [0.65, STANDING_TOP, -0.12],
     ],
   },
-  'ergonomic-chair': { category: 'work', model: kenney('chairDesk'), height: 1.2 },
+  'ergonomic-chair': {
+    category: 'work',
+    model: primitive('ergonomicChair'),
+    height: 1.2,
+    paint: ['chairFabric'],
+  },
   'noise-headsets': {
     category: 'work',
     model: primitive('headphones'),
@@ -198,7 +213,7 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   },
   'tv-dashboard': {
     category: 'work',
-    model: kenney('cabinetTelevision'),
+    model: primitive('mediaConsole'),
     height: 1.5,
     parts: [part(primitive('metricsScreen'), [0, TV_CABINET_TOP, -0.05])],
   },

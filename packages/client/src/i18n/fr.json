@@ -671,9 +671,9 @@
       "babyfoot": "Babyfoot",
       "slide": "Toboggan",
       "napPod": "Sieste-pod",
-      "standingDesk": "Standing desk",
+      "standingDesk": "Bureau debout motorisé : colonnes télescopiques, boîtier de commande, goulotte",
       "headphones": "Casques antibruit et leur portant",
-      "serverRack": "Baie de serveurs",
+      "serverRack": "Baie de serveurs : rails, serveurs à voyants, panneau de brassage et câbles",
       "dripCoffeeMaker": "Cafetière à filtre",
       "espressoMachine": "Machine à expresso et moulin",
       "drinksFridge": "Frigo à boissons vitré",
@@ -708,7 +708,12 @@
       "windowLarge": "Grande fenêtre de trois cases",
       "glassWall": "Baie vitrée pleine hauteur (vitre de building)",
       "sofa": "Canapé en tissu : coussins, accoudoirs roulés, pieds en bois, coussins décoratifs et plaid",
-      "bookcase": "Bibliothèque garnie : livres un par un, placard, paniers, plante, cadre et trophée"
+      "bookcase": "Bibliothèque garnie : livres un par un, placard, paniers, plante, cadre et trophée",
+      "officeDesk": "Bureau de dev : plateau, piètement acier, caisson à tiroirs, passe-câble et multiprise",
+      "trestleDesk": "Bureau du garage sur tréteaux en bois",
+      "officeChair": "Chaise de bureau à roulettes : vérin, assise rembourrée, dossier résille, accoudoirs",
+      "ergonomicChair": "Chaise ergonomique avec appui-tête et renfort lombaire",
+      "mediaConsole": "Meuble télé à portes à lattes, console de jeu, box et barre de son"
     },
     "back": "Retour"
   },

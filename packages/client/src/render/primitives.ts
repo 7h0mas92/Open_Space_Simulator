@@ -11,6 +11,16 @@
 import * as THREE from 'three';
 import type { MissingAssetId } from './assetManifest';
 import { detailedBookcase, detailedSofa } from './furnitureDetail';
+import {
+  ergonomicChair,
+  headsetRack,
+  mediaConsole,
+  officeChair,
+  officeDesk,
+  serverRack,
+  standingDesk,
+  trestleDesk,
+} from './workFurniture';
 import { qwertyKeyboard } from './keyboard';
 
 export const PALETTE = {
@@ -42,6 +52,10 @@ export const PALETTE = {
   water: 0x5aa9e0,
   fabric: 0x9cabc0,
   fabricDark: 0x7e8da4,
+  birch: 0xe6c79a,
+  birchDark: 0xc9a46f,
+  chairFabric: 0x4f5668,
+  chairFabricDark: 0x3a4050,
 } as const;
 
 /** Nom de chaque couleur de la palette : il sert à repérer les matériaux à repeindre. */
@@ -200,18 +214,6 @@ function napPod(): THREE.Group {
   return group;
 }
 
-function standingDesk(): THREE.Group {
-  const group = new THREE.Group();
-  for (const x of [-0.8, 0.8]) {
-    group.add(box(0.08, 1.05, 0.08, PALETTE.dark, x, 0, 0));
-    group.add(box(0.1, 0.04, 0.6, PALETTE.dark, x, 0, 0));
-  }
-  group.add(box(1.9, 0.05, 0.75, PALETTE.white, 0, 1.05, 0));
-  group.add(box(0.7, 0.42, 0.04, PALETTE.dark, 0, 1.15, -0.2));
-  group.add(box(0.5, 0.02, 0.15, PALETTE.dark, 0, 1.1, 0.12));
-  return group;
-}
-
 /** Un casque audio : arceau et deux oreillettes, centré sur l'arceau. */
 function headset(color: number): THREE.Group {
   const group = new THREE.Group();
@@ -230,27 +232,6 @@ function headset(color: number): THREE.Group {
 }
 
 /** Casques antibruit : un portant de bureau avec trois casques de couleurs différentes. */
-function headphones(): THREE.Group {
-  const group = new THREE.Group();
-  group.add(post(0.28, 0.3, 0.05, PALETTE.dark));
-  group.add(post(0.03, 0.03, 1.05, PALETTE.metal, 0, 0.05, 0));
-  // Bras en croix au sommet, un casque suspendu à chaque bout et un posé sur le dessus.
-  group.add(box(0.7, 0.04, 0.04, PALETTE.metal, 0, 1.0, 0));
-  const colors = [PALETTE.red, PALETTE.blue, PALETTE.yellow];
-  colors.forEach((color, index) => {
-    const one = headset(color);
-    one.scale.setScalar(1.4);
-    if (index < 2) {
-      one.position.set(index === 0 ? -0.3 : 0.3, 0.86, 0);
-      one.rotation.y = Math.PI / 2;
-    } else {
-      one.position.set(0, 1.1, 0);
-    }
-    group.add(one);
-  });
-  return group;
-}
-
 /** Casque antibruit de bureau : un casque posé sur son petit support, à portée de main. */
 function deskHeadset(): THREE.Group {
   const group = new THREE.Group();
@@ -294,33 +275,6 @@ function mousePad(): THREE.Group {
 }
 
 /** Baie de serveurs : armoire noire, serveurs empilés et voyants qui clignotent. */
-function serverRack(): THREE.Group {
-  const group = new THREE.Group();
-  group.add(box(0.82, 1.8, 0.82, PALETTE.dark, 0, 0, 0));
-  group.add(box(0.86, 0.06, 0.86, 0x23283a, 0, 1.8, 0));
-  // Grille de ventilation sur le dessus.
-  for (let i = 0; i < 4; i++) group.add(box(0.6, 0.015, 0.05, 0x1a1e2b, 0, 1.86, -0.24 + i * 0.16));
-  const leds = [PALETTE.green, PALETTE.green, PALETTE.blue, PALETTE.yellow, PALETTE.green];
-  for (let i = 0; i < 9; i++) {
-    const y = 0.12 + i * 0.18;
-    group.add(box(0.7, 0.14, 0.03, 0x4a5168, 0, y, 0.41));
-    // Voyants : un motif différent par serveur, et une baie en alerte (rouge).
-    for (let j = 0; j < 3; j++) {
-      const color = i === 5 && j === 0 ? PALETTE.red : (leds[(i + j * 2) % leds.length] ?? 0);
-      group.add(light(0.04, 0.03, 0.02, color, 0.24 + j * 0.07, y + 0.055, 0.43));
-    }
-    group.add(box(0.36, 0.02, 0.01, 0x2c3245, -0.12, y + 0.06, 0.43));
-  }
-  // Câbles qui dépassent sur le côté, comme dans toutes les vraies baies.
-  for (const [z, color] of [
-    [0.25, PALETTE.blue],
-    [0.1, PALETTE.yellow],
-  ] as const) {
-    group.add(box(0.03, 0.9, 0.03, color, 0.43, 0.6, z));
-  }
-  return group;
-}
-
 /** Cafetière à filtre, petite et bon marché : socle noir, verseuse en verre à moitié pleine. */
 function dripCoffeeMaker(): THREE.Group {
   const group = new THREE.Group();
@@ -836,7 +790,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   slide,
   napPod,
   standingDesk,
-  headphones,
+  headphones: headsetRack,
   serverRack,
   dripCoffeeMaker,
   espressoMachine,
@@ -865,6 +819,11 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   glassWall,
   sofa: detailedSofa,
   bookcase: detailedBookcase,
+  officeDesk,
+  trestleDesk,
+  officeChair,
+  ergonomicChair,
+  mediaConsole,
   officeCharacters: null,
   officeCats: null,
   seasonalDecor: null,
