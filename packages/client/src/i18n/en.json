@@ -594,7 +594,9 @@
   "event": {
     "kicker": "Event",
     "worse": "It got worse (level {{level}})",
-    "moral": "Morale"
+    "moral": "Morale",
+    "paused": "The sprint is paused: take your time to choose. Speed resumes afterwards.",
+    "hardcore": "Hardcore: time keeps running. If you don't answer, the problem will choose for you."
   },
   "pitch": {
     "open": "Raise funds",

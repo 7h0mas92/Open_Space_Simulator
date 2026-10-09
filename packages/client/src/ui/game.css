@@ -2405,6 +2405,28 @@ legend {
   list-style: none;
 }
 
+.stage-screen:focus {
+  outline: none;
+}
+
+.stage-screen:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Sous les choix : le temps est en pause (ou continue en Hardcore). */
+.event-clock {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.event-clock.is-running {
+  color: var(--danger);
+}
+
 .choice {
   display: flex;
   align-items: flex-start;

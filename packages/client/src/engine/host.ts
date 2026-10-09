@@ -33,6 +33,12 @@ export class SimulationHost {
   private lastFrame: number | null = null;
   private pending: Notification[] = [];
   private replay: ReplayCursor | null = null;
+  /**
+   * Vitesse à reprendre une fois la carte d'événement tranchée (`null` : le temps n'a pas été
+   * arrêté par une carte). Seule l'horloge réelle s'arrête : la simulation, elle, était déjà
+   * bloquée par la carte, donc replays, Daily et sauvegardes ne changent pas.
+   */
+  private resumeSpeed: Speed | null = null;
 
   constructor(
     private readonly post: (message: WorkerToMain) => void,
@@ -66,6 +72,7 @@ export class SimulationHost {
   private init(message: Extract<MainToWorker, { type: 'init' }>): void {
     const cards = CardLibrary.parse(message.cards);
     this.replay = null;
+    this.resumeSpeed = null;
     if (message.game.kind === 'new') {
       this.simulation = Simulation.create(
         { seed: message.game.seed, mode: message.game.mode },
@@ -103,6 +110,11 @@ export class SimulationHost {
     if (!isSpeed(speed)) return;
     // Mode Hardcore : pas de pause.
     if (speed === 0 && this.simulation?.state.mode === 'HARDCORE') return;
+    // Carte ouverte : la pause tient jusqu'à la réponse, la vitesse choisie s'appliquera après.
+    if (this.resumeSpeed !== null) {
+      if (speed !== 0) this.resumeSpeed = speed;
+      return;
+    }
     this.clock.speed = speed;
     this.publish();
   }
@@ -184,9 +196,34 @@ export class SimulationHost {
     return played;
   }
 
+  /**
+   * Une carte d'événement tombe : le temps passe en pause (les personnages s'arrêtent, le
+   * bouton ❚❚ s'allume) pour laisser le joueur lire et choisir. Une fois la carte tranchée, la
+   * vitesse d'avant reprend. Pas en Hardcore (pas de pause, la carte se résout seule) ni en
+   * replay (le spectateur garde la main sur la vitesse).
+   */
+  private holdForEvent(simulation: Simulation): void {
+    const pending = simulation.state.events.pending !== null;
+    if (this.resumeSpeed !== null) {
+      if (pending) return;
+      this.clock.speed = this.resumeSpeed;
+      this.resumeSpeed = null;
+    } else if (
+      pending &&
+      !this.replay &&
+      simulation.state.mode !== 'HARDCORE' &&
+      simulation.state.stage === 'EXECUTION' &&
+      this.clock.speed !== 0
+    ) {
+      this.resumeSpeed = this.clock.speed;
+      this.clock.speed = 0;
+    }
+  }
+
   private publish(): void {
     const simulation = this.simulation;
     if (!simulation) return;
+    this.holdForEvent(simulation);
     this.post({
       type: 'snapshot',
       state: simulation.state,
