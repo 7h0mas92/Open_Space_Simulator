@@ -3,6 +3,7 @@ import {
   ROLE_PROFILES,
   ROLE_TRADE,
   TIME,
+  stackMultiplier,
   taskTrade,
   type EntityId,
   type GameState,
@@ -19,6 +20,7 @@ import {
   text,
   type SimContext,
 } from '../helpers';
+import { leadershipEffects, NO_LEADERSHIP, type LeadershipEffects } from '../leadership';
 import { recordTaskDone, recordWork } from '../performance';
 import { completeSpecialTask } from '../taskFlow';
 
@@ -40,6 +42,7 @@ export function productivity(
   devId: EntityId,
   task: Task,
   hasProductOwner = hasRole(state, 'PRODUCT_OWNER'),
+  leadership: LeadershipEffects = leadershipEffects(state),
 ): number {
   const identity = state.components.identity[devId];
   const stats = state.components.stats[devId];
@@ -60,10 +63,16 @@ export function productivity(
   rate *= 1 - state.gauges.debt / BALANCE.work.debtProductivityDivider;
   // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf casque antibruit) ;
   // la salle de réunion rend ce malus plus léger (stand-up) ou plus lourd (brainstorming).
+  // Avec un scrum master, ces réunions pèsent moitié moins.
   if (hasProductOwner && !ctx.office.meetingShielded[devId]) {
-    rate *= 1 - BALANCE.work.poMeetingPenalty * ctx.office.meetingPenalty;
+    rate *=
+      1 - BALANCE.work.poMeetingPenalty * ctx.office.meetingPenalty * leadership.meetingFactor;
   }
-  rate *= 1 + ctx.office.teamProductivity + (ctx.office.seatProductivity[devId] ?? 0);
+  rate *=
+    1 +
+    ctx.office.teamProductivity +
+    (ctx.office.seatProductivity[devId] ?? 0) +
+    leadership.productivity;
   if (identity.role === 'SENIOR_BEARD' && task.shinyFramework)
     rate *= BALANCE.roles.seniorShinyMalus;
   if (thinksInRust(state, devId)) {
@@ -73,6 +82,8 @@ export function productivity(
   if (remote && identity.role !== 'GHOST') rate *= 1 - BALANCE.remote.productivityPenalty;
   // Hors de son métier (tâche confiée à la main), on tâtonne.
   if (ROLE_TRADE[identity.role] !== taskTrade(task)) rate *= BALANCE.work.offTradeMultiplier;
+  // Front, back ou fullstack : plus vite de son côté de la stack, et sur sa spécialité.
+  rate *= stackMultiplier(identity.role, identity.specialty, task);
   if (identity.trait === 'PERFECTIONIST') rate *= 0.9;
   if (identity.trait === 'COFFEE_ADDICT' && state.gauges.coffee > 50) rate *= 1.1;
   return rate;
@@ -112,7 +123,13 @@ function gainXp(state: GameState, ctx: SimContext, devId: EntityId, amount: numb
 }
 
 /** Conséquences d'une tâche terminée sur les jauges, selon son type. */
-function completeTask(state: GameState, ctx: SimContext, taskId: EntityId, devId: EntityId): void {
+function completeTask(
+  state: GameState,
+  ctx: SimContext,
+  taskId: EntityId,
+  devId: EntityId,
+  leadership: LeadershipEffects = NO_LEADERSHIP,
+): void {
   const task = state.components.task[taskId];
   const identity = state.components.identity[devId];
   if (!task || !identity) return;
@@ -164,7 +181,16 @@ function completeTask(state: GameState, ctx: SimContext, taskId: EntityId, devId
   const { debt, stability } = BALANCE;
   switch (task.type) {
     case 'FEATURE':
-      addGauge(state, 'debt', task.size * debt.featurePerPoint * (1.3 - quality) * debtMultiplier);
+      // Revue de code du tech lead et recette des testeurs : moins de dette à la livraison.
+      addGauge(
+        state,
+        'debt',
+        task.size *
+          debt.featurePerPoint *
+          (1.3 - quality) *
+          debtMultiplier *
+          leadership.featureDebtFactor,
+      );
       addGauge(state, 'stability', task.size * stability.featurePerPoint);
       state.stats.featuresShipped += 1;
       if (identity.role === 'AI_AGENT' && ctx.rng.chance(BALANCE.roles.aiHallucination)) {
@@ -223,6 +249,7 @@ function completeTask(state: GameState, ctx: SimContext, taskId: EntityId, devId
 /** Système « travail » : fait avancer les tâches des devs en train de travailler. */
 export function workSystem(state: GameState, ctx: SimContext): void {
   const hasProductOwner = hasRole(state, 'PRODUCT_OWNER');
+  const leadership = leadershipEffects(state);
   for (const devId of devIds(state)) {
     if (state.components.activity[devId]?.kind !== 'WORKING') continue;
     const taskId = state.components.worker[devId]?.taskId;
@@ -230,13 +257,13 @@ export function workSystem(state: GameState, ctx: SimContext): void {
     const identity = state.components.identity[devId];
     if (!taskId || !task || !identity) continue;
     if (task.column === 'TODO') task.column = 'IN_PROGRESS';
-    const rate = productivity(state, ctx, devId, task, hasProductOwner);
+    const rate = productivity(state, ctx, devId, task, hasProductOwner, leadership);
     task.progress += rate;
     const quality = effectiveQuality(state, ctx, devId);
     task.qualitySum += rate * quality;
     recordWork(state, devId, rate, quality);
     task.debtFactor += rate * ROLE_PROFILES[identity.role].debtMultiplier;
     gainXp(state, ctx, devId, rate);
-    if (task.progress >= task.work) completeTask(state, ctx, taskId, devId);
+    if (task.progress >= task.work) completeTask(state, ctx, taskId, devId, leadership);
   }
 }

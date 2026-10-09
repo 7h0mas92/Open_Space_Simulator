@@ -102,6 +102,80 @@ export const ROLE_PROFILES: Record<DevRole, RoleProfile> = {
     qualityMultiplier: 1,
     debtMultiplier: 1,
   },
+  // Équipe web (voir `teamRoles.ts`) : les devs front et back vont vite sur leur côté de la
+  // stack ; le fullstack touche à tout, mais avec des compétences plus limitées.
+  FRONTEND: {
+    stats: { speed: 6, quality: 6, endurance: 6, ego: 5 },
+    salary: 6500,
+    speedMultiplier: 1,
+    qualityMultiplier: 1.1,
+    debtMultiplier: 1,
+  },
+  BACKEND: {
+    stats: { speed: 5, quality: 7, endurance: 6, ego: 5 },
+    salary: 7000,
+    speedMultiplier: 1,
+    qualityMultiplier: 1.15,
+    debtMultiplier: 0.9,
+  },
+  FULLSTACK: {
+    stats: { speed: 6, quality: 5, endurance: 6, ego: 5 },
+    salary: 6000,
+    speedMultiplier: 1,
+    qualityMultiplier: 0.9,
+    debtMultiplier: 1.05,
+  },
+  // Relit le code des autres plus qu'il n'en écrit : lent, mais propre.
+  TECH_LEAD: {
+    stats: { speed: 5, quality: 8, endurance: 6, ego: 7 },
+    salary: 9500,
+    speedMultiplier: 0.8,
+    qualityMultiplier: 1.3,
+    debtMultiplier: 0.7,
+  },
+  DEVOPS: {
+    stats: { speed: 5, quality: 7, endurance: 7, ego: 5 },
+    salary: 8000,
+    speedMultiplier: 1,
+    qualityMultiplier: 1.1,
+    debtMultiplier: 0.8,
+  },
+  QA_TESTER: {
+    stats: { speed: 5, quality: 8, endurance: 7, ego: 4 },
+    salary: 5000,
+    speedMultiplier: 1,
+    qualityMultiplier: 1.2,
+    debtMultiplier: 0.8,
+  },
+  // L'encadrement ne prend pas de tâches : sa vitesse ne compte que si on lui en confie une.
+  SCRUM_MASTER: {
+    stats: { speed: 3, quality: 5, endurance: 7, ego: 5 },
+    salary: 6500,
+    speedMultiplier: 0.5,
+    qualityMultiplier: 1,
+    debtMultiplier: 1,
+  },
+  MANAGER: {
+    stats: { speed: 3, quality: 6, endurance: 7, ego: 6 },
+    salary: 8500,
+    speedMultiplier: 0.5,
+    qualityMultiplier: 1,
+    debtMultiplier: 1,
+  },
+  DEPUTY_DIRECTOR: {
+    stats: { speed: 3, quality: 6, endurance: 6, ego: 7 },
+    salary: 11000,
+    speedMultiplier: 0.5,
+    qualityMultiplier: 1,
+    debtMultiplier: 1,
+  },
+  DIRECTOR: {
+    stats: { speed: 4, quality: 7, endurance: 6, ego: 9 },
+    salary: 14000,
+    speedMultiplier: 0.5,
+    qualityMultiplier: 1,
+    debtMultiplier: 1,
+  },
 };
 
 /**
@@ -344,8 +418,58 @@ export const BALANCE = {
     seniorShinyMalus: 0.5,
     shinyFrameworkChance: 0.25,
   },
+  /**
+   * Front, back et fullstack (`teamRoles.ts`) : vitesse d'un dev selon le côté de la tâche.
+   * Les profils historiques n'ont pas de côté : ils codent partout à 100 %.
+   */
+  stacks: {
+    /** Dev front sur une tâche front, dev back sur une tâche back. */
+    specialist: 1.15,
+    /** Dev front sur une tâche back (ou l'inverse) : il découvre. */
+    crossStack: 0.6,
+    /** Le fullstack fait les deux, sans exceller nulle part. */
+    fullstack: 0.85,
+    /** Tâche du type de sa spécialité (React → features, bases de données → refactos...). */
+    specialtyBonus: 1.2,
+  },
+  /**
+   * Encadrement et équipe qualité (`client/src/simulation/leadership.ts`). Ils ne prennent pas
+   * de tickets mais rendent toute l'équipe meilleure.
+   */
+  leadership: {
+    /** Directeur technique : productivité de toute l'équipe et hype quotidienne. */
+    directorProductivity: 0.06,
+    directorDailyHype: 0.15,
+    /** Sous-directeur : un peu de productivité et de moral pour tous. */
+    deputyProductivity: 0.03,
+    deputyDailyMoral: 0.5,
+    /** Un manager encadre jusqu'à `managerSpan` personnes (hors encadrement). */
+    managerSpan: 6,
+    /** Bonus quand toute l'équipe est encadrée (proportionnel à la part encadrée). */
+    managerProductivity: 0.06,
+    managerDailyMoral: 1,
+    /** Les conflits s'apaisent de ce nombre de points par jour (médiation). */
+    managerConflictEase: 1.5,
+    /** Scrum master : les réunions du PO pèsent moitié moins, et un peu de rythme. */
+    scrumMeetingFactor: 0.5,
+    scrumProductivity: 0.02,
+    /** Revue de code du tech lead : dette des features × ce facteur, par tech lead. */
+    techLeadDebtFactor: 0.85,
+    /** Recette des testeurs : −10 % de dette par testeur sur les features, au plus −30 %. */
+    qaDebtReductionPerTester: 0.1,
+    qaDebtReductionMax: 0.3,
+    /** DevOps : stabilité gagnée chaque jour, par DevOps, au plus `devopsDailyStabilityMax`. */
+    devopsDailyStability: 0.4,
+    devopsDailyStabilityMax: 1.2,
+  },
   recruitment: {
     candidatesPerSprint: 3,
+    /**
+     * Candidats de l'équipe web, en plus des 3 profils historiques : un dev (front, back,
+     * fullstack...) et un poste d'équipe quand il y en a un d'ouvert. Tirés sur une graine à
+     * part, ils ne changent rien aux 3 autres candidats (replays et Daily).
+     */
+    webCandidatesPerSprint: 2,
     /** Ratio offre / salaire demandé sous lequel le candidat refuse toujours. */
     minRatio: 0.75,
     /** Ratio au-dessus duquel il accepte toujours. */

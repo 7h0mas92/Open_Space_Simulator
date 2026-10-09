@@ -176,8 +176,8 @@ describe('Équipe et recrutement', () => {
   it('détaille chaque candidat : performance estimée, marché, chances d’accepter', async () => {
     await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Recrutement/ }));
-    expect(screen.getAllByText('Performance estimée')).toHaveLength(3);
-    expect(screen.getAllByText('Salaire du marché')).toHaveLength(3);
+    expect(screen.getAllByText('Performance estimée')).toHaveLength(5);
+    expect(screen.getAllByText('Salaire du marché')).toHaveLength(5);
     // L'offre par défaut est la demande du candidat : il n'est pas sûr d'accepter.
     const chance = screen.getAllByText(/Chances qu'il ou elle accepte cette offre/)[0]!;
     const slider = screen.getAllByRole('slider')[0]!;
@@ -189,7 +189,7 @@ describe('Équipe et recrutement', () => {
     await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Recrutement/ }));
     const offers = screen.getAllByRole('button', { name: "Faire l'offre" });
-    expect(offers).toHaveLength(3);
+    expect(offers).toHaveLength(5);
     const before = useGame.getState().view!.candidates.length;
     await userEvent.click(offers[0]!);
     expect(useGame.getState().view!.candidates.length).toBe(before - 1);

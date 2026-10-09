@@ -116,7 +116,17 @@
     "boo": "Boo",
     "prodDown": "Prod is down!!",
     "fridayDeploy": "Deploy on Friday 5pm?",
-    "quit": "I'm going to quit"
+    "quit": "I'm going to quit",
+    "centerDiv": "Centre this div…",
+    "itDepends": "It depends",
+    "bothSides": "Front? Back? Both?",
+    "nitpick": "nit: rename",
+    "yaml": "One YAML indent too many",
+    "cannotReproduce": "Could not reproduce",
+    "storyPoints": "How many points is that?",
+    "oneToOne": "Quick sync?",
+    "reportUp": "I'll escalate that",
+    "synergy": "Synergies!"
   },
   "roles": {
     "SENIOR_BEARD": "Bearded Senior",
@@ -126,7 +136,17 @@
     "DESIGNER": "Designer",
     "PRODUCT_OWNER": "Product Owner",
     "AI_AGENT": "AI Agent",
-    "GHOST": "Ghost Dev"
+    "GHOST": "Ghost Dev",
+    "FRONTEND": "Front-end Dev",
+    "BACKEND": "Back-end Dev",
+    "FULLSTACK": "Full-stack Dev",
+    "TECH_LEAD": "Tech Lead",
+    "DEVOPS": "DevOps",
+    "QA_TESTER": "QA Tester",
+    "SCRUM_MASTER": "Scrum Master",
+    "MANAGER": "Engineering Manager",
+    "DEPUTY_DIRECTOR": "Deputy CTO",
+    "DIRECTOR": "CTO"
   },
   "roleDescriptions": {
     "SENIOR_BEARD": "+50% quality, refuses frameworks younger than 5 years.",
@@ -136,7 +156,17 @@
     "DESIGNER": "Blocks releases while the padding is wrong, +perceived quality at demos.",
     "PRODUCT_OWNER": "4 meetings a day: -10% productivity for everyone, +hype.",
     "AI_AGENT": "Ultra fast, 30% chance to hallucinate a feature.",
-    "GHOST": "Works remotely, invisible in the office, but tickets get closed."
+    "GHOST": "Works remotely, invisible in the office, but tickets get closed.",
+    "FRONTEND": "Builds the interface: +15% speed on front-end tasks, -40% on back-end. Their specialty speeds up one task type.",
+    "BACKEND": "Builds the server: +15% speed on back-end tasks, -40% on front-end. Their specialty speeds up one task type.",
+    "FULLSTACK": "Takes front-end and back-end tasks, but at 85% and with more limited quality.",
+    "TECH_LEAD": "Codes slowly, reviews everything: -15% debt on every shipped feature.",
+    "DEVOPS": "Back-end dev specialised in the cloud: faster infra, +stability every day.",
+    "QA_TESTER": "Runs QA (testing tasks): -10% feature debt per tester, -30% at most.",
+    "SCRUM_MASTER": "Takes no tasks. The PO's meetings weigh half as much, +2% productivity.",
+    "MANAGER": "Takes no tasks. Manages 6 people: up to +6% productivity, +morale, calmer conflicts.",
+    "DEPUTY_DIRECTOR": "Takes no tasks. +3% productivity and +morale for the whole team.",
+    "DIRECTOR": "Takes no tasks. +6% productivity for everyone and a little hype every day."
   },
   "activities": {
     "WORKING": "Working",
@@ -181,7 +211,8 @@
   "trades": {
     "DEV": "Code",
     "DESIGN": "Design",
-    "PRODUCT": "Product"
+    "PRODUCT": "Product",
+    "QA": "QA"
   },
   "gauges": {
     "treasury": {
@@ -374,7 +405,9 @@
     "bestFriend": "Best ally: {{name}}",
     "rival": "Nemesis: {{name}}",
     "leaving": "🚪 Handed in their notice: leaves at the start of sprint {{sprint}}.",
-    "leavingShort": "🚪 leaves at sprint {{sprint}}"
+    "leavingShort": "🚪 leaves at sprint {{sprint}}",
+    "specialty": "Specialty: {{specialty}} (+20% on {{focus}})",
+    "stack": "Stack side: {{stack}}"
   },
   "teamFilters": {
     "sortLabel": "Sort by",
@@ -426,7 +459,7 @@
     "NO_DESK": "no desk"
   },
   "hiring": {
-    "intro": "3 candidates this sprint. Make an offer: too low and they refuse.",
+    "intro": "3 usual profiles and 2 from the web team (front-end, back-end, full-stack, leadership) this sprint. Make an offer: too low and they say no.",
     "asking": "Asks €{{salary}}/month",
     "offer": "Your offer: €{{salary}}/month",
     "hire": "Make offer",
@@ -734,7 +767,17 @@
       "DESIGNER": "\"My salary is like your padding: it's 8px short everywhere.\"",
       "PRODUCT_OWNER": "\"I booked a 1-hour meeting in your calendar to discuss it. And another one to follow up.\"",
       "AI_AGENT": "\"My tokens cost more than expected. I computed my raise myself: trust me.\"",
-      "GHOST": "\"You never see me, but my tickets get closed. My salary, however, never moves.\""
+      "GHOST": "\"You never see me, but my tickets get closed. My salary, however, never moves.\"",
+      "FRONTEND": "\"I centre divs all day long. That deserves a 4K screen and a raise, at least.\"",
+      "BACKEND": "\"If my salary were a SQL query, it would be missing an index.\"",
+      "FULLSTACK": "\"I do the job of two people. Halfway, sure, but two people.\"",
+      "TECH_LEAD": "\"nit: this salary could use a refactor.\"",
+      "DEVOPS": "\"I'm on call at night, at weekends and during this very meeting.\"",
+      "QA_TESTER": "\"I tested my payslip: the bug reproduces every single month.\"",
+      "SCRUM_MASTER": "\"I estimate this request at 13 points. Can we pull it into the sprint?\"",
+      "MANAGER": "\"Let's talk about my career path. I prepared 14 slides and an OKR.\"",
+      "DEPUTY_DIRECTOR": "\"I stand in for the CTO in every meeting. I'd like to stand in for their salary too.\"",
+      "DIRECTOR": "\"My package is below market. And below my three previous startups.\""
     }
   },
   "end": {
@@ -1578,5 +1621,39 @@
       "TOO_MUCH_DEBT": "Too much technical debt: the application would be rejected.",
       "TOO_BIG": "Your startup is too big for a grant."
     }
+  },
+  "stacks": {
+    "FRONT": "Front-end",
+    "BACK": "Back-end",
+    "FULL": "Full-stack"
+  },
+  "specialties": {
+    "REACT": "React",
+    "ACCESSIBILITY": "Accessibility",
+    "WEB_PERF": "Web performance",
+    "MOBILE": "Mobile",
+    "NODE": "Node.js",
+    "DATABASE": "Databases",
+    "SECURITY": "Security",
+    "CLOUD": "Cloud"
+  },
+  "specialtyFocus": {
+    "FEATURE": "features",
+    "REFACTO": "refactors",
+    "BUGFIX": "bugs",
+    "INFRA": "infra"
+  },
+  "leadership": {
+    "title": "Leadership",
+    "none": "No leadership yet: hire a CTO, managers or a scrum master as the team grows.",
+    "productivity": "+{{value}}% productivity for the whole team",
+    "coverage": "{{value}}% of the team has a manager",
+    "meetings": "Lighter PO meetings (scrum master)",
+    "debt": "-{{value}}% debt on features (reviews and QA)",
+    "stability": "+{{value}} stability per day (DevOps)",
+    "moral": "+{{value}} morale per day for everyone",
+    "openings": "Open positions: {{roles}}",
+    "noOpenings": "No leadership position open for the current team size.",
+    "short": "+{{value}}% productivity"
   }
 }

@@ -3,6 +3,7 @@ import type * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import {
   dressUp,
+  costumeFor,
   PACK_COSTUMES,
   themedLookFor,
   themedLookKey,
@@ -26,8 +27,7 @@ describe('packs de personnages', () => {
 
   it('chaque pack à thème habille les 8 profils', () => {
     for (const pack of THEMED) {
-      for (const role of DEV_ROLES)
-        expect(PACK_COSTUMES[pack][role], `${pack} ${role}`).toBeDefined();
+      for (const role of DEV_ROLES) expect(costumeFor(pack, role), `${pack} ${role}`).toBeDefined();
     }
   });
 
@@ -71,7 +71,7 @@ describe('packs de personnages', () => {
         const base = ROLE_LOOKS.SENIOR_BEARD.find((look) => look.kind === 'built');
         if (base?.kind !== 'built') throw new Error('personnage construit attendu');
         const character = buildCharacter(base.outfit, []);
-        const costume = PACK_COSTUMES[pack][role];
+        const costume = costumeFor(pack, role);
         dressUp(character, costume);
         const head = character.getObjectByName('head');
         if (costume.head?.length || costume.mask !== undefined)

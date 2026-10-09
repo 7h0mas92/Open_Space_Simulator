@@ -22,7 +22,7 @@ describe('Métiers du Kanban', () => {
     expect(ROLE_TRADE.PRODUCT_OWNER).toBe('PRODUCT');
     expect(ROLE_TRADE.RUSTACEAN).toBe('DEV');
     const { state } = stateWithTeam(['SENIOR_BEARD', 'INTERN', 'DESIGNER']);
-    expect(teamByTrade(state)).toEqual({ DEV: 2, DESIGN: 1, PRODUCT: 0 });
+    expect(teamByTrade(state)).toEqual({ DEV: 2, DESIGN: 1, PRODUCT: 0, QA: 0 });
   });
 
   it('une équipe de devs ne reçoit que des tâches de code', () => {

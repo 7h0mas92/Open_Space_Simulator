@@ -29,6 +29,16 @@ const BY_ROLE: Record<DevRole, string> = {
   PRODUCT_OWNER: 'anotherMeeting',
   AI_AGENT: 'hallucination',
   GHOST: 'boo',
+  FRONTEND: 'centerDiv',
+  BACKEND: 'itDepends',
+  FULLSTACK: 'bothSides',
+  TECH_LEAD: 'nitpick',
+  DEVOPS: 'yaml',
+  QA_TESTER: 'cannotReproduce',
+  SCRUM_MASTER: 'storyPoints',
+  MANAGER: 'oneToOne',
+  DEPUTY_DIRECTOR: 'reportUp',
+  DIRECTOR: 'synergy',
 };
 
 export interface ThoughtContext {

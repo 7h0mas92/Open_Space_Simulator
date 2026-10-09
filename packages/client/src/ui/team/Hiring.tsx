@@ -5,9 +5,13 @@ import { formatBirthday, formatMoney, localized } from '../game/format';
 import { offerAcceptance } from '../../view/hiring';
 import { useGame } from '../store/game';
 import { GradeBadge, Strengths } from './Performance';
+import { SpecialtyLine } from './Leadership';
 import { StatBars } from './StatBars';
 
-/** Recrutement : 3 candidats par sprint, offre de salaire négociée, risque de refus. */
+/**
+ * Recrutement : 3 candidats aux profils historiques et 2 de l'équipe web par sprint, offre de
+ * salaire négociée, risque de refus.
+ */
 export function Hiring({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const max = view.teamMax;
@@ -58,6 +62,7 @@ function CandidateCard({ candidate, disabled }: { candidate: CandidateView; disa
       </p>
       <p className="bio">{localized(dev.bio, i18n.language)}</p>
       <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
+      <SpecialtyLine dev={dev} />
       <p className="hint">{t(`traitDescriptions.${dev.trait}`)}</p>
       <dl className="facts">
         <div>

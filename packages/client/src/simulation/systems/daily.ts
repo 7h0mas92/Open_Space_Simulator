@@ -15,6 +15,7 @@ import {
   text,
   type SimContext,
 } from '../helpers';
+import { applyDailyLeadership } from '../leadership';
 import { log10Approx, round } from '../math';
 import type { SimClock } from '../time';
 import { thinksInRust } from './work';
@@ -173,6 +174,7 @@ export function dailySystem(state: GameState, ctx: SimContext, clock: SimClock):
   economy(state);
   users(state);
   gauges(state, ctx);
+  applyDailyLeadership(state);
   moral(state, ctx, clock);
   relations(state);
   rustConversion(state, ctx);
