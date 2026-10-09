@@ -1,6 +1,7 @@
 /**
  * Effets de bord d'une partie, branchés sur le store du jeu : sauvegarde automatique à chaque
- * planification, publication du score à la fin, succès gardés pour le serveur.
+ * planification, publication du score à la fin (et partie retirée de « Continuer »), succès
+ * gardés pour le serveur.
  */
 import { ApiRequestError } from '../../api/client';
 import { metaApi } from '../../api/meta';
@@ -71,7 +72,10 @@ function onViewChange(view: GameView | null, previous: GameView | null): void {
   if (view.step === 'PLANNING' && previous.step !== 'PLANNING') {
     void saveGame(1).catch(() => undefined);
   }
-  if (view.step === 'ENDED' && previous.step !== 'ENDED') void submitScore();
+  if (view.step === 'ENDED' && previous.step !== 'ENDED') {
+    void submitScore();
+    void saves.markFinished(view.seed, isOnline()).catch(() => undefined);
+  }
   if (view.achievements.length > previous.achievements.length) {
     const fresh = view.achievements.filter((id) => !previous.achievements.includes(id));
     void rememberAchievements(fresh).catch(() => undefined);

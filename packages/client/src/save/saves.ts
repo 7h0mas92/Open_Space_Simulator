@@ -14,6 +14,8 @@ interface LocalSave {
 }
 
 const slotKey = (slot: number) => `save:${slot}`;
+/** Date de fin d'une partie, retrouvée par sa graine. */
+const finishedKey = (seed: string) => `finished:${seed}`;
 
 export function summarize(slot: number, data: SaveData, cardsVersion: string): SaveSummary {
   const { state } = data;
@@ -94,6 +96,32 @@ export const saves = {
   async remove(slot: number, online: boolean): Promise<void> {
     await localStore().delete(slotKey(slot));
     if (online) await metaApi.saves.remove(slot).catch(() => undefined);
+  },
+
+  /**
+   * Fin de partie : la sauvegarde automatique de cette partie ne sert plus, on l'efface, et
+   * on note la date de fin pour que « Continuer » ignore aussi ses sauvegardes manuelles
+   * (elles restent dans la page des sauvegardes).
+   */
+  async markFinished(seed: string, online: boolean): Promise<void> {
+    await localStore().set(finishedKey(seed), new Date().toISOString());
+    const autosave = (await saves.list(online)).find((summary) => summary.slot === AUTOSAVE_SLOT);
+    if (autosave?.seed === seed) await saves.remove(AUTOSAVE_SLOT, online);
+  },
+
+  /**
+   * La sauvegarde la plus récente d'une partie encore en cours, pour « Continuer ». Une
+   * sauvegarde faite avant la fin de sa partie est ignorée ; une nouvelle partie sur la même
+   * graine (Daily rejoué) reste proposée, car sauvegardée après cette fin.
+   */
+  async latestResumable(online: boolean): Promise<SaveSummary | null> {
+    let newest: SaveSummary | null = null;
+    for (const summary of await saves.list(online)) {
+      const finishedAt = await localStore().get<string>(finishedKey(summary.seed));
+      if (finishedAt !== undefined && summary.updatedAt <= finishedAt) continue;
+      if (!newest || summary.updatedAt > newest.updatedAt) newest = summary;
+    }
+    return newest;
   },
 
   /** Envoie au serveur les sauvegardes faites hors ligne (après connexion ou retour du réseau). */
