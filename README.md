@@ -325,11 +325,17 @@ flowchart LR
   d'autres (l'aperçu saute sur la place libre la plus proche) jusqu'à « Annuler » ou
   « Terminer », ou jusqu'au maximum ou à la trésorerie épuisée. Le rayon Accessoires (lampe,
   mug, canard en plastique, succulente, livres, nounours, radio, deuxième écran, enceinte,
-  trophée, grille-pain, blender) se pose sur les meubles à plateau (bureaux, bibliothèque,
-  baie de serveurs, frigo, table de cantine), suit son meuble quand on le déplace et part
-  avec lui à la revente. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
+  trophée, grille-pain, blender, casque antibruit, mini-cactus) se pose sur les meubles à
+  plateau (3 emplacements par bureau, bibliothèque, baie de serveurs, frigo, table de cantine),
+  suit son meuble quand on le déplace et part avec lui à la revente. Le casque antibruit posé
+  sur un bureau protège un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
+- **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
+  revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
+  les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
+  compte dans le maximum de la boutique (commandes `STORE_FURNITURE`, `PLACE_STORED`,
+  `PLACE_STORED_ACCESSORY`, `SELL_STORED`, état `inventory`).
 
 ### Méta-jeu et anti-triche
 
@@ -497,7 +503,8 @@ génère que des messages Slack.
 - Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
   sieste-pod, standing desk, casques antibruit et leur portant, baie de serveurs, cafetière à
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
-  de ramen, mug, canard en plastique, trophée de hackathon, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
+  de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
+  mini-cactus de bureau, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
   ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
   lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
