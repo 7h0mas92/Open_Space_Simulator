@@ -480,8 +480,12 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   « 🗓️ Réunion ») : dès la Seed, 6 formules avec bonus et malus (stand-up, brainstorming,
   aquarium ; zen et war room en Série A ; salle du conseil en Licorne), rendu 3D distinct
   (`render/meetingRoom.ts`), chaises attribuées aux devs. Réunion d'équipe chaque matin de semaine
-  à 9h30, utile ou inutile, sur une graine à part (`seed#meeting#tick`) ; changer ou vider la
-  salle rend 50 %. Commandes `FIT_MEETING_ROOM` / `CLEAR_MEETING_ROOM`, état `meetingRoom` (null
+  à 9h, dès l'arrivée, pendant 20 min (`MEETINGS.dailyMinutes`, le reste de la demi-heure on code),
+  utile ou inutile, sur une graine à part (`seed#meeting#tick`) ; changer ou vider la
+  salle rend 50 %. Réunion de crise à chaque panne (`holdCrisisMeeting`, sans hasard) : le
+  coupable, 3 devs du code au plus (DevOps et Tech Lead d'abord) et le PO ou un manager passent
+  une demi-heure en salle, puis le meneur prend « Réparer la prod », déjà avancée de 15 à 50 %
+  selon la formule (`crisisHeadStart`, war room 50 %) ; coupable -3 moral, stat `crisisMeetings`. Commandes `FIT_MEETING_ROOM` / `CLEAR_MEETING_ROOM`, état `meetingRoom` (null
   par défaut). Bot « organizer » : environ +33 % de valorisation médiane face à « balanced ».
   À 375 px, les 8 boutons du dock tiennent sans défilement (libellé court « Réunion »).
 - « Continuer » ne propose plus une partie terminée : à la fin, sa sauvegarde automatique est
