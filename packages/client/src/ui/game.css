@@ -3024,3 +3024,176 @@ legend {
   flex: 0 1 auto;
   text-align: right;
 }
+
+/* ---- Levée de fonds : tours de table de plus en plus durs ---- */
+
+.pitch-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.difficulty {
+  display: inline-flex;
+  gap: 4px;
+  vertical-align: middle;
+}
+
+.difficulty span {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+}
+
+.difficulty .on {
+  background: var(--accent);
+}
+
+.pitch-interest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 0.8rem;
+  font-size: 0.9rem;
+}
+
+.pitch-interest meter {
+  flex: 1;
+  min-width: 6rem;
+  height: 12px;
+}
+
+.pitch-chosen {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 0.6rem;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+}
+
+.pitch-chosen .tag {
+  margin-left: 6px;
+  font-size: 0.75rem;
+}
+
+.pitch-round {
+  margin: 0.4rem 0 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.pitch-question {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px 12px 12px 2px;
+  background: var(--bg-elevated);
+  font-weight: 600;
+}
+
+.choice-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+.choice-bluff {
+  border-style: dashed;
+}
+
+.category-TRACTION {
+  color: #7fd18b;
+}
+
+.category-TECH {
+  color: #7fb8f0;
+}
+
+.category-TEAM {
+  color: #f5b942;
+}
+
+.category-VISION {
+  color: #d3a6f5;
+}
+
+.category-BUZZWORD {
+  color: #ff9f80;
+}
+
+.funding-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.funding-panel h3 {
+  margin: 0;
+}
+
+.funding-round {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.funding-round p {
+  margin: 0;
+}
+
+.funding-difficulty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.financing-offers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.financing-offer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.financing-offer h4,
+.financing-offer p {
+  margin: 0;
+}
+
+.financing-amount {
+  font-size: 1.1rem;
+}
+
+.financing-terms {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.financing-offer > button {
+  margin-top: auto;
+}

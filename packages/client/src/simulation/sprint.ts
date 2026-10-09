@@ -2,7 +2,7 @@ import { BALANCE, TIME, type CommandResult, type GameState, type LocalizedText }
 import { BUYERS, FEEDBACK_BAD, FEEDBACK_GOOD, FEEDBACK_NEUTRAL } from './data/flavor';
 import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
-import { computeValuation, monthlyExpenses, monthlyRevenue } from './economy';
+import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
 import { endGame, endOfTime } from './endings';
 import { phaseIndex } from './furniture';
 import { closeSprintPerformance } from './performance';
@@ -204,6 +204,7 @@ function loseSprint(state: GameState, ctx: SimContext): void {
   const days = TIME.daysPerSprint;
   addMoney(state, (-monthlyExpenses(state) * days) / 30);
   addMoney(state, (monthlyRevenue(state) * days) / 30);
+  repayLoan(state, days);
   const churn = state.gauges.users * BALANCE.users.baseDailyChurn * days;
   addUsers(state, -churn);
   for (let day = 0; day < days; day++) addGauge(state, 'hype', hypeDrift(state.gauges.hype));

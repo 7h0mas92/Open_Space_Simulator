@@ -247,6 +247,7 @@ export const MISSING_ASSETS = [
   { id: 'mug', replacement: 'primitive' },
   { id: 'rubberDuck', replacement: 'primitive' },
   { id: 'trophy', replacement: 'primitive' },
+  { id: 'annexDecor', replacement: 'decor' },
   { id: 'deskHeadset', replacement: 'primitive' },
   { id: 'miniCactus', replacement: 'primitive' },
   { id: 'uiPack', replacement: 'css' },

@@ -271,9 +271,11 @@
       "build": "Build",
       "dashboard": "Stats",
       "slack": "Slack",
-      "group": "Invest"
+      "group": "Invest",
+      "funding": "Raise"
     },
-    "group": "Invest"
+    "group": "Invest",
+    "funding": "Raise funds"
   },
   "kanban": {
     "columns": {
@@ -544,6 +546,7 @@
     "surfaceFull": "No room left on this furniture.",
     "VENTURE_LIMIT": "Your group has already founded the maximum number of subsidiaries.",
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
+    "NOT_AVAILABLE": "This financing is not available right now.",
     "INVENTORY_FULL": "The inventory is full: sell some stored items.",
     "RAISE_PENDING": "Answer the raise request first."
   },
@@ -606,6 +609,7 @@
       "mug": "Dev mug",
       "rubberDuck": "Rubber duck",
       "trophy": "Hackathon trophy",
+      "annexDecor": "Office annex decor: arcade cabinets, pinball, neon sign, tree, fountain, stage, lectern and projection screen as Three.js shapes (bench, potted plant and speakers from the Furniture Kit)",
       "deskHeadset": "Noise-cancelling headset on its stand",
       "miniCactus": "Mini desk cactus"
     },
@@ -626,11 +630,30 @@
   "pitch": {
     "open": "Raise funds",
     "title": "Fundraising",
-    "round": "Argument {{round}} of {{total}}: what do you say?",
+    "round": "Question {{round}} of {{total}}",
     "success": "Signed! €{{amount}} raised for {{share}}% of the company.",
     "failure": "The investor will \"circle back\". They won't.",
     "close": "Back to the office",
-    "short": "Raise"
+    "short": "Raise",
+    "roundTitle": "Fundraising · {{round}}",
+    "difficulty": "Difficulty {{level}} of {{total}}",
+    "interest": "Interest",
+    "offTopic": "off topic",
+    "bluffCaught": "bluff called!",
+    "bluffTag": "bluff",
+    "walkedOut": "The investor looked at their watch, then at the door. They left before the end.",
+    "reactions": {
+      "good": "Taking notes",
+      "neutral": "Nodding politely",
+      "bad": "Checking their phone"
+    },
+    "categories": {
+      "TRACTION": "Traction",
+      "TECH": "Tech",
+      "TEAM": "Team",
+      "VISION": "Vision",
+      "BUZZWORD": "Buzzword"
+    }
   },
   "demo": {
     "title": "Sprint {{sprint}} demo",
@@ -1256,15 +1279,15 @@
         "steps": {
           "why": {
             "title": "Why raise?",
-            "body": "Raising money fills your cash and grows your startup: the 1st round takes you to Seed, the 2nd to Series A. At each phase, the office grows and you can hire more people."
+            "body": "Raising funds fills your treasury and grows your startup: the 1st round takes you to Seed, the 2nd to Series A. From Series B on, each successful round opens an office annex (arcade room, indoor garden, auditorium) with 2 more seats on the team."
           },
           "when": {
             "title": "When to raise?",
-            "body": "The \"Raise funds\" button appears during planning, next to \"Start sprint\".\n\nYou need some hype (at zero, no investor will see you), and after each attempt you must wait 3 sprints before the next one. Pick your moment: lots of hype and users is ideal."
+            "body": "The \"Raise funds\" button appears during planning, next to \"Start sprint\". It opens the next funding round and the other financing options: business angels, bank loan, crowdfunding and grant, each with its own catch.\n\nTo pitch, you need some hype (at zero, no investor will see you), and after each attempt you have to wait 3 sprints before the next one."
           },
           "pitch": {
             "title": "The pitch",
-            "body": "In front of the investor, you pick 3 arguments, one per round. Each argument relies on a gauge:\n\n• Traction: you need users.\n• Tech: you need low debt.\n• Team: you need a large, happy team.\n• Stability: some arguments need a reliable production, and the live demo can crash.\n\nEach investor has their own tastes. A failed pitch costs a little hype."
+            "body": "Facing the investor, you answer their questions, one per round, by picking an argument. Each argument relies on a gauge:\n\n• Traction: you need users.\n• Tech: you need low debt.\n• Team: you need a large, happy team.\n• Stability: some arguments need a reliable prod, and the live demo can crash.\n\nAnswer the question asked: off topic, their interest drops. Each funding round is tougher than the last: more questions, a higher bar, bluffs called more often, and from Series B the investor may walk out. A failed pitch costs hype."
           },
           "dilution": {
             "title": "Dilution",
@@ -1436,5 +1459,54 @@
     "confirmSell": "Confirm sale ({{price}})",
     "cancel": "Cancel",
     "sellWhen": "Stakes are sold during planning or the demo."
+  },
+  "funding": {
+    "rounds": "Funding rounds",
+    "raised": "Total raised",
+    "ownership": "Your equity",
+    "annexes": "Office annexes",
+    "nextRound": "Next funding round: {{round}}",
+    "difficulty": "Difficulty",
+    "roundHint": "Facing an investor: {{manches}} questions, {{options}} possible answers each time. Answer the question asked: an off-topic answer lowers their interest. Each round is tougher than the last.",
+    "annexNext": "Closing this round grows the office: a new annex opens, with 2 more seats on the team.",
+    "annexLater": "From {{round}} on, each successful round adds an annex to the office.",
+    "seriesB": "Series B",
+    "pitchCooldown": "Investors are talking among themselves: next pitch in sprint {{sprint}}.",
+    "pitch": "Pitch",
+    "others": "Other financing",
+    "othersHint": "Less money than a funding round, but no pitch. Each one has a catch and only comes back after a few sprints.",
+    "loanActive": "Loan in progress: {{remaining}} left to repay, {{monthly}} a month.",
+    "accept": "Accept",
+    "kinds": {
+      "BRIDGE": {
+        "name": "Business angels",
+        "description": "Three former founders believe in you. Well, in your hype.",
+        "terms": "For {{share}}% of the company. Does not count as a funding round."
+      },
+      "LOAN": {
+        "name": "Bank loan",
+        "description": "The bank lends against your revenue, not your dreams.",
+        "terms": "No dilution. Repaid {{monthly}} a month for {{months}} months."
+      },
+      "CROWDFUNDING": {
+        "name": "Crowdfunding",
+        "description": "Your users pay in advance. In exchange, they want a mug.",
+        "terms": "No dilution. +hype, but the rewards add technical debt."
+      },
+      "GRANT": {
+        "name": "Innovation grant",
+        "description": "Public money, in exchange for an 80-page application.",
+        "terms": "No dilution. The paperwork lowers the whole team’s morale."
+      }
+    },
+    "blockers": {
+      "COOLDOWN": "Available again in sprint {{sprint}}.",
+      "NO_HYPE": "Not enough hype to convince anyone.",
+      "NO_REVENUE": "The bank wants to see more revenue.",
+      "LOAN_ACTIVE": "A loan is already being repaid.",
+      "NOT_ENOUGH_USERS": "You need at least 2,000 users.",
+      "TOO_MUCH_DEBT": "Too much technical debt: the application would be rejected.",
+      "TOO_BIG": "Your startup is too big for a grant."
+    }
   }
 }

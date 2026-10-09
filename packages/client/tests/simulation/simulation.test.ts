@@ -143,6 +143,7 @@ describe('Déroulement d’un sprint', () => {
     expect(simulation.state.stage).toBe('PLANNING');
   });
 
+  // Parties complètes et rejouées : plusieurs secondes sur une machine chargée (CI).
   it('chaque bot termine une partie avec une issue', () => {
     for (const name of ['random', 'shipper', 'balanced', 'cautious'] as const) {
       const simulation = Simulation.create({ seed: `bot-${name}`, mode: 'NORMAL' }, cards);
@@ -150,7 +151,7 @@ describe('Déroulement d’un sprint', () => {
       expect(simulation.state.stage).toBe('ENDED');
       expect(simulation.state.result?.headline.fr).toMatch(/startup/);
     }
-  });
+  }, 20_000);
 
   it('le défi « 3 sprints » se termine au bout de 3 sprints', () => {
     const simulation = Simulation.create({ seed: 'ship3', mode: 'SHIP_IN_3' }, cards);
