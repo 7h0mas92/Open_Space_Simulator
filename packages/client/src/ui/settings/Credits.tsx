@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { MISSING_ASSETS } from '../../render/assetManifest';
 
-/** Page Crédits : Kenney (CC0) et liste des assets remplacés par des formes Three.js. */
+/** Page Crédits : Kenney (CC0), musiques originales et liste des assets remplacés par des formes Three.js. */
 export function Credits() {
   const { t } = useTranslation();
   return (
@@ -20,6 +20,7 @@ export function Credits() {
           CC0 1.0
         </a>
       </p>
+      <p>{t('credits.music')}</p>
       <p>{t('credits.three')}</p>
       <h3>{t('credits.missing')}</h3>
       <ul>

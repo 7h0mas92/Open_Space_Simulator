@@ -661,6 +661,7 @@
   "credits": {
     "title": "Credits",
     "kenney": "3D models: Kenney (kenney.nl), Furniture Kit and Blocky Characters packs, CC0 license.",
+    "music": "Music: original tracks by the project team (tycoon in the menu, tycoon 1 while planning, Détente during sprints, aria math for fundraising and the ending), owned by their author.",
     "three": "Rendering: Three.js. UI: React. Translations: i18next.",
     "missing": "Assets missing from the packs, replaced by Three.js shapes or CSS:",
     "missingItems": {
@@ -678,7 +679,7 @@
       "ramen": "Instant ramen cup",
       "officeCharacters": "Three.js office characters (bearded seniors, Rustaceans, designers, robot, ghost…) and accessories for the Kenney characters",
       "uiPack": "Kenney UI pack (CSS interface)",
-      "soundPacks": "Kenney sound packs (audio coming later)",
+      "soundPacks": "Kenney sound packs (sound effects and ambience coming soon)",
       "seasonalDecor": "Seasonal decorations (12 themes) and the birthday table: Three.js cake, presents and balloons on the Furniture Kit's tablecloth table",
       "meetingRoomProps": "Meeting room: whiteboard, stand-up clock, fish tank, war room screens, boardroom painting and glass walls as Three.js shapes, with the Furniture Kit's tables and chairs",
       "citySkyline": "New York-style city view, seen through the windows (towers, water tanks, park, river, taxis) made of Three.js shapes, with no real building",

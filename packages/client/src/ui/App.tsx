@@ -13,6 +13,7 @@ import { useGame } from './store/game';
 import { installGameLifecycle, syncOfflineProgress } from './store/lifecycle';
 import { useSession } from './store/session';
 import { useSettings } from './store/settings';
+import { useMusic } from './useMusic';
 
 /** Lit et efface les paramètres laissés dans l'URL par le retour OAuth GitHub. */
 function consumeOAuthRedirect(setError: ReturnType<typeof useSession.getState>['setError']) {
@@ -53,6 +54,7 @@ export function App() {
   // Après une partie, on revient à l'écran d'où elle a été lancée (classement pour un replay).
   const [screen, setScreen] = useState<Screen>('home');
   useTextScale();
+  useMusic();
 
   useEffect(() => {
     consumeOAuthRedirect(setError);
