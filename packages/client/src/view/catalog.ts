@@ -13,7 +13,15 @@ export type ItemModel =
   | { readonly source: 'kenney'; readonly model: FurnitureModel }
   | { readonly source: 'primitive'; readonly model: MissingAssetId };
 
-export const ITEM_CATEGORIES = ['work', 'comfort', 'kitchen', 'fun', 'decor', 'accessory'] as const;
+export const ITEM_CATEGORIES = [
+  'work',
+  'comfort',
+  'kitchen',
+  'fun',
+  'decor',
+  'window',
+  'accessory',
+] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
 /** Point d'intérêt pour l'IA des personnages. */
@@ -73,6 +81,8 @@ export interface CatalogItem extends ItemLook {
   readonly maxCount: number;
   /** Accessoire : se pose sur un meuble à plateau, jamais au sol. */
   readonly accessory: boolean;
+  /** Fenêtre : se fixe dans un mur du fond (rotation 0 : mur du fond, 1 : mur de gauche). */
+  readonly wall: boolean;
   readonly paint: readonly string[];
 }
 
@@ -251,6 +261,31 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   rug: { category: 'decor', model: kenney('rugRound'), height: 0.02 },
   trashcan: { category: 'decor', model: kenney('trashcan'), height: 0.85, paint: ['metal'] },
   // Accessoires : petits objets posés sur les meubles à plateau (voir `surface`).
+  // Fenêtres percées dans les murs du fond : seul le cadre se repeint.
+  'window-small': {
+    category: 'window',
+    model: primitive('windowSmall'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'window-medium': {
+    category: 'window',
+    model: primitive('windowMedium'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'window-large': {
+    category: 'window',
+    model: primitive('windowLarge'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'glass-wall': {
+    category: 'window',
+    model: primitive('glassWall'),
+    height: 2.2,
+    paint: ['dark'],
+  },
   'desk-lamp': {
     category: 'accessory',
     model: kenney('lampSquareTable'),
@@ -331,6 +366,7 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   minPhase: item.minPhase,
   maxCount: item.maxCount,
   accessory: 'accessory' in item && item.accessory === true,
+  wall: 'wall' in item && item.wall === true,
   paint: LOOKS[item.id].paint ?? DEFAULT_PAINT,
 }));
 

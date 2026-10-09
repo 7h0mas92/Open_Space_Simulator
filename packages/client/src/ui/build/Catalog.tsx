@@ -21,6 +21,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   kitchen: '☕',
   fun: '🎮',
   decor: '🪴',
+  window: '🪟',
   accessory: '🦆',
 };
 

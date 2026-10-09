@@ -252,6 +252,10 @@ export const MISSING_ASSETS = [
   { id: 'annexDecor', replacement: 'decor' },
   { id: 'deskHeadset', replacement: 'primitive' },
   { id: 'miniCactus', replacement: 'primitive' },
+  { id: 'windowSmall', replacement: 'primitive' },
+  { id: 'windowMedium', replacement: 'primitive' },
+  { id: 'windowLarge', replacement: 'primitive' },
+  { id: 'glassWall', replacement: 'primitive' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;

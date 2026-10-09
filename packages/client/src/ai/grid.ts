@@ -97,8 +97,10 @@ export function buildNavGrid(layout: OfficeLayout, items: readonly ItemPlacement
   const grid = new NavGrid(layout.width, layout.depth);
   for (const cell of [...layout.partitions, ...fixtureCells(layout)]) grid.block(cell.x, cell.z);
   for (const item of items) {
-    // Tapis et casques se traversent ; les accessoires sont posés sur les meubles.
-    if (WALKABLE_KINDS.has(item.kind) || catalogItem(item.kind)?.accessory) continue;
+    // Tapis et casques se traversent ; les accessoires sont posés sur les meubles et les
+    // fenêtres sont dans les murs.
+    const def = catalogItem(item.kind);
+    if (WALKABLE_KINDS.has(item.kind) || def?.accessory || def?.wall) continue;
     for (const cell of itemCells(item)) grid.block(cell.x, cell.z);
   }
   return grid;

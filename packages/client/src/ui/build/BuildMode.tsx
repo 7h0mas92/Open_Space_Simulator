@@ -109,9 +109,11 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
       ? t(`results.${error}`)
       : build.placed > 0
         ? t('build.again')
-        : coarsePointer()
-          ? t('build.hintTouch')
-          : t('build.hintMouse');
+        : def.wall
+          ? t('build.hintWall')
+          : coarsePointer()
+            ? t('build.hintTouch')
+            : t('build.hintMouse');
 
   return (
     <div
@@ -156,7 +158,7 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
           <ColorPicker value={build.color} onChange={setBuildColor} />
         )}
         <button type="button" onClick={rotateBuild} aria-keyshortcuts="R">
-          ⟳ <span className="label">{t('build.rotate')}</span>
+          ⟳ <span className="label">{t(def.wall ? 'build.switchWall' : 'build.rotate')}</span>
         </button>
         <button type="button" onClick={cancelPlacement} aria-keyshortcuts="Escape">
           ✕ <span className="label">{t('build.cancel')}</span>

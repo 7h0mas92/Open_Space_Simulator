@@ -32,6 +32,7 @@ import {
   slotPosition,
 } from '../view/placement';
 import type { GameView, Rotation } from '../view/types';
+import { aimWindow, isWallItem, wallOpenings, type WallSide } from '../view/windows';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
 import { DecorationsView } from './decorations';
@@ -65,6 +66,9 @@ export type PickTarget =
   | { readonly type: 'item'; readonly id: string }
   | { readonly type: 'cell'; readonly cell: Cell };
 
+/** Hauteur à laquelle on vise un mur pour y poser une fenêtre. */
+const WALL_AIM_HEIGHT = 1.2;
+
 /** Mode construction : `kind` à `null` quand le catalogue est ouvert (rien en main). */
 export interface BuildPreview {
   readonly kind: string | null;
@@ -94,7 +98,8 @@ export interface RendererOptions {
    * L'aperçu change de case : survol de la souris, tap ou glisser du doigt, ou case de départ
    * proposée quand on prend un objet en main.
    */
-  readonly onBuildCell?: (cell: Cell) => void;
+  /** Case visée en mode construction ; `wall` : mur visé pour une fenêtre. */
+  readonly onBuildCell?: (cell: Cell, wall?: WallSide) => void;
   readonly onFps?: (fps: number) => void;
 }
 
@@ -270,7 +275,11 @@ export class GameRenderer {
     );
     void this.office.setItems(view.items);
     this.updateDecor(view);
-    void this.roomLights.setLayout(this.layout, QUALITY_PRESETS[this.quality].roomLights);
+    void this.roomLights.setLayout(
+      this.layout,
+      QUALITY_PRESETS[this.quality].roomLights,
+      wallOpenings(view.items),
+    );
     this.roles = new Map(view.devs.map((dev) => [dev.id, dev.role]));
     this.world.sync(view);
     if (phaseChanged) this.fitCamera();
@@ -598,7 +607,11 @@ export class GameRenderer {
       if (node instanceof THREE.Mesh) node.material.needsUpdate = true;
     });
 
-    void this.roomLights.setLayout(this.layout, preset.roomLights);
+    void this.roomLights.setLayout(
+      this.layout,
+      preset.roomLights,
+      wallOpenings(this.view?.items ?? []),
+    );
 
     this.composer?.dispose();
     this.composer = null;
@@ -903,6 +916,20 @@ export class GameRenderer {
   }
 
   private aimAt(x: number, y: number): void {
+    const kind = this.build?.kind;
+    if (kind && isWallItem(kind)) {
+      // Une fenêtre vise le mur : la case sous le pointeur à mi-hauteur, au mur le plus proche.
+      const aimed = this.wallAim(x, y);
+      const current = this.build?.cell;
+      if (
+        aimed &&
+        (aimed.cell.x !== current?.x ||
+          aimed.cell.z !== current.z ||
+          aimed.rotation !== this.build?.rotation)
+      )
+        this.options.onBuildCell?.(aimed.cell, aimed.rotation === 1 ? 1 : 0);
+      return;
+    }
     const cell = this.aimCell(x, y);
     const current = this.build?.cell;
     if (cell && (cell.x !== current?.x || cell.z !== current?.z)) this.options.onBuildCell?.(cell);
@@ -984,7 +1011,12 @@ export class GameRenderer {
       this.touchInput = point.touch;
       // Au doigt, glisser depuis l'aperçu le déplace ; ailleurs, le glisser déplace la caméra.
       if (event.isPrimary) {
-        this.draggingGhost = point.touch && this.onGhost(this.aimCell(point.x, point.y));
+        const kind = this.build?.kind;
+        const aimed =
+          kind && isWallItem(kind)
+            ? (this.wallAim(point.x, point.y)?.cell ?? null)
+            : this.aimCell(point.x, point.y);
+        this.draggingGhost = point.touch && this.onGhost(aimed);
         this.gestures.panLocked = this.draggingGhost;
       }
       this.gestures.down(point).forEach((e) => this.handleGesture(e));
@@ -1121,6 +1153,13 @@ export class GameRenderer {
       case 'longPress': {
         if (this.build?.kind) {
           // Souris : le clic pose. Doigt : le tap vise, le bouton « Poser » confirme.
+          if (isWallItem(this.build.kind)) {
+            const aimed = this.wallAim(event.x, event.y);
+            if (!aimed || event.type === 'longPress') break;
+            this.aimAt(event.x, event.y);
+            if (!this.touchInput) this.options.onPlace?.(aimed.cell);
+            break;
+          }
           const cell = this.aimCell(event.x, event.y);
           if (!cell || event.type === 'longPress') break;
           if (this.touchInput) this.aimAt(event.x, event.y);
@@ -1137,6 +1176,19 @@ export class GameRenderer {
   private ndc(x: number, y: number): THREE.Vector2 {
     const canvas = this.options.canvas;
     return new THREE.Vector2((x / canvas.clientWidth) * 2 - 1, -(y / canvas.clientHeight) * 2 + 1);
+  }
+
+  /** Fenêtre visée : le pointeur coupe un plan à mi-hauteur des murs, ramené dans le bureau. */
+  private wallAim(x: number, y: number): ReturnType<typeof aimWindow> | null {
+    const kind = this.build?.kind;
+    if (!kind) return null;
+    this.raycaster.setFromCamera(this.ndc(x, y), this.camera);
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -WALL_AIM_HEIGHT);
+    const hit = this.raycaster.ray.intersectPlane(plane, new THREE.Vector3());
+    if (!hit) return null;
+    const clamp = (value: number, max: number) => Math.max(0, Math.min(max - 1, Math.round(value)));
+    const cell = { x: clamp(hit.x, this.layout.width), z: clamp(hit.z, this.layout.depth) };
+    return aimWindow(this.layout, kind, cell);
   }
 
   private cellAt(x: number, y: number): Cell | null {
