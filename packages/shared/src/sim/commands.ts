@@ -70,6 +70,35 @@ export const CommandSchema = z.discriminatedUnion('type', [
     rotation: z.number().int().min(0).max(3),
   }),
   z.object({ type: z.literal('SELL_FURNITURE'), furnitureId: EntityIdSchema }),
+  /** Range un objet posé dans l'inventaire (avec les accessoires posés dessus). */
+  z.object({ type: z.literal('STORE_FURNITURE'), furnitureId: EntityIdSchema }),
+  /**
+   * Ressort de l'inventaire le premier objet rangé de ce type et de cette couleur (absente :
+   * couleurs d'origine) et le pose au sol (gratuit).
+   */
+  z.object({
+    type: z.literal('PLACE_STORED'),
+    itemId: z.string(),
+    color: FurnitureColorSchema.optional(),
+    x: z.number().int().nonnegative(),
+    y: z.number().int().nonnegative(),
+    rotation: z.number().int().min(0).max(3),
+  }),
+  /** Ressort un accessoire de l'inventaire (même règle) et le pose sur un meuble à plateau. */
+  z.object({
+    type: z.literal('PLACE_STORED_ACCESSORY'),
+    itemId: z.string(),
+    color: FurnitureColorSchema.optional(),
+    hostId: EntityIdSchema,
+    slot: z.number().int().nonnegative().max(15),
+    rotation: z.number().int().min(0).max(3),
+  }),
+  /** Revend un objet rangé de ce type et de cette couleur. */
+  z.object({
+    type: z.literal('SELL_STORED'),
+    itemId: z.string(),
+    color: FurnitureColorSchema.optional(),
+  }),
   z.object({ type: z.literal('START_PITCH') }),
   z.object({ type: z.literal('PITCH_ARGUMENT'), argumentId: z.string() }),
   z.object({ type: z.literal('CLOSE_PITCH') }),
@@ -112,6 +141,7 @@ export const COMMAND_ERRORS = [
   'GAME_OVER',
   'VENTURE_LIMIT',
   'TOO_LATE',
+  'INVENTORY_FULL',
   'RAISE_PENDING',
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];

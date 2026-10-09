@@ -100,6 +100,9 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
       })
     : null;
   const moving = build.movingItemId !== null;
+  const stock = build.fromStock
+    ? view.inventory.find((s) => s.kind === build.kind && s.color === build.color)
+    : undefined;
   const status = !cell
     ? t(def.accessory ? 'build.hintAccessory' : 'build.aim')
     : error
@@ -123,10 +126,17 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
       <div className="placement-info">
         <p className="placement-name">
           <strong>{localized(def.name, i18n.language)}</strong>
-          {!moving && (
+          {!moving && !build.fromStock && (
             <span className="catalog-card-price">
               {' '}
               · {t('build.price', { price: formatMoney(def.price, i18n.language) })}
+            </span>
+          )}
+          {build.fromStock && (
+            <span className="catalog-card-price" data-testid="stock-count">
+              {' '}
+              · {t('build.free')} {t('build.fromInventory')} ·{' '}
+              {t('build.stock', { count: stock?.count ?? 0 })}
             </span>
           )}
           {build.placed > 0 && (
@@ -142,7 +152,7 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
         </p>
       </div>
       <div className="placement-actions">
-        {!moving && def.paint.length > 0 && (
+        {!moving && !build.fromStock && def.paint.length > 0 && (
           <ColorPicker value={build.color} onChange={setBuildColor} />
         )}
         <button type="button" onClick={rotateBuild} aria-keyshortcuts="R">

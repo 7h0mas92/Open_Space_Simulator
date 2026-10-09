@@ -163,7 +163,10 @@ export interface ShopStatus {
 
 /** Disponibilité d'un objet de la boutique pour la partie en cours. */
 export function shopStatus(item: CatalogItem, view: GameView): ShopStatus {
-  const owned = view.items.filter((placed) => placed.kind === item.kind).length;
+  // Les objets rangés dans l'inventaire comptent aussi dans le maximum.
+  const owned =
+    view.items.filter((placed) => placed.kind === item.kind).length +
+    view.inventory.reduce((sum, stored) => sum + (stored.kind === item.kind ? stored.count : 0), 0);
   const block: ShopBlock | null =
     PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
       ? 'locked'
