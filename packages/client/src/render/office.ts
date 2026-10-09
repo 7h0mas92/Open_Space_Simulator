@@ -11,9 +11,17 @@ import type { FurnitureColor } from '../view/colors';
 import { slotPosition } from '../view/placement';
 import type { OfficeLayout, RoomKind } from '../view/layout';
 import type { PlacedItemView } from '../view/types';
+import { wallLength, wallOpenings, type WallOpening, type WallSide } from '../view/windows';
 import { paintObject, type AssetLibrary } from './assets';
 import { buildFixture } from './annexDecor';
-import { material, PALETTE } from './primitives';
+import {
+  material,
+  PALETTE,
+  WALL_AXIS,
+  WALL_COLOR,
+  WALL_HEIGHT,
+  WALL_THICKNESS,
+} from './primitives';
 
 /** Un sol : deux teintes posées en damier, ou en lames (parquet, tapis de scène). */
 interface FloorStyle {
@@ -72,11 +80,6 @@ export function floorStyle(kind: RoomKind, style = 0): FloorStyle {
   return styles[style] ?? (styles[0] as FloorStyle);
 }
 
-/** Hauteur sous plafond : les baies vitrées du fond montent jusque-là. */
-export const WALL_HEIGHT = 2.2;
-/** Allège (en bas) et linteau (en haut) des baies vitrées. */
-export const GLASS_SILL = 0.14;
-export const GLASS_HEADER = 0.24;
 const PARTITION_HEIGHT = 1.3;
 
 /** Partie d'un gabarit : un maillage et sa transformation relative à la racine. */
@@ -212,6 +215,11 @@ export class OfficeView {
   /** Maillages cliquables (mobilier), pour le raycasting. */
   readonly pickables: THREE.Object3D[] = [];
   private readonly structure = new THREE.Group();
+  /** Murs, cloisons et paillasson : refaits quand le plan ou les fenêtres changent. */
+  private readonly walls = new THREE.Group();
+  private layout: OfficeLayout | null = null;
+  private wallsKey = '';
+  private openings: readonly WallOpening[] = [];
   private readonly furniture = new THREE.Group();
   private readonly signs = new THREE.Group();
   private signsKey = '';
@@ -224,7 +232,7 @@ export class OfficeView {
   private buildId = 0;
 
   constructor(private readonly assets: AssetLibrary) {
-    this.root.add(this.structure, this.furniture, this.signs, this.fixtures);
+    this.root.add(this.structure, this.walls, this.furniture, this.signs, this.fixtures);
   }
 
   /** Reconstruit sol, murs et décor fixe si le plan change (phase, aile, annexe, décor). */
@@ -233,9 +241,22 @@ export class OfficeView {
     const key = `${layout.phase}:${layout.width}x${layout.depth}:${styles}`;
     if (key === this.layoutKey) return;
     this.layoutKey = key;
+    this.layout = layout;
     disposeChildren(this.structure);
-    this.structure.add(buildFloor(layout), buildWalls(layout));
+    this.structure.add(buildFloor(layout));
+    this.refreshWalls();
     void this.buildFixtures(layout);
+  }
+
+  /** Reconstruit les murs si le plan ou les fenêtres posées ont changé (les murs sont percés). */
+  private refreshWalls(): void {
+    const layout = this.layout;
+    if (!layout) return;
+    const key = `${this.layoutKey}|${this.openings.map((o) => `${o.wall}:${o.start}:${o.length}`).join(',')}`;
+    if (key === this.wallsKey) return;
+    this.wallsKey = key;
+    disposeChildren(this.walls);
+    this.walls.add(buildWalls(layout, this.openings));
   }
 
   /** Décor fixe des annexes (arcade, jardin, auditorium), chargé en arrière-plan. */
@@ -305,6 +326,8 @@ export class OfficeView {
     if (key === this.itemsKey) return;
     this.itemsKey = key;
     const buildId = ++this.buildId;
+    this.openings = wallOpenings(items);
+    this.refreshWalls();
 
     const groups = new Map<string, { matrix: THREE.Matrix4; itemId: string }[]>();
     const add = (kind: string, matrix: THREE.Matrix4, itemId: string) => {
@@ -372,6 +395,7 @@ export class OfficeView {
 
   dispose(): void {
     disposeChildren(this.structure);
+    disposeChildren(this.walls);
     disposeChildren(this.signs);
     disposeChildren(this.furniture, false);
     disposeChildren(this.fixtures, false);
@@ -428,12 +452,38 @@ function buildFloor(layout: OfficeLayout): THREE.Object3D {
   return mesh;
 }
 
-function buildWalls(layout: OfficeLayout): THREE.Object3D {
+/**
+ * Pans pleins d'un mur du fond : les cases sans fenêtre, regroupées en segments [début, fin[.
+ * Les fenêtres apportent leur propre pan de mur (allège, linteau), voir `wallWindow`.
+ */
+export function wallSpans(
+  length: number,
+  openings: readonly WallOpening[],
+  wall: WallSide,
+): [number, number][] {
+  const open = new Uint8Array(length);
+  for (const opening of openings) {
+    if (opening.wall !== wall) continue;
+    for (let k = opening.start; k < opening.start + opening.length && k < length; k++) open[k] = 1;
+  }
+  const spans: [number, number][] = [];
+  let start = -1;
+  for (let k = 0; k <= length; k++) {
+    const closed = k < length && open[k] === 0;
+    if (closed && start < 0) start = k;
+    if (!closed && start >= 0) {
+      spans.push([start, k]);
+      start = -1;
+    }
+  }
+  return spans;
+}
+
+function buildWalls(layout: OfficeLayout, openings: readonly WallOpening[]): THREE.Object3D {
   const group = new THREE.Group();
-  const wall = material(0xece6da);
+  const wall = material(WALL_COLOR);
   const trim = material(PALETTE.woodDark);
   const { width, depth } = layout;
-  const frame = material(0x4a5160);
   const add = (w: number, h: number, d: number, x: number, z: number, mat = wall, y = 0) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     mesh.position.set(x, y + h / 2, z);
@@ -441,14 +491,16 @@ function buildWalls(layout: OfficeLayout): THREE.Object3D {
     mesh.receiveShadow = true;
     group.add(mesh);
   };
-  // Murs du fond : de grandes baies vitrées sur la ville (vitres, montants et poteaux dans
-  // officeLights.ts), tenues par une allège, un linteau et un poteau d'angle.
-  const headerY = WALL_HEIGHT - GLASS_HEADER;
-  add(width + 0.4, GLASS_SILL, 0.2, (width - 1) / 2, -0.6, frame);
-  add(0.2, GLASS_SILL, depth + 0.2, -0.6, (depth - 1) / 2, frame);
-  add(width + 0.4, GLASS_HEADER, 0.2, (width - 1) / 2, -0.6, frame, headerY);
-  add(0.2, GLASS_HEADER, depth + 0.2, -0.6, (depth - 1) / 2, frame, headerY);
-  add(0.3, WALL_HEIGHT, 0.3, -0.6, -0.6, wall);
+  // Murs du fond, pleins : les locaux n'ont pas de fenêtre au départ. Chaque fenêtre achetée
+  // remplace le pan de mur de ses cases (la ville se voit à travers sa vitre).
+  for (const [start, end] of wallSpans(wallLength(layout, 0), openings, 0))
+    add(end - start, WALL_HEIGHT, WALL_THICKNESS, (start + end - 1) / 2, WALL_AXIS);
+  for (const [start, end] of wallSpans(wallLength(layout, 1), openings, 1))
+    add(WALL_THICKNESS, WALL_HEIGHT, end - start, WALL_AXIS, (start + end - 1) / 2);
+  // Poteau d'angle et bouts des murs (au-delà de la dernière case, jusqu'aux murs avant).
+  add(0.3, WALL_HEIGHT, 0.3, WALL_AXIS, WALL_AXIS);
+  add(0.2, WALL_HEIGHT, WALL_THICKNESS, width - 0.4, WALL_AXIS);
+  add(WALL_THICKNESS, WALL_HEIGHT, 0.1, WALL_AXIS, depth - 0.45);
   // Murs avant, bas (on voit l'intérieur depuis la caméra isométrique).
   add(width + 0.4, 0.25, 0.2, (width - 1) / 2, depth - 0.4, trim);
   add(0.2, 0.25, depth + 0.2, width - 0.4, (depth - 1) / 2, trim);

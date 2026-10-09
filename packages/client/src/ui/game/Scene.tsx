@@ -41,7 +41,7 @@ export function Scene() {
           game.select(target && target.type !== 'cell' ? target : null);
         },
         onPlace: (cell) => void useGame.getState().placeAt(cell),
-        onBuildCell: (cell) => useGame.getState().setBuildCell(cell),
+        onBuildCell: (cell, wall) => useGame.getState().setBuildCell(cell, wall),
         onFps: (fps) => useGame.getState().setFps(fps),
       });
     } catch {

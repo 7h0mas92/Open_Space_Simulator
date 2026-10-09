@@ -731,6 +731,89 @@ function catTreeLarge(): THREE.Group {
   group.add(pompom(1.2, 1.12, 0.22));
   return group;
 }
+/** Hauteur sous plafond : les murs du fond et les fenêtres montent jusque-là. */
+export const WALL_HEIGHT = 2.2;
+/** Axe des murs du fond, à une demi-case et un peu plus du bord de la première rangée. */
+export const WALL_AXIS = -0.6;
+export const WALL_THICKNESS = 0.2;
+export const WALL_COLOR = 0xece6da;
+/** Allège et linteau des baies vitrées pleine hauteur (le cadre, du sol au plafond). */
+export const GLASS_SILL = 0.14;
+export const GLASS_HEADER = 0.24;
+
+/**
+ * Verre des fenêtres, partagé : presque transparent pour qu'on voie la ville derrière, teinté
+ * par le ciel au fil de la journée (`OfficeLights.update`).
+ */
+export const windowGlass = new THREE.MeshBasicMaterial({
+  color: 0xbfe3ff,
+  transparent: true,
+  opacity: 0.2,
+  depthWrite: false,
+  side: THREE.DoubleSide,
+});
+
+interface WindowShape {
+  /** Largeur en cases. */
+  readonly cells: number;
+  /** Bas et haut de la vitre. */
+  readonly bottom: number;
+  readonly top: number;
+  /** Mur plein gardé de chaque côté de la vitre. */
+  readonly inset: number;
+  /** Couleur de l'allège et du linteau : le mur, ou le cadre pour une baie pleine hauteur. */
+  readonly solid: number;
+}
+
+/**
+ * Une fenêtre et le pan de mur qui la porte, sur toute sa largeur : le mur du fond est percé
+ * là où une fenêtre est posée (voir `buildWalls` dans office.ts). Repère de l'objet : centre
+ * de son emprise, le mur est derrière (z = `WALL_AXIS`). Le cadre (couleur `dark`) se repeint.
+ */
+function wallWindow({ cells, bottom, top, inset, solid }: WindowShape): THREE.Group {
+  const group = new THREE.Group();
+  const z = WALL_AXIS;
+  const inner = cells - 2 * inset;
+  const height = top - bottom;
+  const rail = 0.05;
+  if (bottom > 0) group.add(box(cells, bottom, WALL_THICKNESS, solid, 0, 0, z));
+  group.add(box(cells, WALL_HEIGHT - top, WALL_THICKNESS, solid, 0, top, z));
+  if (inset > 0) {
+    for (const side of [-1, 1])
+      group.add(
+        box(inset, height, WALL_THICKNESS, WALL_COLOR, (side * (cells - inset)) / 2, bottom, z),
+      );
+  }
+  // Cadre : traverses en haut et en bas, un montant à chaque case.
+  group.add(box(inner, rail, WALL_THICKNESS + 0.06, PALETTE.dark, 0, bottom, z));
+  group.add(box(inner, rail, WALL_THICKNESS + 0.06, PALETTE.dark, 0, top - rail, z));
+  for (let k = 0; k <= cells; k++) {
+    const x = -inner / 2 + (k * inner) / cells;
+    group.add(box(rail, height, WALL_THICKNESS + 0.04, PALETTE.dark, x, bottom, z));
+  }
+  // Tablette intérieure sous les fenêtres classiques.
+  if (inset > 0) group.add(box(inner + 0.1, 0.04, 0.14, PALETTE.white, 0, bottom - 0.04, z + 0.14));
+  const pane = new THREE.Mesh(new THREE.PlaneGeometry(inner, height), windowGlass);
+  pane.position.set(0, bottom + height / 2, z);
+  group.add(pane);
+  return group;
+}
+
+const windowSmall = () =>
+  wallWindow({ cells: 1, bottom: 0.95, top: 1.65, inset: 0.12, solid: WALL_COLOR });
+const windowMedium = () =>
+  wallWindow({ cells: 2, bottom: 0.85, top: 1.75, inset: 0.12, solid: WALL_COLOR });
+const windowLarge = () =>
+  wallWindow({ cells: 3, bottom: 0.75, top: 1.85, inset: 0.12, solid: WALL_COLOR });
+/** Vitre de building : du sol au plafond, tenue par une allège et un linteau métalliques. */
+const glassWall = () =>
+  wallWindow({
+    cells: 2,
+    bottom: GLASS_SILL,
+    top: WALL_HEIGHT - GLASS_HEADER,
+    inset: 0,
+    solid: PALETTE.dark,
+  });
 
 const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   babyfoot,
@@ -758,6 +841,10 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   catTreeSmall,
   catTreeMedium,
   catTreeLarge,
+  windowSmall,
+  windowMedium,
+  windowLarge,
+  glassWall,
   officeCharacters: null,
   officeCats: null,
   seasonalDecor: null,

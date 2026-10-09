@@ -79,6 +79,7 @@ export function createEmptyState(config: GameConfig): GameState {
     inventory: [],
     pets: [],
     raises: emptyRaisesState(),
+    recentTaskTitles: [],
     lostSprintsPending: 0,
     tracker: {
       usersAtStart: 0,

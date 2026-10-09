@@ -56,12 +56,18 @@ export function canPlace(
   const depth = officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds));
   const area = footprint(item, x, y, rotation);
   if (area.x + area.width > width || area.y + area.depth > depth) return false;
+  // Une fenêtre est fixée contre le mur du fond (rotation 0) ou le mur de gauche (rotation 1).
+  const wall = item.wall === true;
+  if (wall && !(rotation === 0 ? y === 0 : rotation === 1 && x === 0)) return false;
   for (const id of query(state, 'furniture')) {
     if (id === ignoreId) continue;
     const placed = state.components.furniture[id];
     const definition = placed ? getFurniture(placed.itemId) : undefined;
     // Les accessoires sont posés sur les meubles : ils n'occupent pas le sol.
     if (!placed || !definition || placed.hostId !== undefined) continue;
+    // Les fenêtres ne gênent que les fenêtres du même mur ; le mobilier, que le mobilier.
+    if ((definition.wall === true) !== wall) continue;
+    if (wall && placed.rotation !== rotation) continue;
     if (overlaps(area, footprint(definition, placed.x, placed.y, placed.rotation))) return false;
   }
   return true;

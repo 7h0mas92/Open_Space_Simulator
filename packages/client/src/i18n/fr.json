@@ -498,8 +498,9 @@
       "kitchen": "Cuisine",
       "fun": "Détente",
       "decor": "Déco",
-      "accessory": "Accessoires",
-      "pets": "Animaux"
+      "pets": "Animaux",
+      "window": "Fenêtres",
+      "accessory": "Accessoires"
     },
     "price": "{{price}} €",
     "owned": "{{count}}/{{max}}",
@@ -544,6 +545,8 @@
     "placedCount_other": "{{count}} posés",
     "again": "Objet gardé en main : pose-en un autre, ou ✕ pour changer d’objet.",
     "hintAccessory": "Vise un meuble à plateau (bureau, bibliothèque, frigo…).",
+    "hintWall": "La fenêtre se fixe au mur du fond le plus proche ; ⟳ pour changer de mur.",
+    "switchWall": "Changer de mur",
     "onFurniture": "Se pose sur un meuble",
     "stopSoldOut": "{{item}} : maximum atteint, retour au catalogue.",
     "stopMoney": "{{item}} : plus assez de trésorerie, retour au catalogue.",
@@ -581,6 +584,7 @@
     "unknownItem": "Objet inconnu.",
     "noSurface": "Un accessoire se pose sur un meuble à plateau (bureau, bibliothèque, frigo…).",
     "surfaceFull": "Plus de place sur ce meuble.",
+    "noWall": "Une fenêtre se fixe dans un des deux murs du fond.",
     "VENTURE_LIMIT": "Ton groupe a déjà fondé le maximum de filiales.",
     "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
     "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
@@ -644,7 +648,7 @@
       "soundPacks": "Packs sons Kenney (audio à venir)",
       "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit",
       "meetingRoomProps": "Salle de réunion : tableau blanc, horloge du stand-up, aquarium, écrans de la war room, tableau de la salle du conseil et parois vitrées en formes Three.js, avec les tables et chaises du Furniture Kit",
-      "citySkyline": "Baies vitrées et vue sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve, taxis) en formes Three.js, sans bâtiment réel",
+      "citySkyline": "Vue par les fenêtres sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve, taxis) en formes Three.js, sans bâtiment réel",
       "mug": "Mug de dev",
       "rubberDuck": "Canard en plastique",
       "trophy": "Trophée de hackathon",
@@ -659,7 +663,11 @@
       "catTreeSmall": "Arbre à chat compact (1 case, moquette beige)",
       "catTreeMedium": "Arbre à chat double (2 cases, moquette grise)",
       "catTreeLarge": "Arbre à chat géant (3 cases, moquette mauve)",
-      "officeCats": "Chats du bureau : six robes construites en formes Three.js, animées par le code (marche, sieste, repas)"
+      "officeCats": "Chats du bureau : six robes construites en formes Three.js, animées par le code (marche, sieste, repas)",
+      "windowSmall": "Petite fenêtre et son pan de mur",
+      "windowMedium": "Fenêtre de deux cases",
+      "windowLarge": "Grande fenêtre de trois cases",
+      "glassWall": "Baie vitrée pleine hauteur (vitre de building)"
     },
     "back": "Retour"
   },

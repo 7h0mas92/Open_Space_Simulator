@@ -498,8 +498,9 @@
       "kitchen": "Kitchen",
       "fun": "Fun",
       "decor": "Decor",
-      "accessory": "Accessories",
-      "pets": "Pets"
+      "pets": "Pets",
+      "window": "Windows",
+      "accessory": "Accessories"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -544,6 +545,8 @@
     "placedCount_other": "{{count}} placed",
     "again": "Still in hand: place another one, or ✕ to pick another item.",
     "hintAccessory": "Aim at furniture with a top (desk, bookcase, fridge…).",
+    "hintWall": "The window snaps to the nearest back wall; ⟳ to switch walls.",
+    "switchWall": "Switch wall",
     "onFurniture": "Goes on furniture",
     "stopSoldOut": "{{item}}: limit reached, back to the catalog.",
     "stopMoney": "{{item}}: not enough cash left, back to the catalog.",
@@ -581,6 +584,7 @@
     "unknownItem": "Unknown item.",
     "noSurface": "Accessories go on furniture with a top (desk, bookcase, fridge…).",
     "surfaceFull": "No room left on this furniture.",
+    "noWall": "A window goes into one of the two back walls.",
     "VENTURE_LIMIT": "Your group has already founded the maximum number of subsidiaries.",
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
     "NOT_AVAILABLE": "This financing is not available right now.",
@@ -644,7 +648,7 @@
       "soundPacks": "Kenney sound packs (audio coming later)",
       "seasonalDecor": "Seasonal decorations (12 themes) and the birthday table: Three.js cake, presents and balloons on the Furniture Kit's tablecloth table",
       "meetingRoomProps": "Meeting room: whiteboard, stand-up clock, fish tank, war room screens, boardroom painting and glass walls as Three.js shapes, with the Furniture Kit's tables and chairs",
-      "citySkyline": "Glass walls and a New York-style city view (towers, water tanks, park, river, taxis) made of Three.js shapes, with no real building",
+      "citySkyline": "New York-style city view, seen through the windows (towers, water tanks, park, river, taxis) made of Three.js shapes, with no real building",
       "mug": "Dev mug",
       "rubberDuck": "Rubber duck",
       "trophy": "Hackathon trophy",
@@ -659,7 +663,11 @@
       "catTreeSmall": "Compact cat tree (1 tile, beige carpet)",
       "catTreeMedium": "Double cat tree (2 tiles, grey carpet)",
       "catTreeLarge": "Giant cat tree (3 tiles, mauve carpet)",
-      "officeCats": "Office cats: six coats built from Three.js shapes, animated in code (walking, napping, eating)"
+      "officeCats": "Office cats: six coats built from Three.js shapes, animated in code (walking, napping, eating)",
+      "windowSmall": "Small window and its wall section",
+      "windowMedium": "Two-tile window",
+      "windowLarge": "Large three-tile window",
+      "glassWall": "Floor-to-ceiling glass wall (building glass)"
     },
     "back": "Back"
   },

@@ -453,8 +453,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
   jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
   variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
-- Baies vitrées et vue sur New York (`render/skyline.ts`) : les deux murs du fond sont des vitres
-  du sol au plafond ; le bureau est au dernier étage d'une tour, dans une ville low-poly façon
+- Vue sur New York (`render/skyline.ts`) : le bureau est au dernier étage d'une tour, dans une ville low-poly façon
   Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
   (`maxTop`) ; brume, fenêtres, lampadaires et balises qui suivent le jour et la nuit.
@@ -485,6 +484,17 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salle rend 50 %. Commandes `FIT_MEETING_ROOM` / `CLEAR_MEETING_ROOM`, état `meetingRoom` (null
   par défaut). Bot « organizer » : environ +33 % de valorisation médiane face à « balanced ».
   À 375 px, les 8 boutons du dock tiennent sans défilement (libellé court « Réunion »).
+- « Continuer » ne propose plus une partie terminée : à la fin, sa sauvegarde automatique est
+  effacée (appareil et serveur) et sa date de fin notée ; ses sauvegardes manuelles restent dans
+  « Charger une partie » (`saves.markFinished`, `saves.latestResumable` dans
+  `client/src/save/saves.ts`). Un Daily rejoué reste proposé.
+
+- Fenêtres à acheter (`view/windows.ts`, rayon « Fenêtres » du mode construction) : les locaux
+  démarrent sans fenêtre, murs du fond pleins. Petite fenêtre (1 case, 800 €), fenêtre (2 cases),
+  grande fenêtre (3 cases) et baie vitrée du sol au plafond (2 cases, 5 000 €), +moral. Objets
+  `wall` fixés dans le mur du fond (rotation 0, y = 0) ou de gauche (rotation 1, x = 0) ; le mur
+  est percé et la ville se voit à travers, soleil devant, applique couverte décrochée
+  (`wallSpans` dans `render/office.ts`). Pas de nouvelle commande ni de champ d'état.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

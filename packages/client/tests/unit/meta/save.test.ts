@@ -189,6 +189,82 @@ describe('saves.syncPending', () => {
   });
 });
 
+describe('« Continuer » après une fin de partie', () => {
+  /** Avance l'horloge d'une minute avant chaque écriture, pour ordonner les sauvegardes. */
+  let minute = 0;
+  const at = () => vi.setSystemTime(new Date(Date.UTC(2026, 9, 9, 10, (minute += 1))));
+
+  beforeEach(() => {
+    minute = 0;
+    vi.useFakeTimers({ toFake: ['Date'] });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('propose la sauvegarde la plus récente d’une partie en cours', async () => {
+    at();
+    await saves.write(AUTOSAVE_SLOT, saveData('a'), VERSION, false);
+    at();
+    await saves.write(3, saveData('b'), VERSION, false);
+    expect(await saves.latestResumable(false)).toMatchObject({ slot: 3, seed: 'b' });
+  });
+
+  it('ne propose plus une partie terminée et efface sa sauvegarde automatique', async () => {
+    at();
+    await saves.write(2, saveData('ancienne'), VERSION, false);
+    at();
+    await saves.write(AUTOSAVE_SLOT, saveData('finie'), VERSION, false);
+    at();
+    await saves.markFinished('finie', false);
+
+    expect(await store.get(`save:${AUTOSAVE_SLOT}`)).toBeUndefined();
+    // On retombe sur la partie précédente, encore en cours.
+    expect(await saves.latestResumable(false)).toMatchObject({ slot: 2, seed: 'ancienne' });
+  });
+
+  it('ignore les sauvegardes manuelles d’une partie terminée, sans les effacer', async () => {
+    at();
+    await saves.write(4, saveData('finie'), VERSION, false);
+    at();
+    await saves.markFinished('finie', false);
+
+    expect(await saves.latestResumable(false)).toBeNull();
+    expect((await saves.list(false)).map((summary) => summary.slot)).toEqual([4]);
+  });
+
+  it('garde la sauvegarde automatique d’une autre partie', async () => {
+    at();
+    await saves.write(AUTOSAVE_SLOT, saveData('en-cours'), VERSION, false);
+    at();
+    await saves.markFinished('autre', false);
+    expect(await saves.latestResumable(false)).toMatchObject({ slot: AUTOSAVE_SLOT });
+  });
+
+  it('propose une nouvelle partie sur la même graine (Daily rejoué)', async () => {
+    at();
+    await saves.markFinished('daily-2026-10-09', false);
+    at();
+    await saves.write(AUTOSAVE_SLOT, saveData('daily-2026-10-09'), VERSION, false);
+    expect(await saves.latestResumable(false)).toMatchObject({ seed: 'daily-2026-10-09' });
+  });
+
+  it('efface aussi la sauvegarde automatique sur le serveur', async () => {
+    at();
+    const fetchMock = mockApi({
+      [`PUT /api/saves/${AUTOSAVE_SLOT}`]: echoSave(AUTOSAVE_SLOT),
+      'GET /api/saves': () =>
+        Response.json({ saves: [summarize(AUTOSAVE_SLOT, saveData('finie'), VERSION)] }),
+      [`DELETE /api/saves/${AUTOSAVE_SLOT}`]: () => Response.json({ ok: true }),
+    });
+    await saves.write(AUTOSAVE_SLOT, saveData('finie'), VERSION, true);
+    at();
+    await saves.markFinished('finie', true);
+    expect(calls(fetchMock)).toContain(`DELETE /api/saves/${AUTOSAVE_SLOT}`);
+  });
+});
+
 describe('pendingAchievements', () => {
   it('garde les succès sans doublon', async () => {
     await pendingAchievements.add(['duck-lead', 'zero-meeting']);

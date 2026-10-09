@@ -315,6 +315,9 @@ export type GameResult = z.infer<typeof GameResultSchema>;
 
 export const STATE_VERSION = 1;
 
+/** Nombre de titres de tâches récents gardés en mémoire pour éviter les répétitions. */
+export const RECENT_TASK_TITLES_MAX = 60;
+
 export const GameStateSchema = z.object({
   version: z.literal(STATE_VERSION),
   seed: z.string(),
@@ -358,6 +361,11 @@ export const GameStateSchema = z.object({
   pets: z.array(PetSchema).max(PETS.max).default([]),
   /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */
   raises: RaisesStateSchema.default(emptyRaisesState),
+  /**
+   * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
+   * les mêmes idées. Absent des vieilles sauvegardes.
+   */
+  recentTaskTitles: z.array(z.string()).max(RECENT_TASK_TITLES_MAX).default([]),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

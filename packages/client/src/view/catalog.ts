@@ -20,6 +20,7 @@ export const ITEM_CATEGORIES = [
   'fun',
   'decor',
   'pets',
+  'window',
   'accessory',
 ] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
@@ -86,6 +87,8 @@ export interface CatalogItem extends ItemLook {
   readonly maxCount: number;
   /** Accessoire : se pose sur un meuble à plateau, jamais au sol. */
   readonly accessory: boolean;
+  /** Fenêtre : se fixe dans un mur du fond (rotation 0 : mur du fond, 1 : mur de gauche). */
+  readonly wall: boolean;
   readonly paint: readonly string[];
   /** Équipement pour chat (litière, gamelle, arbre à chat), sinon `null`. */
   readonly petNeed: PetNeed | null;
@@ -315,6 +318,31 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     ],
   },
   // Accessoires : petits objets posés sur les meubles à plateau (voir `surface`).
+  // Fenêtres percées dans les murs du fond : seul le cadre se repeint.
+  'window-small': {
+    category: 'window',
+    model: primitive('windowSmall'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'window-medium': {
+    category: 'window',
+    model: primitive('windowMedium'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'window-large': {
+    category: 'window',
+    model: primitive('windowLarge'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'glass-wall': {
+    category: 'window',
+    model: primitive('glassWall'),
+    height: 2.2,
+    paint: ['dark'],
+  },
   'desk-lamp': {
     category: 'accessory',
     model: kenney('lampSquareTable'),
@@ -395,6 +423,7 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   minPhase: item.minPhase,
   maxCount: item.maxCount,
   accessory: 'accessory' in item && item.accessory === true,
+  wall: 'wall' in item && item.wall === true,
   paint: LOOKS[item.id].paint ?? DEFAULT_PAINT,
   petNeed: 'petNeed' in item ? item.petNeed : null,
 }));
