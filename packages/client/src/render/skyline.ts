@@ -268,6 +268,66 @@ export function planSkyline(layout: OfficeLayout): SkylinePlan {
 
 // --- Géométrie -------------------------------------------------------------------------------
 
+/**
+ * Ombrage « cuit » dans les couleurs : les toits sont les plus clairs, chaque côté a sa teinte.
+ * La ville se passe ainsi des lumières de la scène (dont les lampes du bureau), ce qui la rend
+ * très peu coûteuse à dessiner, même plein écran sur un mobile.
+ */
+function faceShade(normal: readonly number[]): number {
+  const [x = 0, y = 0, z = 0] = normal;
+  if (y > 0.5) return 1;
+  if (z > 0.5) return 0.82;
+  if (x > 0.5) return 0.68;
+  if (z < -0.5) return 0.6;
+  return x < -0.5 ? 0.74 : 0.8;
+}
+
+/** Réglages des façades, modifiés à chaque image selon l'heure. */
+interface FacadeUniforms {
+  readonly map: { value: THREE.Texture };
+  readonly lit: { value: THREE.Texture };
+  /** Lumière du jour sur la ville. */
+  readonly tint: { value: THREE.Color };
+  /** Intensité des fenêtres allumées. */
+  readonly glow: { value: number };
+}
+
+/** Façades : texture de fenêtres x couleur de l'immeuble x lumière du jour, + fenêtres allumées. */
+function facadeMaterial(facade: FacadeUniforms): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    name: 'skyline-facade',
+    fog: true,
+    uniforms: { ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog), ...facade },
+    vertexShader: /* glsl */ `
+      #include <fog_pars_vertex>
+      attribute vec3 color;
+      varying vec3 vColor;
+      varying vec2 vUv;
+      void main() {
+        vColor = color;
+        vUv = uv / ${TILE_WINDOWS.toFixed(1)};
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        #include <fog_vertex>
+      }`,
+    fragmentShader: /* glsl */ `
+      #include <fog_pars_fragment>
+      uniform sampler2D map;
+      uniform sampler2D lit;
+      uniform vec3 tint;
+      uniform float glow;
+      varying vec3 vColor;
+      varying vec2 vUv;
+      void main() {
+        vec3 base = texture2D(map, vUv).rgb * vColor * tint;
+        gl_FragColor = vec4(base + texture2D(lit, vUv).rgb * glow, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+        #include <fog_fragment>
+      }`,
+  });
+}
+
 /** Accumule des faces de boîtes dans un seul tampon (une géométrie pour toute la ville). */
 class BoxBatch {
   private readonly positions: number[] = [];
@@ -362,7 +422,8 @@ class BoxBatch {
       this.positions.push(...corner);
       this.normals.push(...normal);
       this.uvs.push(...(uv[index] ?? [0, 0]));
-      this.colors.push(this.color.r, this.color.g, this.color.b);
+      const shade = faceShade(normal);
+      this.colors.push(this.color.r * shade, this.color.g * shade, this.color.b * shade);
     });
   }
 
@@ -409,7 +470,6 @@ function repeating(canvas: PixelCanvas, colorSpace: THREE.ColorSpace): THREE.Dat
   texture.colorSpace = colorSpace;
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(1 / TILE_WINDOWS, 1 / TILE_WINDOWS);
   texture.generateMipmaps = true;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.needsUpdate = true;
@@ -452,13 +512,14 @@ export class SkylineView {
   private readonly facadeMap: THREE.DataTexture;
   private readonly facadeLit: THREE.DataTexture;
   private readonly glow = radialGlowTexture(32, 1.6);
-  private readonly facadeMaterial: THREE.MeshLambertMaterial;
-  private readonly plainMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
-  private readonly groundMaterial = new THREE.MeshLambertMaterial({ color: 0x3d424c });
-  private readonly waterMaterial = new THREE.MeshLambertMaterial({
-    color: 0x3f6e8f,
-    emissive: new THREE.Color(0x0b1a2a),
-  });
+  private readonly facade: FacadeUniforms;
+  private readonly facadeMaterial: THREE.ShaderMaterial;
+  private readonly plainMaterial = new THREE.MeshBasicMaterial({ vertexColors: true });
+  private readonly groundMaterial = new THREE.MeshBasicMaterial({ color: 0x3d424c });
+  private readonly waterMaterial = new THREE.MeshBasicMaterial({ color: 0x3f6e8f });
+  /** Lumière du jour sur la ville (couleur et intensité), recalculée à chaque image. */
+  private readonly tint = new THREE.Color(1, 1, 1);
+  private readonly sunTint = new THREE.Color();
   private readonly tankMaterial = new THREE.MeshLambertMaterial({
     color: 0x8a5a36,
     flatShading: true,
@@ -483,13 +544,13 @@ export class SkylineView {
     const { map, lit } = facadeTextures();
     this.facadeMap = repeating(map, THREE.SRGBColorSpace);
     this.facadeLit = repeating(lit, THREE.SRGBColorSpace);
-    this.facadeMaterial = new THREE.MeshLambertMaterial({
-      vertexColors: true,
-      map: this.facadeMap,
-      emissive: new THREE.Color(0xffffff),
-      emissiveMap: this.facadeLit,
-      emissiveIntensity: 0,
-    });
+    this.facade = {
+      map: { value: this.facadeMap },
+      lit: { value: this.facadeLit },
+      tint: { value: new THREE.Color(1, 1, 1) },
+      glow: { value: 0 },
+    };
+    this.facadeMaterial = facadeMaterial(this.facade);
     const points = (color: number) =>
       new THREE.PointsMaterial({
         map: this.glow,
@@ -516,14 +577,21 @@ export class SkylineView {
 
     const facades = new BoxBatch();
     const plain = new BoxBatch();
-    plan.towers.forEach((box, index) => {
-      facades.add(box, true, false, (index * 7) % TILE_WINDOWS);
-      plain.add(
-        { ...box, color: ROOF_COLORS[index % ROOF_COLORS.length] ?? 0x8a8d93 },
-        false,
-        true,
-      );
-    });
+    // Du plus proche au plus loin : les immeubles proches masquent les lointains, que la carte
+    // graphique n'a alors pas à colorier (test de profondeur précoce).
+    const cx = (layout.width - 1) / 2;
+    const cz = (layout.depth - 1) / 2;
+    const near = (box: CityBox) => Math.hypot(box.x - cx, box.z - cz);
+    [...plan.towers]
+      .sort((a, b) => near(a) - near(b))
+      .forEach((box, index) => {
+        facades.add(box, true, false, (index * 7) % TILE_WINDOWS);
+        plain.add(
+          { ...box, color: ROOF_COLORS[index % ROOF_COLORS.length] ?? 0x8a8d93 },
+          false,
+          true,
+        );
+      });
     for (const box of plan.solids) plain.add(box, true, true);
     const facadeMesh = new THREE.Mesh(facades.build(), this.facadeMaterial);
     facadeMesh.name = 'skyline-facades';
@@ -576,6 +644,11 @@ export class SkylineView {
       glowPoints(plan.streetLamps, this.lampMaterial, 'skyline-lamps'),
       glowPoints(plan.beacons, this.beaconMaterial, 'skyline-beacons'),
     );
+    // La ville se dessine après le bureau, et la rue en dernier : tout ce qui est caché derrière
+    // la salle ou sous les immeubles est éliminé avant d'être colorié.
+    for (const child of this.root.children) child.renderOrder = 1;
+    ground.renderOrder = 2;
+    water.renderOrder = 2;
   }
 
   /**
@@ -584,7 +657,16 @@ export class SkylineView {
    */
   update(light: LightingState, delta: number, pixelsPerUnit: number, animate: boolean): void {
     const night = 1 - light.daylight;
-    this.facadeMaterial.emissiveIntensity = 0.05 + 1.2 * night;
+    this.facade.glow.value = 0.05 + 1.2 * night;
+    // Lumière du ciel et du soleil, comme celle que reçoit le bureau (sans ses lampes).
+    this.tint
+      .setHex(light.skyColor)
+      .multiplyScalar(0.55 * light.ambient)
+      .add(this.sunTint.setHex(light.sunColor).multiplyScalar(0.28 * light.sun));
+    this.facade.tint.value.copy(this.tint);
+    this.plainMaterial.color.copy(this.tint);
+    this.groundMaterial.color.setHex(0x3d424c).multiply(this.tint);
+    this.waterMaterial.color.setHex(0x3f6e8f).multiply(this.tint);
     this.taxiMaterial.emissiveIntensity = 0.5 * night;
     this.lampMaterial.opacity = Math.max(0, night - 0.15);
     this.lampMaterial.size = 0.9 * pixelsPerUnit;

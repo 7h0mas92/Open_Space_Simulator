@@ -88,11 +88,12 @@ describe('vue sur New York', () => {
     skyline.setLayout(officeLayout('UNICORN'));
     expect(skyline.root.children.length).toBeLessThanOrEqual(12);
     const facades = skyline.root.getObjectByName('skyline-facades') as THREE.Mesh;
-    const material = facades.material as THREE.MeshLambertMaterial;
+    const material = facades.material as THREE.ShaderMaterial;
+    const glow = () => material.uniforms.glow?.value as number;
     skyline.update(lightingAt(12 * 60), 0.1, 40, true);
-    const day = material.emissiveIntensity;
+    const day = glow();
     skyline.update(lightingAt(22 * 60), 0.1, 40, true);
-    expect(material.emissiveIntensity).toBeGreaterThan(day + 0.5);
+    expect(glow()).toBeGreaterThan(day + 0.5);
 
     // Les taxis roulent, sauf si l'on réduit les animations.
     const taxis = skyline.root.getObjectByName('skyline-taxis') as THREE.InstancedMesh;
