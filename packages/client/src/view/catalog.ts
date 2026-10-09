@@ -177,17 +177,12 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 1.2,
     paint: ['dark'],
   },
-  // Bibliothèque garnie de livres sur chaque étagère.
+  // Bibliothèque en bois : livres un par un, placard, paniers, plante, cadre et trophée.
   bookcase: {
     category: 'work',
-    model: kenney('bookcaseClosedWide'),
+    model: primitive('bookcase'),
     height: 1.6,
-    parts: [
-      part(kenney('books'), [-0.45, 0.06, 0]),
-      part(kenney('books'), [0.2, 0.06, 0]),
-      part(kenney('books'), [0.45, 0.56, 0], { turn: 2 }),
-      part(kenney('books'), [-0.3, 1.04, 0]),
-    ],
+    paint: ['wood', 'woodDark'],
     surface: [
       [-0.45, BOOKCASE_TOP, 0],
       [0.45, BOOKCASE_TOP, 0],
@@ -264,7 +259,14 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   },
   speaker: { category: 'fun', model: kenney('speaker'), height: 1.25 },
   slide: { category: 'fun', model: primitive('slide'), height: 2, paint: ['red'] },
-  sofa: { category: 'comfort', model: kenney('loungeSofa'), height: 0.9, use: 'rest' },
+  // Canapé en tissu : coussins, accoudoirs roulés, pieds en bois, coussins décoratifs, plaid.
+  sofa: {
+    category: 'comfort',
+    model: primitive('sofa'),
+    height: 0.9,
+    use: 'rest',
+    paint: ['fabric', 'fabricDark'],
+  },
   'nap-pod': {
     category: 'comfort',
     model: primitive('napPod'),
