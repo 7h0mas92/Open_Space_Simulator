@@ -1,5 +1,6 @@
 import {
   BALANCE,
+  MEETINGS,
   ROLE_PROFILES,
   ROLE_TRADE,
   TIME,
@@ -22,7 +23,9 @@ import {
 } from '../helpers';
 import { leadershipEffects, NO_LEADERSHIP, type LeadershipEffects } from '../leadership';
 import { recordTaskDone, recordWork } from '../performance';
+import { isTeamMeetingTime } from '../meetings';
 import { completeSpecialTask } from '../taskFlow';
+import { getClock, type SimClock } from '../time';
 
 /** Le dev pense en Rust : le Rustacé lui-même, ou un collègue converti. */
 export function thinksInRust(state: GameState, devId: EntityId): boolean {
@@ -246,18 +249,30 @@ function completeTask(
   );
 }
 
+/** Part de la demi-heure qui reste pour travailler après la réunion d'équipe du matin (20 min). */
+const AFTER_MORNING_MEETING = 1 - MEETINGS.dailyMinutes / TIME.tickMinutes;
+
 /** Système « travail » : fait avancer les tâches des devs en train de travailler. */
-export function workSystem(state: GameState, ctx: SimContext): void {
+export function workSystem(
+  state: GameState,
+  ctx: SimContext,
+  clock: SimClock = getClock(state),
+): void {
   const hasProductOwner = hasRole(state, 'PRODUCT_OWNER');
+  const morningMeeting = state.stage === 'EXECUTION' && isTeamMeetingTime(state, clock);
   const leadership = leadershipEffects(state);
   for (const devId of devIds(state)) {
-    if (state.components.activity[devId]?.kind !== 'WORKING') continue;
+    const kind = state.components.activity[devId]?.kind;
+    // La réunion du matin dure 20 minutes : les 10 dernières de la demi-heure, on code.
+    const share =
+      kind === 'WORKING' ? 1 : morningMeeting && kind === 'MEETING' ? AFTER_MORNING_MEETING : 0;
+    if (share === 0) continue;
     const taskId = state.components.worker[devId]?.taskId;
     const task = taskId ? state.components.task[taskId] : undefined;
     const identity = state.components.identity[devId];
     if (!taskId || !task || !identity) continue;
     if (task.column === 'TODO') task.column = 'IN_PROGRESS';
-    const rate = productivity(state, ctx, devId, task, hasProductOwner, leadership);
+    const rate = productivity(state, ctx, devId, task, hasProductOwner, leadership) * share;
     task.progress += rate;
     const quality = effectiveQuality(state, ctx, devId);
     task.qualitySum += rate * quality;

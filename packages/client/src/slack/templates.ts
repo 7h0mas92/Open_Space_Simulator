@@ -1592,6 +1592,41 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── CRISIS_MEETING ───────────────────────────────────────────────────────
+  {
+    trigger: 'CRISIS_MEETING',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('🚨 {event}', '🚨 {event}'),
+  },
+  {
+    trigger: 'CRISIS_MEETING',
+    channel: 'incidents',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      'Cellule de crise en salle de réunion. J’ai déjà préparé le mail d’excuses aux clients.',
+      'Crisis cell in the meeting room. I already drafted the apology email to customers.',
+    ),
+  },
+  {
+    trigger: 'CRISIS_MEETING',
+    channel: 'random',
+    author: dev('SENIOR_BEARD'),
+    text: t(
+      'Réunion de crise : on a trouvé le coupable en 4 minutes. Le bug, c’est une autre histoire.',
+      'Crisis meeting: we found the culprit in 4 minutes. The bug is another story.',
+    ),
+  },
+  {
+    trigger: 'CRISIS_MEETING',
+    channel: 'random',
+    author: dev('INTERN'),
+    text: t(
+      'On m’a invité à la réunion de crise. Je crois que c’est pas bon signe.',
+      'I got invited to the crisis meeting. I don’t think that’s a good sign.',
+    ),
+  },
+
   // ─── SPRINT_LOST ──────────────────────────────────────────────────────────
   {
     trigger: 'SPRINT_LOST',

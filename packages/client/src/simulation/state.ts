@@ -115,6 +115,7 @@ export function createEmptyState(config: GameConfig): GameState {
       ventureCashIn: 0,
       meetingsUseful: 0,
       meetingsUseless: 0,
+      crisisMeetings: 0,
       urgentDone: 0,
       urgentMissed: 0,
       weeklyDone: 0,
