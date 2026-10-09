@@ -413,6 +413,12 @@ flowchart LR
   arbres à chat et sur les canapés, et dorment surtout la nuit. Un chat bien équipé donne du moral
   et un peu de hype ; s'il manque de l'équipement, il boude. Le confier à une famille n'est pas
   remboursé et attriste l'équipe (`shared/sim/pets.ts`, `ai/cats.ts`, `render/pets.ts`).
+- **Musique** : sept morceaux originaux suivent le moment de la partie : « tycoon » au menu,
+  « tycoon 1 » en planification et à la démo, les quatre « Détente » enchaînés pendant le sprint,
+  « aria math » en levée de fonds et à l'écran de fin. Fondu enchaîné entre deux moments, reprise
+  du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
+  lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
+  le jeu reste jouable sans musique.
 - **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
   revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
   les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
@@ -597,10 +603,13 @@ génère que des messages Slack.
   gamelles, arbres à chat et chats, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
-  ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
-  lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
-  sons Kenney et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans
-  la page Crédits du jeu.
+  ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Pour les
+  effets sonores et l'ambiance, le lecteur audio (Howler.js) est prêt : il suffit de déposer les
+  fichiers et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans la
+  page Crédits du jeu.
+- Musiques : compositions originales de l'équipe du projet (tycoon, Détente, aria math), dans
+  `packages/client/public/assets/music/` (voir le README de ce dossier). Elles appartiennent à leur
+  auteur et ne sont pas sous licence CC0.
 - Personnages : 10 des 18 Blocky Characters sont hors thème (pirate, ninja, zombies, policier…)
   et ne sont jamais tirés. Chaque profil a sa liste de looks (`render/officeCharacters.ts`) :
   les personnages Kenney adaptés, complétés d'accessoires Three.js (barbe, casque, béret, badge,
