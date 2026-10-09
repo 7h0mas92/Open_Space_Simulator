@@ -284,6 +284,10 @@ flowchart LR
   `BALANCE.performance`). La fiche montre les 2 derniers sprints côte à côte, l'ancienneté,
   l'XP, la tâche en cours, l'allié et la bête noire ; chaque candidat affiche sa performance
   estimée, le salaire du marché et ses chances d'accepter l'offre.
+- **Filtres de l'équipe** : la liste se filtre par note de performance, situation (en conflit,
+  fatigué·e, moral bas, télétravail, au bureau) et métier, filtres cumulables, et se trie par
+  performance, moral, énergie, conflits, salaire, ancienneté ou nom. Chaque ligne indique
+  le nombre de collègues en conflit (⚔️).
 - **Interface** : jauges avec infobulles, vitesses, Kanban en glisser-déposer (souris et
   tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
   construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux

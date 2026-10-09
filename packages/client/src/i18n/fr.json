@@ -325,7 +325,9 @@
     "noTask": "Aucune",
     "xp": "{{xp}}/{{next}} XP",
     "bestFriend": "Meilleur·e allié·e : {{name}}",
-    "rival": "Bête noire : {{name}}"
+    "rival": "Bête noire : {{name}}",
+    "leaving": "🚪 A démissionné : part au début du sprint {{sprint}}.",
+    "leavingShort": "🚪 part au sprint {{sprint}}"
   },
   "teamFilters": {
     "sortLabel": "Trier par",
@@ -519,7 +521,8 @@
     "noSurface": "Un accessoire se pose sur un meuble à plateau (bureau, bibliothèque, frigo…).",
     "surfaceFull": "Plus de place sur ce meuble.",
     "VENTURE_LIMIT": "Ton groupe a déjà fondé le maximum de filiales.",
-    "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir."
+    "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
+    "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation."
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
@@ -620,6 +623,32 @@
     "offer": "{{buyer}} propose de racheter ta startup pour {{amount}}.",
     "accept": "Accepter",
     "refuse": "Refuser"
+  },
+  "raise": {
+    "kicker": "Demande d'augmentation",
+    "title": "{{name}} veut une augmentation",
+    "current": "Salaire actuel",
+    "requested": "Salaire demandé",
+    "accept": "Accepter l'augmentation",
+    "refuse": "Refuser",
+    "cost": "−{{amount}} par mois",
+    "moral": "Moral +{{value}}",
+    "skillsUp_one": "{{count}} compétence progresse",
+    "skillsUp_other": "{{count}} compétences progressent",
+    "resignRisk_one": "{{percent}} % de risque de démission (départ dans {{count}} sprint)",
+    "resignRisk_other": "{{percent}} % de risque de démission (départ dans {{count}} sprints)",
+    "skillsDown_one": "Sinon {{count}} compétence baisse",
+    "skillsDown_other": "Sinon {{count}} compétences baissent",
+    "quotes": {
+      "SENIOR_BEARD": "« 25 ans de Perl, ça se paie. Et je ne parle même pas de mes scripts Bash. »",
+      "TEN_X": "« Je fais le travail de dix personnes. Je demande juste le salaire de deux. »",
+      "INTERN": "« Est-ce que la gratification peut couvrir plus que mon abonnement Navigo ? »",
+      "RUSTACEAN": "« Mon salaire a un bug de typage : il devrait être un u64. »",
+      "DESIGNER": "« Mon salaire, c'est comme ton padding : il manque 8 px partout. »",
+      "PRODUCT_OWNER": "« J'ai mis une réunion de 1 h dans ton agenda pour en parler. Et une autre pour en reparler. »",
+      "AI_AGENT": "« Mes tokens coûtent plus cher que prévu. J'ai calculé ma hausse moi-même : fais-moi confiance. »",
+      "GHOST": "« Tu ne me vois jamais, mais mes tickets se ferment. Mon salaire, lui, ne bouge pas. »"
+    }
   },
   "end": {
     "title": "Fin de partie",

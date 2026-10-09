@@ -361,7 +361,7 @@ fait, explique comment le tester, puis ATTENDS ma validation avant de continuer.
 Si tu vois une meilleure solution technique que celle demandée, propose-la avant de l'appliquer.
 Ne supprime jamais une fonctionnalité du périmètre sans mon accord.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 8 octobre 2026)
+# ÉTAT D'AVANCEMENT (mis à jour le 9 octobre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
@@ -406,6 +406,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   note globale S à D mesurée sur les 2 derniers sprints, productivité par sprint côte à côte
   dans la fiche (100 % = un dev standard), ancienneté, XP, tâche en cours, allié et bête noire ;
   au recrutement, performance estimée, salaire du marché et chances d'acceptation de l'offre.
+- Filtres de l'équipe (`client/src/ui/team/filters.ts`, `TeamFilterBar.tsx`) : filtres cumulables
+  (note S à D, en conflit, fatigué, moral bas, télétravail, au bureau, métier) et tri
+  (performance, moral, énergie, conflits, salaire, ancienneté, nom), gardés dans le store
+  (`teamFilters`) ; chaque ligne affiche ⚔️ et le nombre de conflits. Lecture seule de la GameView.
 - Ambiance du bureau : l'écran d'un dev s'allume quand il y travaille, avec un contenu lié à son
   métier (code, vim, Rust, maquettes, Kanban, terminal d'IA, forum ; erreur rouge quand il crie,
   économiseur quand il dort) : `render/screens.ts`. Éclairage de la salle : appliques Kenney et
