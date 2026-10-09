@@ -1,7 +1,8 @@
 /**
  * Formes Three.js qui remplacent les modèles absents des packs Kenney (babyfoot, toboggan,
  * sieste-pod, bureau debout, casques, baie de serveurs, machines à café, frigo à boissons,
- * cactus, écran de métriques, ramen, casque et mini-cactus de bureau, litières, gamelles et
+ * cactus, écran de métriques, ramen, casque et mini-cactus de bureau, tapis de souris,
+ * litières, gamelles et
  * arbres à chat) et servent de secours si un GLB ne se charge pas.
  * Chaque forme assemble des primitives (boîtes, cylindres) dans la palette low-poly du
  * Furniture Kit, en unités de grille : une case mesure 1 x 1, l'objet est posé au sol (y = 0)
@@ -274,6 +275,17 @@ function miniCactus(): THREE.Group {
   group.add(box(0.04, 0.025, 0.025, PALETTE.cactus, 0.04, 0.12, 0));
   group.add(post(0.014, 0.014, 0.05, PALETTE.cactus, 0.06, 0.12, 0, 6));
   group.add(post(0.018, 0.01, 0.02, PALETTE.pink, 0, 0.225, 0, 5));
+  return group;
+}
+
+/**
+ * Tapis de souris sombre à liseré bleu : il fait ressortir la souris Kenney, grise comme le
+ * clavier, à côté de laquelle elle se perdait. Très plat : la souris se pose dessus (y = 0,012).
+ */
+function mousePad(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(box(0.26, 0.008, 0.24, PALETTE.blue, 0, 0, 0));
+  group.add(box(0.24, 0.012, 0.22, PALETTE.dark, 0, 0, 0));
   return group;
 }
 
@@ -833,6 +845,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   trophy,
   deskHeadset,
   miniCactus,
+  mousePad,
   litterOpen,
   litterCovered,
   litterRobot,

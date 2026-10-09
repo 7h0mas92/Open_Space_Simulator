@@ -252,6 +252,7 @@ export const MISSING_ASSETS = [
   { id: 'annexDecor', replacement: 'decor' },
   { id: 'deskHeadset', replacement: 'primitive' },
   { id: 'miniCactus', replacement: 'primitive' },
+  { id: 'mousePad', replacement: 'primitive' },
   { id: 'litterOpen', replacement: 'primitive' },
   { id: 'litterCovered', replacement: 'primitive' },
   { id: 'litterRobot', replacement: 'primitive' },
