@@ -399,11 +399,12 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 2.2,
     paint: ['dark'],
   },
+  // Lampe d'architecte : socle lesté, bras à ressorts, abat-jour penché, ampoule allumée.
   'desk-lamp': {
     category: 'accessory',
-    model: kenney('lampSquareTable'),
+    model: primitive('deskLamp'),
     height: 0.58,
-    paint: ['lamp'],
+    paint: ['mint'],
   },
   'coffee-mug': { category: 'accessory', model: primitive('mug'), height: 0.14, paint: ['white'] },
   'rubber-duck': {
@@ -413,33 +414,28 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     paint: ['yellow'],
   },
   succulent: { category: 'accessory', model: kenney('plantSmall2'), height: 0.28 },
+  // Livres reliés de travers, tranches crème ; le livre du dessus se repeint.
   'book-stack': {
     category: 'accessory',
-    model: kenney('books'),
+    model: primitive('bookStack'),
     height: 0.21,
-    paint: ['carpetDarker'],
+    paint: ['purple'],
   },
   'teddy-bear': {
     category: 'accessory',
-    model: kenney('bear'),
+    model: primitive('teddyBear'),
     height: 0.36,
-    scale: [0.4, 0.4, 0.4],
-    paint: ['fur'],
+    paint: ['teddy'],
   },
-  radio: { category: 'accessory', model: kenney('radio'), height: 0.25, scale: [0.55, 0.55, 0.55] },
+  radio: { category: 'accessory', model: primitive('retroRadio'), height: 0.25 },
+  // Deuxième écran avec un tableau de bord allumé.
   'second-screen': {
     category: 'accessory',
-    model: kenney('computerScreen'),
+    model: primitive('secondScreen'),
     height: 0.4,
-    scale: [0.65, 0.65, 0.65],
-    paint: ['metalDark'],
+    paint: ['dark'],
   },
-  'mini-speaker': {
-    category: 'accessory',
-    model: kenney('speakerSmall'),
-    height: 0.33,
-    scale: [0.55, 0.55, 0.55],
-  },
+  'mini-speaker': { category: 'accessory', model: primitive('miniSpeaker'), height: 0.33 },
   trophy: { category: 'accessory', model: primitive('trophy'), height: 0.32, paint: ['gold'] },
   'desk-headset': {
     category: 'accessory',
@@ -455,17 +451,15 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   },
   toaster: {
     category: 'accessory',
-    model: kenney('toaster'),
+    model: primitive('chromeToaster'),
     height: 0.2,
-    scale: [0.75, 0.75, 0.75],
-    paint: ['metalMedium'],
+    paint: ['chrome'],
   },
   blender: {
     category: 'accessory',
-    model: kenney('kitchenBlender'),
+    model: primitive('smoothieBlender'),
     height: 0.35,
-    scale: [0.75, 0.75, 0.75],
-    paint: ['metalMedium'],
+    paint: ['red'],
   },
 };
 
