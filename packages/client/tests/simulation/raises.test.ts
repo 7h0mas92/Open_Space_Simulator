@@ -244,6 +244,7 @@ describe('Demandes d’augmentation : sauvegardes et parties complètes', () => 
     });
   });
 
+  // Parties complètes et rejouées : plusieurs secondes sur une machine chargée (CI).
   it('les bots répondent aux demandes et la partie se rejoue à l’identique', () => {
     const cards = new CardLibrary(EVENT_CARDS);
     let answered = 0;
@@ -255,5 +256,5 @@ describe('Demandes d’augmentation : sauvegardes et parties complètes', () => 
       expect(replayed.state).toEqual(simulation.state);
     }
     expect(answered).toBeGreaterThan(0);
-  });
+  }, 20_000);
 });

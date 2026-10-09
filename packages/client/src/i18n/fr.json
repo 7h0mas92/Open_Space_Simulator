@@ -266,9 +266,11 @@
       "build": "Bâtir",
       "dashboard": "Stats",
       "slack": "Slack",
-      "group": "Investir"
+      "group": "Investir",
+      "funding": "Lever"
     },
-    "group": "Investir"
+    "group": "Investir",
+    "funding": "Lever des fonds"
   },
   "kanban": {
     "columns": {
@@ -534,6 +536,7 @@
     "surfaceFull": "Plus de place sur ce meuble.",
     "VENTURE_LIMIT": "Ton groupe a déjà fondé le maximum de filiales.",
     "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
+    "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
     "INVENTORY_FULL": "L’inventaire est plein : revends des objets rangés.",
     "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation."
   },
@@ -596,6 +599,7 @@
       "mug": "Mug de dev",
       "rubberDuck": "Canard en plastique",
       "trophy": "Trophée de hackathon",
+      "annexDecor": "Décor des annexes du bureau : bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran de projection en formes Three.js (banc, plante en pot et enceintes du Furniture Kit)",
       "deskHeadset": "Casque antibruit sur son support",
       "miniCactus": "Mini-cactus de bureau"
     },
@@ -616,11 +620,30 @@
   "pitch": {
     "open": "Lever des fonds",
     "title": "Levée de fonds",
-    "round": "Argument {{round}} sur {{total}} : que dis-tu ?",
+    "round": "Question {{round}} sur {{total}}",
     "success": "Signé ! {{amount}} € levés contre {{share}} % du capital.",
     "failure": "L'investisseur « va revenir vers toi ». Il ne reviendra pas.",
     "close": "Retour au bureau",
-    "short": "Lever"
+    "short": "Lever",
+    "roundTitle": "Levée de fonds · {{round}}",
+    "difficulty": "Difficulté {{level}} sur {{total}}",
+    "interest": "Intérêt",
+    "offTopic": "hors sujet",
+    "bluffCaught": "bluff démasqué !",
+    "bluffTag": "bluff",
+    "walkedOut": "L’investisseur a regardé sa montre, puis la porte. Il est parti avant la fin.",
+    "reactions": {
+      "good": "Il prend des notes",
+      "neutral": "Il hoche poliment la tête",
+      "bad": "Il regarde son téléphone"
+    },
+    "categories": {
+      "TRACTION": "Traction",
+      "TECH": "Technique",
+      "TEAM": "Équipe",
+      "VISION": "Vision",
+      "BUZZWORD": "Buzzword"
+    }
   },
   "demo": {
     "title": "Démo du sprint {{sprint}}",
@@ -1246,15 +1269,15 @@
         "steps": {
           "why": {
             "title": "Pourquoi lever ?",
-            "body": "Lever des fonds remplit ta trésorerie et fait grandir ta startup : la 1re levée te fait passer en Seed, la 2e en Série A. À chaque phase, le bureau s'agrandit et tu peux recruter plus de monde."
+            "body": "Lever des fonds remplit ta trésorerie et fait grandir ta startup : la 1re levée te fait passer en Seed, la 2e en Série A. À partir de la Série B, chaque tour réussi ouvre une annexe au bureau (salle d'arcade, jardin intérieur, auditorium) avec 2 places de plus dans l'équipe."
           },
           "when": {
             "title": "Quand lever ?",
-            "body": "Le bouton « Lever des fonds » apparaît pendant la planification, à côté de « Lancer le sprint ».\n\nIl faut un peu de hype (à zéro, aucun investisseur ne te reçoit), et après chaque tentative, il faut attendre 3 sprints avant la suivante. Choisis bien ton moment : beaucoup de hype et des utilisateurs, c'est idéal."
+            "body": "Le bouton « Lever des fonds » apparaît pendant la planification, à côté de « Lancer le sprint ». Il ouvre le prochain tour de table et les autres financements : business angels, prêt bancaire, financement participatif et subvention, chacun avec sa contrepartie.\n\nPour pitcher, il faut un peu de hype (à zéro, aucun investisseur ne te reçoit), et après chaque tentative, il faut attendre 3 sprints avant la suivante."
           },
           "pitch": {
             "title": "Le pitch",
-            "body": "Face à l'investisseur, tu choisis 3 arguments, un par manche. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nChaque investisseur a ses préférences. Un pitch raté coûte un peu de hype."
+            "body": "Face à l'investisseur, tu réponds à ses questions, une par manche, en choisissant un argument. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nRéponds à la question posée : hors sujet, l'intérêt baisse. Chaque tour est plus dur que le précédent : plus de questions, une barre plus haute, des bluffs plus souvent démasqués, et dès la Série B l'investisseur peut quitter la salle. Un pitch raté coûte de la hype."
           },
           "dilution": {
             "title": "La dilution",
@@ -1426,5 +1449,54 @@
     "confirmSell": "Confirmer la revente ({{price}})",
     "cancel": "Annuler",
     "sellWhen": "On revend ses parts pendant la planification ou la démo."
+  },
+  "funding": {
+    "rounds": "Tours de table",
+    "raised": "Total levé",
+    "ownership": "Ta part du capital",
+    "annexes": "Annexes du bureau",
+    "nextRound": "Prochain tour de table : {{round}}",
+    "difficulty": "Difficulté",
+    "roundHint": "Face à un investisseur : {{manches}} questions, {{options}} réponses au choix à chaque fois. Réponds à la question posée : une réponse hors sujet fait baisser son intérêt. Chaque tour est plus exigeant que le précédent.",
+    "annexNext": "Réussir ce tour agrandit le bureau : une nouvelle annexe ouvre, avec 2 places de plus dans l’équipe.",
+    "annexLater": "À partir de la {{round}}, chaque tour réussi agrandit le bureau d’une annexe.",
+    "seriesB": "Série B",
+    "pitchCooldown": "Les investisseurs se reparlent entre eux : prochain pitch au sprint {{sprint}}.",
+    "pitch": "Pitcher",
+    "others": "Autres financements",
+    "othersHint": "Moins d’argent qu’un tour de table, mais pas de pitch. Chacun a sa contrepartie et ne revient qu’après quelques sprints.",
+    "loanActive": "Prêt en cours : {{remaining}} à rembourser, {{monthly}} par mois.",
+    "accept": "Accepter",
+    "kinds": {
+      "BRIDGE": {
+        "name": "Business angels",
+        "description": "Trois anciens fondateurs croient en toi. Enfin, en ta hype.",
+        "terms": "Contre {{share}} % du capital. Ne compte pas comme un tour de table."
+      },
+      "LOAN": {
+        "name": "Prêt bancaire",
+        "description": "La banque prête sur ton chiffre d’affaires, pas sur tes rêves.",
+        "terms": "Sans dilution. Remboursé {{monthly}} par mois pendant {{months}} mois."
+      },
+      "CROWDFUNDING": {
+        "name": "Financement participatif",
+        "description": "Tes utilisateurs paient d’avance. En échange, ils veulent un mug.",
+        "terms": "Sans dilution. +hype, mais les contreparties ajoutent de la dette technique."
+      },
+      "GRANT": {
+        "name": "Subvention à l’innovation",
+        "description": "De l’argent public, contre un dossier de 80 pages.",
+        "terms": "Sans dilution. Le dossier fait baisser le moral de toute l’équipe."
+      }
+    },
+    "blockers": {
+      "COOLDOWN": "Disponible à nouveau au sprint {{sprint}}.",
+      "NO_HYPE": "Pas assez de hype pour convaincre.",
+      "NO_REVENUE": "La banque veut voir plus de chiffre d’affaires.",
+      "LOAN_ACTIVE": "Un prêt est déjà en cours de remboursement.",
+      "NOT_ENOUGH_USERS": "Il faut au moins 2 000 utilisateurs.",
+      "TOO_MUCH_DEBT": "Trop de dette technique : le dossier serait refusé.",
+      "TOO_BIG": "Ta startup est trop grosse pour une subvention."
+    }
   }
 }

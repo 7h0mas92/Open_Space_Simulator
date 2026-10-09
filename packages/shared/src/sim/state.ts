@@ -9,7 +9,8 @@ import {
   StatsSchema,
 } from './components.js';
 import { CommandLogSchema } from './commands.js';
-import { InvestorArchetypeSchema } from './pitch.js';
+import { FinancingStateSchema } from './funding.js';
+import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { VentureSchema } from './ventures.js';
 
@@ -91,6 +92,28 @@ export const PitchStateSchema = z.object({
   options: z.array(z.string()),
   chosen: z.array(z.string()),
   result: PitchResultSchema.nullable(),
+  /** Tour de table (0 = Seed, 1 = Série A…), voir `FUNDING_TIERS`. */
+  tier: z.number().int().min(0).default(0),
+  /** Nombre de manches de ce pitch. */
+  manches: z.number().int().min(1).default(3),
+  /** Question posée à cette manche : la catégorie de réponse attendue. */
+  question: z
+    .object({ category: PitchCategorySchema, index: z.number().int().min(0) })
+    .nullable()
+    .default(null),
+  /** Effet de chaque réponse sur l'intérêt, pour les réactions de l'investisseur. */
+  log: z
+    .array(
+      z.object({
+        argumentId: z.string(),
+        delta: z.number(),
+        onTopic: z.boolean(),
+        bluffCaught: z.boolean(),
+      }),
+    )
+    .default([]),
+  /** L'investisseur a quitté la salle avant la fin. */
+  walkedOut: z.boolean().default(false),
 });
 export type PitchState = z.infer<typeof PitchStateSchema>;
 
@@ -287,6 +310,8 @@ export const GameStateSchema = z.object({
   /** Filiales créées par la startup (actives, coulées ou revendues). */
   ventures: z.array(VentureSchema).default([]),
   lastVentureSprint: z.number().int().nullable().default(null),
+  /** Financements hors tour de table (prêt en cours, cooldowns). */
+  financing: FinancingStateSchema.default({ lastSprint: {}, loan: null }),
   /** Inventaire : objets rangés, du plus ancien au plus récent (absent des vieilles sauvegardes). */
   inventory: z.array(StoredItemSchema).max(INVENTORY_MAX).default([]),
   /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */
