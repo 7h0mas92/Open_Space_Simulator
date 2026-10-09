@@ -62,6 +62,11 @@ export function Team({ view }: { view: GameView }) {
                 </span>
               </span>
               <span className="dev-row-activity">
+                {dev.leavingAtSprint !== null && (
+                  <span className="leaving-badge">
+                    {t('team.leavingShort', { sprint: dev.leavingAtSprint })} ·{' '}
+                  </span>
+                )}
                 {dev.remoteReason
                   ? `${t('team.remoteBadge')} · ${t(`remoteShort.${dev.remoteReason}`)}`
                   : t(`activities.${dev.activity}`)}
@@ -129,6 +134,11 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
             ? t('team.birthdayToday')
             : t('team.birthday', { date: formatBirthday(dev.birthday, i18n.language) })}
         </p>
+        {dev.leavingAtSprint !== null && (
+          <p className="leaving-badge" role="status">
+            {t('team.leaving', { sprint: dev.leavingAtSprint })}
+          </p>
+        )}
         <p className="bio">{localized(dev.bio, i18n.language)}</p>
         <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
       </header>

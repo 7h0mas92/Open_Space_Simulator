@@ -2,6 +2,7 @@ import {
   BALANCE,
   GAME,
   STATE_VERSION,
+  emptyRaisesState,
   type DevRole,
   type GameMode,
   type GameState,
@@ -72,6 +73,7 @@ export function createEmptyState(config: GameConfig): GameState {
     acquisitionOffer: null,
     ventures: [],
     lastVentureSprint: null,
+    raises: emptyRaisesState(),
     lostSprintsPending: 0,
     tracker: {
       usersAtStart: 0,

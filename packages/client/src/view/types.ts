@@ -162,6 +162,8 @@ export interface DevView {
   readonly performance: PerformanceView;
   /** Ancienneté, expérience, tâches (null pour un candidat). */
   readonly career: CareerView | null;
+  /** A démissionné après un refus d'augmentation : sprint de son départ, sinon null. */
+  readonly leavingAtSprint: number | null;
 }
 
 export const TASK_TYPES = ['FEATURE', 'REFACTOR', 'BUGFIX', 'INFRA'] as const;
@@ -294,6 +296,21 @@ export interface VentureView {
   readonly history: readonly number[];
 }
 
+/** Demande d'augmentation d'un dev : la planification attend la réponse du joueur. */
+export interface RaiseRequestView {
+  readonly devId: string;
+  readonly currentSalary: number;
+  readonly requestedSalary: number;
+  /** Accepté : moral gagné et nombre de compétences qui progressent. */
+  readonly acceptMoral: number;
+  readonly skillsGained: number;
+  /** Refusé : probabilité de démission (0 à 1), sinon compétences perdues. */
+  readonly resignChance: number;
+  readonly skillsLost: number;
+  /** Planifications avant le départ d'un dev qui démissionne. */
+  readonly noticeSprints: number;
+}
+
 /** Le groupe : filiales, projets du sprint, et ce qui empêche d'en créer. */
 export interface GroupView {
   /** Débloqué à partir de la Série A. */
@@ -366,6 +383,8 @@ export interface GameView {
   /** Peut-on lancer une levée de fonds maintenant ? Sinon, la raison. */
   readonly pitchBlocker: 'WRONG_STAGE' | 'NO_HYPE' | 'COOLDOWN' | null;
   readonly acquisitionOffer: AcquisitionOffer | null;
+  /** Demande d'augmentation en attente (pendant la planification), sinon null. */
+  readonly raiseRequest: RaiseRequestView | null;
   /** Filiales (débloquées en Série A). */
   readonly group: GroupView;
   readonly canIpo: boolean;
@@ -428,6 +447,7 @@ export type GameCommand =
   | { readonly type: 'closePitch' }
   | { readonly type: 'endDemo' }
   | { readonly type: 'answerAcquisition'; readonly accept: boolean }
+  | { readonly type: 'answerRaise'; readonly accept: boolean }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string };
