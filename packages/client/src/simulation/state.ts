@@ -73,6 +73,7 @@ export function createEmptyState(config: GameConfig): GameState {
     acquisitionOffer: null,
     ventures: [],
     lastVentureSprint: null,
+    inventory: [],
     raises: emptyRaisesState(),
     lostSprintsPending: 0,
     tracker: {

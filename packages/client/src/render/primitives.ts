@@ -1,7 +1,7 @@
 /**
  * Formes Three.js qui remplacent les modèles absents des packs Kenney (babyfoot, toboggan,
  * sieste-pod, bureau debout, casques, baie de serveurs, machines à café, frigo à boissons,
- * cactus, écran de métriques, ramen) et servent de secours si un GLB ne se charge pas.
+ * cactus, écran de métriques, ramen, casque et mini-cactus de bureau) et servent de secours si un GLB ne se charge pas.
  * Chaque forme assemble des primitives (boîtes, cylindres) dans la palette low-poly du
  * Furniture Kit, en unités de grille : une case mesure 1 x 1, l'objet est posé au sol (y = 0)
  * et regarde vers +z, comme les modèles Kenney.
@@ -235,6 +235,37 @@ function headphones(): THREE.Group {
     }
     group.add(one);
   });
+  return group;
+}
+
+/** Casque antibruit de bureau : un casque posé sur son petit support, à portée de main. */
+function deskHeadset(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(post(0.07, 0.08, 0.02, PALETTE.dark));
+  group.add(post(0.012, 0.012, 0.25, PALETTE.metal, 0, 0.02, 0));
+  group.add(box(0.06, 0.015, 0.03, PALETTE.metal, 0, 0.255, 0));
+  // L'arceau repose sur le haut du support, les oreillettes pendent de chaque côté.
+  // Oreillettes vers l'avant et l'arrière : le casque tient au bout d'un bureau.
+  const one = headset(PALETTE.blue);
+  one.position.set(0, 0.15, 0);
+  one.rotation.y = Math.PI / 2;
+  group.add(one);
+  return group;
+}
+
+/** Mini-cactus dans un godet : de quoi décorer un coin de bureau. */
+function miniCactus(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(post(0.06, 0.05, 0.08, PALETTE.terracotta, 0, 0, 0, 8));
+  group.add(post(0.052, 0.052, 0.01, PALETTE.coffee, 0, 0.075, 0, 8));
+  group.add(post(0.03, 0.034, 0.12, PALETTE.cactus, 0, 0.08, 0, 6));
+  const top = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), material(PALETTE.cactus));
+  top.position.set(0, 0.2, 0);
+  group.add(top);
+  // Un seul bras, et une petite fleur rose au sommet.
+  group.add(box(0.04, 0.025, 0.025, PALETTE.cactus, 0.04, 0.12, 0));
+  group.add(post(0.014, 0.014, 0.05, PALETTE.cactus, 0.06, 0.12, 0, 6));
+  group.add(post(0.018, 0.01, 0.02, PALETTE.pink, 0, 0.225, 0, 5));
   return group;
 }
 
@@ -484,6 +515,8 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   mug,
   rubberDuck,
   trophy,
+  deskHeadset,
+  miniCactus,
   officeCharacters: null,
   seasonalDecor: null,
   citySkyline: null,

@@ -437,6 +437,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salaire relevé, +20 moral, 2 compétences +1. Refusé : 50 % de démission (départ 2 planifications
   plus tard, badge dans l'équipe), sinon -15 moral et 2 compétences -1. Commande `ANSWER_RAISE`,
   hasard sur une graine à part, état `raises` par défaut pour les anciennes sauvegardes.
+- Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
+  tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
+  `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

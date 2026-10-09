@@ -12,6 +12,7 @@ import {
   playBalanceGame,
   renderReport,
 } from '../../src/simulation/analysis';
+import { Simulation } from '../../src/simulation/simulation';
 import { tasksInColumn } from '../../src/simulation/tasks';
 import { testCard } from './fixtures';
 
@@ -99,6 +100,62 @@ describe('Hôte du worker', () => {
     });
     // Même contenu (la validation Zod peut seulement réordonner les clés).
     expect(reloaded.snapshots()[0]?.state).toEqual(save.save.state);
+  });
+
+  it('met le temps en pause pendant une carte, puis reprend la vitesse d’avant', () => {
+    const { host, snapshots, advance } = makeHost();
+    host.handle({
+      type: 'init',
+      cards: DEFAULT_CARDS,
+      game: { kind: 'new', seed: 'carte', mode: 'NORMAL' },
+    });
+    host.handle({ type: 'command', id: 1, command: { type: 'START_SPRINT' } });
+    host.handle({ type: 'setSpeed', speed: 4 });
+    for (let i = 0; i < 2000 && !snapshots().at(-1)?.state.events.pending; i++) {
+      advance(10);
+      host.frame();
+    }
+    const held = snapshots().at(-1);
+    expect(held?.state.events.pending).not.toBeNull();
+    expect(held?.speed).toBe(0);
+    expect(held?.running).toBe(false);
+
+    // Même carte au même tick qu'une simulation sans horloge : le déterminisme est intact.
+    const pure = Simulation.create({ seed: 'carte', mode: 'NORMAL' }, defaultCardLibrary());
+    pure.dispatch({ type: 'START_SPRINT' });
+    pure.runUntilBlocked();
+    expect(held?.state.tick).toBe(pure.state.tick);
+    expect(held?.state.events.pending).toEqual(pure.state.events.pending);
+
+    // Le temps ne repart pas tant que la carte est ouverte, même si on touche à la vitesse.
+    host.handle({ type: 'setSpeed', speed: 2 });
+    advance(100);
+    expect(host.frame()).toBe(0);
+    expect(snapshots().at(-1)?.speed).toBe(0);
+
+    host.handle({ type: 'command', id: 2, command: { type: 'RESOLVE_EVENT', choiceIndex: 0 } });
+    expect(snapshots().at(-1)?.speed).toBe(2);
+    expect(snapshots().at(-1)?.running).toBe(true);
+    advance(10);
+    expect(host.frame()).toBeGreaterThan(0);
+  });
+
+  it('ne met pas le temps en pause pour une carte en Hardcore', () => {
+    const { host, snapshots, advance } = makeHost();
+    host.handle({
+      type: 'init',
+      cards: DEFAULT_CARDS,
+      game: { kind: 'new', seed: 'carte', mode: 'HARDCORE' },
+    });
+    host.handle({ type: 'command', id: 1, command: { type: 'START_SPRINT' } });
+    let sawCard = false;
+    for (let i = 0; i < 2000 && !sawCard; i++) {
+      advance(10);
+      host.frame();
+      sawCard = snapshots().at(-1)?.state.events.pending != null;
+    }
+    expect(sawCard).toBe(true);
+    expect(snapshots().at(-1)?.speed).toBe(1);
   });
 
   it('refuse la pause en Hardcore et remonte les erreurs', () => {

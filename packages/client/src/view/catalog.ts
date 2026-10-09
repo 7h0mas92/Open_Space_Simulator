@@ -109,6 +109,7 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     surface: [
       [0.3, DESK_TOP, -0.18],
       [0.55, DESK_TOP, 0.12],
+      [0.75, DESK_TOP, -0.18],
     ],
   },
   // Le bureau du garage : tréteaux, un portable et des ramen.
@@ -124,6 +125,7 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     surface: [
       [0.12, TRESTLE_TOP, -0.22],
       [-0.68, TRESTLE_TOP, -0.2],
+      [0.8, TRESTLE_TOP, -0.15],
     ],
   },
   'standing-desk': {
@@ -291,6 +293,18 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     scale: [0.55, 0.55, 0.55],
   },
   trophy: { category: 'accessory', model: primitive('trophy'), height: 0.32, paint: ['gold'] },
+  'desk-headset': {
+    category: 'accessory',
+    model: primitive('deskHeadset'),
+    height: 0.3,
+    paint: ['blue'],
+  },
+  'mini-cactus': {
+    category: 'accessory',
+    model: primitive('miniCactus'),
+    height: 0.23,
+    paint: ['terracotta'],
+  },
   toaster: {
     category: 'accessory',
     model: kenney('toaster'),
