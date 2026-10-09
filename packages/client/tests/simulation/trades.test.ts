@@ -40,7 +40,7 @@ describe('Métiers du Kanban', () => {
       const task = state.components.task[id]!;
       // Les tâches hors code ont leurs propres titres et ne tentent pas le Senior Barbu.
       if (taskTrade(task) !== 'DEV') {
-        expect(['FEATURE', 'BUGFIX']).toContain(task.type);
+        expect(['FEATURE', 'BUGFIX', 'REFACTO']).toContain(task.type);
         expect(task.shinyFramework).toBe(false);
       }
     }
