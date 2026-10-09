@@ -1,7 +1,8 @@
 /**
  * Formes Three.js qui remplacent les modèles absents des packs Kenney (babyfoot, toboggan,
  * sieste-pod, bureau debout, casques, baie de serveurs, machines à café, frigo à boissons,
- * cactus, écran de métriques, ramen, casque et mini-cactus de bureau) et servent de secours si un GLB ne se charge pas.
+ * cactus, écran de métriques, ramen, casque et mini-cactus de bureau, litières, gamelles et
+ * arbres à chat) et servent de secours si un GLB ne se charge pas.
  * Chaque forme assemble des primitives (boîtes, cylindres) dans la palette low-poly du
  * Furniture Kit, en unités de grille : une case mesure 1 x 1, l'objet est posé au sol (y = 0)
  * et regarde vers +z, comme les modèles Kenney.
@@ -29,6 +30,13 @@ export const PALETTE = {
   pink: 0xf28fb1,
   gold: 0xe8b93c,
   orange: 0xf08a2e,
+  sand: 0xe6d3a3,
+  sisal: 0xcdb07c,
+  plush: 0xe9dcc4,
+  slate: 0x7a8196,
+  mauve: 0xc48bb8,
+  mint: 0x7cc8b4,
+  water: 0x5aa9e0,
 } as const;
 
 /** Nom de chaque couleur de la palette : il sert à repérer les matériaux à repeindre. */
@@ -499,6 +507,230 @@ function trophy(): THREE.Group {
   return group;
 }
 
+// --- Animaux : équipement des chats (litières, gamelles, arbres à chat). ---
+
+/** Litière ouverte : un bac en plastique, du sable et la pelle posée à côté. */
+function litterOpen(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(box(0.62, 0.03, 0.46, PALETTE.mint, 0, 0, 0));
+  for (const [w, d, x, z] of [
+    [0.62, 0.04, 0, -0.21],
+    [0.62, 0.04, 0, 0.21],
+    [0.04, 0.46, -0.29, 0],
+    [0.04, 0.46, 0.29, 0],
+  ] as const)
+    group.add(box(w, 0.14, d, PALETTE.mint, x, 0.03, z));
+  group.add(box(0.54, 0.06, 0.38, PALETTE.sand, 0, 0.03, 0));
+  // Quelques grumeaux, et la pelle.
+  for (const [x, z] of [
+    [-0.12, 0.05],
+    [0.1, -0.08],
+  ] as const)
+    group.add(box(0.05, 0.03, 0.04, PALETTE.sisal, x, 0.09, z));
+  const scoop = box(0.08, 0.015, 0.2, PALETTE.dark, 0.38, 0, 0.05);
+  scoop.rotation.y = 0.4;
+  group.add(scoop);
+  return group;
+}
+
+/** Litière fermée : un bac surmonté d'un capot avec une porte battante et une poignée. */
+function litterCovered(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(box(0.66, 0.16, 0.5, PALETTE.mint, 0, 0, 0));
+  group.add(box(0.64, 0.3, 0.48, PALETTE.white, 0, 0.16, 0));
+  // Toit arrondi : un demi-cylindre couché.
+  const roof = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.24, 0.24, 0.64, 10, 1, false, 0, Math.PI),
+    material(PALETTE.white),
+  );
+  roof.rotation.z = Math.PI / 2;
+  roof.rotation.y = Math.PI / 2;
+  roof.position.set(0, 0.46, 0);
+  roof.scale.set(1, 1, 0.55);
+  group.add(roof);
+  // Porte battante teintée, sur la face avant.
+  group.add(box(0.26, 0.24, 0.02, PALETTE.dark, 0, 0.12, 0.245));
+  group.add(box(0.2, 0.04, 0.05, PALETTE.mint, 0, 0.56, 0));
+  return group;
+}
+
+/** Litière robot : dôme sur socle, ouverture sombre, écran et voyant lumineux. */
+function litterRobot(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(post(0.36, 0.38, 0.16, PALETTE.dark, 0, 0, 0, 12));
+  const dome = new THREE.Mesh(
+    new THREE.SphereGeometry(0.36, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+    material(PALETTE.white),
+  );
+  dome.position.set(0, 0.16, 0);
+  dome.scale.set(1, 1.35, 1);
+  group.add(dome);
+  // Entrée ronde, tournée vers l'avant.
+  const entrance = new THREE.Mesh(new THREE.CircleGeometry(0.17, 12), material(PALETTE.dark));
+  entrance.position.set(0, 0.36, 0.335);
+  entrance.rotation.x = -0.25;
+  group.add(entrance);
+  group.add(box(0.16, 0.05, 0.02, PALETTE.screen, 0, 0.6, 0.27));
+  group.add(light(0.04, 0.04, 0.02, PALETTE.green, 0.12, 0.61, 0.265));
+  group.add(light(0.3, 0.015, 0.02, PALETTE.blue, 0, 0.1, 0.375));
+  return group;
+}
+
+/** Bol posé sur `y`, rempli d'eau ou de croquettes. */
+function bowl(x: number, y: number, z: number, filling: 'water' | 'kibble'): THREE.Group {
+  const group = new THREE.Group();
+  group.add(post(0.11, 0.08, 0.07, PALETTE.metal, 0, 0, 0, 12));
+  if (filling === 'water') group.add(post(0.095, 0.095, 0.01, PALETTE.water, 0, 0.055, 0, 12));
+  else {
+    group.add(post(0.095, 0.095, 0.02, PALETTE.coffee, 0, 0.045, 0, 12));
+    for (const [kx, kz] of [
+      [-0.03, 0.02],
+      [0.03, -0.03],
+      [0.02, 0.04],
+    ] as const)
+      group.add(box(0.03, 0.02, 0.03, PALETTE.woodDark, kx, 0.06, kz));
+  }
+  group.position.set(x, y, z);
+  return group;
+}
+
+/** Gamelle double : l'eau et les croquettes côte à côte sur un support en bois. */
+function catBowl(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(box(0.56, 0.08, 0.28, PALETTE.wood, 0, 0, 0));
+  group.add(bowl(-0.13, 0.08, 0, 'water'));
+  group.add(bowl(0.13, 0.08, 0, 'kibble'));
+  return group;
+}
+
+/** Fontaine à eau et distributeur de croquettes sur un même socle. */
+function catFeeder(): THREE.Group {
+  const group = new THREE.Group();
+  group.add(box(0.72, 0.05, 0.4, PALETTE.white, 0, 0, 0));
+  // Distributeur : réservoir transparent plein de croquettes, plateau en dessous.
+  group.add(box(0.26, 0.1, 0.3, PALETTE.white, -0.18, 0.05, -0.02));
+  group.add(box(0.2, 0.3, 0.2, glass, -0.18, 0.15, -0.05));
+  group.add(box(0.18, 0.18, 0.18, PALETTE.coffee, -0.18, 0.15, -0.05));
+  group.add(box(0.22, 0.04, 0.22, PALETTE.white, -0.18, 0.45, -0.05));
+  group.add(box(0.2, 0.03, 0.12, PALETTE.coffee, -0.18, 0.06, 0.12));
+  group.add(light(0.04, 0.04, 0.01, PALETTE.green, -0.1, 0.4, 0.06));
+  // Fontaine : bassin rond et jet d'eau.
+  group.add(post(0.15, 0.13, 0.1, PALETTE.white, 0.18, 0.05, 0, 12));
+  group.add(post(0.13, 0.13, 0.01, PALETTE.water, 0.18, 0.145, 0, 12));
+  group.add(post(0.025, 0.025, 0.08, PALETTE.chrome, 0.18, 0.15, 0, 8));
+  const spout = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), glass);
+  spout.position.set(0.18, 0.25, 0);
+  group.add(spout);
+  return group;
+}
+
+/** Poteau en sisal (griffoir) de `h` de haut, posé sur `y`. */
+function sisalPost(x: number, y: number, z: number, h: number): THREE.Mesh {
+  return post(0.075, 0.075, h, PALETTE.sisal, x, y, z, 8);
+}
+
+/** Plateau recouvert de moquette (rond si `round`). */
+function platform(
+  w: number,
+  d: number,
+  fabric: number,
+  x: number,
+  y: number,
+  z: number,
+  round = false,
+): THREE.Mesh {
+  return round ? post(w / 2, w / 2, 0.06, fabric, x, y, z, 12) : box(w, 0.06, d, fabric, x, y, z);
+}
+
+/** Panier rond posé sur `y`, le coussin du chat au sommet de l'arbre. */
+function basket(fabric: number, x: number, y: number, z: number): THREE.Group {
+  const group = new THREE.Group();
+  group.add(post(0.24, 0.22, 0.05, fabric, 0, 0, 0, 12));
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.05, 6, 14), material(fabric));
+  rim.rotation.x = Math.PI / 2;
+  rim.position.y = 0.07;
+  group.add(rim);
+  group.position.set(x, y, z);
+  return group;
+}
+
+/** Niche cubique avec une entrée ronde sur la face avant. */
+function cubby(fabric: number, x: number, y: number, z: number, size = 0.5): THREE.Group {
+  const group = new THREE.Group();
+  group.add(box(size, size, size, fabric, 0, 0, 0));
+  const hole = new THREE.Mesh(new THREE.CircleGeometry(size * 0.3, 10), material(PALETTE.dark));
+  hole.position.set(0, size * 0.45, size / 2 + 0.002);
+  group.add(hole);
+  group.position.set(x, y, z);
+  return group;
+}
+
+/** Pompon suspendu à un plateau par une ficelle. */
+function pompom(x: number, y: number, z: number): THREE.Group {
+  const group = new THREE.Group();
+  group.add(box(0.01, 0.2, 0.01, PALETTE.white, 0, -0.2, 0));
+  const ball = new THREE.Mesh(new THREE.IcosahedronGeometry(0.045, 0), material(PALETTE.red));
+  ball.position.y = -0.23;
+  group.add(ball);
+  group.position.set(x, y, z);
+  return group;
+}
+
+/** Arbre à chat compact (1 case, moquette beige) : griffoir, panier en haut, pompon. */
+function catTreeSmall(): THREE.Group {
+  const fabric = PALETTE.plush;
+  const group = new THREE.Group();
+  group.add(platform(0.78, 0.78, fabric, 0, 0, 0));
+  group.add(sisalPost(0, 0.06, 0, 0.72));
+  group.add(platform(0.56, 0.56, fabric, 0, 0.78, 0, true));
+  group.add(basket(fabric, 0, 0.84, 0));
+  group.add(pompom(0.24, 0.78, 0.18));
+  return group;
+}
+
+/** Arbre à chat double (2 cases, moquette grise) : deux tours, niche, hamac, plateau haut. */
+function catTreeMedium(): THREE.Group {
+  const fabric = PALETTE.slate;
+  const group = new THREE.Group();
+  group.add(platform(1.8, 0.8, fabric, 0, 0, 0));
+  // Tour de gauche, la plus haute, avec un panier au sommet.
+  group.add(sisalPost(-0.5, 0.06, 0, 1.1));
+  group.add(platform(0.6, 0.6, fabric, -0.5, 0.55, 0));
+  group.add(platform(0.6, 0.6, fabric, -0.5, 1.16, 0, true));
+  group.add(basket(fabric, -0.5, 1.22, 0));
+  // Tour de droite : une niche, un hamac en toile entre deux poteaux.
+  group.add(cubby(fabric, 0.5, 0.06, 0, 0.5));
+  group.add(sisalPost(0.3, 0.56, -0.15, 0.24));
+  group.add(sisalPost(0.7, 0.56, -0.15, 0.24));
+  group.add(platform(0.62, 0.6, fabric, 0.5, 0.8, 0));
+  group.add(pompom(0.15, 0.55, 0.2));
+  return group;
+}
+
+/** Arbre à chat géant (3 cases, moquette mauve) : trois tours de hauteurs différentes. */
+function catTreeLarge(): THREE.Group {
+  const fabric = PALETTE.mauve;
+  const group = new THREE.Group();
+  group.add(platform(2.8, 0.8, fabric, 0, 0, 0));
+  // Gauche : niche, puis un plateau bas.
+  group.add(cubby(fabric, -1, 0.06, 0, 0.55));
+  group.add(sisalPost(-1, 0.61, 0, 0.12));
+  group.add(platform(0.66, 0.62, fabric, -1, 0.73, 0));
+  // Centre : la tour la plus haute, deux étages et un panier.
+  group.add(sisalPost(0, 0.06, 0, 1.5));
+  group.add(platform(0.6, 0.6, fabric, 0, 0.7, 0, true));
+  group.add(platform(0.62, 0.62, fabric, 0, 1.56, 0, true));
+  group.add(basket(fabric, 0, 1.62, 0));
+  group.add(pompom(0.25, 0.7, 0.2));
+  // Droite : tour moyenne et une passerelle vers le centre.
+  group.add(sisalPost(1, 0.06, 0, 1.06));
+  group.add(platform(0.62, 0.62, fabric, 1, 1.12, 0));
+  const ramp = box(0.7, 0.04, 0.22, fabric, 0.5, 1.28, 0);
+  ramp.rotation.z = 0.5;
+  group.add(ramp);
+  group.add(pompom(1.2, 1.12, 0.22));
+  return group;
+}
 /** Hauteur sous plafond : les murs du fond et les fenêtres montent jusque-là. */
 export const WALL_HEIGHT = 2.2;
 /** Axe des murs du fond, à une demi-case et un peu plus du bord de la première rangée. */
@@ -601,11 +833,20 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   trophy,
   deskHeadset,
   miniCactus,
+  litterOpen,
+  litterCovered,
+  litterRobot,
+  catBowl,
+  catFeeder,
+  catTreeSmall,
+  catTreeMedium,
+  catTreeLarge,
   windowSmall,
   windowMedium,
   windowLarge,
   glassWall,
   officeCharacters: null,
+  officeCats: null,
   seasonalDecor: null,
   meetingRoomProps: null,
   citySkyline: null,

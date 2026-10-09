@@ -16,6 +16,7 @@ import {
 import { addComponent, createEntity, destroyEntity, query } from './ecs';
 import { addMoney, devIds } from './helpers';
 import { meetingFormat } from './meetings';
+import { petEffects } from './pets';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
 export function phaseIndex(phase: Phase): number {
@@ -440,6 +441,13 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.stabilityPerDay += r.stabilityPerDay ?? 0;
     effects.restBonus += r.restBonus ?? 0;
     effects.meetingPenalty = room.poPenalty;
+  }
+  // Les chats du bureau : +moral et +hype s'ils sont bien installés, ils boudent sinon.
+  if (state.pets.length > 0) {
+    const pets = petEffects(state);
+    effects.moral += pets.moral;
+    effects.hypePerDay += pets.hypePerDay;
+    effects.teamProductivity += pets.teamProductivity;
   }
   const inOffice = devIds(state).filter((id) => !(id in state.components.remote));
   effects.seatProductivity = distribute(productivitySeats, inOffice);

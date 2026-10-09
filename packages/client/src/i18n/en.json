@@ -279,7 +279,8 @@
     },
     "group": "Invest",
     "meetings": "Meeting room",
-    "funding": "Raise funds"
+    "funding": "Raise funds",
+    "pets": "Office cats"
   },
   "kanban": {
     "columns": {
@@ -497,6 +498,7 @@
       "kitchen": "Kitchen",
       "fun": "Fun",
       "decor": "Decor",
+      "pets": "Pets",
       "window": "Windows",
       "accessory": "Accessories"
     },
@@ -653,6 +655,15 @@
       "annexDecor": "Office annex decor: arcade cabinets, pinball, neon sign, tree, fountain, stage, lectern and projection screen as Three.js shapes (bench, potted plant and speakers from the Furniture Kit)",
       "deskHeadset": "Noise-cancelling headset on its stand",
       "miniCactus": "Mini desk cactus",
+      "litterOpen": "Open litter tray: tray, sand and scoop",
+      "litterCovered": "Covered litter box with a flap door",
+      "litterRobot": "Self-cleaning robot litter (dome, screen and lights)",
+      "catBowl": "Double water and food bowl",
+      "catFeeder": "Water fountain and kibble feeder",
+      "catTreeSmall": "Compact cat tree (1 tile, beige carpet)",
+      "catTreeMedium": "Double cat tree (2 tiles, grey carpet)",
+      "catTreeLarge": "Giant cat tree (3 tiles, mauve carpet)",
+      "officeCats": "Office cats: six coats built from Three.js shapes, animated in code (walking, napping, eating)",
       "windowSmall": "Small window and its wall section",
       "windowMedium": "Two-tile window",
       "windowLarge": "Large three-tile window",
@@ -1586,5 +1597,35 @@
       "TOO_MUCH_DEBT": "Too much technical debt: the application would be rejected.",
       "TOO_BIG": "Your startup is too big for a grant."
     }
+  },
+  "pets": {
+    "intro": "A cat in the office lifts morale and goes viral on social media, but it sleeps on keyboards. Before adopting one, place a litter box, a bowl and a cat tree in the office (Pets tab of build mode).",
+    "needsTitle": "To adopt",
+    "needs": {
+      "litter": "A litter box",
+      "bowl": "A bowl (water and food)",
+      "tree": "A cat tree"
+    },
+    "placed": "placed",
+    "notPlaced": "to place",
+    "needsHint": "Items stored in the inventory don’t count: they must be placed in the office.",
+    "adoptTitle": "Adopt a cat ({{count}}/{{max}})",
+    "effects": "Each happy cat: +morale for the whole team every day, a bit of hype, and −0.4% productivity (it sleeps on keyboards).",
+    "coat": "Coat",
+    "adopt": "Adopt ({{price}})",
+    "full": "The office already has {{max}} cats, that’s the maximum.",
+    "missing": "Some equipment is still missing: place a litter box, a bowl and a cat tree.",
+    "yours": "Office cats",
+    "none": "No cat yet.",
+    "happy": "Everything is in place: the cats are happy.",
+    "sulking": "Some equipment is missing: the cats are sulking and morale drops.",
+    "adoptedAt": "adopted in sprint {{sprint}}",
+    "rehome": "Rehome",
+    "rehomeWarning": "{{name}} will leave for good, with no refund, and the team will feel blue (−5 morale).",
+    "rehomeConfirm": "Rehome {{name}}",
+    "adoptCard": "Adopt a cat",
+    "adoptCardMissing_one": "{{count}} piece of equipment still missing: litter box, bowl and cat tree.",
+    "adoptCardMissing_other": "{{count}} pieces of equipment still missing: litter box, bowl and cat tree.",
+    "adoptCardReady": "All set: pick a coat and adopt."
   }
 }

@@ -11,6 +11,7 @@ import {
   ANNEXES,
   BALANCE,
   MEETING_FORMATS,
+  PETS,
   FUNDING_TIERS,
   PITCH_QUESTIONS,
   ROLE_PROFILES,
@@ -70,6 +71,7 @@ import {
   ventureOffers,
   venturesUnlocked,
 } from '../simulation/ventures';
+import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
 import type {
   CandidateView,
@@ -86,6 +88,7 @@ import type {
   GroupView,
   GameView,
   MeetingRoomView,
+  PetsView,
   GaugeName,
   KanbanColumn,
   ObjectiveView,
@@ -582,6 +585,17 @@ function meetingRoomView(state: GameState): MeetingRoomView {
   };
 }
 
+function petsView(state: GameState): PetsView {
+  return {
+    pets: state.pets.map((pet) => ({ ...pet })),
+    max: PETS.max,
+    price: PETS.price,
+    needs: petEquipment(state),
+    happy: missingPetNeeds(state).length === 0,
+    blocker: adoptionBlocker(state),
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -647,6 +661,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     raiseRequest: raiseRequestView(state),
     group: groupView(state),
     meetingRoom: meetingRoomView(state),
+    pets: petsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
       state.phase === 'UNICORN' &&
@@ -792,5 +807,9 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'FIT_MEETING_ROOM', format: command.format };
     case 'clearMeetingRoom':
       return { type: 'CLEAR_MEETING_ROOM' };
+    case 'adoptPet':
+      return { type: 'ADOPT_PET', coat: command.coat };
+    case 'rehomePet':
+      return { type: 'REHOME_PET', petId: command.petId };
   }
 }

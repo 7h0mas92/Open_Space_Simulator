@@ -21,6 +21,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   kitchen: '☕',
   fun: '🎮',
   decor: '🪴',
+  pets: '🐈',
   window: '🪟',
   accessory: '🦆',
 };
@@ -75,6 +76,11 @@ export function Catalog({ view }: { view: GameView }) {
         <Inventory view={view} />
       ) : (
         <ul className="catalog-items" role="tabpanel" data-testid="catalog">
+          {category === 'pets' && (
+            <li>
+              <AdoptCard view={view} />
+            </li>
+          )}
           {items.map((item) => (
             <li key={item.kind}>
               <CatalogCard item={item} view={view} onPick={() => pickItem(item.kind)} />
@@ -157,6 +163,41 @@ function StoredCard({ item, stack }: { item: CatalogItem; stack: StoredItemView 
         {t('build.sell', { price: formatMoney(stack.resale, i18n.language) })}
       </button>
     </div>
+  );
+}
+
+/**
+ * Rayon Animaux : la première carte ouvre le panneau des chats (adoption, liste, départ). Elle
+ * rappelle l'équipement qui manque encore avant de pouvoir adopter.
+ */
+function AdoptCard({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const openPanel = useGame((s) => s.openPanel);
+  const pets = view.pets;
+  const missing = Object.values(pets.needs).filter((placed) => !placed).length;
+  return (
+    <button
+      type="button"
+      className="catalog-card adopt-card"
+      onClick={() => openPanel('pets')}
+      data-testid="catalog-adopt"
+    >
+      <span className="item-thumb" aria-hidden="true">
+        🐈
+      </span>
+      <span className="catalog-card-name">{t('pets.adoptCard')}</span>
+      <span className="catalog-card-meta">
+        <span className="catalog-card-price">
+          {t('build.price', { price: formatMoney(pets.price, i18n.language) })}
+        </span>
+        <span className="catalog-card-owned">
+          {t('build.owned', { count: pets.pets.length, max: pets.max })}
+        </span>
+      </span>
+      <span className={missing > 0 ? 'catalog-card-text locked' : 'catalog-card-text'}>
+        {missing > 0 ? t('pets.adoptCardMissing', { count: missing }) : t('pets.adoptCardReady')}
+      </span>
+    </button>
   );
 }
 
