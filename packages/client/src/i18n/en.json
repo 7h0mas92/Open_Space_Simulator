@@ -708,7 +708,15 @@
       "windowLarge": "Large three-tile window",
       "glassWall": "Floor-to-ceiling glass wall (building glass)",
       "sofa": "Fabric sofa: cushions, rolled arms, wooden legs, throw pillows and a plaid",
-      "bookcase": "Stocked bookcase: individual books, cupboard, baskets, plant, frame and trophy"
+      "bookcase": "Stocked bookcase: individual books, cupboard, baskets, plant, frame and trophy",
+      "snakePlant": "Snake plant in a ceramic pot, yellow-edged blades",
+      "pothos": "Pothos on a wooden stand, with trailing vines",
+      "bonsai": "S-shaped bonsai in a flat dish, on a small stand",
+      "fiddleLeafFig": "Fiddle-leaf fig: thin trunk and large violin-shaped leaves",
+      "kentiaPalm": "Kentia palm: arching fronds covered in leaflets",
+      "oliveTree": "Olive tree with a gnarled trunk, silver foliage and olives",
+      "planterBox": "Wooden slat planter: tall grass, plumes, bushes and flowers",
+      "giantMonstera": "Giant monstera with split leaves, in a woven basket"
     },
     "back": "Back"
   },

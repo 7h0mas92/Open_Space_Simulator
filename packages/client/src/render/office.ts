@@ -90,7 +90,15 @@ export interface TemplatePart {
 }
 
 /** Objets décoratifs masqués quand on dézoome (LOD), en plus des accessoires. */
-const DECOR_KINDS = new Set(['small-plant', 'microwave', 'trashcan', 'noise-headsets']);
+const DECOR_KINDS = new Set([
+  'small-plant',
+  'snake-plant',
+  'pothos',
+  'bonsai',
+  'microwave',
+  'trashcan',
+  'noise-headsets',
+]);
 
 /** Clé d'un gabarit : l'objet et sa couleur (`desk#blue`). */
 function templateKey(kind: string, color: FurnitureColor): string {
