@@ -431,6 +431,12 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Hasard sur une graine à part : une partie sans filiale reste identique (replays, Daily).
   6 cartes « filiales », 4 succès, bot « investor » dans `pnpm balance`
   (`packages/shared/src/sim/ventures.ts`, `client/src/simulation/ventures.ts`).
+- Demandes d'augmentation (`BALANCE.raises`, `client/src/simulation/raises.ts`) : tous les 5 à 10
+  sprints, avec au moins 3 devs, 60 % de chance qu'un dev (plutôt un gros ego) demande +10 à 20 %
+  pendant la planification ; fenêtre de décision qui bloque le lancement du sprint. Accepté :
+  salaire relevé, +20 moral, 2 compétences +1. Refusé : 50 % de démission (départ 2 planifications
+  plus tard, badge dans l'équipe), sinon -15 moral et 2 compétences -1. Commande `ANSWER_RAISE`,
+  hasard sur une graine à part, état `raises` par défaut pour les anciennes sauvegardes.
 - Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
   tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
   `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.
