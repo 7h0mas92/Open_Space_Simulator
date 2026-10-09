@@ -124,6 +124,25 @@ test('glisser-déposer une tâche dans le Kanban', async ({ page }) => {
   ).toBeVisible();
 });
 
+test('Kanban : le bouton « Tout en À faire » vide le backlog', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: /Kanban/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Kanban' });
+  const backlog = sheet.locator('[data-column="BACKLOG"] [data-task-id]');
+  const count = await backlog.count();
+  expect(count).toBeGreaterThan(0);
+  // Chaque carte affiche son métier ; au départ, l'équipe ne fait que du code.
+  await expect(backlog.first().locator('.tag-trade')).toHaveText(/Code/);
+
+  const button = sheet.getByRole('button', { name: `Tout en À faire (${count})` });
+  const box = (await button.boundingBox())!;
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  await button.click();
+  await expect(backlog).toHaveCount(0);
+  await expect(sheet.locator('[data-column="TODO"] [data-task-id]')).toHaveCount(count);
+  await expect(button).toBeHidden();
+});
+
 test('mode construction : le catalogue se replie quand on prend un objet', async ({ page }) => {
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();

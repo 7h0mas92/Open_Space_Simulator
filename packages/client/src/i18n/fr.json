@@ -178,6 +178,11 @@
     "BUGFIX": "Bugfix",
     "INFRA": "Infra"
   },
+  "trades": {
+    "DEV": "Code",
+    "DESIGN": "Design",
+    "PRODUCT": "Produit"
+  },
   "gauges": {
     "treasury": {
       "name": "Trésorerie",
@@ -286,11 +291,16 @@
     "nobody": "Personne",
     "moveLeft": "Déplacer vers {{column}}",
     "moveRight": "Déplacer vers {{column}}",
-    "dragHint": "Glisse une carte entre Backlog et À faire, ou utilise les flèches. Les devs prennent les tâches « À faire » tout seuls.",
+    "dragHint": "Glisse une carte entre Backlog et À faire, ou utilise les flèches. Chacun prend tout seul les tâches « À faire » de son métier.",
     "impact": "Impact",
     "empty": "Rien ici. Profite.",
     "moved": "« {{task}} » déplacée vers {{column}}",
     "hallucinated": "hallucinée",
+    "moveAll": "Tout en À faire ({{count}})",
+    "noTrade": "Personne de ce métier dans l’équipe : confie-la à la main ou recrute.",
+    "otherTrades": "Autres métiers (plus lents)",
+    "movedAll_one": "{{count}} tâche passée dans À faire",
+    "movedAll_other": "{{count}} tâches passées dans À faire",
     "urgent": "Urgent",
     "weekly": "Hebdo",
     "due": "avant {{day}} {{hour}}h",
@@ -1114,7 +1124,7 @@
           },
           "columns": {
             "title": "Les colonnes",
-            "body": "Le tableau a quatre colonnes :\n\n• Backlog : les idées en attente. Personne n'y touche.\n• À faire : le travail prévu pour ce sprint.\n• En cours : ce que les devs font en ce moment.\n• Terminé : ce qui est livré.\n\nTu ne déplaces les tâches qu'entre Backlog et À faire. Les devs font le reste tout seuls."
+            "body": "Le tableau a quatre colonnes :\n\n• Backlog : les idées en attente. Personne n'y touche.\n• À faire : le travail prévu pour ce sprint.\n• En cours : ce que les devs font en ce moment.\n• Terminé : ce qui est livré.\n\nTu ne déplaces les tâches qu'entre Backlog et À faire (le bouton « Tout en À faire » y passe tout le backlog d'un coup). L'équipe fait le reste toute seule.\n\nChaque tâche a un métier : Code, Design (la designeuse) ou Produit (le Product Owner). Le backlog suit les métiers de ton équipe, et chacun ne prend tout seul que les tâches de son métier."
           },
           "types": {
             "title": "Les types de tâches",
@@ -1131,7 +1141,7 @@
           },
           "assign": {
             "title": "Assigner un dev",
-            "body": "Les devs prennent seuls les tâches « À faire ». Tu peux quand même choisir qui fait quoi : un dev de bonne Qualité produit moins de dette sur une feature.\n\nDans la carte de la tâche, choisis un dev dans la liste « Assigné à ».",
+            "body": "Chacun prend seul les tâches « À faire » de son métier. Tu peux quand même choisir qui fait quoi : un dev de bonne Qualité produit moins de dette sur une feature. Une tâche confiée à quelqu'un d'un autre métier avance moins vite.\n\nDans la carte de la tâche, choisis un dev dans la liste « Assigné à ».",
             "do": "Assigne une tâche à un dev."
           },
           "start": {

@@ -19,7 +19,7 @@ import {
 import type { SimContext } from './helpers';
 import { answerRaise } from './raises';
 import { endDemo, startSprint } from './sprint';
-import { assignTask, moveTask } from './tasks';
+import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
 
 const fail = (error: Extract<CommandResult, { ok: false }>['error']): CommandResult => ({
@@ -45,6 +45,8 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return isManaging(state)
         ? moveTask(state, command.taskId, command.column, command.index)
         : fail('WRONG_STAGE');
+    case 'MOVE_ALL_TO_TODO':
+      return isManaging(state) ? moveAllToTodo(state) : fail('WRONG_STAGE');
     case 'ASSIGN_TASK':
       return isManaging(state)
         ? assignTask(state, command.taskId, command.devId)

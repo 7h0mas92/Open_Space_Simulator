@@ -233,20 +233,28 @@ describe('Autres financements', () => {
   });
 
   // Parties complètes et rejouées : plusieurs secondes sur une machine chargée (CI).
-  // Graine choisie pour que le bot prenne bien des financements (3 dans cette partie).
+  // La première graine où le bot manque d'argent et prend des financements : chaque changement
+  // d'équilibrage déplace ces parties, une graine fixe finirait par ne plus en prendre aucun.
   it('une partie avec financements se rejoue à l’identique (replay, anti-triche)', () => {
     const cards = new CardLibrary(EVENT_CARDS);
-    const simulation = Simulation.create({ seed: 'fin-30', mode: 'NORMAL' }, cards);
-    playWithBot(simulation, createBot('financier', 'fin-30'), cards);
-    expect(simulation.commands.some((entry) => entry.command.type === 'TAKE_FINANCING')).toBe(true);
+    let seed = '';
+    let simulation: Simulation | null = null;
+    for (let i = 0; i < 40 && !simulation; i++) {
+      seed = `fin-${i}`;
+      const candidate = Simulation.create({ seed, mode: 'NORMAL' }, cards);
+      playWithBot(candidate, createBot('financier', seed), cards);
+      if (candidate.commands.some((entry) => entry.command.type === 'TAKE_FINANCING'))
+        simulation = candidate;
+    }
+    if (!simulation) throw new Error('Aucune partie du bot « financier » ne prend de financement');
     const replayed = replay({
-      seed: 'fin-30',
+      seed,
       mode: 'NORMAL',
       commands: simulation.commands,
       cards,
     });
     expect(replayed.state).toEqual(simulation.state);
-  }, 20_000);
+  }, 120_000);
 
   it('charge une ancienne sauvegarde sans financements ni nouveaux champs de pitch', () => {
     const state = seriesState(2);

@@ -107,6 +107,8 @@ function createSpecialTask(
   const task: Task = {
     title: templateTitle(template),
     type: template.type,
+    // Urgences et tâches de la semaine : c'est du code (prod, sécurité, dette).
+    trade: 'DEV',
     size: template.size,
     progress: 0,
     work: template.size * BALANCE.work.unitsPerPoint,

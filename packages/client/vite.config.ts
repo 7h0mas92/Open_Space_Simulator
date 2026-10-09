@@ -87,6 +87,8 @@ export default defineConfig({
           name: 'simulation',
           environment: 'node',
           include: ['tests/simulation/**/*.test.ts'],
+          // Plusieurs tests jouent des parties complètes de 39 sprints, puis les rejouent.
+          testTimeout: 20_000,
         },
       },
     ],
