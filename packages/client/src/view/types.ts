@@ -31,6 +31,7 @@ import type {
   SprintReport,
   Speed,
   TaskKind,
+  TaskTrade,
 } from '@oss/shared';
 
 /** Les 8 profils de développeurs du cahier des charges. */
@@ -141,6 +142,8 @@ export interface DevView {
   readonly name: string;
   readonly age: number;
   readonly role: DevRole;
+  /** Métier (code, design, produit) : les tâches qu'il prend tout seul. */
+  readonly trade: TaskTrade;
   /** Trait de personnalité (traduit par i18n : `traits.<trait>`). */
   readonly trait: DevTrait;
   /** Mini-bio drôle, dans les deux langues. */
@@ -182,6 +185,8 @@ export interface TaskView {
   readonly id: string;
   readonly title: LocalizedText;
   readonly type: TaskType;
+  /** Métier : seuls ses membres la prennent d'eux-mêmes (le joueur peut la confier à tous). */
+  readonly trade: TaskTrade;
   /** Taille en points (1, 2, 3, 5, 8). */
   readonly size: number;
   readonly column: KanbanColumn;
@@ -544,6 +549,8 @@ export type GameCommand =
       readonly column: KanbanColumn;
       readonly index: number;
     }
+  /** Bouton « Tout en À faire » : tout le backlog passe dans la colonne À faire. */
+  | { readonly type: 'moveAllToTodo' }
   | { readonly type: 'assignTask'; readonly taskId: string; readonly devId: string | null }
   | { readonly type: 'hire'; readonly candidateId: string; readonly offer: number }
   | { readonly type: 'fire'; readonly devId: string }

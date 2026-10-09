@@ -136,6 +136,8 @@ export const BALANCE = {
     xpPerUnit: 1,
     xpPerLevel: 120,
     autoAssign: true,
+    /** Tâche confiée à la main à quelqu'un d'un autre métier : il avance moins vite. */
+    offTradeMultiplier: 0.6,
   },
   performance: {
     /**

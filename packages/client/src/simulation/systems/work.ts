@@ -1,7 +1,9 @@
 import {
   BALANCE,
   ROLE_PROFILES,
+  ROLE_TRADE,
   TIME,
+  taskTrade,
   type EntityId,
   type GameState,
   type Task,
@@ -69,6 +71,8 @@ export function productivity(
   }
   // Télétravail : moins de collaboration (le Dev Fantôme, lui, a toujours travaillé ainsi).
   if (remote && identity.role !== 'GHOST') rate *= 1 - BALANCE.remote.productivityPenalty;
+  // Hors de son métier (tâche confiée à la main), on tâtonne.
+  if (ROLE_TRADE[identity.role] !== taskTrade(task)) rate *= BALANCE.work.offTradeMultiplier;
   if (identity.trait === 'PERFECTIONIST') rate *= 0.9;
   if (identity.trait === 'COFFEE_ADDICT' && state.gauges.coffee > 50) rate *= 1.1;
   return rate;
