@@ -2,12 +2,15 @@ import {
   FURNITURE_CATALOG,
   INVESTORS,
   ROLE_PROFILES,
+  ROLE_TRADE,
   getPitchArgument,
+  taskTrade,
   type CardEffects,
   type Command,
   type DevRole,
   type EventCard,
   type GameState,
+  type TaskTrade,
   type TaskType,
 } from '@oss/shared';
 import type { CardLibrary } from '../events/library';
@@ -217,16 +220,21 @@ class PlannerBot implements Bot {
     // 4. Mobilier utile.
     if (style.buysFurniture) commands.push(...this.furniture(state));
 
-    // 5. Kanban : on remplit TODO selon la capacité estimée de l'équipe (un 10x ou une IA
-    // abattent plus de travail qu'un dev moyen).
-    const capacity = devIds(state).reduce((total, id) => {
+    // 5. Kanban : on remplit TODO selon la capacité estimée de chaque métier (un 10x ou une
+    // IA abattent plus de travail qu'un dev moyen ; la designeuse ne code pas).
+    const capacity: Record<TaskTrade, number> = { DEV: 0, DESIGN: 0, PRODUCT: 0 };
+    for (const id of devIds(state)) {
       const role = state.components.identity[id]?.role;
-      return total + 9 * (role ? ROLE_PROFILES[role].speedMultiplier : 1);
-    }, 0);
-    let planned = [
+      if (role) capacity[ROLE_TRADE[role]] += 9 * ROLE_PROFILES[role].speedMultiplier;
+    }
+    const planned: Record<TaskTrade, number> = { DEV: 0, DESIGN: 0, PRODUCT: 0 };
+    for (const id of [
       ...tasksInColumn(state as GameState, 'TODO'),
       ...tasksInColumn(state as GameState, 'IN_PROGRESS'),
-    ].reduce((total, id) => total + (state.components.task[id]?.size ?? 0), 0);
+    ]) {
+      const task = state.components.task[id];
+      if (task) planned[taskTrade(task)] += task.size;
+    }
     const backlog = tasksInColumn(state as GameState, 'BACKLOG').sort((a, b) => {
       const ta = state.components.task[a];
       const tb = state.components.task[b];
@@ -234,11 +242,12 @@ class PlannerBot implements Bot {
       return style.priority(tb.type, state) - style.priority(ta.type, state) || ta.size - tb.size;
     });
     for (const id of backlog) {
-      if (planned >= capacity) break;
       const task = state.components.task[id];
       if (!task || style.priority(task.type, state) < 0) continue;
+      const trade = taskTrade(task);
+      if (planned[trade] >= capacity[trade]) continue;
       commands.push({ type: 'MOVE_TASK', taskId: id, column: 'TODO' });
-      planned += task.size;
+      planned[trade] += task.size;
     }
     commands.push({ type: 'START_SPRINT' });
     return commands;

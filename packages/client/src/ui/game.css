@@ -746,6 +746,43 @@ button.danger {
 
 /* --- Kanban --------------------------------------------------------------------------- */
 
+.kanban-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.kanban-toolbar .hint {
+  flex: 1 1 18rem;
+  margin: 0;
+}
+
+.kanban-move-all {
+  flex: 0 0 auto;
+  min-height: var(--touch);
+}
+
+.tag-trade {
+  border: 1px solid var(--border);
+}
+
+.trade-design {
+  border-color: #e37fc0;
+}
+
+.trade-product {
+  border-color: var(--accent);
+}
+
+.task-note {
+  margin: 4px 0 0;
+  color: var(--danger);
+  font-size: 0.75rem;
+}
+
 .kanban-columns {
   display: grid;
   grid-template-columns: repeat(4, minmax(15rem, 1fr));

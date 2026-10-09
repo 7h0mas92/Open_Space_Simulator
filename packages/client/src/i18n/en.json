@@ -178,6 +178,11 @@
     "BUGFIX": "Bugfix",
     "INFRA": "Infra"
   },
+  "trades": {
+    "DEV": "Code",
+    "DESIGN": "Design",
+    "PRODUCT": "Product"
+  },
   "gauges": {
     "treasury": {
       "name": "Cash",
@@ -282,11 +287,16 @@
     "nobody": "Nobody",
     "moveLeft": "Move to {{column}}",
     "moveRight": "Move to {{column}}",
-    "dragHint": "Drag a card between Backlog and To do, or use the arrows. Devs pick up \"To do\" tasks on their own.",
+    "dragHint": "Drag a card between Backlog and To do, or use the arrows. Everyone picks up the \"To do\" tasks of their own job.",
     "impact": "Impact",
     "empty": "Nothing here. Enjoy.",
     "moved": "\"{{task}}\" moved to {{column}}",
-    "hallucinated": "hallucinated"
+    "hallucinated": "hallucinated",
+    "moveAll": "All to To do ({{count}})",
+    "noTrade": "Nobody on the team does this job: assign it by hand or hire.",
+    "otherTrades": "Other jobs (slower)",
+    "movedAll_one": "{{count}} task moved to To do",
+    "movedAll_other": "{{count}} tasks moved to To do"
   },
   "team": {
     "age": "{{age}} y/o",
@@ -974,7 +984,7 @@
           },
           "columns": {
             "title": "The columns",
-            "body": "The board has four columns:\n\n• Backlog: ideas on hold. Nobody touches them.\n• To do: the work planned for this sprint.\n• Doing: what the devs are working on right now.\n• Done: what has shipped.\n\nYou only move tasks between Backlog and To do. The devs do the rest on their own."
+            "body": "The board has four columns:\n\n• Backlog: ideas on hold. Nobody touches them.\n• To do: the work planned for this sprint.\n• Doing: what the devs are working on right now.\n• Done: what has shipped.\n\nYou only move tasks between Backlog and To do (the \"All to To do\" button moves the whole backlog at once). The team does the rest on its own.\n\nEach task has a job: Code, Design (the designer) or Product (the Product Owner). The backlog follows your team's jobs, and everyone only picks up the tasks of their own job."
           },
           "types": {
             "title": "Task types",
@@ -991,7 +1001,7 @@
           },
           "assign": {
             "title": "Assigning a dev",
-            "body": "Devs pick up \"To do\" tasks on their own. You can still choose who does what: a dev with good Quality creates less debt on a feature.\n\nOn the task card, pick a dev in the \"Assigned to\" list.",
+            "body": "Everyone picks up the \"To do\" tasks of their own job. You can still choose who does what: a dev with good Quality creates less debt on a feature. A task given to someone from another job moves slower.\n\nOn the task card, pick a dev in the \"Assigned to\" list.",
             "do": "Assign a task to a dev."
           },
           "start": {

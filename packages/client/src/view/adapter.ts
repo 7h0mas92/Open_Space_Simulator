@@ -10,6 +10,7 @@
 import {
   BALANCE,
   ROLE_PROFILES,
+  ROLE_TRADE,
   TIME,
   VENTURES,
   birthdayFromKey,
@@ -18,6 +19,7 @@ import {
   getVentureIdea,
   seasonsAt,
   getPitchArgument,
+  taskTrade,
   type Command,
   type EventCard,
   type GameState,
@@ -185,6 +187,7 @@ function devView(state: GameState, id: string): DevView | null {
     name: identity.name,
     age: identity.age,
     role: identity.role,
+    trade: ROLE_TRADE[identity.role],
     trait: identity.trait,
     bio: identity.bio,
     stats,
@@ -229,6 +232,7 @@ function taskViews(state: GameState): TaskView[] {
         id,
         title: task.title,
         type,
+        trade: taskTrade(task),
         size: task.size,
         column: COLUMNS[task.column],
         assigneeId: task.assigneeId,
@@ -253,6 +257,7 @@ function candidateViews(state: GameState): CandidateView[] {
         name: candidate.identity.name,
         age: candidate.identity.age,
         role: candidate.identity.role,
+        trade: ROLE_TRADE[candidate.identity.role],
         trait: candidate.identity.trait,
         bio: candidate.identity.bio,
         stats: candidate.stats,
@@ -476,6 +481,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
             index: command.index,
           }
         : null;
+    case 'moveAllToTodo':
+      return { type: 'MOVE_ALL_TO_TODO' };
     case 'assignTask':
       return { type: 'ASSIGN_TASK', taskId: command.taskId, devId: command.devId };
     case 'hire':

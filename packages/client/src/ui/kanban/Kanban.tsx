@@ -1,11 +1,21 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { KANBAN_COLUMNS, type GameView, type KanbanColumn, type TaskView } from '../../view/types';
+import type { TaskTrade } from '@oss/shared';
+import {
+  KANBAN_COLUMNS,
+  type DevView,
+  type GameView,
+  type KanbanColumn,
+  type TaskView,
+} from '../../view/types';
 import { localized } from '../game/format';
 import { useGame } from '../store/game';
 import { PLAYER_COLUMNS, useDragAndDrop, type DropTarget } from './useDragAndDrop';
 
 const IMPACT_KEYS = ['users', 'hype', 'debt', 'stability'] as const;
+
+/** Pictogramme de chaque métier, à côté de son nom sur les cartes. */
+const TRADE_ICONS: Record<TaskTrade, string> = { DEV: '💻', DESIGN: '🎨', PRODUCT: '📋' };
 
 /** Le joueur range les tâches entre Backlog et À faire ; les devs font le reste. */
 function isMovable(column: KanbanColumn): boolean {
@@ -37,6 +47,12 @@ export function Kanban({ view }: { view: GameView }) {
     [dispatch, notify, t, i18n.language],
   );
 
+  const backlogCount = view.tasks.filter((task) => task.column === 'BACKLOG').length;
+  const moveAll = useCallback(async () => {
+    const result = await dispatch({ type: 'moveAllToTodo' });
+    if (result.ok) notify('kanban.movedAll', 'success', { count: backlogCount });
+  }, [dispatch, notify, backlogCount]);
+
   const { drag, handlers } = useDragAndDrop((taskId, target) => {
     const task = view.tasks.find((candidate) => candidate.id === taskId);
     if (task) void move(task, target);
@@ -45,7 +61,14 @@ export function Kanban({ view }: { view: GameView }) {
 
   return (
     <div className="kanban">
-      <p className="hint">{t('kanban.dragHint')}</p>
+      <div className="kanban-toolbar">
+        <p className="hint">{t('kanban.dragHint')}</p>
+        {backlogCount > 0 && (
+          <button type="button" className="kanban-move-all" onClick={() => void moveAll()}>
+            {t('kanban.moveAll', { count: backlogCount })}
+          </button>
+        )}
+      </div>
       <div className="kanban-columns">
         {KANBAN_COLUMNS.map((column, columnIndex) => {
           const tasks = view.tasks.filter((task) => task.column === column);
@@ -124,6 +147,13 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
   const dispatch = useGame((s) => s.dispatch);
   const title = localized(task.title, i18n.language);
   const movable = isMovable(task.column);
+  const sameTrade = view.devs.filter((dev) => dev.trade === task.trade);
+  const otherTrades = view.devs.filter((dev) => dev.trade !== task.trade);
+  const devOption = (dev: DevView) => (
+    <option key={dev.id} value={dev.id}>
+      {dev.name} · {t(`roles.${dev.role}`)}
+    </option>
+  );
   return (
     <article
       className={`task-card task-${task.type.toLowerCase()} ${dragging ? 'dragging' : ''}`}
@@ -150,6 +180,9 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
             )}
           </h4>
           <p className="task-meta">
+            <span className={`tag tag-trade trade-${task.trade.toLowerCase()}`}>
+              <span aria-hidden="true">{TRADE_ICONS[task.trade]}</span> {t(`trades.${task.trade}`)}
+            </span>
             <span className="tag">{t(`taskTypes.${task.type}`)}</span>
             <span>{t('kanban.size', { size: task.size })}</span>
             <span className="impact" aria-label={t('kanban.impact')}>
@@ -163,6 +196,9 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
               ))}
             </span>
           </p>
+          {task.column !== 'DONE' && sameTrade.length === 0 && (
+            <p className="task-note">{t('kanban.noTrade')}</p>
+          )}
         </div>
       </div>
       {task.column === 'DOING' && (
@@ -192,11 +228,10 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
               }
             >
               <option value="">{t('kanban.nobody')}</option>
-              {view.devs.map((dev) => (
-                <option key={dev.id} value={dev.id}>
-                  {dev.name} · {t(`roles.${dev.role}`)}
-                </option>
-              ))}
+              {sameTrade.map(devOption)}
+              {otherTrades.length > 0 && (
+                <optgroup label={t('kanban.otherTrades')}>{otherTrades.map(devOption)}</optgroup>
+              )}
             </select>
           </label>
         )}

@@ -5,9 +5,10 @@ import {
   type DevTrait,
   type EntityId,
   type GameState,
+  type TaskTrade,
 } from '@oss/shared';
 import { clamp, devIds, devsWithRole, type SimContext } from '../helpers';
-import { autoAssign } from '../tasks';
+import { autoAssign, devTrade, hasFreeTask } from '../tasks';
 import type { SimClock } from '../time';
 
 /** Le dev est-il au bureau (ou connecté, pour le Dev Fantôme) à cette heure ? */
@@ -121,21 +122,9 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
   const meeting = hasPO && isMeetingTime(clock);
   if (meeting) state.stats.meetings += 1;
   const { activity: odds } = BALANCE;
-  // Y a-t-il encore des tâches à prendre ? Calculé seulement si un dev est sans tâche,
-  // pour ne pas parcourir le Kanban à chaque tick.
-  let tasksAvailable: boolean | undefined = state.stage === 'EXECUTION' ? undefined : false;
-  const hasFreeTask = (): boolean => {
-    for (const id in state.components.task) {
-      const task = state.components.task[id];
-      if (
-        task &&
-        task.assigneeId === null &&
-        (task.column === 'TODO' || task.column === 'IN_PROGRESS')
-      )
-        return true;
-    }
-    return false;
-  };
+  // Reste-t-il des tâches à prendre, métier par métier ? Calculé seulement si un dev est
+  // sans tâche, pour ne pas parcourir le Kanban à chaque tick.
+  const tasksAvailable = new Map<TaskTrade, boolean>();
 
   // Pause à heure fixe de chaque dev en ce moment (l'IA Agent n'en prend jamais).
   const pauses = new Map<EntityId, NonNullable<ReturnType<typeof scheduledBreak>>>();
@@ -176,9 +165,11 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
       current.kind !== 'WORKING' && current.kind !== 'IDLE' && current.kind !== 'GONE';
     if (onBreak && current.untilTick > state.tick) continue;
 
-    if (!worker.taskId && BALANCE.work.autoAssign && tasksAvailable !== false) {
-      tasksAvailable ??= hasFreeTask();
-      if (tasksAvailable) tasksAvailable = autoAssign(state, id) !== null;
+    if (!worker.taskId && BALANCE.work.autoAssign && state.stage === 'EXECUTION') {
+      const trade = devTrade(state, id);
+      if (tasksAvailable.get(trade) ?? hasFreeTask(state, trade))
+        tasksAvailable.set(trade, autoAssign(state, id) !== null);
+      else tasksAvailable.set(trade, false);
     }
     const work: Activity = worker.taskId && state.stage === 'EXECUTION' ? 'WORKING' : 'IDLE';
 

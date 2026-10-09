@@ -87,3 +87,47 @@ export const TASK_TYPE_WEIGHTS: Record<TaskType, number> = {
   BUGFIX: 2,
   INFRA: 1,
 };
+
+/** Une tâche hors code : son titre [français, anglais] et son type (effet sur les jauges). */
+export interface TradeTaskTemplate {
+  readonly title: readonly [string, string];
+  readonly type: TaskType;
+}
+
+/** Tâches de la designeuse : maquettes (features) et pixels à remettre d'aplomb (bugfix). */
+export const DESIGN_TASKS: readonly TradeTaskTemplate[] = [
+  { title: ['Maquette de la page d’accueil', 'Landing page mockup'], type: 'FEATURE' },
+  { title: ['Refaire le logo (version 14)', 'Redo the logo (version 14)'], type: 'FEATURE' },
+  { title: ['Parcours d’inscription en Figma', 'Sign-up flow in Figma'], type: 'FEATURE' },
+  {
+    title: ['Design system : 48 nuances de gris', 'Design system: 48 shades of grey'],
+    type: 'FEATURE',
+  },
+  { title: ['Illustrations pour les pages vides', 'Empty state illustrations'], type: 'FEATURE' },
+  { title: ['Icônes du mode sombre', 'Dark mode icons'], type: 'FEATURE' },
+  { title: ['Tests utilisateurs avec post-it', 'User testing with sticky notes'], type: 'FEATURE' },
+  { title: ['Le padding est faux de 2 px', 'The padding is off by 2px'], type: 'BUGFIX' },
+  {
+    title: ['Contraste illisible du bouton gris', 'Unreadable grey button contrast'],
+    type: 'BUGFIX',
+  },
+  { title: ['Le menu déborde sur mobile', 'Menu overflows on mobile'], type: 'BUGFIX' },
+  { title: ['Trois polices sur la même page', 'Three fonts on the same page'], type: 'BUGFIX' },
+];
+
+/** Tâches du Product Owner : specs et recherche (features), tri des tickets (bugfix). */
+export const PRODUCT_TASKS: readonly TradeTaskTemplate[] = [
+  { title: ['Rédiger les specs du paiement', 'Write the payment specs'], type: 'FEATURE' },
+  { title: ['Roadmap à 5 ans (en 3 slides)', '5-year roadmap (in 3 slides)'], type: 'FEATURE' },
+  { title: ['Interviewer 10 utilisateurs', 'Interview 10 users'], type: 'FEATURE' },
+  { title: ['Persona « Martine, 42 ans »', 'Persona "Martine, 42"'], type: 'FEATURE' },
+  { title: ['Écrire les user stories', 'Write the user stories'], type: 'FEATURE' },
+  { title: ['Benchmark des concurrents', 'Competitor benchmark'], type: 'FEATURE' },
+  { title: ['Définir les OKR du trimestre', 'Set this quarter’s OKRs'], type: 'FEATURE' },
+  { title: ['Trier les 212 tickets du support', 'Triage the 212 support tickets'], type: 'BUGFIX' },
+  {
+    title: ['Reproduire le bug « ça marche pas »', 'Reproduce the "it doesn’t work" bug'],
+    type: 'BUGFIX',
+  },
+  { title: ['Répondre aux avis 1 étoile', 'Reply to 1-star reviews'], type: 'BUGFIX' },
+];

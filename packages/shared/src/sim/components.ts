@@ -71,6 +71,26 @@ export const TASK_TYPES = ['FEATURE', 'REFACTO', 'BUGFIX', 'INFRA'] as const;
 export const TaskTypeSchema = z.enum(TASK_TYPES);
 export type TaskType = z.infer<typeof TaskTypeSchema>;
 
+/**
+ * Métiers : chaque tâche relève d'un métier, et l'assignation automatique ne la donne
+ * qu'à un membre de l'équipe de ce métier (le joueur peut passer outre à la main).
+ */
+export const TASK_TRADES = ['DEV', 'DESIGN', 'PRODUCT'] as const;
+export const TaskTradeSchema = z.enum(TASK_TRADES);
+export type TaskTrade = z.infer<typeof TaskTradeSchema>;
+
+/** Métier de chaque profil : la designeuse dessine, le PO écrit des specs, les autres codent. */
+export const ROLE_TRADE: Record<DevRole, TaskTrade> = {
+  SENIOR_BEARD: 'DEV',
+  TEN_X: 'DEV',
+  INTERN: 'DEV',
+  RUSTACEAN: 'DEV',
+  DESIGNER: 'DESIGN',
+  PRODUCT_OWNER: 'PRODUCT',
+  AI_AGENT: 'DEV',
+  GHOST: 'DEV',
+};
+
 /** Colonnes du Kanban. Le joueur déplace les tâches entre BACKLOG et TODO. */
 export const TASK_COLUMNS = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'DONE'] as const;
 export const TaskColumnSchema = z.enum(TASK_COLUMNS);
@@ -145,6 +165,8 @@ export type DevLogEntry = z.infer<typeof DevLogEntrySchema>;
 export const TaskSchema = z.object({
   title: LocalizedTextSchema,
   type: TaskTypeSchema,
+  /** Métier de la tâche (absent des sauvegardes d'avant les métiers : c'était du code). */
+  trade: TaskTradeSchema.optional(),
   /** Taille en points (suite de Fibonacci). */
   size: z.number().int().positive(),
   /** Travail accompli et travail nécessaire, en "unités dev-heure". */
@@ -168,6 +190,11 @@ export const TaskSchema = z.object({
   doneAtSprint: z.number().int().nullable(),
 });
 export type Task = z.infer<typeof TaskSchema>;
+
+/** Métier d'une tâche, `DEV` pour les tâches des anciennes sauvegardes. */
+export function taskTrade(task: Pick<Task, 'trade'>): TaskTrade {
+  return task.trade ?? 'DEV';
+}
 
 export const ROTATIONS = [0, 1, 2, 3] as const;
 

@@ -16,6 +16,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
     column: z.enum(['BACKLOG', 'TODO']),
     index: z.number().int().nonnegative().optional(),
   }),
+  /** Bouton « Tout en À faire » : tout le backlog passe dans la colonne TODO, dans l'ordre. */
+  z.object({ type: z.literal('MOVE_ALL_TO_TODO') }),
   /** Affecte une tâche à un dev (ou la libère avec `devId: null`). */
   z.object({
     type: z.literal('ASSIGN_TASK'),
