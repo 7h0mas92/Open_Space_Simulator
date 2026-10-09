@@ -359,6 +359,13 @@ flowchart LR
   formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
   formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
   part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
+- **Variété des tâches** : le Kanban pioche dans plus de 250 tâches en français et en anglais.
+  Le catalogue grandit avec la startup (page de tarifs en Seed, découper le monolithe en Série A,
+  certification SOC 2 en Licorne), et pendant chaque période du calendrier une tâche de code sur
+  trois est de saison (calendrier de l'Avent à Noël, code zombie à Halloween). La designeuse et
+  le Product Owner ont deux fois plus d'idées, et les urgences et tâches de la semaine sont deux
+  fois plus nombreuses. Une tâche n'apparaît jamais deux fois sur le tableau, et les 60 dernières
+  ne reviennent pas tant qu'il en reste de neuves (`client/src/simulation/taskTitles.ts`).
 - **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
   dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
   les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
