@@ -349,6 +349,40 @@ export const BALANCE = {
     /** Ratio au-dessus duquel il accepte toujours. */
     sureRatio: 1.1,
   },
+  /**
+   * Demandes d'augmentation : tous les 5 à 10 sprints, un dev peut venir réclamer plus.
+   * Le hasard passe par une graine à part (`simulation/raises.ts`), jamais par le RNG de la
+   * partie. Accepter coûte du salaire et fait progresser le dev ; refuser le fait démissionner
+   * (il part quelques planifications plus tard) ou baisser de niveau.
+   */
+  raises: {
+    /** Sprints entre deux occasions de demande (tirés entre les deux bornes, incluses). */
+    minIntervalSprints: 5,
+    maxIntervalSprints: 10,
+    /** Probabilité qu'un dev demande vraiment une augmentation à chaque occasion. */
+    chance: 0.6,
+    /** Pas de demande en dessous de cette taille d'équipe. */
+    minTeam: 3,
+    /** Un dev ne demande rien avant d'avoir passé ce nombre de sprints dans l'équipe. */
+    minTenureSprints: 2,
+    /** Augmentation demandée, en part du salaire actuel (fourchette, arrondi à 100 €). */
+    minRaise: 0.1,
+    maxRaise: 0.2,
+    /** Accepté : moral gagné, nombre de compétences améliorées et gain par compétence. */
+    acceptMoral: 20,
+    skillsGained: 2,
+    skillGain: 1,
+    /** Refusé : probabilité de démission (sinon il perd des compétences). */
+    resignChance: 0.5,
+    /** Planifications de sprint avant le départ d'un dev qui a démissionné. */
+    noticeSprints: 2,
+    /** Refusé sans démission : moral perdu, compétences dégradées et perte par compétence. */
+    refuseMoral: -15,
+    skillsLost: 2,
+    skillLoss: 1,
+    /** Moral perdu par le dev qui annonce sa démission. */
+    resignMoral: -25,
+  },
   events: {
     /** Probabilité de tirer une carte à chaque heure ouvrée. */
     drawChancePerWorkHour: 0.03,
@@ -378,7 +412,6 @@ export const BALANCE = {
   },
   fundraising: {
     cooldownSprints: 3,
-    rounds: 3,
     /** Part du capital cédée à chaque levée : 15 % de base, plus si l'investisseur est conquis. */
     baseDilution: 0.15,
     dilutionPerInterest: 0.03,

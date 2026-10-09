@@ -4,14 +4,18 @@ import { useTranslation } from 'react-i18next';
 import type { DevView, GameView } from '../../view/types';
 import { formatBirthday, formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
+import { conflictsOf, CONFLICT_AFFINITY, FRIEND_AFFINITY, filterTeam } from './filters';
 import { GradeBadge, PerformancePanel, SprintProductivity, Strengths } from './Performance';
 import { moodEmoji, StatBars } from './StatBars';
+import { TeamFilterBar } from './TeamFilterBar';
 
 /** Liste de l'équipe, puis fiche détaillée du dev choisi (ou sélectionné dans la scène). */
 export function Team({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const selected = useGame((s) => s.selected);
   const select = useGame((s) => s.select);
+  const filters = useGame((s) => s.teamFilters);
+  const setFilters = useGame((s) => s.setTeamFilters);
   const selectedDev =
     selected?.type === 'dev' ? view.devs.find((dev) => dev.id === selected.id) : undefined;
 
@@ -19,6 +23,7 @@ export function Team({ view }: { view: GameView }) {
   if (view.devs.length === 0) return <p>{t('team.empty')}</p>;
   const remote = view.devs.filter((dev) => dev.remoteReason !== null).length;
   const noDesk = view.devs.some((dev) => dev.remoteReason === 'NO_DESK');
+  const shown = filterTeam(view.devs, filters);
   return (
     <>
       <p className="team-office">
@@ -29,8 +34,17 @@ export function Team({ view }: { view: GameView }) {
         })}
       </p>
       {noDesk && <p className="hint">{t('team.noDeskHint')}</p>}
-      <ul className="team-list">
-        {view.devs.map((dev) => (
+      {view.devs.length > 1 && (
+        <TeamFilterBar
+          team={view.devs}
+          filters={filters}
+          shown={shown.length}
+          onChange={setFilters}
+        />
+      )}
+      {shown.length === 0 && <p className="hint">{t('teamFilters.empty')}</p>}
+      <ul className="team-list" aria-label={t('teamFilters.listLabel')}>
+        {shown.map((dev) => (
           <li key={dev.id}>
             <button
               type="button"
@@ -42,9 +56,17 @@ export function Team({ view }: { view: GameView }) {
               </span>
               <span className="dev-row-main">
                 <strong>{dev.name}</strong>
-                <span>{t(`roles.${dev.role}`)}</span>
+                <span>
+                  {t(`roles.${dev.role}`)}
+                  <ConflictTag dev={dev} team={view.devs} />
+                </span>
               </span>
               <span className="dev-row-activity">
+                {dev.leavingAtSprint !== null && (
+                  <span className="leaving-badge">
+                    {t('team.leavingShort', { sprint: dev.leavingAtSprint })} ·{' '}
+                  </span>
+                )}
                 {dev.remoteReason
                   ? `${t('team.remoteBadge')} · ${t(`remoteShort.${dev.remoteReason}`)}`
                   : t(`activities.${dev.activity}`)}
@@ -62,6 +84,26 @@ export function Team({ view }: { view: GameView }) {
   );
 }
 
+/** « ⚔️ 2 » quand le dev est en conflit avec des collègues, avec leurs noms. */
+function ConflictTag({ dev, team }: { dev: DevView; team: readonly DevView[] }) {
+  const { t } = useTranslation();
+  const conflicts = conflictsOf(dev, team);
+  if (conflicts.length === 0) return null;
+  const label = t('teamFilters.conflictsWith', {
+    count: conflicts.length,
+    names: conflicts.map((other) => other.name).join(', '),
+  });
+  return (
+    <span className="conflict-tag" title={label}>
+      {' · '}
+      <span aria-hidden="true">⚔️ {conflicts.length}</span>
+      <span className="visually-hidden">
+        {t('teamFilters.conflicts', { count: conflicts.length })}
+      </span>
+    </span>
+  );
+}
+
 function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack: () => void }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
@@ -71,8 +113,9 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
   const ranked = colleagues
     .map((other) => ({ other, value: dev.relations[other.id] ?? 0 }))
     .sort((a, b) => b.value - a.value);
-  const bestFriend = ranked[0] && ranked[0].value > 25 ? ranked[0].other : null;
-  const rival = ranked.at(-1) && (ranked.at(-1)?.value ?? 0) < -25 ? ranked.at(-1)?.other : null;
+  const bestFriend = ranked[0] && ranked[0].value > FRIEND_AFFINITY ? ranked[0].other : null;
+  const rival =
+    ranked.at(-1) && (ranked.at(-1)?.value ?? 0) < CONFLICT_AFFINITY ? ranked.at(-1)?.other : null;
 
   return (
     <article className="dev-sheet" aria-labelledby={`dev-${dev.id}`}>
@@ -91,6 +134,11 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
             ? t('team.birthdayToday')
             : t('team.birthday', { date: formatBirthday(dev.birthday, i18n.language) })}
         </p>
+        {dev.leavingAtSprint !== null && (
+          <p className="leaving-badge" role="status">
+            {t('team.leaving', { sprint: dev.leavingAtSprint })}
+          </p>
+        )}
         <p className="bio">{localized(dev.bio, i18n.language)}</p>
         <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
       </header>
@@ -188,7 +236,12 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
           <ul className="relations">
             {colleagues.map((other) => {
               const value = dev.relations[other.id] ?? 0;
-              const kind = value > 25 ? 'friend' : value < -25 ? 'enemy' : 'neutral';
+              const kind =
+                value > FRIEND_AFFINITY
+                  ? 'friend'
+                  : value < CONFLICT_AFFINITY
+                    ? 'enemy'
+                    : 'neutral';
               return (
                 <li key={other.id} className={`relation ${kind}`}>
                   <span>{other.name}</span>

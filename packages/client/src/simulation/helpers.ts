@@ -1,6 +1,8 @@
 import {
+  ANNEXES,
   BALANCE,
   TEAM_MAX,
+  annexCount,
   VENTURES,
   type EntityId,
   type GameState,
@@ -79,10 +81,17 @@ export function teamSize(state: GameState): number {
   return devIds(state).length;
 }
 
-/** Équipe maximale : celle de la phase, plus quelques places par aile des filiales. */
+/**
+ * Équipe maximale : celle de la phase, plus quelques places par aile des filiales et par
+ * annexe ouverte après une levée (Série B et suivantes).
+ */
 export function teamMax(state: GameState): number {
   const wings = Math.min(state.ventures.length, VENTURES.maxFounded);
-  return TEAM_MAX[state.phase] + wings * VENTURES.teamPerWing;
+  return (
+    TEAM_MAX[state.phase] +
+    wings * VENTURES.teamPerWing +
+    annexCount(state.fundingRounds) * ANNEXES.teamPerAnnex
+  );
 }
 
 /** Moral moyen de l'équipe (100 si l'équipe est vide : personne ne se plaint). */

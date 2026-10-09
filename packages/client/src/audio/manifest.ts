@@ -39,5 +39,7 @@ export const NOTIFICATION_SOUNDS: Partial<Record<NotificationKind, SoundKey>> = 
   SEASON_STARTED: 'success',
   ACHIEVEMENT_UNLOCKED: 'levelUp',
   DEV_RESIGNED: 'error',
+  DEV_NOTICE: 'error',
+  RAISE_GRANTED: 'cash',
   HALLUCINATION: 'error',
 };

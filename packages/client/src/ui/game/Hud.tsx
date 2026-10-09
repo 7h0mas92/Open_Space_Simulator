@@ -37,6 +37,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   team: '🧑‍💻',
   hiring: '🤝',
   group: '🏛️',
+  funding: '💼',
   build: '🛠️',
   dashboard: '📈',
   slack: '💬',
@@ -263,6 +264,8 @@ export function SystemButtons() {
 export function StepControls({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
+  const panel = useGame((s) => s.panel);
+  const openPanel = useGame((s) => s.openPanel);
   const { time } = view;
   const setSpeed = (speed: Speed) => void dispatch({ type: 'setSpeed', speed });
   if (view.step === 'PLANNING') {
@@ -279,9 +282,8 @@ export function StepControls({ view }: { view: GameView }) {
         <button
           type="button"
           className="pitch-button"
-          disabled={view.pitchBlocker !== null}
-          title={view.pitchBlocker ? t(`results.${view.pitchBlocker}`) : undefined}
-          onClick={() => void dispatch({ type: 'startPitch' })}
+          aria-pressed={panel === 'funding'}
+          onClick={() => openPanel(panel === 'funding' ? null : 'funding')}
           data-tutorial="pitch"
         >
           <span aria-hidden="true">💼</span>

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EntityIdSchema, FurnitureColorSchema } from './components.js';
+import { FinancingKindSchema } from './funding.js';
 
 /**
  * Commandes typées envoyées par l'interface à la simulation. C'est le SEUL moyen de
@@ -68,12 +69,45 @@ export const CommandSchema = z.discriminatedUnion('type', [
     rotation: z.number().int().min(0).max(3),
   }),
   z.object({ type: z.literal('SELL_FURNITURE'), furnitureId: EntityIdSchema }),
+  /** Range un objet posé dans l'inventaire (avec les accessoires posés dessus). */
+  z.object({ type: z.literal('STORE_FURNITURE'), furnitureId: EntityIdSchema }),
+  /**
+   * Ressort de l'inventaire le premier objet rangé de ce type et de cette couleur (absente :
+   * couleurs d'origine) et le pose au sol (gratuit).
+   */
+  z.object({
+    type: z.literal('PLACE_STORED'),
+    itemId: z.string(),
+    color: FurnitureColorSchema.optional(),
+    x: z.number().int().nonnegative(),
+    y: z.number().int().nonnegative(),
+    rotation: z.number().int().min(0).max(3),
+  }),
+  /** Ressort un accessoire de l'inventaire (même règle) et le pose sur un meuble à plateau. */
+  z.object({
+    type: z.literal('PLACE_STORED_ACCESSORY'),
+    itemId: z.string(),
+    color: FurnitureColorSchema.optional(),
+    hostId: EntityIdSchema,
+    slot: z.number().int().nonnegative().max(15),
+    rotation: z.number().int().min(0).max(3),
+  }),
+  /** Revend un objet rangé de ce type et de cette couleur. */
+  z.object({
+    type: z.literal('SELL_STORED'),
+    itemId: z.string(),
+    color: FurnitureColorSchema.optional(),
+  }),
   z.object({ type: z.literal('START_PITCH') }),
   z.object({ type: z.literal('PITCH_ARGUMENT'), argumentId: z.string() }),
   z.object({ type: z.literal('CLOSE_PITCH') }),
+  /** Financement hors tour de table : business angels, prêt, financement participatif… */
+  z.object({ type: z.literal('TAKE_FINANCING'), kind: FinancingKindSchema }),
   /** Fin de l'écran de démo : passage au sprint suivant. */
   z.object({ type: z.literal('END_DEMO') }),
   z.object({ type: z.literal('ANSWER_ACQUISITION'), accept: z.boolean() }),
+  /** Réponse à la demande d'augmentation d'un dev (pendant la planification). */
+  z.object({ type: z.literal('ANSWER_RAISE'), accept: z.boolean() }),
   z.object({ type: z.literal('LAUNCH_IPO') }),
   /** Crée une filiale à partir d'un des projets proposés pendant la planification. */
   z.object({ type: z.literal('FOUND_VENTURE'), ideaId: z.string() }),
@@ -108,6 +142,9 @@ export const COMMAND_ERRORS = [
   'GAME_OVER',
   'VENTURE_LIMIT',
   'TOO_LATE',
+  'NOT_AVAILABLE',
+  'INVENTORY_FULL',
+  'RAISE_PENDING',
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 

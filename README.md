@@ -264,7 +264,8 @@ flowchart LR
   L'horloge défile minute par minute (environ 5 min réelles par sprint à x1) alors que la
   simulation avance par pas de 30 min : l'affichage interpole entre deux pas.
   Les cartes d'événement gardent les jauges visibles, montrent les effets en pastilles et se
-  choisissent aussi avec les touches 1 à 3.
+  choisissent aussi avec les touches 1 à 3. Tant qu'une carte est ouverte, le sprint est en
+  pause ; la vitesse d'avant reprend après la réponse (sauf en Hardcore, où le temps continue).
 - **Télétravail automatique** : chaque matin de semaine, la simulation envoie en télétravail
   les devs sans bureau libre, épuisés, en conflit avec un collègue ou accros privés de café (le
   Dev Fantôme l'est toujours). Ils disparaissent de l'open space, se fatiguent moins mais
@@ -283,6 +284,10 @@ flowchart LR
   `BALANCE.performance`). La fiche montre les 2 derniers sprints côte à côte, l'ancienneté,
   l'XP, la tâche en cours, l'allié et la bête noire ; chaque candidat affiche sa performance
   estimée, le salaire du marché et ses chances d'accepter l'offre.
+- **Filtres de l'équipe** : la liste se filtre par note de performance, situation (en conflit,
+  fatigué·e, moral bas, télétravail, au bureau) et métier, filtres cumulables, et se trie par
+  performance, moral, énergie, conflits, salaire, ancienneté ou nom. Chaque ligne indique
+  le nombre de collègues en conflit (⚔️).
 - **Interface** : jauges avec infobulles, vitesses, Kanban en glisser-déposer (souris et
   tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
   construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
@@ -303,6 +308,28 @@ flowchart LR
   avec son enseigne et deux places dans l'équipe, et six cartes « filiales » peuvent tomber.
   Le hasard des filiales est tiré sur une graine à part (graine + filiale + sprint) : une partie
   sans filiale reste identique au bit près, donc les anciens replays et le Daily restent valides.
+- **Levées de fonds** : le bouton « Lever des fonds » ouvre un panneau avec le prochain tour de
+  table et sa difficulté. Chaque tour est plus dur (Seed, Série A, B, C, D puis pré-IPO) :
+  plus de questions (3 à 5) et de réponses proposées (3 à 4), une barre plus haute, des
+  bluffs démasqués plus souvent, des arguments qui demandent de vrais chiffres, de gros fonds
+  (souverain, crossover) et, dès la Série B, un investisseur qui peut quitter la salle. À chaque
+  manche il pose une question (traction, technique, équipe, vision, buzzword) : une réponse hors
+  sujet fait baisser son intérêt, affiché avec ses réactions. Quatre autres financements, sans
+  hasard : business angels (6 % du capital), prêt bancaire (remboursé sur 12 mois), financement
+  participatif (+hype, +dette) et subvention à l'innovation (-moral). Questions et bluffs sont
+  tirés sur une graine à part (graine + pitch + sprint) (`shared/sim/pitch.ts`,
+  `shared/sim/funding.ts`, commande `TAKE_FINANCING`, état `financing`).
+- **Annexes du bureau** : dès la Série B, chaque tour réussi ouvre une annexe sur toute la
+  largeur du bureau (salle d'arcade, jardin intérieur, auditorium) avec son décor fixe et deux
+  places de plus dans l'équipe. Les sols des autres pièces changent d'une partie à l'autre
+  (parquet, damier, terre cuite, moquette…), selon la graine (`view/layout.ts`,
+  `render/annexDecor.ts`).
+- **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
+  dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
+  les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
+  démissionner une fois sur deux (il part deux planifications plus tard, badge « 🚪 » dans
+  l'équipe), sinon il reste démotivé et perd deux compétences. Réglages dans `BALANCE.raises` ;
+  le hasard est tiré sur une graine à part, sans toucher au tirage du jeu.
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une
@@ -314,11 +341,17 @@ flowchart LR
   d'autres (l'aperçu saute sur la place libre la plus proche) jusqu'à « Annuler » ou
   « Terminer », ou jusqu'au maximum ou à la trésorerie épuisée. Le rayon Accessoires (lampe,
   mug, canard en plastique, succulente, livres, nounours, radio, deuxième écran, enceinte,
-  trophée, grille-pain, blender) se pose sur les meubles à plateau (bureaux, bibliothèque,
-  baie de serveurs, frigo, table de cantine), suit son meuble quand on le déplace et part
-  avec lui à la revente. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
+  trophée, grille-pain, blender, casque antibruit, mini-cactus) se pose sur les meubles à
+  plateau (3 emplacements par bureau, bibliothèque, baie de serveurs, frigo, table de cantine),
+  suit son meuble quand on le déplace et part avec lui à la revente. Le casque antibruit posé
+  sur un bureau protège un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
+- **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
+  revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
+  les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
+  compte dans le maximum de la boutique (commandes `STORE_FURNITURE`, `PLACE_STORED`,
+  `PLACE_STORED_ACCESSORY`, `SELL_STORED`, état `inventory`).
 
 ### Méta-jeu et anti-triche
 
@@ -418,8 +451,9 @@ bouton 🛠 du menu principal.
 
 ## Équilibrage
 
-`pnpm balance` joue 10 000 parties avec cinq stratégies automatiques (aléatoire, « ship it »,
-équilibrée, prudente, investisseuse qui crée des filiales) et produit un rapport : taux de faillite (global et par phase),
+`pnpm balance` joue 10 000 parties avec six stratégies automatiques (aléatoire, « ship it »,
+équilibrée, prudente, investisseuse qui crée des filiales, financière qui use des
+financements hors tour de table) et produit un rapport : taux de faillite (global et par phase),
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
@@ -486,7 +520,9 @@ génère que des messages Slack.
 - Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
   sieste-pod, standing desk, casques antibruit et leur portant, baie de serveurs, cafetière à
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
-  de ramen, mug, canard en plastique, trophée de hackathon, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
+  de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
+  mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
+  pupitre et écran de projection des annexes, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
   ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
   lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs

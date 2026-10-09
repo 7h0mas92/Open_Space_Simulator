@@ -1,5 +1,6 @@
 import {
   ACHIEVEMENTS,
+  ANNEXES,
   OUTCOMES,
   type AchievementDifficulty,
   PHASES,
@@ -100,6 +101,8 @@ export interface GameRecord {
   choices: [string, number][];
   /** Filiales : créées, coulées, argent rapporté (dividendes et reventes), parts en fin de partie. */
   ventures: { founded: number; dead: number; cashIn: number; invested: number; portfolio: number };
+  /** Levées : pitchs tentés, tours de table réussis, autres financements obtenus. */
+  funding?: { pitches: number; rounds: number; financings: number };
   /** Succès débloqués pendant la partie. */
   achievements: string[];
   trace: GaugeTrace;
@@ -148,6 +151,11 @@ export function playBalanceGame(
       invested: state.ventures.reduce((total, v) => total + v.invested, 0),
       portfolio: portfolioValue(state),
     },
+    funding: {
+      pitches: simulation.commands.filter((c) => c.command.type === 'START_PITCH').length,
+      rounds: state.fundingRounds,
+      financings: simulation.commands.filter((c) => c.command.type === 'TAKE_FINANCING').length,
+    },
     achievements: [...state.achievements],
     trace: traceGauges(state),
     flow: {
@@ -183,6 +191,11 @@ export interface BotSummary {
   unicornRate: number;
   /** Filiales créées par partie, part coulée, et retour sur investissement (argent + parts). */
   ventures: { perGame: number; deadShare: number; returnMultiple: number };
+  /**
+   * Levées : tours réussis par partie, part des pitchs réussis, parties qui ont ouvert au
+   * moins une annexe (Série B), autres financements par partie.
+   */
+  funding: { rounds: number; successRate: number; annexShare: number; financings: number };
 }
 
 export interface ChoiceStat {
@@ -325,6 +338,28 @@ function summarizeBot(bot: BotName, records: GameRecord[]): BotSummary {
     averageSprints: records.reduce((a, r) => a + r.sprint, 0) / n,
     unicornRate: records.filter((r) => r.phaseReached === 'UNICORN').length / n,
     ventures: summarizeVentures(records),
+    funding: summarizeFunding(records),
+  };
+}
+
+function summarizeFunding(records: GameRecord[]): BotSummary['funding'] {
+  const n = Math.max(1, records.length);
+  let pitches = 0;
+  let rounds = 0;
+  let financings = 0;
+  let annexes = 0;
+  for (const { funding } of records) {
+    if (!funding) continue;
+    pitches += funding.pitches;
+    rounds += funding.rounds;
+    financings += funding.financings;
+    if (funding.rounds > ANNEXES.firstRound) annexes += 1;
+  }
+  return {
+    rounds: rounds / n,
+    successRate: rounds / Math.max(1, pitches),
+    annexShare: annexes / n,
+    financings: financings / n,
   };
 }
 
@@ -567,6 +602,18 @@ export function renderReport(report: BalanceReport): string {
         `| ${b.bot} | ${b.ventures.perGame.toFixed(2)} | ${pct(b.ventures.deadShare)} | ×${b.ventures.returnMultiple.toFixed(2)} |`,
       );
     }
+  }
+  lines.push('', '## Levées de fonds', '');
+  lines.push(
+    'Chaque tour de table est plus dur que le précédent ; à partir de la Série B, il ouvre une annexe au bureau.',
+    '',
+    '| Bot | Tours réussis par partie | Pitchs réussis | Parties avec annexe | Autres financements par partie |',
+    '| --- | ---: | ---: | ---: | ---: |',
+  );
+  for (const b of report.bots) {
+    lines.push(
+      `| ${b.bot} | ${b.funding.rounds.toFixed(2)} | ${pct(b.funding.successRate)} | ${pct(b.funding.annexShare)} | ${b.funding.financings.toFixed(2)} |`,
+    );
   }
   if (report.flow.bots.length > 0) {
     lines.push('', '## Tâches dynamiques', '');

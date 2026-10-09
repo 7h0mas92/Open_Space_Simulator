@@ -14,12 +14,15 @@ import type {
   CalendarDate,
   DecorTheme,
   DevTrait,
+  FinancingBlocker,
+  FinancingKind,
   FurnitureColor,
   GameMode,
   GameResult,
   LocalizedText,
   NotificationKind,
   Phase,
+  PitchCategory,
   PitchResult,
   VentureRisk,
   VentureStatus,
@@ -164,6 +167,8 @@ export interface DevView {
   readonly performance: PerformanceView;
   /** Ancienneté, expérience, tâches (null pour un candidat). */
   readonly career: CareerView | null;
+  /** A démissionné après un refus d'augmentation : sprint de son départ, sinon null. */
+  readonly leavingAtSprint: number | null;
 }
 
 export const TASK_TYPES = ['FEATURE', 'REFACTOR', 'BUGFIX', 'INFRA'] as const;
@@ -232,6 +237,18 @@ export interface PlacedItemView {
   readonly host: ItemHost | null;
 }
 
+/**
+ * Pile d'objets rangés dans l'inventaire (la réserve du mode construction) : même type et même
+ * couleur, dans l'ordre où ils ont été rangés pour la première fois.
+ */
+export interface StoredItemView {
+  readonly kind: string;
+  readonly color: FurnitureColor;
+  readonly count: number;
+  /** Somme remboursée à la revente du premier exemplaire de la pile. */
+  readonly resale: number;
+}
+
 /** Emplacement d'un accessoire sur le plateau d'un meuble. */
 export interface ItemHost {
   readonly id: string;
@@ -273,13 +290,74 @@ export interface EventView {
   }[];
 }
 
+/** Argument proposé (ou déjà avancé) pendant un pitch. */
+export interface PitchArgumentView {
+  readonly id: string;
+  readonly label: LocalizedText;
+  readonly category: PitchCategory;
+  /** Bluff : rapporte gros s'il passe, coûte cher s'il est démasqué. */
+  readonly bluff: boolean;
+}
+
+/** Réponse déjà donnée, avec la réaction de l'investisseur. */
+export interface PitchAnswerView extends PitchArgumentView {
+  readonly reaction: 'good' | 'neutral' | 'bad';
+  /** La réponse ne correspondait pas à la question posée. */
+  readonly offTopic: boolean;
+  readonly bluffCaught: boolean;
+}
+
 export interface PitchView {
   readonly investor: { readonly name: LocalizedText; readonly intro: LocalizedText };
+  /** Nom du tour de table (Seed, Série A, Série B…) et sa difficulté (0 = le plus simple). */
+  readonly roundName: LocalizedText;
+  readonly tier: number;
+  readonly tiers: number;
+  /** Manche en cours (à partir de 0) et nombre de manches. */
   readonly round: number;
   readonly rounds: number;
-  readonly options: readonly { readonly id: string; readonly label: LocalizedText }[];
-  readonly chosen: readonly LocalizedText[];
+  /** Question de l'investisseur à cette manche. */
+  readonly question: { readonly text: LocalizedText; readonly category: PitchCategory } | null;
+  readonly options: readonly PitchArgumentView[];
+  readonly chosen: readonly PitchAnswerView[];
+  /** Intérêt de l'investisseur (0 à 1) : sa probabilité actuelle de signer. */
+  readonly interest: number;
+  /** L'investisseur est parti avant la fin. */
+  readonly walkedOut: boolean;
   readonly result: PitchResult | null;
+}
+
+/** Offre de financement hors tour de table (business angels, prêt, crowdfunding, subvention). */
+export interface FinancingOfferView {
+  readonly kind: FinancingKind;
+  readonly amount: number;
+  readonly blocker: FinancingBlocker | null;
+  readonly nextSprint: number | null;
+  readonly dilution: number;
+  readonly monthly: number;
+  readonly months: number;
+}
+
+/** Tout ce qui concerne l'argent levé : prochain tour, autres financements, prêt, annexes. */
+export interface FundingView {
+  /** Prochain tour de table (pitch) : nom, difficulté et nombre de questions. */
+  readonly nextRound: {
+    readonly name: LocalizedText;
+    readonly tier: number;
+    readonly manches: number;
+    readonly options: number;
+  };
+  readonly tiers: number;
+  /** Sprint à partir duquel on pourra repitcher (cooldown), sinon null. */
+  readonly nextPitchSprint: number | null;
+  readonly offers: readonly FinancingOfferView[];
+  readonly loan: { readonly remaining: number; readonly monthly: number } | null;
+  /** Tours de table réussis et total levé (tours, business angels, crowdfunding). */
+  readonly rounds: number;
+  readonly totalRaised: number;
+  /** Annexes du bureau ouvertes par les tours de table (à partir de la Série B). */
+  readonly annexes: number;
+  readonly maxAnnexes: number;
 }
 
 /** Projet de filiale proposé pendant la planification. */
@@ -311,6 +389,21 @@ export interface VentureView {
   readonly soldFor: number | null;
   readonly foundedAtSprint: number;
   readonly history: readonly number[];
+}
+
+/** Demande d'augmentation d'un dev : la planification attend la réponse du joueur. */
+export interface RaiseRequestView {
+  readonly devId: string;
+  readonly currentSalary: number;
+  readonly requestedSalary: number;
+  /** Accepté : moral gagné et nombre de compétences qui progressent. */
+  readonly acceptMoral: number;
+  readonly skillsGained: number;
+  /** Refusé : probabilité de démission (0 à 1), sinon compétences perdues. */
+  readonly resignChance: number;
+  readonly skillsLost: number;
+  /** Planifications avant le départ d'un dev qui démissionne. */
+  readonly noticeSprints: number;
 }
 
 /** Le groupe : filiales, projets du sprint, et ce qui empêche d'en créer. */
@@ -366,6 +459,8 @@ export interface GameView {
   readonly tasks: readonly TaskView[];
   readonly candidates: readonly CandidateView[];
   readonly items: readonly PlacedItemView[];
+  /** Inventaire : objets rangés, sans effet tant qu'ils ne sont pas reposés. */
+  readonly inventory: readonly StoredItemView[];
   /** Vrai pendant un incident de production (fumée, écran rouge). */
   readonly incident: boolean;
   /** Taille maximale de l'équipe à cette phase. */
@@ -386,7 +481,11 @@ export interface GameView {
   readonly pitch: PitchView | null;
   /** Peut-on lancer une levée de fonds maintenant ? Sinon, la raison. */
   readonly pitchBlocker: 'WRONG_STAGE' | 'NO_HYPE' | 'COOLDOWN' | null;
+  /** Levées de fonds : tours de table, autres financements, annexes du bureau. */
+  readonly funding: FundingView;
   readonly acquisitionOffer: AcquisitionOffer | null;
+  /** Demande d'augmentation en attente (pendant la planification), sinon null. */
+  readonly raiseRequest: RaiseRequestView | null;
   /** Filiales (débloquées en Série A). */
   readonly group: GroupView;
   readonly canIpo: boolean;
@@ -442,13 +541,32 @@ export type GameCommand =
     }
   | { readonly type: 'rotateItem'; readonly itemId: string }
   | { readonly type: 'sellItem'; readonly itemId: string }
+  | { readonly type: 'storeItem'; readonly itemId: string }
+  | {
+      readonly type: 'placeStored';
+      readonly kind: string;
+      readonly color: FurnitureColor;
+      readonly x: number;
+      readonly z: number;
+      readonly rotation: Rotation;
+    }
+  | {
+      readonly type: 'placeStoredAccessory';
+      readonly kind: string;
+      readonly color: FurnitureColor;
+      readonly host: ItemHost;
+      readonly rotation: Rotation;
+    }
+  | { readonly type: 'sellStored'; readonly kind: string; readonly color: FurnitureColor }
   | { readonly type: 'startSprint' }
   | { readonly type: 'resolveEvent'; readonly choiceIndex: number }
   | { readonly type: 'startPitch' }
   | { readonly type: 'pitchArgument'; readonly argumentId: string }
   | { readonly type: 'closePitch' }
+  | { readonly type: 'takeFinancing'; readonly kind: FinancingKind }
   | { readonly type: 'endDemo' }
   | { readonly type: 'answerAcquisition'; readonly accept: boolean }
+  | { readonly type: 'answerRaise'; readonly accept: boolean }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string };

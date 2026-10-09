@@ -4,11 +4,14 @@ import { LocalizedTextSchema } from '../i18n.js';
 import {
   ComponentStoresSchema,
   EntityIdSchema,
+  FurnitureColorSchema,
   IdentitySchema,
   StatsSchema,
 } from './components.js';
 import { CommandLogSchema } from './commands.js';
-import { InvestorArchetypeSchema } from './pitch.js';
+import { FinancingStateSchema } from './funding.js';
+import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
+import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
 
@@ -90,6 +93,28 @@ export const PitchStateSchema = z.object({
   options: z.array(z.string()),
   chosen: z.array(z.string()),
   result: PitchResultSchema.nullable(),
+  /** Tour de table (0 = Seed, 1 = Série A…), voir `FUNDING_TIERS`. */
+  tier: z.number().int().min(0).default(0),
+  /** Nombre de manches de ce pitch. */
+  manches: z.number().int().min(1).default(3),
+  /** Question posée à cette manche : la catégorie de réponse attendue. */
+  question: z
+    .object({ category: PitchCategorySchema, index: z.number().int().min(0) })
+    .nullable()
+    .default(null),
+  /** Effet de chaque réponse sur l'intérêt, pour les réactions de l'investisseur. */
+  log: z
+    .array(
+      z.object({
+        argumentId: z.string(),
+        delta: z.number(),
+        onTopic: z.boolean(),
+        bluffCaught: z.boolean(),
+      }),
+    )
+    .default([]),
+  /** L'investisseur a quitté la salle avant la fin. */
+  walkedOut: z.boolean().default(false),
 });
 export type PitchState = z.infer<typeof PitchStateSchema>;
 
@@ -99,6 +124,20 @@ export const AcquisitionOfferSchema = z.object({
   expiresAtSprint: z.number().int(),
 });
 export type AcquisitionOffer = z.infer<typeof AcquisitionOfferSchema>;
+
+/**
+ * Objet rangé dans l'inventaire (la réserve) : retiré de l'open space sans être revendu. Il ne
+ * donne plus aucun effet mais compte toujours dans le maximum d'exemplaires de la boutique.
+ */
+export const StoredItemSchema = z.object({
+  itemId: z.string(),
+  purchasePrice: z.number().nonnegative(),
+  color: FurnitureColorSchema.optional(),
+});
+export type StoredItem = z.infer<typeof StoredItemSchema>;
+
+/** Taille maximale de l'inventaire (bien au-delà de ce qu'un bureau peut contenir). */
+export const INVENTORY_MAX = 200;
 
 export const HistoryPointSchema = z.object({
   day: z.number().int(),
@@ -203,6 +242,12 @@ export const NOTIFICATION_KINDS = [
   'OFFER_REFUSED',
   'DEV_FIRED',
   'DEV_RESIGNED',
+  /** Un dev demande une augmentation (fenêtre de décision pendant la planification). */
+  'RAISE_REQUESTED',
+  'RAISE_GRANTED',
+  'RAISE_REFUSED',
+  /** Démission annoncée : le dev part quelques planifications plus tard. */
+  'DEV_NOTICE',
   'DEV_LEVEL_UP',
   'DEV_BIRTHDAY',
   'DEV_REMOTE',
@@ -291,6 +336,12 @@ export const GameStateSchema = z.object({
   lastVentureSprint: z.number().int().nullable().default(null),
   /** Objectif du sprint en cours (certains sprints seulement). */
   objective: SprintObjectiveSchema.nullable().default(null),
+  /** Financements hors tour de table (prêt en cours, cooldowns). */
+  financing: FinancingStateSchema.default({ lastSprint: {}, loan: null }),
+  /** Inventaire : objets rangés, du plus ancien au plus récent (absent des vieilles sauvegardes). */
+  inventory: z.array(StoredItemSchema).max(INVENTORY_MAX).default([]),
+  /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */
+  raises: RaisesStateSchema.default(emptyRaisesState),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

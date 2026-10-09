@@ -20,6 +20,7 @@ export const URGENT_TRIGGERS: ReadonlySet<SlackTrigger> = new Set<SlackTrigger>(
   'FUNDS_RAISED',
   'PITCH_FAILED',
   'DEV_RESIGNED',
+  'DEV_NOTICE',
   'DEV_FIRED',
   'PHASE_UP',
   'GAME_OVER',
