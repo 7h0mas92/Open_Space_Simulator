@@ -327,6 +327,41 @@
     "bestFriend": "Best ally: {{name}}",
     "rival": "Nemesis: {{name}}"
   },
+  "teamFilters": {
+    "sortLabel": "Sort by",
+    "toggle": "Filters",
+    "performance": "Performance",
+    "situation": "Status",
+    "role": "Role",
+    "allRoles": "All roles",
+    "hint": "Filters add up: only devs matching every criterion stay listed.",
+    "result_one": "{{count}} of {{total}} devs",
+    "result_other": "{{count}} of {{total}} devs",
+    "reset": "Show all",
+    "empty": "No dev matches these filters.",
+    "conflictsWith_one": "In conflict with {{names}}",
+    "conflictsWith_other": "In conflict with {{count}} colleagues: {{names}}",
+    "conflicts_one": "{{count}} conflict",
+    "conflicts_other": "{{count}} conflicts",
+    "flags": {
+      "CONFLICT": "In conflict",
+      "TIRED": "Tired",
+      "LOW_MORALE": "Low morale",
+      "REMOTE": "Remote",
+      "OFFICE": "At the office"
+    },
+    "sorts": {
+      "PERF_DESC": "Best performance",
+      "PERF_ASC": "Worst performance",
+      "MORALE_ASC": "Lowest morale",
+      "ENERGY_ASC": "Lowest energy",
+      "CONFLICTS_DESC": "Most conflicts",
+      "SALARY_DESC": "Highest salary",
+      "SENIORITY_DESC": "Seniority",
+      "NAME": "Name"
+    },
+    "listLabel": "Team members"
+  },
   "remoteReasons": {
     "GHOST": "Always remote, they are a ghost",
     "FATIGUE": "Exhausted, recovering at home",

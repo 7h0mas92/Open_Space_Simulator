@@ -327,6 +327,41 @@
     "bestFriend": "Meilleur·e allié·e : {{name}}",
     "rival": "Bête noire : {{name}}"
   },
+  "teamFilters": {
+    "sortLabel": "Trier par",
+    "toggle": "Filtres",
+    "performance": "Performance",
+    "situation": "Situation",
+    "role": "Métier",
+    "allRoles": "Tous les métiers",
+    "hint": "Les filtres se cumulent : seuls les devs qui remplissent tous les critères restent affichés.",
+    "result_one": "{{count}} dev sur {{total}}",
+    "result_other": "{{count}} devs sur {{total}}",
+    "reset": "Tout afficher",
+    "empty": "Aucun dev ne correspond à ces filtres.",
+    "conflictsWith_one": "En conflit avec {{names}}",
+    "conflictsWith_other": "En conflit avec {{count}} collègues : {{names}}",
+    "conflicts_one": "{{count}} conflit",
+    "conflicts_other": "{{count}} conflits",
+    "flags": {
+      "CONFLICT": "En conflit",
+      "TIRED": "Fatigué·e",
+      "LOW_MORALE": "Moral bas",
+      "REMOTE": "Télétravail",
+      "OFFICE": "Au bureau"
+    },
+    "sorts": {
+      "PERF_DESC": "Meilleure performance",
+      "PERF_ASC": "Moins bonne performance",
+      "MORALE_ASC": "Moral le plus bas",
+      "ENERGY_ASC": "Énergie la plus basse",
+      "CONFLICTS_DESC": "Plus de conflits",
+      "SALARY_DESC": "Salaire le plus haut",
+      "SENIORITY_DESC": "Ancienneté",
+      "NAME": "Nom"
+    },
+    "listLabel": "Membres de l'équipe"
+  },
   "remoteReasons": {
     "GHOST": "Toujours à distance, c’est un fantôme",
     "FATIGUE": "Épuisé·e, récupère chez soi",
