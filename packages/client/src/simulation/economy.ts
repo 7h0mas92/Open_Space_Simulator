@@ -13,13 +13,31 @@ export function monthlyPayroll(state: GameState): number {
   return total;
 }
 
-/** Dépenses mensuelles totales : salaires, frais par dev, frais fixes, serveurs. */
+/** Mensualité du prêt bancaire en cours (0 sans prêt). */
+export function loanPayment(state: GameState): number {
+  const loan = state.financing.loan;
+  return loan ? Math.min(loan.monthly, loan.remaining) : 0;
+}
+
+/**
+ * Rembourse le prêt pour `days` jours écoulés : la mensualité est comptée dans
+ * `monthlyExpenses`, on retire ici ce qui a été payé du reste dû.
+ */
+export function repayLoan(state: GameState, days: number): void {
+  const loan = state.financing.loan;
+  if (!loan) return;
+  loan.remaining = Math.max(0, loan.remaining - (loan.monthly * days) / 30);
+  if (loan.remaining < 1) state.financing.loan = null;
+}
+
+/** Dépenses mensuelles totales : salaires, frais par dev, frais fixes, serveurs, prêt. */
 export function monthlyExpenses(state: GameState): number {
   return (
     monthlyPayroll(state) +
     teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
     BALANCE.economy.fixedCostsMonthly[state.phase] +
-    state.gauges.users * BALANCE.economy.serverCostPerUserMonthly
+    state.gauges.users * BALANCE.economy.serverCostPerUserMonthly +
+    loanPayment(state)
   );
 }
 

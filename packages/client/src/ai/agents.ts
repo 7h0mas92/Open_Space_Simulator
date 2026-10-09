@@ -9,7 +9,14 @@
  * instantanés de jeu ⇒ mêmes positions. Il ne modifie jamais l'état du jeu.
  */
 import { catalogItem } from '../view/catalog';
-import { officeLayout, roomAt, type Cell, type OfficeLayout, type RoomKind } from '../view/layout';
+import {
+  layoutOf,
+  officeLayout,
+  roomAt,
+  type Cell,
+  type OfficeLayout,
+  type RoomKind,
+} from '../view/layout';
 import {
   isFridayFive,
   type DevActivity,
@@ -56,7 +63,7 @@ const BREAKS: readonly DevActivity[] = ['COFFEE', 'BREAK', 'LUNCH', 'BABYFOOT'];
 /** Le soir et le télétravail ne se font pas attendre. */
 const isImmediate = (activity: DevActivity) => activity === 'LEAVING' || activity === 'REMOTE';
 /** Pièces où l'on flâne en pause, et où l'on déjeune. */
-const BREAK_ROOMS: readonly RoomKind[] = ['kitchen', 'canteen', 'lounge'];
+const BREAK_ROOMS: readonly RoomKind[] = ['kitchen', 'canteen', 'lounge', 'arcade', 'garden'];
 const LUNCH_ROOMS: readonly RoomKind[] = ['kitchen', 'canteen'];
 
 export const AGENT_POSES = [
@@ -294,10 +301,10 @@ export class AgentWorld {
     this.fridayFive = isFridayFive(view.time);
     this.devs = new Map(view.devs.map((dev) => [dev.id, dev]));
 
-    const key = `${view.phase}|${view.group.wings}|${view.items.map((i) => `${i.id}:${i.x}:${i.z}:${i.rotation}`).join(',')}|${this.decorKey}`;
+    const key = `${view.phase}|${view.group.wings}|${view.funding.annexes}|${view.items.map((i) => `${i.id}:${i.x}:${i.z}:${i.rotation}`).join(',')}|${this.decorKey}`;
     if (key !== this.gridKey) {
       this.gridKey = key;
-      this.layout = officeLayout(view.phase, view.group.wings);
+      this.layout = layoutOf(view);
       this.grid = buildNavGrid(this.layout, view.items);
       for (const cell of this.decorBlocked) this.grid.block(cell.x, cell.z);
       this.indexPointsOfInterest(view.items);

@@ -378,7 +378,6 @@ export const BALANCE = {
   },
   fundraising: {
     cooldownSprints: 3,
-    rounds: 3,
     /** Part du capital cédée à chaque levée : 15 % de base, plus si l'investisseur est conquis. */
     baseDilution: 0.15,
     dilutionPerInterest: 0.03,

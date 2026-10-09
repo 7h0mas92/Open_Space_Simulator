@@ -22,7 +22,7 @@ import { metaApi } from '../../api/meta';
 import i18n from '../../i18n';
 import type { PickTarget } from '../../render/GameRenderer';
 import { catalogItem } from '../../view/catalog';
-import { officeLayout, type Cell } from '../../view/layout';
+import { layoutOf, type Cell } from '../../view/layout';
 import { checkPlacement, nearestValidCell, resolveAccessory } from '../../view/placement';
 import { localized } from '../game/format';
 import type { GameSource } from '../../view/source';
@@ -42,6 +42,7 @@ export const PANELS = [
   'team',
   'hiring',
   'group',
+  'funding',
   'dashboard',
   'slack',
   'saves',
@@ -392,7 +393,7 @@ export const useGame = create<GameStore>((set, get) => ({
     const def = catalogItem(build.kind);
     if (!def) return false;
     // Cloisons et entrée sont des contraintes du décor : vérifiées avant d'envoyer.
-    const layout = officeLayout(view.phase, view.group.wings);
+    const layout = layoutOf(view);
     const request = {
       kind: build.kind,
       x: cell.x,

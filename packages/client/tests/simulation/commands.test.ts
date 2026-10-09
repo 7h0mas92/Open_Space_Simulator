@@ -346,8 +346,7 @@ describe('Levée de fonds', () => {
     const cap = maxRaise(state);
     const ctx = makeContext(state, { rng: new FixedRng(0.01) });
     expect(startPitch(state, ctx).ok).toBe(true);
-    for (let round = 0; round < BALANCE.fundraising.rounds; round++)
-      pitchArgument(state, ctx, state.pitch!.options[0]!);
+    while (state.pitch && !state.pitch.result) pitchArgument(state, ctx, state.pitch.options[0]!);
     const result = state.pitch!.result!;
     expect(result.success).toBe(true);
     expect(result.amount).toBe(cap);
@@ -367,7 +366,8 @@ describe('Levée de fonds', () => {
       ok: false,
       error: 'INVALID_CHOICE',
     });
-    for (let round = 0; round < BALANCE.fundraising.rounds; round++) {
+    expect(state.pitch!.manches).toBe(3);
+    for (let round = 0; round < 3; round++) {
       expect(pitchArgument(state, ctx, state.pitch!.options[0]!).ok).toBe(true);
     }
     const result = state.pitch!.result!;
@@ -392,8 +392,7 @@ describe('Levée de fonds', () => {
     state.gauges.hype = 20;
     state.gauges.debt = 100;
     startPitch(state, ctx);
-    for (let round = 0; round < BALANCE.fundraising.rounds; round++)
-      pitchArgument(state, ctx, state.pitch!.options[0]!);
+    while (state.pitch && !state.pitch.result) pitchArgument(state, ctx, state.pitch.options[0]!);
     expect(state.pitch?.result?.success).toBe(false);
     expect(ctx.outbox.some((n) => n.kind === 'PITCH_FAILED')).toBe(true);
   });
@@ -404,8 +403,7 @@ describe('Levée de fonds', () => {
     state.gauges.hype = 80;
     const ctx = makeContext(state, { rng: new FixedRng(0.01) });
     startPitch(state, ctx);
-    for (let round = 0; round < BALANCE.fundraising.rounds; round++)
-      pitchArgument(state, ctx, state.pitch!.options[0]!);
+    while (state.pitch && !state.pitch.result) pitchArgument(state, ctx, state.pitch.options[0]!);
     expect(state.phase).toBe('SERIES_A');
   });
 });

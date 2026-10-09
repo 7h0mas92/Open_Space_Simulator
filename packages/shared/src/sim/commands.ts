@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EntityIdSchema, FurnitureColorSchema } from './components.js';
+import { FinancingKindSchema } from './funding.js';
 
 /**
  * Commandes typées envoyées par l'interface à la simulation. C'est le SEUL moyen de
@@ -71,6 +72,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('START_PITCH') }),
   z.object({ type: z.literal('PITCH_ARGUMENT'), argumentId: z.string() }),
   z.object({ type: z.literal('CLOSE_PITCH') }),
+  /** Financement hors tour de table : business angels, prêt, financement participatif… */
+  z.object({ type: z.literal('TAKE_FINANCING'), kind: FinancingKindSchema }),
   /** Fin de l'écran de démo : passage au sprint suivant. */
   z.object({ type: z.literal('END_DEMO') }),
   z.object({ type: z.literal('ANSWER_ACQUISITION'), accept: z.boolean() }),
@@ -108,6 +111,7 @@ export const COMMAND_ERRORS = [
   'GAME_OVER',
   'VENTURE_LIMIT',
   'TOO_LATE',
+  'NOT_AVAILABLE',
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 

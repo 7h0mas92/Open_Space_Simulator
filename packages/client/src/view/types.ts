@@ -14,12 +14,15 @@ import type {
   CalendarDate,
   DecorTheme,
   DevTrait,
+  FinancingBlocker,
+  FinancingKind,
   FurnitureColor,
   GameMode,
   GameResult,
   LocalizedText,
   NotificationKind,
   Phase,
+  PitchCategory,
   PitchResult,
   VentureRisk,
   VentureStatus,
@@ -254,13 +257,74 @@ export interface EventView {
   }[];
 }
 
+/** Argument proposé (ou déjà avancé) pendant un pitch. */
+export interface PitchArgumentView {
+  readonly id: string;
+  readonly label: LocalizedText;
+  readonly category: PitchCategory;
+  /** Bluff : rapporte gros s'il passe, coûte cher s'il est démasqué. */
+  readonly bluff: boolean;
+}
+
+/** Réponse déjà donnée, avec la réaction de l'investisseur. */
+export interface PitchAnswerView extends PitchArgumentView {
+  readonly reaction: 'good' | 'neutral' | 'bad';
+  /** La réponse ne correspondait pas à la question posée. */
+  readonly offTopic: boolean;
+  readonly bluffCaught: boolean;
+}
+
 export interface PitchView {
   readonly investor: { readonly name: LocalizedText; readonly intro: LocalizedText };
+  /** Nom du tour de table (Seed, Série A, Série B…) et sa difficulté (0 = le plus simple). */
+  readonly roundName: LocalizedText;
+  readonly tier: number;
+  readonly tiers: number;
+  /** Manche en cours (à partir de 0) et nombre de manches. */
   readonly round: number;
   readonly rounds: number;
-  readonly options: readonly { readonly id: string; readonly label: LocalizedText }[];
-  readonly chosen: readonly LocalizedText[];
+  /** Question de l'investisseur à cette manche. */
+  readonly question: { readonly text: LocalizedText; readonly category: PitchCategory } | null;
+  readonly options: readonly PitchArgumentView[];
+  readonly chosen: readonly PitchAnswerView[];
+  /** Intérêt de l'investisseur (0 à 1) : sa probabilité actuelle de signer. */
+  readonly interest: number;
+  /** L'investisseur est parti avant la fin. */
+  readonly walkedOut: boolean;
   readonly result: PitchResult | null;
+}
+
+/** Offre de financement hors tour de table (business angels, prêt, crowdfunding, subvention). */
+export interface FinancingOfferView {
+  readonly kind: FinancingKind;
+  readonly amount: number;
+  readonly blocker: FinancingBlocker | null;
+  readonly nextSprint: number | null;
+  readonly dilution: number;
+  readonly monthly: number;
+  readonly months: number;
+}
+
+/** Tout ce qui concerne l'argent levé : prochain tour, autres financements, prêt, annexes. */
+export interface FundingView {
+  /** Prochain tour de table (pitch) : nom, difficulté et nombre de questions. */
+  readonly nextRound: {
+    readonly name: LocalizedText;
+    readonly tier: number;
+    readonly manches: number;
+    readonly options: number;
+  };
+  readonly tiers: number;
+  /** Sprint à partir duquel on pourra repitcher (cooldown), sinon null. */
+  readonly nextPitchSprint: number | null;
+  readonly offers: readonly FinancingOfferView[];
+  readonly loan: { readonly remaining: number; readonly monthly: number } | null;
+  /** Tours de table réussis et total levé (tours, business angels, crowdfunding). */
+  readonly rounds: number;
+  readonly totalRaised: number;
+  /** Annexes du bureau ouvertes par les tours de table (à partir de la Série B). */
+  readonly annexes: number;
+  readonly maxAnnexes: number;
 }
 
 /** Projet de filiale proposé pendant la planification. */
@@ -365,6 +429,8 @@ export interface GameView {
   readonly pitch: PitchView | null;
   /** Peut-on lancer une levée de fonds maintenant ? Sinon, la raison. */
   readonly pitchBlocker: 'WRONG_STAGE' | 'NO_HYPE' | 'COOLDOWN' | null;
+  /** Levées de fonds : tours de table, autres financements, annexes du bureau. */
+  readonly funding: FundingView;
   readonly acquisitionOffer: AcquisitionOffer | null;
   /** Filiales (débloquées en Série A). */
   readonly group: GroupView;
@@ -426,6 +492,7 @@ export type GameCommand =
   | { readonly type: 'startPitch' }
   | { readonly type: 'pitchArgument'; readonly argumentId: string }
   | { readonly type: 'closePitch' }
+  | { readonly type: 'takeFinancing'; readonly kind: FinancingKind }
   | { readonly type: 'endDemo' }
   | { readonly type: 'answerAcquisition'; readonly accept: boolean }
   | { readonly type: 'launchIpo' }

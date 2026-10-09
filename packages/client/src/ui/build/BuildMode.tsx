@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
-import { officeLayout } from '../../view/layout';
+import { layoutOf } from '../../view/layout';
 import { checkPlacement } from '../../view/placement';
 import type { GameView } from '../../view/types';
 import { formatGauge, formatMoney, localized } from '../game/format';
@@ -91,7 +91,7 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
 
   const cell = build.cell ?? null;
   const error = cell
-    ? checkPlacement(officeLayout(view.phase, view.group.wings), view.items, {
+    ? checkPlacement(layoutOf(view), view.items, {
         kind: def.kind,
         x: cell.x,
         z: cell.z,

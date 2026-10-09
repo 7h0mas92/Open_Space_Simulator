@@ -483,8 +483,12 @@ describe('Étapes du sprint', () => {
   it('joue le mini-jeu de levée de fonds jusqu’à la décision', async () => {
     await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Lever des fonds/ }));
+    // Le panneau présente le prochain tour de table (Seed) et les autres financements.
+    expect(screen.getByText(/Prochain tour de table : Seed/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Pitcher' }));
     for (let round = 0; round < 3; round++) {
       const pitch = screen.getByRole('dialog', { name: 'Levée de fonds' });
+      expect(within(pitch).getByText(`Question ${round + 1} sur 3`)).toBeInTheDocument();
       const options = within(pitch).getAllByRole('button');
       await userEvent.click(options[0]!);
     }
@@ -496,7 +500,9 @@ describe('Étapes du sprint', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Retour au bureau' }));
     expect(useGame.getState().view!.step).toBe('PLANNING');
     // Une seule levée tous les 3 sprints.
-    expect(screen.getByRole('button', { name: /Lever des fonds/ })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: /Lever des fonds/ }));
+    expect(screen.getByRole('button', { name: 'Pitcher' })).toBeDisabled();
+    expect(screen.getByText(/prochain pitch au sprint 4/)).toBeInTheDocument();
   });
 
   it('annonce la faillite et revient au menu', async () => {

@@ -158,20 +158,56 @@ function EventCardScreen({ event }: { event: EventView }) {
   );
 }
 
+/** Pastilles de difficulté d'un tour de table (●●●○○○). */
+export function DifficultyDots({ tier, tiers }: { tier: number; tiers: number }) {
+  const { t } = useTranslation();
+  return (
+    <span
+      className="difficulty"
+      role="img"
+      aria-label={t('pitch.difficulty', { level: tier + 1, total: tiers })}
+    >
+      {Array.from({ length: tiers }, (_, index) => (
+        <span key={index} className={index <= tier ? 'on' : 'off'} aria-hidden="true" />
+      ))}
+    </span>
+  );
+}
+
+const REACTION_ICONS = { good: '👍', neutral: '😐', bad: '👎' } as const;
+
 function PitchScreen({ pitch }: { pitch: PitchView }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
   const name = localized(pitch.investor.name, i18n.language);
   const result = pitch.result;
+  const round = localized(pitch.roundName, i18n.language);
   return (
     <Dialog title={t('pitch.title')} className="pitch-screen">
-      <p className="eyebrow">{t('pitch.title')}</p>
+      <p className="eyebrow pitch-eyebrow">
+        <span>{t('pitch.roundTitle', { round })}</span>
+        <DifficultyDots tier={pitch.tier} tiers={pitch.tiers} />
+      </p>
       <h2>{name}</h2>
       <blockquote>{localized(pitch.investor.intro, i18n.language)}</blockquote>
+      <div className="pitch-interest">
+        <span>{t('pitch.interest')}</span>
+        <meter min={0} max={1} low={0.35} high={0.65} optimum={1} value={pitch.interest} />
+        <strong>{Math.round(pitch.interest * 100)} %</strong>
+      </div>
       {pitch.chosen.length > 0 && (
         <ol className="pitch-chosen">
-          {pitch.chosen.map((argument, index) => (
-            <li key={index}>{localized(argument, i18n.language)}</li>
+          {pitch.chosen.map((answer, index) => (
+            <li key={index} className={`reaction-${answer.reaction}`}>
+              <span aria-label={t(`pitch.reactions.${answer.reaction}`)} role="img">
+                {REACTION_ICONS[answer.reaction]}
+              </span>{' '}
+              {localized(answer.label, i18n.language)}
+              {answer.offTopic && <span className="tag tag-warning">{t('pitch.offTopic')}</span>}
+              {answer.bluffCaught && (
+                <span className="tag tag-warning">{t('pitch.bluffCaught')}</span>
+              )}
+            </li>
           ))}
         </ol>
       )}
@@ -183,7 +219,9 @@ function PitchScreen({ pitch }: { pitch: PitchView }) {
                   amount: formatMoney(result.amount, i18n.language),
                   share: Math.round(result.dilution * 1000) / 10,
                 })
-              : t('pitch.failure')}
+              : pitch.walkedOut
+                ? t('pitch.walkedOut')
+                : t('pitch.failure')}
           </p>
           <button
             type="button"
@@ -195,16 +233,36 @@ function PitchScreen({ pitch }: { pitch: PitchView }) {
         </>
       ) : (
         <>
-          <p>{t('pitch.round', { round: pitch.round + 1, total: pitch.rounds })}</p>
+          <p className="pitch-round">
+            {t('pitch.round', { round: pitch.round + 1, total: pitch.rounds })}
+          </p>
+          {pitch.question && (
+            <p className="pitch-question">
+              <span className={`tag category-${pitch.question.category}`}>
+                {t(`pitch.categories.${pitch.question.category}`)}
+              </span>
+              {localized(pitch.question.text, i18n.language)}
+            </p>
+          )}
           <ul className="choices">
             {pitch.options.map((option) => (
               <li key={option.id}>
                 <button
                   type="button"
-                  className="choice"
+                  className={`choice${option.bluff ? ' choice-bluff' : ''}`}
                   onClick={() => void dispatch({ type: 'pitchArgument', argumentId: option.id })}
                 >
-                  {localized(option.label, i18n.language)}
+                  <span className="choice-body">
+                    <strong>{localized(option.label, i18n.language)}</strong>
+                    <span className="choice-tags">
+                      <span className={`tag category-${option.category}`}>
+                        {t(`pitch.categories.${option.category}`)}
+                      </span>
+                      {option.bluff && (
+                        <span className="tag tag-warning">⚠ {t('pitch.bluffTag')}</span>
+                      )}
+                    </span>
+                  </span>
                 </button>
               </li>
             ))}

@@ -8,8 +8,14 @@
  * Ce sont des fonctions pures : aucun accès au DOM, à Three.js ni au Web Worker.
  */
 import {
+  ANNEXES,
   BALANCE,
+  FUNDING_TIERS,
+  PITCH_QUESTIONS,
   ROLE_PROFILES,
+  annexCount,
+  fundingTier,
+  fundingTierIndex,
   TIME,
   VENTURES,
   birthdayFromKey,
@@ -22,6 +28,7 @@ import {
   type EventCard,
   type GameState,
   type Identity,
+  type PitchState,
   type Speed,
   type SprintPerformance,
   type Stats,
@@ -29,6 +36,9 @@ import {
 } from '@oss/shared';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
+import { financingOffers } from '../simulation/financing';
+import { currentTier } from '../simulation/fundraising';
+import { softSigmoid } from '../simulation/math';
 import { countDesks, RESALE_RATIO } from '../simulation/furniture';
 import { devIds, teamMax } from '../simulation/helpers';
 import {
@@ -55,9 +65,13 @@ import type {
   DevActivity,
   DevView,
   PerformanceView,
+  PitchAnswerView,
+  PitchArgumentView,
+  PitchView,
   SprintPerformanceView,
   EventView,
   GameCommand,
+  FundingView,
   GroupView,
   GameView,
   GaugeName,
@@ -320,6 +334,79 @@ function pitchBlocker(state: GameState): GameView['pitchBlocker'] {
   return null;
 }
 
+/** Argument du pitch tel que l'interface l'affiche. */
+function pitchArgumentView(id: string): PitchArgumentView | null {
+  const argument = getPitchArgument(id);
+  return argument
+    ? { id, label: argument.label, category: argument.category, bluff: argument.bluff ?? false }
+    : null;
+}
+
+/** Réaction de l'investisseur à une réponse, d'après son effet sur l'intérêt. */
+function reaction(delta: number): PitchAnswerView['reaction'] {
+  return delta >= 0.5 ? 'good' : delta <= -0.3 ? 'bad' : 'neutral';
+}
+
+function pitchView(state: GameState, pitch: PitchState): PitchView {
+  const investor = getInvestor(pitch.investor);
+  const tier = currentTier(state);
+  const question = pitch.question
+    ? PITCH_QUESTIONS.filter((q) => q.category === pitch.question?.category)[pitch.question.index]
+    : undefined;
+  return {
+    investor: { name: investor.name, intro: investor.intro },
+    roundName: tier.name,
+    tier: pitch.tier,
+    tiers: FUNDING_TIERS.length,
+    round: pitch.round,
+    rounds: pitch.manches,
+    question: question ? { text: question.text, category: question.category } : null,
+    options: pitch.options.flatMap((id) => pitchArgumentView(id) ?? []),
+    chosen: pitch.chosen.flatMap((id, index) => {
+      const argument = pitchArgumentView(id);
+      const entry = pitch.log[index];
+      if (!argument) return [];
+      return [
+        {
+          ...argument,
+          reaction: entry ? reaction(entry.delta) : 'neutral',
+          offTopic: entry ? !entry.onTopic : false,
+          bluffCaught: entry?.bluffCaught ?? false,
+        },
+      ];
+    }),
+    interest: Math.round(softSigmoid(pitch.interest - tier.bar) * 100) / 100,
+    walkedOut: pitch.walkedOut,
+    result: pitch.result,
+  };
+}
+
+/** Levées de fonds : prochain tour de table, autres financements, prêt et annexes. */
+function fundingView(state: GameState): FundingView {
+  const next = fundingTier(state.fundingRounds);
+  const loan = state.financing.loan;
+  return {
+    nextRound: {
+      name: next.name,
+      tier: fundingTierIndex(state.fundingRounds),
+      manches: next.manches,
+      options: next.options,
+    },
+    tiers: FUNDING_TIERS.length,
+    nextPitchSprint:
+      state.lastPitchSprint !== null &&
+      state.sprint - state.lastPitchSprint < BALANCE.fundraising.cooldownSprints
+        ? state.lastPitchSprint + BALANCE.fundraising.cooldownSprints
+        : null,
+    offers: financingOffers(state),
+    loan: loan ? { remaining: Math.round(loan.remaining), monthly: loan.monthly } : null,
+    rounds: state.fundingRounds,
+    totalRaised: state.totalRaised,
+    annexes: annexCount(state.fundingRounds),
+    maxAnnexes: ANNEXES.max,
+  };
+}
+
 /** Les filiales du groupe et les projets du sprint. */
 function groupView(state: GameState): GroupView {
   const blocker = ventureBlocker(state);
@@ -378,7 +465,6 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
   const lastIncident = state.notifications.findLast((n) => n.kind === 'PROD_DOWN');
   const runway = runwayMonths(state);
   const pitch = state.pitch;
-  const investor = pitch ? getInvestor(pitch.investor) : null;
   return {
     seed: state.seed,
     mode: state.mode,
@@ -428,24 +514,9 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     ownership: state.ownership,
     event: eventView(state, context),
     lastReport: state.history.sprints.at(-1) ?? null,
-    pitch:
-      pitch && investor
-        ? {
-            investor: { name: investor.name, intro: investor.intro },
-            round: pitch.round,
-            rounds: BALANCE.fundraising.rounds,
-            options: pitch.options.flatMap((id) => {
-              const argument = getPitchArgument(id);
-              return argument ? [{ id, label: argument.label }] : [];
-            }),
-            chosen: pitch.chosen.flatMap((id) => {
-              const argument = getPitchArgument(id);
-              return argument ? [argument.label] : [];
-            }),
-            result: pitch.result,
-          }
-        : null,
+    pitch: pitch ? pitchView(state, pitch) : null,
     pitchBlocker: pitchBlocker(state),
+    funding: fundingView(state),
     acquisitionOffer: state.acquisitionOffer,
     group: groupView(state),
     canIpo:
@@ -551,6 +622,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'PITCH_ARGUMENT', argumentId: command.argumentId };
     case 'closePitch':
       return { type: 'CLOSE_PITCH' };
+    case 'takeFinancing':
+      return { type: 'TAKE_FINANCING', kind: command.kind };
     case 'endDemo':
       return { type: 'END_DEMO' };
     case 'answerAcquisition':

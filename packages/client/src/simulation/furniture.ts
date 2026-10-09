@@ -1,6 +1,8 @@
 import {
   OFFICE_SIZE,
   officeWidthWithWings,
+  officeDepthWithAnnexes,
+  annexCount,
   PHASES,
   getFurniture,
   type CommandResult,
@@ -48,8 +50,9 @@ export function canPlace(
 ): boolean {
   const office = OFFICE_SIZE[state.phase];
   const width = officeWidthWithWings(office.width, state.ventures.length);
+  const depth = officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds));
   const area = footprint(item, x, y, rotation);
-  if (area.x + area.width > width || area.y + area.depth > office.depth) return false;
+  if (area.x + area.width > width || area.y + area.depth > depth) return false;
   for (const id of query(state, 'furniture')) {
     if (id === ignoreId) continue;
     const placed = state.components.furniture[id];

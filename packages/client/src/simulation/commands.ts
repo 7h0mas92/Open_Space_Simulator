@@ -2,6 +2,7 @@ import { BALANCE, type Command, type CommandResult, type GameState } from '@oss/
 import { resolveEvent } from '../events/resolve';
 import { fireDev, makeOffer } from './devs';
 import { endGame } from './endings';
+import { takeFinancing } from './financing';
 import { closePitch, pitchArgument, startPitch } from './fundraising';
 import {
   buyAccessory,
@@ -95,6 +96,8 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return pitchArgument(state, ctx, command.argumentId);
     case 'CLOSE_PITCH':
       return closePitch(state);
+    case 'TAKE_FINANCING':
+      return takeFinancing(state, ctx, command.kind);
     case 'END_DEMO':
       return endDemo(state, ctx);
     case 'ANSWER_ACQUISITION': {
