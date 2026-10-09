@@ -76,6 +76,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   /** Fin de l'écran de démo : passage au sprint suivant. */
   z.object({ type: z.literal('END_DEMO') }),
   z.object({ type: z.literal('ANSWER_ACQUISITION'), accept: z.boolean() }),
+  /** Réponse à la demande d'augmentation d'un dev (pendant la planification). */
+  z.object({ type: z.literal('ANSWER_RAISE'), accept: z.boolean() }),
   z.object({ type: z.literal('LAUNCH_IPO') }),
   /** Crée une filiale à partir d'un des projets proposés pendant la planification. */
   z.object({ type: z.literal('FOUND_VENTURE'), ideaId: z.string() }),
@@ -110,6 +112,7 @@ export const COMMAND_ERRORS = [
   'GAME_OVER',
   'VENTURE_LIMIT',
   'TOO_LATE',
+  'RAISE_PENDING',
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 

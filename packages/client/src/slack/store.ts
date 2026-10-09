@@ -29,6 +29,8 @@ const AI_KINDS = new Set([
   'FUNDS_RAISED',
   'PITCH_FAILED',
   'DEV_RESIGNED',
+  'DEV_NOTICE',
+  'RAISE_GRANTED',
   'DEV_FIRED',
   'DEV_HIRED',
   'PHASE_UP',

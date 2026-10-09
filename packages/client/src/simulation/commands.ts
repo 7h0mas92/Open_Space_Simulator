@@ -12,6 +12,7 @@ import {
   sellFurniture,
 } from './furniture';
 import type { SimContext } from './helpers';
+import { answerRaise } from './raises';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
@@ -107,6 +108,8 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       else state.acquisitionOffer = null;
       return { ok: true };
     }
+    case 'ANSWER_RAISE':
+      return answerRaise(state, ctx, command.accept);
     case 'LAUNCH_IPO':
       if (state.stage !== 'PLANNING' && state.stage !== 'DEMO') return fail('WRONG_STAGE');
       if (state.phase !== 'UNICORN' || state.gauges.stability < BALANCE.phases.ipoMinStability) {
