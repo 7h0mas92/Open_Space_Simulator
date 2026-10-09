@@ -26,6 +26,27 @@ describe('formes de remplacement', () => {
     const character = fallbackCharacter(0xff0000);
     expect(character.getObjectByName('head')).toBeDefined();
   });
+
+  it('dessine le canapé et la bibliothèque détaillés en peu de maillages, à la bonne taille', () => {
+    for (const id of ['sofa', 'bookcase'] as const) {
+      const group = buildPrimitive(id);
+      // Une centaine de pièces (coussins, livres…), fusionnées en un maillage par matériau.
+      expect(group.children.length, id).toBeLessThanOrEqual(16);
+      const size = new THREE.Box3().setFromObject(group).getSize(new THREE.Vector3());
+      expect(size.x, id).toBeLessThanOrEqual(2);
+      expect(size.z, id).toBeLessThanOrEqual(1);
+    }
+    // Les accessoires se posent sur le dessus de la bibliothèque, à 1,58.
+    const bookcase = new THREE.Box3().setFromObject(buildPrimitive('bookcase'));
+    expect(bookcase.max.y).toBeCloseTo(1.58, 2);
+    // Le canapé se repeint : ses tissus portent les noms listés dans le catalogue.
+    const names = new Set<string>();
+    buildPrimitive('sofa').traverse((child) => {
+      if (child instanceof THREE.Mesh) names.add((child.material as THREE.Material).name);
+    });
+    expect(names).toContain('fabric');
+    expect(names).toContain('fabricDark');
+  });
 });
 
 describe('décor', () => {
