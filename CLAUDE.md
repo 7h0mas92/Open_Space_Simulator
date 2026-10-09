@@ -427,6 +427,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Hasard sur une graine à part : une partie sans filiale reste identique (replays, Daily).
   6 cartes « filiales », 4 succès, bot « investor » dans `pnpm balance`
   (`packages/shared/src/sim/ventures.ts`, `client/src/simulation/ventures.ts`).
+- Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
+  tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
+  `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
