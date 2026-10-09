@@ -317,13 +317,53 @@ describe('Construction', () => {
     await userEvent.click(screen.getByTestId('place'));
     const duck = useGame.getState().view!.items.find((i) => i.kind === 'rubber-duck');
     expect(duck?.host).toMatchObject({ id: desk.id });
-    // Toujours en main : le deuxième canard prend l'autre emplacement du bureau.
-    act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
-    await userEvent.click(screen.getByTestId('place'));
+    // Toujours en main : les canards suivants prennent les autres emplacements du bureau.
+    for (let i = 0; i < 2; i++) {
+      act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
+      await userEvent.click(screen.getByTestId('place'));
+    }
     const ducks = useGame.getState().view!.items.filter((i) => i.kind === 'rubber-duck');
-    expect(new Set(ducks.map((d) => d.host?.slot))).toEqual(new Set([0, 1]));
+    expect(new Set(ducks.map((d) => d.host?.slot))).toEqual(new Set([0, 1, 2]));
     act(() => useGame.getState().setBuildCell({ x: desk.x, z: desk.z }));
     expect(screen.getByTestId('placement-bar')).toHaveTextContent('Plus de place sur ce meuble');
+  });
+
+  it('range un meuble dans l’inventaire puis le repose gratuitement', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    const plant = useGame.getState().view!.items.find((i) => i.kind === 'small-plant')!;
+    const cash = useGame.getState().view!.gauges.treasury;
+    act(() => useGame.getState().select({ type: 'item', id: plant.id }));
+    await userEvent.click(screen.getByTestId('store-item'));
+    expect(screen.getByText('Cactus en pot : rangé dans l’inventaire.')).toBeInTheDocument();
+    expect(useGame.getState().view!.items.some((i) => i.id === plant.id)).toBe(false);
+    expect(screen.getByTestId('inventory-count')).toHaveTextContent('1');
+
+    await userEvent.click(screen.getByTestId('catalog-tab-inventory'));
+    expect(screen.getByTestId('inventory')).toHaveTextContent('1 en stock');
+    await userEvent.click(screen.getByTestId('stored-small-plant'));
+    expect(useGame.getState().build).toMatchObject({ kind: 'small-plant', fromStock: true });
+    expect(screen.getByTestId('stock-count')).toHaveTextContent('Gratuit');
+    const cell = freeCell('small-plant');
+    act(() => useGame.getState().setBuildCell(cell));
+    await userEvent.click(screen.getByTestId('place'));
+    const view = useGame.getState().view!;
+    expect(view.items.some((i) => i.kind === 'small-plant' && i.x === cell.x)).toBe(true);
+    expect(view.inventory).toEqual([]);
+    expect(view.gauges.treasury).toBe(cash);
+    // Plus rien en stock : retour à l'inventaire, désormais vide.
+    expect(useGame.getState().build).toMatchObject({ kind: null });
+    expect(screen.getByTestId('inventory')).toHaveTextContent('L’inventaire est vide');
+  });
+
+  it('revend un objet depuis l’inventaire', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    const plant = useGame.getState().view!.items.find((i) => i.kind === 'small-plant')!;
+    await act(() => useGame.getState().dispatch({ type: 'storeItem', itemId: plant.id }));
+    await userEvent.click(screen.getByTestId('catalog-tab-inventory'));
+    await userEvent.click(screen.getByTestId('sell-stored-small-plant'));
+    expect(useGame.getState().view!.inventory).toEqual([]);
   });
 
   it('refuse une case occupée et explique pourquoi', async () => {

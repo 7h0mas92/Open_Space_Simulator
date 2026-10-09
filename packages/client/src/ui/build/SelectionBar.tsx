@@ -9,7 +9,7 @@ import { ColorPicker } from './ColorPicker';
 
 /**
  * Barre contextuelle au-dessus de la barre d'actions (ou du catalogue en construction) :
- * - objet sélectionné : tourner, déplacer, revendre ;
+ * - objet sélectionné : tourner, peindre, déplacer, ranger dans l'inventaire, revendre ;
  * - dev sélectionné : aperçu et accès à sa fiche.
  */
 export function SelectionBar({ view }: { view: GameView }) {
@@ -19,6 +19,7 @@ export function SelectionBar({ view }: { view: GameView }) {
   const select = useGame((s) => s.select);
   const dispatch = useGame((s) => s.dispatch);
   const openPanel = useGame((s) => s.openPanel);
+  const notify = useGame((s) => s.notify);
 
   const itemName = (kind: string) => {
     const def = catalogItem(kind);
@@ -57,6 +58,23 @@ export function SelectionBar({ view }: { view: GameView }) {
         )}
         <button type="button" onClick={() => startMove(item.id)}>
           ✥ {t('build.move')}
+        </button>
+        <button
+          type="button"
+          data-testid="store-item"
+          onClick={() => {
+            const carried = view.items.filter((i) => i.host?.id === item.id).length;
+            void dispatch({ type: 'storeItem', itemId: item.id }).then((result) => {
+              if (!result.ok) return;
+              select(null);
+              notify(carried > 0 ? 'build.storedWith' : 'build.stored', 'success', {
+                item: itemName(item.kind),
+                count: carried,
+              });
+            });
+          }}
+        >
+          📦 {t('build.store')}
         </button>
         <button
           type="button"

@@ -91,7 +91,7 @@ export const FURNITURE_CATALOG = [
     minPhase: 'GARAGE',
     maxCount: 40,
     effects: { seatProductivity: 0.04, seats: 1 },
-    surfaceSlots: 2,
+    surfaceSlots: 3,
   },
   {
     id: 'ikea-desk',
@@ -106,7 +106,7 @@ export const FURNITURE_CATALOG = [
     minPhase: 'GARAGE',
     maxCount: 40,
     effects: { seatProductivity: 0.02, seats: 1 },
-    surfaceSlots: 2,
+    surfaceSlots: 3,
   },
   {
     id: 'ergonomic-chair',
@@ -163,7 +163,7 @@ export const FURNITURE_CATALOG = [
   },
   {
     id: 'small-plant',
-    name: t('Cactus de bureau', 'Desk cactus'),
+    name: t('Cactus en pot', 'Potted cactus'),
     description: t(
       'Absorbe les ondes négatives, paraît-il. Très léger +moral.',
       'Absorbs bad vibes, apparently. Tiny +morale.',
@@ -205,10 +205,10 @@ export const FURNITURE_CATALOG = [
   },
   {
     id: 'noise-headsets',
-    name: t('Casques antibruit', 'Noise-cancelling headsets'),
+    name: t('Portant de casques antibruit', 'Noise-cancelling headset stand'),
     description: t(
-      'Annulent le malus des réunions pour 3 devs.',
-      'Cancel the meeting penalty for 3 devs.',
+      'Trois casques partagés : annulent le malus des réunions pour 3 devs.',
+      'Three shared headsets: cancel the meeting penalty for 3 devs.',
     ),
     price: 900,
     width: 1,
@@ -546,6 +546,36 @@ export const FURNITURE_CATALOG = [
     maxCount: 2,
     accessory: true,
     effects: { moral: 0.03 },
+  },
+  {
+    id: 'desk-headset',
+    name: t('Casque antibruit', 'Noise-cancelling headset'),
+    description: t(
+      'Posé sur le bureau, prêt pour la prochaine réunion : annule son malus pour 1 dev.',
+      'Sitting on the desk, ready for the next meeting: cancels its penalty for 1 dev.',
+    ),
+    price: 320,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 30,
+    accessory: true,
+    effects: { meetingShield: true, seats: 1 },
+  },
+  {
+    id: 'mini-cactus',
+    name: t('Mini-cactus', 'Mini cactus'),
+    description: t(
+      'Ne pique que ceux qui touchent au clavier des autres. Très léger +moral.',
+      'Only pricks people who touch other people’s keyboards. Tiny +morale.',
+    ),
+    price: 12,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 15,
+    accessory: true,
+    effects: { moral: 0.015 },
   },
   {
     id: 'blender',

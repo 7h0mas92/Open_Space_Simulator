@@ -444,7 +444,7 @@
   },
   "build": {
     "title": "Construction",
-    "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer ou le revendre.",
+    "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer, le ranger ou le revendre.",
     "catalog": "Catalogue",
     "categories": {
       "work": "Travail",
@@ -499,7 +499,19 @@
     "hintAccessory": "Vise un meuble à plateau (bureau, bibliothèque, frigo…).",
     "onFurniture": "Se pose sur un meuble",
     "stopSoldOut": "{{item}} : maximum atteint, retour au catalogue.",
-    "stopMoney": "{{item}} : plus assez de trésorerie, retour au catalogue."
+    "stopMoney": "{{item}} : plus assez de trésorerie, retour au catalogue.",
+    "inventory": "Inventaire",
+    "store": "Ranger",
+    "stored": "{{item}} : rangé dans l’inventaire.",
+    "storedWith_one": "{{item}} : rangé dans l’inventaire, avec {{count}} accessoire.",
+    "storedWith_other": "{{item}} : rangé dans l’inventaire, avec {{count}} accessoires.",
+    "inventoryIntro": "Objets rangés : ils ne donnent plus d’effet tant qu’ils ne sont pas reposés. Les reposer est gratuit.",
+    "inventoryEmpty": "L’inventaire est vide. Touche un objet du bureau puis « Ranger » pour le mettre de côté sans le revendre : pratique pour réorganiser l’open space.",
+    "stock": "{{count}} en stock",
+    "free": "Gratuit",
+    "fromInventory": "depuis l’inventaire",
+    "sellStored": "Revendre un {{item}} ({{price}} €)",
+    "stopInventory": "{{item}} : plus rien en stock, retour à l’inventaire."
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -525,6 +537,7 @@
     "VENTURE_LIMIT": "Ton groupe a déjà fondé le maximum de filiales.",
     "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
     "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
+    "INVENTORY_FULL": "L’inventaire est plein : revends des objets rangés.",
     "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation."
   },
   "dashboard": {
@@ -586,7 +599,9 @@
       "mug": "Mug de dev",
       "rubberDuck": "Canard en plastique",
       "trophy": "Trophée de hackathon",
-      "annexDecor": "Décor des annexes du bureau : bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran de projection en formes Three.js (banc, plante en pot et enceintes du Furniture Kit)"
+      "annexDecor": "Décor des annexes du bureau : bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran de projection en formes Three.js (banc, plante en pot et enceintes du Furniture Kit)",
+      "deskHeadset": "Casque antibruit sur son support",
+      "miniCactus": "Mini-cactus de bureau"
     },
     "back": "Retour"
   },

@@ -444,7 +444,7 @@
   },
   "build": {
     "title": "Build mode",
-    "intro": "Pick an item to place, or tap a piece of furniture to move or sell it.",
+    "intro": "Pick an item to place, or tap a piece of furniture to move, store or sell it.",
     "catalog": "Catalog",
     "categories": {
       "work": "Work",
@@ -499,7 +499,19 @@
     "hintAccessory": "Aim at furniture with a top (desk, bookcase, fridge…).",
     "onFurniture": "Goes on furniture",
     "stopSoldOut": "{{item}}: limit reached, back to the catalog.",
-    "stopMoney": "{{item}}: not enough cash left, back to the catalog."
+    "stopMoney": "{{item}}: not enough cash left, back to the catalog.",
+    "inventory": "Inventory",
+    "store": "Store",
+    "stored": "{{item}}: stored in the inventory.",
+    "storedWith_one": "{{item}}: stored in the inventory, with {{count}} accessory.",
+    "storedWith_other": "{{item}}: stored in the inventory, with {{count}} accessories.",
+    "inventoryIntro": "Stored items: they give no effect until you place them again. Placing them is free.",
+    "inventoryEmpty": "The inventory is empty. Tap an item in the office, then “Store” to put it aside without selling it: handy to rearrange the open space.",
+    "stock": "{{count}} in stock",
+    "free": "Free",
+    "fromInventory": "from the inventory",
+    "sellStored": "Sell one {{item}} ({{price}} €)",
+    "stopInventory": "{{item}}: none left in stock, back to the inventory."
   },
   "results": {
     "INVALID_COMMAND": "That can't be done.",
@@ -525,6 +537,7 @@
     "VENTURE_LIMIT": "Your group has already founded the maximum number of subsidiaries.",
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
     "NOT_AVAILABLE": "This financing is not available right now.",
+    "INVENTORY_FULL": "The inventory is full: sell some stored items.",
     "RAISE_PENDING": "Answer the raise request first."
   },
   "dashboard": {
@@ -586,7 +599,9 @@
       "mug": "Dev mug",
       "rubberDuck": "Rubber duck",
       "trophy": "Hackathon trophy",
-      "annexDecor": "Office annex decor: arcade cabinets, pinball, neon sign, tree, fountain, stage, lectern and projection screen as Three.js shapes (bench, potted plant and speakers from the Furniture Kit)"
+      "annexDecor": "Office annex decor: arcade cabinets, pinball, neon sign, tree, fountain, stage, lectern and projection screen as Three.js shapes (bench, potted plant and speakers from the Furniture Kit)",
+      "deskHeadset": "Noise-cancelling headset on its stand",
+      "miniCactus": "Mini desk cactus"
     },
     "back": "Back"
   },
