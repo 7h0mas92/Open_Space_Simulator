@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { EntityIdSchema, FurnitureColorSchema } from './components.js';
 import { MeetingFormatIdSchema } from './meetings.js';
 import { FinancingKindSchema } from './funding.js';
+import { PetCoatSchema } from './pets.js';
 
 /**
  * Commandes typées envoyées par l'interface à la simulation. C'est le SEUL moyen de
@@ -120,6 +121,10 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('FIT_MEETING_ROOM'), format: MeetingFormatIdSchema }),
   /** Démonte l'aménagement de la salle de réunion (remboursé en partie). */
   z.object({ type: z.literal('CLEAR_MEETING_ROOM') }),
+  /** Adopte un chat de cette robe (litière, gamelle et arbre à chat posés). */
+  z.object({ type: z.literal('ADOPT_PET'), coat: PetCoatSchema }),
+  /** Confie un chat à une famille (sans remboursement, l'équipe est triste). */
+  z.object({ type: z.literal('REHOME_PET'), petId: z.string().max(32) }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export type CommandType = Command['type'];

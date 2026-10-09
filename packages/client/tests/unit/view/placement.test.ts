@@ -146,3 +146,51 @@ describe('accessoires', () => {
     expect(turned[2]).toBeCloseTo(2 * 2 - z0);
   });
 });
+
+describe('fenêtres', () => {
+  const view = (kind: string, x: number, z: number, rotation: 0 | 1): PlacedItemView => ({
+    id: `${kind}@${x},${z}`,
+    kind,
+    x,
+    z,
+    rotation,
+    resale: 0,
+    color: 'natural',
+    host: null,
+  });
+
+  it('sont rangées dans leur propre rayon et se fixent au mur', () => {
+    for (const kind of ['window-small', 'window-medium', 'window-large', 'glass-wall']) {
+      expect(catalogItem(kind)?.category).toBe('window');
+      expect(catalogItem(kind)?.wall).toBe(true);
+    }
+    const request = { kind: 'window-medium', rotation: 0 } as const;
+    expect(checkPlacement(layout, [], { ...request, x: 2, z: 0 })).toBeNull();
+    expect(checkPlacement(layout, [], { ...request, x: 2, z: 3 })).toBe('noWall');
+    expect(checkPlacement(layout, [], { ...request, x: 2, z: 0, rotation: 2 })).toBe('noWall');
+    expect(checkPlacement(layout, [], { ...request, x: layout.width - 1, z: 0 })).toBe(
+      'outOfBounds',
+    );
+    expect(checkPlacement(layout, [], { kind: 'glass-wall', x: 0, z: 2, rotation: 1 })).toBeNull();
+  });
+
+  it('ne gênent que les fenêtres du même mur', () => {
+    const glass = view('glass-wall', 2, 0, 0);
+    expect(checkPlacement(layout, [glass], { kind: 'window-small', x: 3, z: 0, rotation: 0 })).toBe(
+      'overlap',
+    );
+    expect(
+      checkPlacement(layout, [glass], { kind: 'window-small', x: 0, z: 0, rotation: 1 }),
+    ).toBeNull();
+    // Une plante se pose devant la baie, la baie derrière la plante.
+    expect(checkPlacement(layout, [glass], { ...plant, x: 2, z: 0 })).toBeNull();
+    expect(
+      checkPlacement(layout, [view('plant', 4, 0, 0)], {
+        kind: 'glass-wall',
+        x: 4,
+        z: 0,
+        rotation: 0,
+      }),
+    ).toBeNull();
+  });
+});

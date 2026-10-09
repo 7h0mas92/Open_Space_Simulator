@@ -16,6 +16,7 @@ import {
 import { addComponent, createEntity, destroyEntity, query } from './ecs';
 import { addMoney, devIds } from './helpers';
 import { meetingFormat } from './meetings';
+import { petEffects } from './pets';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
 export function phaseIndex(phase: Phase): number {
@@ -55,12 +56,18 @@ export function canPlace(
   const depth = officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds));
   const area = footprint(item, x, y, rotation);
   if (area.x + area.width > width || area.y + area.depth > depth) return false;
+  // Une fenêtre est fixée contre le mur du fond (rotation 0) ou le mur de gauche (rotation 1).
+  const wall = item.wall === true;
+  if (wall && !(rotation === 0 ? y === 0 : rotation === 1 && x === 0)) return false;
   for (const id of query(state, 'furniture')) {
     if (id === ignoreId) continue;
     const placed = state.components.furniture[id];
     const definition = placed ? getFurniture(placed.itemId) : undefined;
     // Les accessoires sont posés sur les meubles : ils n'occupent pas le sol.
     if (!placed || !definition || placed.hostId !== undefined) continue;
+    // Les fenêtres ne gênent que les fenêtres du même mur ; le mobilier, que le mobilier.
+    if ((definition.wall === true) !== wall) continue;
+    if (wall && placed.rotation !== rotation) continue;
     if (overlaps(area, footprint(definition, placed.x, placed.y, placed.rotation))) return false;
   }
   return true;
@@ -434,6 +441,13 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.stabilityPerDay += r.stabilityPerDay ?? 0;
     effects.restBonus += r.restBonus ?? 0;
     effects.meetingPenalty = room.poPenalty;
+  }
+  // Les chats du bureau : +moral et +hype s'ils sont bien installés, ils boudent sinon.
+  if (state.pets.length > 0) {
+    const pets = petEffects(state);
+    effects.moral += pets.moral;
+    effects.hypePerDay += pets.hypePerDay;
+    effects.teamProductivity += pets.teamProductivity;
   }
   const inOffice = devIds(state).filter((id) => !(id in state.components.remote));
   effects.seatProductivity = distribute(productivitySeats, inOffice);

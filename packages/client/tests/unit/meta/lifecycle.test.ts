@@ -1,9 +1,15 @@
 import type { GameResult, SaveData } from '@oss/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AUTOSAVE_SLOT, saves } from '../../../src/save/saves';
 import { MemoryStore, setLocalStore } from '../../../src/save/storage';
 import { wrapText } from '../../../src/ui/game/shareImage';
 import { useGame } from '../../../src/ui/store/game';
-import { dailyDateOf, saveGame, submitScore } from '../../../src/ui/store/lifecycle';
+import {
+  dailyDateOf,
+  installGameLifecycle,
+  saveGame,
+  submitScore,
+} from '../../../src/ui/store/lifecycle';
 import { useSession } from '../../../src/ui/store/session';
 import type { GameSource } from '../../../src/view/source';
 import type { GameView } from '../../../src/view/types';
@@ -195,6 +201,21 @@ describe('saveGame', () => {
     endedGame();
     useGame.setState({ replayOf: 'kevin_ninja' });
     expect(await saveGame(2)).toBe(false);
+  });
+});
+
+describe('fin de partie', () => {
+  it('retire la partie terminée de « Continuer »', async () => {
+    useSession.setState({ status: 'guest', user: null });
+    installGameLifecycle();
+    const running = gameView({ seed: 'tests', step: 'EXECUTION', result: null });
+    useGame.setState({ source: fakeSource(running), view: running, replayOf: null });
+    await saves.write(AUTOSAVE_SLOT, saveData('tests'), 'builtin', false);
+    expect(await saves.latestResumable(false)).not.toBeNull();
+
+    useGame.setState({ view: { ...running, step: 'ENDED', result: RESULT } });
+    await vi.waitFor(async () => expect(await saves.latestResumable(false)).toBeNull());
+    expect(await saves.list(false)).toEqual([]);
   });
 });
 

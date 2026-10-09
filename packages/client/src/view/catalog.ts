@@ -6,14 +6,23 @@
  * le modèle Kenney (ou la forme Three.js si le modèle manque), la hauteur visée, la catégorie
  * de la boutique et le point d'intérêt que l'IA des personnages peut utiliser.
  */
-import { FURNITURE_CATALOG, type LocalizedText, type Phase } from '@oss/shared';
+import { FURNITURE_CATALOG, type LocalizedText, type PetNeed, type Phase } from '@oss/shared';
 import type { FurnitureModel, MissingAssetId } from '../render/assetManifest';
 
 export type ItemModel =
   | { readonly source: 'kenney'; readonly model: FurnitureModel }
   | { readonly source: 'primitive'; readonly model: MissingAssetId };
 
-export const ITEM_CATEGORIES = ['work', 'comfort', 'kitchen', 'fun', 'decor', 'accessory'] as const;
+export const ITEM_CATEGORIES = [
+  'work',
+  'comfort',
+  'kitchen',
+  'fun',
+  'decor',
+  'pets',
+  'window',
+  'accessory',
+] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
 /** Point d'intérêt pour l'IA des personnages. */
@@ -45,6 +54,11 @@ interface ItemLook {
    * du meuble. Leur nombre doit égaler `surfaceSlots` de la simulation (vérifié par un test).
    */
   readonly surface?: readonly (readonly [number, number, number])[];
+  /**
+   * Arbre à chat : endroits où un chat s'installe [x, hauteur, z], dans le repère du meuble
+   * (centre de l'emprise, avant rotation).
+   */
+  readonly perches?: readonly (readonly [number, number, number])[];
 }
 
 /** Matériaux repeints par défaut : le bois et le tissu des modèles Kenney. */
@@ -73,7 +87,11 @@ export interface CatalogItem extends ItemLook {
   readonly maxCount: number;
   /** Accessoire : se pose sur un meuble à plateau, jamais au sol. */
   readonly accessory: boolean;
+  /** Fenêtre : se fixe dans un mur du fond (rotation 0 : mur du fond, 1 : mur de gauche). */
+  readonly wall: boolean;
   readonly paint: readonly string[];
+  /** Équipement pour chat (litière, gamelle, arbre à chat), sinon `null`. */
+  readonly petNeed: PetNeed | null;
 }
 
 const kenney = (model: FurnitureModel): ItemModel => ({ source: 'kenney', model });
@@ -250,7 +268,81 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   },
   rug: { category: 'decor', model: kenney('rugRound'), height: 0.02 },
   trashcan: { category: 'decor', model: kenney('trashcan'), height: 0.85, paint: ['metal'] },
+  // Animaux : de quoi accueillir les chats. Chaque arbre a sa moquette (beige, gris, mauve).
+  'litter-open': {
+    category: 'pets',
+    model: primitive('litterOpen'),
+    height: 0.17,
+    paint: ['mint'],
+  },
+  'litter-covered': {
+    category: 'pets',
+    model: primitive('litterCovered'),
+    height: 0.62,
+    paint: ['white', 'mint'],
+  },
+  'litter-robot': {
+    category: 'pets',
+    model: primitive('litterRobot'),
+    height: 0.66,
+    paint: ['white'],
+  },
+  'cat-bowl': { category: 'pets', model: primitive('catBowl'), height: 0.16, paint: ['wood'] },
+  'cat-feeder': { category: 'pets', model: primitive('catFeeder'), height: 0.5, paint: ['white'] },
+  'cat-tree-small': {
+    category: 'pets',
+    model: primitive('catTreeSmall'),
+    height: 0.96,
+    paint: ['plush'],
+    perches: [[0, 0.88, 0]],
+  },
+  'cat-tree-medium': {
+    category: 'pets',
+    model: primitive('catTreeMedium'),
+    height: 1.34,
+    paint: ['slate'],
+    perches: [
+      [-0.5, 1.26, 0],
+      [0.5, 0.86, 0],
+    ],
+  },
+  'cat-tree-large': {
+    category: 'pets',
+    model: primitive('catTreeLarge'),
+    height: 1.74,
+    paint: ['mauve'],
+    perches: [
+      [0, 1.66, 0],
+      [-1, 0.79, 0],
+      [1, 1.18, 0],
+    ],
+  },
   // Accessoires : petits objets posés sur les meubles à plateau (voir `surface`).
+  // Fenêtres percées dans les murs du fond : seul le cadre se repeint.
+  'window-small': {
+    category: 'window',
+    model: primitive('windowSmall'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'window-medium': {
+    category: 'window',
+    model: primitive('windowMedium'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'window-large': {
+    category: 'window',
+    model: primitive('windowLarge'),
+    height: 2.2,
+    paint: ['dark'],
+  },
+  'glass-wall': {
+    category: 'window',
+    model: primitive('glassWall'),
+    height: 2.2,
+    paint: ['dark'],
+  },
   'desk-lamp': {
     category: 'accessory',
     model: kenney('lampSquareTable'),
@@ -331,7 +423,9 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   minPhase: item.minPhase,
   maxCount: item.maxCount,
   accessory: 'accessory' in item && item.accessory === true,
+  wall: 'wall' in item && item.wall === true,
   paint: LOOKS[item.id].paint ?? DEFAULT_PAINT,
+  petNeed: 'petNeed' in item ? item.petNeed : null,
 }));
 
 const byKind = new Map<string, CatalogItem>(CATALOG.map((item) => [item.kind, item]));

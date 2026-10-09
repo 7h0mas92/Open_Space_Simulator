@@ -19,7 +19,6 @@ import {
   DESIGN_TASKS,
   PRODUCT_TASKS,
   TASK_SIZES,
-  TASK_TITLES,
   TASK_TYPE_WEIGHTS,
   type TradeTaskTemplate,
 } from './data/tasks';
@@ -27,6 +26,7 @@ import { QA_TASKS } from './data/qaTasks';
 import { addComponent, createEntity, destroyEntity, query } from './ecs';
 import { devIds, text } from './helpers';
 import type { Rng } from './rng';
+import { pickTaskTitle, tradeTitleRoll } from './taskTitles';
 
 /** Identifiants des tâches d'une colonne, triés par priorité. */
 export function tasksInColumn(state: GameState, column: TaskColumn): EntityId[] {
@@ -45,8 +45,9 @@ const TRADE_TASKS: Readonly<Record<Exclude<TaskTrade, 'DEV'>, readonly TradeTask
 };
 
 /**
- * Crée une tâche dans le backlog. Les tâches de code tirent leur type puis leur titre ;
- * celles de la designeuse, du Product Owner et des testeurs tirent un modèle qui fixe les deux.
+ * Crée une tâche dans le backlog. Les tâches de code tirent leur type ; celles de la
+ * designeuse, du Product Owner et des testeurs tirent un modèle qui fixe le type. Le titre
+ * vient ensuite de `pickTaskTitle` (catalogue selon la phase, saison, pas de répétition).
  */
 export function createTask(
   state: GameState,
@@ -58,9 +59,12 @@ export function createTask(
   const taskType =
     template?.type ?? type ?? rng.weighted(TASK_TYPES, (t) => TASK_TYPE_WEIGHTS[t]) ?? 'FEATURE';
   const size = rng.weighted(TASK_SIZES, (s) => s.weight)?.size ?? 3;
+  // Le code garde son ancien tirage de titre ; les autres métiers ont déjà tiré leur modèle.
+  const roll = trade === 'DEV' ? rng.next() : tradeTitleRoll(state);
+  const title = pickTaskTitle(state, trade, taskType, roll);
   const id = createEntity(state);
   const task: Task = {
-    title: text(template?.title ?? rng.pick(TASK_TITLES[taskType])),
+    title: text(title),
     type: taskType,
     trade,
     size,

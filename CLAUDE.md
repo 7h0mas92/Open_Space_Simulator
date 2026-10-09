@@ -453,8 +453,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
   jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
   variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
-- Baies vitrées et vue sur New York (`render/skyline.ts`) : les deux murs du fond sont des vitres
-  du sol au plafond ; le bureau est au dernier étage d'une tour, dans une ville low-poly façon
+- Vue sur New York (`render/skyline.ts`) : le bureau est au dernier étage d'une tour, dans une ville low-poly façon
   Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
   (`maxTop`) ; brume, fenêtres, lampadaires et balises qui suivent le jour et la nuit.
@@ -485,6 +484,35 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salle rend 50 %. Commandes `FIT_MEETING_ROOM` / `CLEAR_MEETING_ROOM`, état `meetingRoom` (null
   par défaut). Bot « organizer » : environ +33 % de valorisation médiane face à « balanced ».
   À 375 px, les 8 boutons du dock tiennent sans défilement (libellé court « Réunion »).
+- « Continuer » ne propose plus une partie terminée : à la fin, sa sauvegarde automatique est
+  effacée (appareil et serveur) et sa date de fin notée ; ses sauvegardes manuelles restent dans
+  « Charger une partie » (`saves.markFinished`, `saves.latestResumable` dans
+  `client/src/save/saves.ts`). Un Daily rejoué reste proposé.
+- Variété des tâches du Kanban (`client/src/simulation/taskTitles.ts`, catalogues dans
+  `client/src/simulation/data/tasks.ts`) : 114 titres de code de base, 28 débloqués par phase
+  (`GROWTH_TASK_TITLES` : Seed, Série A, Licorne), 48 de saison (`SEASON_TASK_TITLES`, une tâche de
+  code sur trois pendant la période), 23 pour la designeuse et 22 pour le PO ; 11 urgences et 12
+  tâches de la semaine. Jamais deux fois le même titre sur le tableau, les 60 derniers ne reviennent
+  pas tant qu'il en reste de neufs (état `recentTaskTitles`, vide par défaut). Le titre est
+  décoratif et ne consomme aucun tirage de plus dans le générateur de la partie.
+
+- Fenêtres à acheter (`view/windows.ts`, rayon « Fenêtres » du mode construction) : les locaux
+  démarrent sans fenêtre, murs du fond pleins. Petite fenêtre (1 case, 800 €), fenêtre (2 cases),
+  grande fenêtre (3 cases) et baie vitrée du sol au plafond (2 cases, 5 000 €), +moral. Objets
+  `wall` fixés dans le mur du fond (rotation 0, y = 0) ou de gauche (rotation 1, x = 0) ; le mur
+  est percé et la ville se voit à travers, soleil devant, applique couverte décrochée
+  (`wallSpans` dans `render/office.ts`). Pas de nouvelle commande ni de champ d'état.
+- Chats de bureau (`shared/sim/pets.ts`, `client/src/simulation/pets.ts`, rayon « Animaux » du
+  mode construction, panneau « 🐈 Chats ») : 5 chats au plus, 5 000 € l'adoption, possible
+  seulement avec une litière, une gamelle et un arbre à chat posés (un objet rangé ne compte pas).
+  3 litières (ouverte 60 €, fermée 220 €, robot 1 200 €), 3 arbres à chat de 1, 2 et 3 cases aux
+  coloris différents, 2 gamelles nourriture et eau (simple, distributeur). Chat heureux : +moral,
+  +hype, léger -0,4 % de productivité ; sans équipement complet, il boude (-moral). Confier un chat
+  à une famille : pas de remboursement, -5 moral. 6 robes au choix, nom tiré de
+  `seed#pet#n` sans toucher au RNG. Commandes `ADOPT_PET` / `REHOME_PET`, état `pets` (vide par
+  défaut), stat `petsAdopted`. Chats en Three.js (`render/pets.ts`) qui se baladent en A*, mangent,
+  se cachent dans la litière fermée, grimpent aux perchoirs et dorment surtout la nuit
+  (`ai/cats.ts`, graine à part, rendu seulement).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

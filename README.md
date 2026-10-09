@@ -259,7 +259,7 @@ flowchart LR
 - **Qualité réglable** (bas, moyen, haut) : devicePixelRatio plafonné à 2, ombres coupées en
   bas (défaut sur mobile et quand WebGL tourne sans carte graphique, comme sur la CI), petits
   objets masqués quand on dézoome (LOD).
-- **Vue sur New York** : les deux murs du fond sont de grandes baies vitrées. Le bureau est au
+- **Vue sur New York** : on la voit par les fenêtres achetées. Le bureau est au
   dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
   gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
   Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
@@ -359,6 +359,13 @@ flowchart LR
   formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
   formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
   part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
+- **Variété des tâches** : le Kanban pioche dans plus de 250 tâches en français et en anglais.
+  Le catalogue grandit avec la startup (page de tarifs en Seed, découper le monolithe en Série A,
+  certification SOC 2 en Licorne), et pendant chaque période du calendrier une tâche de code sur
+  trois est de saison (calendrier de l'Avent à Noël, code zombie à Halloween). La designeuse et
+  le Product Owner ont deux fois plus d'idées, et les urgences et tâches de la semaine sont deux
+  fois plus nombreuses. Une tâche n'apparaît jamais deux fois sur le tableau, et les 60 dernières
+  ne reviennent pas tant qu'il en reste de neuves (`client/src/simulation/taskTitles.ts`).
 - **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
   dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
   les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
@@ -382,6 +389,18 @@ flowchart LR
   sur un bureau protège un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
+- **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
+  fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
+  au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
+  (« ⟳ Changer de mur »), percent le mur pour montrer la ville et font entrer le soleil.
+- **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
+  automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
+  réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
+  panneau « 🐈 Chats » permet d'adopter jusqu'à 5 chats (5 000 € chacun, 6 robes au choix). Ils
+  se baladent dans l'open space, mangent, se cachent dans la litière fermée, grimpent dans les
+  arbres à chat et sur les canapés, et dorment surtout la nuit. Un chat bien équipé donne du moral
+  et un peu de hype ; s'il manque de l'équipement, il boude. Le confier à une famille n'est pas
+  remboursé et attriste l'équipe (`shared/sim/pets.ts`, `ai/cats.ts`, `render/pets.ts`).
 - **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
   revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
   les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
@@ -416,7 +435,10 @@ sequenceDiagram
   rejoue en accéléré (les commandes du joueur sont bloquées).
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
-  gardés dans IndexedDB puis synchronisés avec le serveur à la connexion.
+  gardés dans IndexedDB puis synchronisés avec le serveur à la connexion. « Continuer » reprend
+  la sauvegarde la plus récente d'une partie en cours : à la fin d'une partie, sa sauvegarde
+  automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
+  dans « Charger une partie »).
 - **Succès** : 65 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
@@ -559,7 +581,8 @@ génère que des messages Slack.
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, ville et baies vitrées, tableau blanc, horloge,
+  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
+  gamelles, arbres à chat et chats, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
   ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le

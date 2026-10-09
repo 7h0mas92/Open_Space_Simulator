@@ -11,6 +11,7 @@ import {
 import { CommandLogSchema } from './commands.js';
 import { FinancingStateSchema } from './funding.js';
 import { MeetingRoomSchema } from './meetings.js';
+import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
@@ -227,6 +228,8 @@ export const GameStatsSchema = z.object({
   weeklyMissed: z.number().int().default(0),
   objectivesDone: z.number().int().default(0),
   objectivesFailed: z.number().int().default(0),
+  /** Chats adoptés depuis le début de la partie (sert à nommer le suivant). */
+  petsAdopted: z.number().int().default(0),
 });
 export type GameStats = z.infer<typeof GameStatsSchema>;
 
@@ -268,6 +271,8 @@ export const NOTIFICATION_KINDS = [
   'MEETING_ROOM_FITTED',
   'MEETING_USEFUL',
   'MEETING_USELESS',
+  'PET_ADOPTED',
+  'PET_REHOMED',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -310,6 +315,9 @@ export type GameResult = z.infer<typeof GameResultSchema>;
 
 export const STATE_VERSION = 1;
 
+/** Nombre de titres de tâches récents gardés en mémoire pour éviter les répétitions. */
+export const RECENT_TASK_TITLES_MAX = 60;
+
 export const GameStateSchema = z.object({
   version: z.literal(STATE_VERSION),
   seed: z.string(),
@@ -349,8 +357,15 @@ export const GameStateSchema = z.object({
   financing: FinancingStateSchema.default({ lastSprint: {}, loan: null }),
   /** Inventaire : objets rangés, du plus ancien au plus récent (absent des vieilles sauvegardes). */
   inventory: z.array(StoredItemSchema).max(INVENTORY_MAX).default([]),
+  /** Chats du bureau (absents des sauvegardes d'avant leur ajout). */
+  pets: z.array(PetSchema).max(PETS.max).default([]),
   /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */
   raises: RaisesStateSchema.default(emptyRaisesState),
+  /**
+   * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
+   * les mêmes idées. Absent des vieilles sauvegardes.
+   */
+  recentTaskTitles: z.array(z.string()).max(RECENT_TASK_TITLES_MAX).default([]),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({
