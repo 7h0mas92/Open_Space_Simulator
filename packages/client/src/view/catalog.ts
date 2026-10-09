@@ -59,6 +59,19 @@ interface ItemLook {
    * (centre de l'emprise, avant rotation).
    */
   readonly perches?: readonly (readonly [number, number, number])[];
+  /**
+   * Arbre à chat : pompons sous lesquels un chat joue [x, hauteur, z], dans le repère du meuble.
+   * Le chat se dresse devant le socle et tape la balle.
+   */
+  readonly toys?: readonly (readonly [number, number, number])[];
+  /**
+   * Gamelle : où le chat se tient pour manger et pour boire [x, z], dans le repère du meuble.
+   * Il regarde vers l'arrière du meuble (-z), la tête au-dessus du bol.
+   */
+  readonly feeding?: {
+    readonly food: readonly [number, number];
+    readonly water: readonly [number, number];
+  };
 }
 
 /** Matériaux repeints par défaut : le bois et le tissu des modèles Kenney. */
@@ -287,14 +300,27 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 0.66,
     paint: ['white'],
   },
-  'cat-bowl': { category: 'pets', model: primitive('catBowl'), height: 0.16, paint: ['wood'] },
-  'cat-feeder': { category: 'pets', model: primitive('catFeeder'), height: 0.5, paint: ['white'] },
+  'cat-bowl': {
+    category: 'pets',
+    model: primitive('catBowl'),
+    height: 0.16,
+    paint: ['wood'],
+    feeding: { food: [0.15, 0.42], water: [-0.15, 0.42] },
+  },
+  'cat-feeder': {
+    category: 'pets',
+    model: primitive('catFeeder'),
+    height: 0.5,
+    paint: ['white'],
+    feeding: { food: [-0.18, 0.46], water: [0.18, 0.46] },
+  },
   'cat-tree-small': {
     category: 'pets',
     model: primitive('catTreeSmall'),
     height: 0.96,
     paint: ['plush'],
     perches: [[0, 0.88, 0]],
+    toys: [[0.24, 0, 0.46]],
   },
   'cat-tree-medium': {
     category: 'pets',
@@ -305,6 +331,7 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       [-0.5, 1.26, 0],
       [0.5, 0.86, 0],
     ],
+    toys: [[0.15, 0, 0.46]],
   },
   'cat-tree-large': {
     category: 'pets',
@@ -315,6 +342,10 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       [0, 1.66, 0],
       [-1, 0.79, 0],
       [1, 1.18, 0],
+    ],
+    toys: [
+      [0.25, 0, 0.46],
+      [1.2, 0, 0.48],
     ],
   },
   // Accessoires : petits objets posés sur les meubles à plateau (voir `surface`).

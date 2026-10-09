@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CatWorld, itemPoint, type CatSnapshot } from '../../../src/ai/cats';
+import { CAT_POSES, CatWorld, itemPoint, type CatSnapshot } from '../../../src/ai/cats';
 import { buildNavGrid } from '../../../src/ai/grid';
 import { buildCat, poseCat } from '../../../src/render/pets';
 import { layoutOf } from '../../../src/view/layout';
@@ -60,8 +60,9 @@ describe('IA des chats', () => {
           heights.add(Math.round(cat.y * 100));
           continue;
         }
-        // Au sol (hors litière), toujours sur une case praticable ou entre deux.
+        // Au sol (hors litière, bol et pompon), toujours sur une case praticable.
         if (cat.pose === 'walk' || !cat.visible) continue;
+        if (cat.activity === 'eat' || cat.activity === 'drink' || cat.activity === 'play') continue;
         expect(grid.walkable(Math.round(cat.x), Math.round(cat.z)) || cat.y > 0).toBe(true);
       }
     });
@@ -106,15 +107,61 @@ describe('IA des chats', () => {
       run(new CatWorld(seed), office, 4000, (cats) => {
         const places = cats
           .filter((cat) => cat.pose !== 'walk')
-          .map((cat) =>
-            cat.y > 0 || !cat.visible
-              ? `${cat.x.toFixed(2)}:${cat.y.toFixed(2)}:${cat.z.toFixed(2)}`
-              : `${Math.round(cat.x)}:0:${Math.round(cat.z)}`,
-          );
+          .map((cat) => `${cat.x.toFixed(2)}:${cat.y.toFixed(2)}:${cat.z.toFixed(2)}`);
         resting += places.length;
         expect(new Set(places).size).toBe(places.length);
       });
       expect(resting).toBeGreaterThan(0);
+    }
+  });
+
+  it('vit comme un chat : il mange, boit, va à la litière, joue et se repose', () => {
+    const done = new Map<string, Set<string>>();
+    const playSpots = new Set<string>();
+    let afterMeal = 0;
+    let drinksAfterMeal = 0;
+    const last = new Map<string, string>();
+    run(new CatWorld(11), view, 12_000, (cats) => {
+      for (const cat of cats) {
+        if (cat.pose === 'walk') continue;
+        const set = done.get(cat.id) ?? new Set<string>();
+        set.add(cat.activity);
+        done.set(cat.id, set);
+        if (cat.pose === 'play') playSpots.add(`${cat.id}:${cat.x.toFixed(2)}:${cat.z.toFixed(2)}`);
+        // Ce qu'il fait juste après avoir mangé.
+        const before = last.get(cat.id);
+        if (before !== cat.activity) {
+          if (before === 'eat') {
+            afterMeal++;
+            if (cat.activity === 'drink') drinksAfterMeal++;
+          }
+          last.set(cat.id, cat.activity);
+        }
+      }
+    });
+    for (const [, activities] of done)
+      for (const need of ['eat', 'drink', 'litter', 'play'])
+        expect(activities.has(need), need).toBe(true);
+    for (const [, activities] of done)
+      expect(activities.has('perch') || activities.has('nap') || activities.has('desk')).toBe(true);
+    // En jouant, il saute d'une place à l'autre de l'arbre à chat.
+    expect(playSpots.size).toBeGreaterThan(done.size);
+    // Les croquettes donnent soif : il boit souvent juste après.
+    expect(afterMeal).toBeGreaterThan(0);
+    expect(drinksAfterMeal / afterMeal).toBeGreaterThan(0.3);
+  });
+
+  it('se tient devant le bol, la tête vers la gamelle', () => {
+    const cats: CatSnapshot[] = [];
+    run(new CatWorld(11), view, 6000, (snapshot) =>
+      cats.push(...snapshot.filter((cat) => cat.pose === 'eat' || cat.pose === 'drink')),
+    );
+    expect(cats.length).toBeGreaterThan(0);
+    // Le distributeur est posé en (12, 5) sans rotation : le chat est devant (z ≈ 5,46) et
+    // regarde vers lui (orientation π, vers -z).
+    for (const cat of cats) {
+      expect(cat.z).toBeCloseTo(5.46);
+      expect(Math.abs(Math.abs(cat.facing) - Math.PI)).toBeLessThan(1e-6);
     }
   });
 
@@ -133,7 +180,7 @@ describe('Modèle 3D des chats', () => {
     for (const coat of PET_COATS) {
       const rig = buildCat(coat);
       expect(rig.legs).toHaveLength(4);
-      for (const pose of ['walk', 'sit', 'sleep', 'eat', 'groom'] as const) {
+      for (const pose of CAT_POSES) {
         poseCat(rig, pose, 1.2, true);
         expect(rig.legs.every((leg) => leg.visible)).toBe(pose !== 'sleep');
       }
