@@ -3252,23 +3252,20 @@ legend {
   margin: 0;
 }
 
-/* Téléphone en portrait : huit actions ne tiennent pas toujours à 44 px ; la barre défile. */
+/* Téléphone en portrait : huit actions sur 375 px, chacune garde ses 44 px de large. */
 @media (max-width: 479px) {
   .action-bar {
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-  }
-
-  .action-bar::-webkit-scrollbar {
-    display: none;
+    gap: 1px;
   }
 
   .action-bar button {
-    flex: 1 0 auto;
-    min-width: 2.9rem;
-    padding: 4px 3px;
-    scroll-snap-align: start;
+    padding: 4px 0;
+    font-size: 0.6rem;
+  }
+
+  .action-bar button .label {
+    overflow: hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
   }
 }
