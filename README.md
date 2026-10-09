@@ -603,10 +603,10 @@ génère que des messages Slack.
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
-  gamelles, arbres à chat et chats, tableau blanc, horloge,
+  gamelles, arbres à chat et chats, canapé et bibliothèque détaillés, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
-  ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Pour les
+  ses bancs…), pour que chacun ait un rendu qui lui est propre. Pour les
   effets sonores et l'ambiance, le lecteur audio (Howler.js) est prêt : il suffit de déposer les
   fichiers et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans la
   page Crédits du jeu.
