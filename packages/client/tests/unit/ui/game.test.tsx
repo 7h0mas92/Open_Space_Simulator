@@ -453,7 +453,11 @@ describe('Étapes du sprint', () => {
     const card = screen.getByRole('dialog', { name: /machine à café/i });
     const choices = within(card).getAllByRole('button');
     expect(choices.length).toBeGreaterThanOrEqual(2);
-    expect(choices[0]).toHaveFocus();
+    // Le focus va sur la carte, pas sur un choix : Espace ou Entrée ne tranchent rien par mégarde.
+    expect(card).toHaveFocus();
+    await userEvent.keyboard(' ');
+    expect(useGame.getState().view!.event).not.toBeNull();
+    expect(within(card).getByTestId('event-clock')).toHaveTextContent(/en pause/);
     await userEvent.click(choices[0]!);
     expect(useGame.getState().view!.event).toBeNull();
     expect(screen.queryByRole('dialog', { name: /machine à café/i })).not.toBeInTheDocument();

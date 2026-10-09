@@ -18,7 +18,9 @@ export function StageScreens({ view }: { view: GameView }) {
     case 'demo':
       return <DemoScreen view={view} />;
     case 'event':
-      return view.event && <EventCardScreen event={view.event} />;
+      return (
+        view.event && <EventCardScreen event={view.event} hardcore={view.mode === 'HARDCORE'} />
+      );
     default:
       return null;
   }
@@ -38,18 +40,25 @@ function Dialog({
   title,
   className,
   tutorial,
+  focusDialog = false,
   children,
 }: {
   title: string;
   className: string;
   /** Repère pour le tutoriel (attribut `data-tutorial`). */
   tutorial?: string;
+  /**
+   * Focus sur la boîte elle-même plutôt que sur son premier bouton : une carte qui surgit ne
+   * doit pas être tranchée par la touche Espace ou Entrée que le joueur tapait déjà.
+   */
+  focusDialog?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    ref.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus();
-  }, [title]);
+    if (focusDialog) ref.current?.focus();
+    else ref.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus();
+  }, [title, focusDialog]);
   return (
     <div className="stage-backdrop">
       <div
@@ -59,6 +68,7 @@ function Dialog({
         aria-modal="true"
         aria-label={title}
         data-tutorial={tutorial}
+        tabIndex={focusDialog ? -1 : undefined}
       >
         {children}
       </div>
@@ -105,7 +115,7 @@ function EffectChips({ effects }: { effects: EventView['choices'][number]['effec
   );
 }
 
-function EventCardScreen({ event }: { event: EventView }) {
+function EventCardScreen({ event, hardcore }: { event: EventView; hardcore: boolean }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
   const title = localized(event.title, i18n.language);
@@ -124,7 +134,7 @@ function EventCardScreen({ event }: { event: EventView }) {
   }, [count, dispatch]);
 
   return (
-    <Dialog title={title} className="event-card" tutorial="event">
+    <Dialog title={title} className="event-card" tutorial="event" focusDialog>
       <p className="eyebrow">
         <span aria-hidden="true">⚡ </span>
         {t('event.kicker')}
@@ -154,6 +164,11 @@ function EventCardScreen({ event }: { event: EventView }) {
           </li>
         ))}
       </ul>
+      {/* Hors Hardcore, le temps est arrêté le temps de choisir (engine/host.ts). */}
+      <p className={`event-clock ${hardcore ? 'is-running' : ''}`} data-testid="event-clock">
+        <span aria-hidden="true">{hardcore ? '⏱ ' : '❚❚ '}</span>
+        {t(hardcore ? 'event.hardcore' : 'event.paused')}
+      </p>
     </Dialog>
   );
 }
