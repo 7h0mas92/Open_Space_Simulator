@@ -11,7 +11,14 @@ import { fixtureCells, type Cell, type OfficeLayout } from './layout';
 import type { GameView, ItemHost, PlacedItemView, Rotation } from './types';
 
 export type PlacementError =
-  'unknownItem' | 'outOfBounds' | 'wall' | 'overlap' | 'entrance' | 'noSurface' | 'surfaceFull';
+  | 'unknownItem'
+  | 'outOfBounds'
+  | 'wall'
+  | 'overlap'
+  | 'entrance'
+  | 'noSurface'
+  | 'surfaceFull'
+  | 'noWall';
 
 export interface PlacementRequest {
   readonly kind: string;
@@ -33,6 +40,7 @@ export function checkPlacement(
     const resolved = resolveAccessory(items, request);
     return 'error' in resolved ? resolved.error : null;
   }
+  if (def.wall) return checkWallPlacement(layout, items, request);
   const [w, d] = footprint(def, request.rotation);
   if (
     request.x < 0 ||
@@ -53,9 +61,34 @@ export function checkPlacement(
   }
   // Même règle que la simulation : aucun chevauchement, tapis compris.
   for (const other of items) {
-    if (other.id === request.ignoreId || other.host) continue;
+    if (other.id === request.ignoreId || other.host || catalogItem(other.kind)?.wall) continue;
     const otherCells = itemCells(other);
     if (cells.some((cell) => has(otherCells, cell.x, cell.z))) return 'overlap';
+  }
+  return null;
+}
+
+/**
+ * Une fenêtre se fixe contre le mur du fond (rotation 0, z = 0) ou le mur de gauche (rotation 1,
+ * x = 0), sans dépasser du mur ni chevaucher une autre fenêtre du même mur. Le mobilier posé
+ * devant ne la gêne pas.
+ */
+function checkWallPlacement(
+  layout: OfficeLayout,
+  items: readonly PlacedItemView[],
+  request: PlacementRequest,
+): PlacementError | null {
+  const { rotation } = request;
+  if (rotation === 0 ? request.z !== 0 : rotation !== 1 || request.x !== 0) return 'noWall';
+  const cells = itemCells({ id: '', ...request });
+  if (cells.some((cell) => cell.x >= layout.width || cell.z >= layout.depth || cell.x < 0))
+    return 'outOfBounds';
+  for (const other of items) {
+    if (other.id === request.ignoreId || other.rotation !== rotation) continue;
+    if (!catalogItem(other.kind)?.wall) continue;
+    const otherCells = itemCells(other);
+    if (cells.some((cell) => otherCells.some((o) => o.x === cell.x && o.z === cell.z)))
+      return 'overlap';
   }
   return null;
 }

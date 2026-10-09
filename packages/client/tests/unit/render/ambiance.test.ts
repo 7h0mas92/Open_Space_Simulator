@@ -135,16 +135,16 @@ describe('éclairage de la salle', () => {
     expect(lightingAt(12 * 60).windowColor).not.toBe(lightingAt(23 * 60).windowColor);
   });
 
-  it('alterne fenêtres et appliques sur les deux murs du fond, sans déborder', () => {
+  it('accroche des appliques sur les deux murs du fond, sans déborder', () => {
     for (const phase of ['GARAGE', 'SEED', 'SERIES_A', 'UNICORN'] as const) {
       const layout = officeLayout(phase);
       const slots = wallSlots(layout);
       expect(
-        slots.some((slot) => slot.kind === 'window'),
+        slots.some((slot) => slot.turn === 0),
         phase,
       ).toBe(true);
       expect(
-        slots.some((slot) => slot.kind === 'lamp'),
+        slots.some((slot) => slot.turn === 1),
         phase,
       ).toBe(true);
       for (const slot of slots) {

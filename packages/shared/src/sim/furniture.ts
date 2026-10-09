@@ -53,6 +53,12 @@ export interface FurnitureDefinition {
   surfaceSlots?: number;
   /** Accessoire : il se pose sur un meuble à plateau, jamais au sol. */
   accessory?: boolean;
+  /**
+   * Fenêtre : elle se fixe dans un des deux murs du fond, jamais au sol. `width` est sa largeur
+   * en cases le long du mur ; la rotation dit lequel : 0 pour le mur du fond (y = 0), 1 pour le
+   * mur de gauche (x = 0). Elle ne gêne pas le mobilier posé devant.
+   */
+  wall?: boolean;
 }
 
 /**
@@ -383,6 +389,67 @@ export const FURNITURE_CATALOG = [
     maxCount: 4,
     effects: { moral: 0.2, coffeeRestock: 10 },
     surfaceSlots: 4,
+  },
+  // --- Fenêtres : percées dans les murs du fond. Les locaux n'en ont aucune au départ. ---
+  {
+    id: 'window-small',
+    name: t('Petite fenêtre', 'Small window'),
+    description: t(
+      'Un hublot sur la ville, une case de large : léger +moral.',
+      'A porthole onto the city, one tile wide: slight +morale.',
+    ),
+    price: 800,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 16,
+    wall: true,
+    effects: { moral: 0.02 },
+  },
+  {
+    id: 'window-medium',
+    name: t('Fenêtre', 'Window'),
+    description: t(
+      'Deux cases de lumière naturelle. On voit enfin s’il fait jour : +moral.',
+      'Two tiles of daylight. You can finally tell if it is day: +morale.',
+    ),
+    price: 1500,
+    width: 2,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 16,
+    wall: true,
+    effects: { moral: 0.04 },
+  },
+  {
+    id: 'window-large',
+    name: t('Grande fenêtre', 'Large window'),
+    description: t(
+      'Trois cases de vue sur les tours voisines : +moral.',
+      'Three tiles of view on the towers next door: +morale.',
+    ),
+    price: 2500,
+    width: 3,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 16,
+    wall: true,
+    effects: { moral: 0.06 },
+  },
+  {
+    id: 'glass-wall',
+    name: t('Baie vitrée', 'Glass wall'),
+    description: t(
+      'Vitre de building du sol au plafond, deux cases : +moral, et les photos LinkedIn sont superbes.',
+      'Floor-to-ceiling building glass, two tiles: +morale, and the LinkedIn photos look amazing.',
+    ),
+    price: 5000,
+    width: 2,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 16,
+    wall: true,
+    effects: { moral: 0.06, hypePerDay: 0.005 },
   },
   // --- Accessoires : posés sur les meubles à plateau (bureaux, bibliothèque, frigo…). ---
   {
