@@ -366,8 +366,11 @@ flowchart LR
   deux fois moins chères, léger −moral), brainstorming (+qualité, réunions du PO qui débordent),
   aquarium vitré (+hype, −productivité), puis en Série A salle zen (+moral et récupération,
   −productivité) et war room (+stabilité, −moral), et en Licorne salle du conseil (+hype et
-  qualité, petits-fours hors de prix). Chaque matin de semaine à 9h30, l'équipe s'y réunit :
-  utile, la réunion rapporte (dette, hype, stabilité ou moral) ; inutile, elle coûte. Changer de
+  qualité, petits-fours hors de prix). Chaque matin de semaine à 9h, dès son arrivée, l'équipe s'y
+  réunit 20 minutes : utile, la réunion rapporte (dette, hype, stabilité ou moral) ; inutile, elle
+  coûte. Quand la prod tombe, la salle devient une cellule de crise : le coupable, les devs les plus
+  solides (DevOps et Tech Lead d'abord) et le PO ou un manager s'y réunissent une demi-heure, puis
+  le meilleur prend « Réparer la prod », déjà avancée de 15 % (brainstorming) à 50 % (war room). Changer de
   formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
   formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
   part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
