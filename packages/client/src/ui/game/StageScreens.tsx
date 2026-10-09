@@ -1,9 +1,17 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { EventView, GameView, GaugeName, PitchView } from '../../view/types';
+import type {
+  DevView,
+  EventView,
+  GameView,
+  GaugeName,
+  PitchView,
+  RaiseRequestView,
+} from '../../view/types';
 import { useGame } from '../store/game';
 import { formatGauge, formatMoney, localized } from './format';
 import { GAUGE_ICONS } from './Hud';
+import { moodEmoji, StatBars } from '../team/StatBars';
 
 /**
  * Écrans qui interrompent la partie : carte d'événement, levée de fonds, démo de fin de
@@ -19,17 +27,23 @@ export function StageScreens({ view }: { view: GameView }) {
       return <DemoScreen view={view} />;
     case 'event':
       return view.event && <EventCardScreen event={view.event} />;
+    case 'raise': {
+      const request = view.raiseRequest;
+      const dev = request && view.devs.find((candidate) => candidate.id === request.devId);
+      return request && dev ? <RaiseScreen request={request} dev={dev} /> : null;
+    }
     default:
       return null;
   }
 }
 
 /** Écran d'étape affiché pour cet instantané, ou `null` quand la partie est jouable. */
-export function stageScreen(view: GameView): 'end' | 'pitch' | 'demo' | 'event' | null {
+export function stageScreen(view: GameView): 'end' | 'pitch' | 'demo' | 'event' | 'raise' | null {
   if (view.step === 'ENDED') return 'end';
   if (view.step === 'PITCH' && view.pitch) return 'pitch';
   if (view.step === 'DEMO') return 'demo';
   if (view.event) return 'event';
+  if (view.step === 'PLANNING' && view.raiseRequest) return 'raise';
   return null;
 }
 
@@ -153,6 +167,98 @@ function EventCardScreen({ event }: { event: EventView }) {
             </button>
           </li>
         ))}
+      </ul>
+    </Dialog>
+  );
+}
+
+/** Un dev demande une augmentation : accepter ou refuser, avec les conséquences annoncées. */
+function RaiseScreen({ request, dev }: { request: RaiseRequestView; dev: DevView }) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const money = (value: number) => `${formatMoney(value, i18n.language)} €`;
+  const raise = request.requestedSalary - request.currentSalary;
+  const percent = Math.round((raise / Math.max(1, request.currentSalary)) * 100);
+  const title = t('raise.title', { name: dev.name });
+  const answer = (accept: boolean) => void dispatch({ type: 'answerRaise', accept });
+
+  // Touches 1 et 2 : répondre sans quitter le clavier, comme pour les cartes.
+  useEffect(() => {
+    const onKey = (keyEvent: KeyboardEvent) => {
+      if (keyEvent.key !== '1' && keyEvent.key !== '2') return;
+      keyEvent.preventDefault();
+      void dispatch({ type: 'answerRaise', accept: keyEvent.key === '1' });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dispatch]);
+
+  return (
+    <Dialog title={title} className="raise-screen">
+      <p className="eyebrow">
+        <span aria-hidden="true">💰 </span>
+        {t('raise.kicker')}
+      </p>
+      <h2>{title}</h2>
+      <p className="role">
+        <span aria-hidden="true">{moodEmoji(dev.morale)} </span>
+        {t(`roles.${dev.role}`)} · {t('team.level', { level: dev.level })}
+      </p>
+      <blockquote>{t(`raise.quotes.${dev.role}`)}</blockquote>
+      <dl className="raise-salary">
+        <dt>{t('raise.current')}</dt>
+        <dd>{money(request.currentSalary)}</dd>
+        <dt>{t('raise.requested')}</dt>
+        <dd className="down">
+          {money(request.requestedSalary)} (+{percent} %)
+        </dd>
+      </dl>
+      <StatBars stats={dev.stats} />
+      <ul className="choices">
+        <li>
+          <button
+            type="button"
+            className="choice"
+            aria-keyshortcuts="1"
+            onClick={() => answer(true)}
+          >
+            <span className="choice-key" aria-hidden="true">
+              1
+            </span>
+            <span className="choice-body">
+              <strong>{t('raise.accept')}</strong>
+              <ul className="effects">
+                <li className="down">{t('raise.cost', { amount: money(raise) })}</li>
+                <li className="up">{t('raise.moral', { value: request.acceptMoral })}</li>
+                <li className="up">{t('raise.skillsUp', { count: request.skillsGained })}</li>
+              </ul>
+            </span>
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            className="choice"
+            aria-keyshortcuts="2"
+            onClick={() => answer(false)}
+          >
+            <span className="choice-key" aria-hidden="true">
+              2
+            </span>
+            <span className="choice-body">
+              <strong>{t('raise.refuse')}</strong>
+              <ul className="effects">
+                <li className="down">
+                  {t('raise.resignRisk', {
+                    percent: Math.round(request.resignChance * 100),
+                    count: request.noticeSprints,
+                  })}
+                </li>
+                <li className="down">{t('raise.skillsDown', { count: request.skillsLost })}</li>
+              </ul>
+            </span>
+          </button>
+        </li>
       </ul>
     </Dialog>
   );

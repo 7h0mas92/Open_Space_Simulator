@@ -138,6 +138,14 @@ class PlannerBot implements Bot {
       case 'DEMO':
         return [...this.endgame(state), { type: 'END_DEMO' }];
       case 'PLANNING':
+        // Augmentation accordée si la trésorerie tient encore la moitié de sa marge d'embauche.
+        if (state.raises.pending)
+          return [
+            {
+              type: 'ANSWER_RAISE',
+              accept: runwayMonths(state as GameState) >= this.style.hireRunway / 2,
+            },
+          ];
         return this.plan(state);
       default:
         return [];
@@ -315,6 +323,7 @@ class RandomBot implements Bot {
           return [{ type: 'ANSWER_ACQUISITION', accept: true }];
         return [{ type: 'END_DEMO' }];
       case 'PLANNING': {
+        if (state.raises.pending) return [{ type: 'ANSWER_RAISE', accept: rng.chance(0.5) }];
         if (rng.chance(0.15)) return [{ type: 'START_PITCH' }, { type: 'START_SPRINT' }];
         const commands: Command[] = [];
         const open = state.candidates.filter((c) => c.status === 'OPEN');
@@ -425,11 +434,13 @@ export function playWithBot(
     if (!progressed) {
       const fallback: Command = simulation.state.events.pending
         ? { type: 'RESOLVE_EVENT', choiceIndex: 0 }
-        : simulation.state.stage === 'PITCH'
-          ? { type: 'CLOSE_PITCH' }
-          : simulation.state.stage === 'DEMO'
-            ? { type: 'END_DEMO' }
-            : { type: 'START_SPRINT' };
+        : simulation.state.raises.pending
+          ? { type: 'ANSWER_RAISE', accept: true }
+          : simulation.state.stage === 'PITCH'
+            ? { type: 'CLOSE_PITCH' }
+            : simulation.state.stage === 'DEMO'
+              ? { type: 'END_DEMO' }
+              : { type: 'START_SPRINT' };
       simulation.dispatch(fallback);
     }
   }
