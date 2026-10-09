@@ -25,6 +25,7 @@ import { catalogItem } from '../../view/catalog';
 import { officeLayout, type Cell } from '../../view/layout';
 import { checkPlacement, nearestValidCell, resolveAccessory } from '../../view/placement';
 import { localized } from '../game/format';
+import { DEFAULT_TEAM_FILTERS, type TeamFilters } from '../team/filters';
 import type { GameSource } from '../../view/source';
 import type {
   CommandResult,
@@ -160,6 +161,8 @@ interface GameStore {
   /** Pseudo du joueur dont on regarde le replay (null pour une partie jouée). */
   replayOf: string | null;
   submission: Submission;
+  /** Filtres et tri de la liste de l'équipe, gardés d'une ouverture du panneau à l'autre. */
+  teamFilters: TeamFilters;
   start(options?: StartOptions): Promise<void>;
   quit(): void;
   dispatch(command: GameCommand): Promise<CommandResult>;
@@ -186,6 +189,7 @@ interface GameStore {
   placeAt(cell?: Cell): Promise<boolean>;
   notify(key: string, tone?: Toast['tone'], params?: Toast['params']): void;
   setFps(fps: number): void;
+  setTeamFilters(filters: TeamFilters): void;
 }
 
 let toastId = 0;
@@ -253,6 +257,7 @@ export const useGame = create<GameStore>((set, get) => ({
   fps: 0,
   replayOf: null,
   submission: { status: 'idle' },
+  teamFilters: DEFAULT_TEAM_FILTERS,
 
   async start(options = {}) {
     get().quit();
@@ -283,6 +288,7 @@ export const useGame = create<GameStore>((set, get) => ({
       selected: null,
       build: null,
       replayOf: options.replay?.pseudo ?? null,
+      teamFilters: DEFAULT_TEAM_FILTERS,
       submission: { status: options.replay ? 'replay' : 'idle' },
     });
   },
@@ -481,5 +487,9 @@ export const useGame = create<GameStore>((set, get) => ({
 
   setFps(fps) {
     set({ fps });
+  },
+
+  setTeamFilters(teamFilters) {
+    set({ teamFilters });
   },
 }));

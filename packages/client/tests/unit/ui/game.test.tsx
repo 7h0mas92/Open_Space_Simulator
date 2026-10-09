@@ -554,3 +554,37 @@ describe('formatage', () => {
     expect(sparklinePoints([0, 10], 100, 10)).toBe('0.0,6.0 100.0,4.0');
   });
 });
+
+describe('Filtres de l’équipe', () => {
+  it('filtre les devs en conflit et garde les filtres en rouvrant le panneau', async () => {
+    const simulation = officeSimulation(SEED_OFFICE);
+    const ids = Object.keys(simulation.state.components.identity);
+    const [a, b] = ids;
+    // Pas d'autre conflit que celui-ci : les relations de départ sont tirées au hasard.
+    for (const id of ids) simulation.state.components.relations[id] = {};
+    simulation.state.components.relations[a!] = { [b!]: -70 };
+    simulation.state.components.relations[b!] = { [a!]: -70 };
+    await startGame(simulation);
+    const view = useGame.getState().view!;
+    const names = (ids: string[]) => ids.map((id) => view.devs.find((d) => d.id === id)!.name);
+    const [nameA, nameB] = names([a!, b!]);
+    await userEvent.click(screen.getByRole('button', { name: /Équipe/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Filtres' }));
+    await userEvent.click(screen.getByRole('button', { name: 'En conflit' }));
+    const list = screen.getByRole('list', { name: "Membres de l'équipe" });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(list).getByText(nameA!)).toBeInTheDocument();
+    expect(within(list).getByText(nameB!)).toBeInTheDocument();
+    expect(screen.getByText(`2 devs sur ${view.devs.length}`)).toBeInTheDocument();
+    // Les filtres survivent à la fermeture du panneau.
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(screen.getByRole('button', { name: /Équipe/ }));
+    expect(
+      within(screen.getByRole('list', { name: "Membres de l'équipe" })).getAllByRole('listitem'),
+    ).toHaveLength(2);
+    await userEvent.click(screen.getByRole('button', { name: 'Tout afficher' }));
+    expect(
+      within(screen.getByRole('list', { name: "Membres de l'équipe" })).getAllByRole('listitem'),
+    ).toHaveLength(view.devs.length);
+  });
+});
