@@ -342,6 +342,13 @@ flowchart LR
   N features, finir N tâches, zéro panne, baisser la dette, gagner N utilisateurs), facile,
   moyen ou difficile, récompensé à la démo selon sa difficulté. Le hasard est tiré sur une
   graine à part (`shared/sim/taskFlow.ts`, `client/src/simulation/taskFlow.ts`).
+- **Tâches par métier** : chaque carte du Kanban affiche son métier, 💻 Code, 🎨 Design (la
+  designeuse) ou 📋 Produit (le Product Owner). Les nouvelles idées suivent les métiers présents
+  dans l'équipe, et une tâche que le joueur n'assigne pas lui-même ne part qu'à quelqu'un du bon
+  métier, urgences d'abord. Le joueur peut toujours confier une tâche à n'importe qui (les autres
+  métiers sont rangés à part dans la liste) : hors métier, elle avance à 60 %. Une carte dont le
+  métier n'a personne dans l'équipe le signale. Le bouton « Tout en À faire » passe tout le
+  backlog dans la colonne À faire en un clic (une seule commande, rejouable).
 - **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
   dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
   les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait

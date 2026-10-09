@@ -469,6 +469,14 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   vendredi 18h ; objectif de sprint (4 sprints sur 10 dès le 2e, facile, moyen ou difficile,
   récompense à la démo) affiché en haut du Kanban. Seule la récompense propre compte pour ces
   tâches. Hasard sur une graine à part (`seed#tasks#…`), champs `kind`, `objective` par défaut.
+- Tâches par métier (`ROLE_TRADE`, `TASK_TRADES` dans `shared/sim/components.ts`) : Code (6 profils),
+  Design (designeuse), Produit (PO). Le backlog suit les effectifs de chaque métier (tirage seulement
+  si l'équipe a plusieurs métiers) ; 21 tâches design et produit (8 features) ; l'assignation
+  automatique ne donne une tâche qu'au bon métier, urgences d'abord (urgences et tâches de la
+  semaine = code) ; confiée à la main hors métier, elle avance à 60 %
+  (`BALANCE.work.offTradeMultiplier`). Bouton « Tout en À faire » (`MOVE_ALL_TO_TODO`). Champ
+  `trade` optionnel (code par défaut). Effet sur `pnpm balance` : plus de licornes pour les bons bots
+  (le PO ne prend plus les urgences), faillite inchangée.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
