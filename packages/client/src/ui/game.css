@@ -1382,7 +1382,13 @@ input[type='range'] {
 .build-bottom .selection-bar {
   position: static;
   width: auto;
+  max-width: none;
   transform: none;
+}
+
+/* Le nuancier garde la taille de son bouton (il n'est pas le texte de la barre). */
+.selection-bar > .color-picker {
+  flex: none;
 }
 
 .catalog {
@@ -1476,6 +1482,59 @@ input[type='range'] {
 
 .catalog-card-text.locked {
   color: var(--danger);
+}
+
+/* Inventaire : pastille du nombre d'objets rangés, cartes avec un bouton « Revendre ». */
+.catalog-tabs button {
+  position: relative;
+}
+
+.catalog-tab-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 1.1rem;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+}
+
+.stored-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+}
+
+.stored-card .catalog-card {
+  flex: 1;
+}
+
+.stored-card .catalog-card-name .swatch {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+
+.stored-sell {
+  min-height: var(--touch);
+  padding: 2px 6px;
+  font-size: 0.8rem;
+}
+
+.catalog-items.inventory-empty {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.inventory-empty p {
+  margin: 4px 2px;
 }
 
 .item-thumb {

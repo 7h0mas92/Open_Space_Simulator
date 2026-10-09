@@ -75,6 +75,13 @@ describe('shopStatus', () => {
     }));
     expect(shopStatus(desk, { ...view, items }).block).toBe('soldOut');
   });
+
+  it('compte aussi les exemplaires rangés dans l’inventaire', () => {
+    const trashcan = catalogItem('trashcan')!;
+    const inventory = [{ kind: 'trashcan', color: 'natural' as const, count: 2, resale: 45 }];
+    const status = shopStatus(trashcan, { ...view, items: [], inventory });
+    expect(status).toEqual({ owned: 2, block: 'soldOut' });
+  });
 });
 
 describe('accessoires', () => {
@@ -117,7 +124,7 @@ describe('accessoires', () => {
       host: { id: 'd', slot: 0 },
     });
     expect(
-      checkPlacement(layout, [desk, duck(0), duck(1)], {
+      checkPlacement(layout, [desk, duck(0), duck(1), duck(2)], {
         kind: 'rubber-duck',
         x: 2,
         z: 2,
@@ -125,9 +132,9 @@ describe('accessoires', () => {
       }),
     ).toBe('surfaceFull');
     // L'accessoire déplacé libère sa propre place, et ne bloque pas le sol.
-    expect(resolveAccessory([desk, duck(0), duck(1)], { x: 2, z: 2, ignoreId: 'duck0' })).toEqual({
-      host: { id: 'd', slot: 0 },
-    });
+    expect(
+      resolveAccessory([desk, duck(0), duck(1), duck(2)], { x: 2, z: 2, ignoreId: 'duck0' }),
+    ).toEqual({ host: { id: 'd', slot: 0 } });
     expect(checkPlacement(layout, [duck(0)], { ...plant, x: 2, z: 2 })).toBeNull();
   });
 

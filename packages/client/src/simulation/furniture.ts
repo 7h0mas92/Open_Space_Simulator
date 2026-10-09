@@ -1,4 +1,5 @@
 import {
+  INVENTORY_MAX,
   OFFICE_SIZE,
   officeWidthWithWings,
   PHASES,
@@ -61,9 +62,12 @@ export function canPlace(
   return true;
 }
 
+/** Exemplaires possédés : posés dans l'open space ou rangés dans l'inventaire. */
 function countOf(state: GameState, itemId: string): number {
-  return query(state, 'furniture').filter((id) => state.components.furniture[id]?.itemId === itemId)
-    .length;
+  const placed = query(state, 'furniture').filter(
+    (id) => state.components.furniture[id]?.itemId === itemId,
+  ).length;
+  return placed + state.inventory.filter((stored) => stored.itemId === itemId).length;
 }
 
 /** Ajoute un objet sans le payer (aménagement de départ). */
@@ -176,6 +180,106 @@ export function moveAccessory(
   placed.x = host.x;
   placed.y = host.y;
   placed.rotation = rotation;
+  return { ok: true };
+}
+
+/**
+ * Range un objet posé dans l'inventaire, avec les accessoires posés dessus. Gratuit : rien n'est
+ * revendu, l'objet garde son prix d'achat et sa couleur, mais il ne donne plus aucun effet.
+ */
+export function storeFurniture(state: GameState, furnitureId: EntityId): CommandResult {
+  const placed = state.components.furniture[furnitureId];
+  if (!placed) return { ok: false, error: 'NOT_FOUND' };
+  const ids = [...accessoriesOf(state, furnitureId), furnitureId];
+  if (state.inventory.length + ids.length > INVENTORY_MAX)
+    return { ok: false, error: 'INVENTORY_FULL' };
+  for (const id of ids) {
+    const item = state.components.furniture[id];
+    if (!item) continue;
+    state.inventory.push({
+      itemId: item.itemId,
+      purchasePrice: item.purchasePrice,
+      ...(item.color ? { color: item.color } : {}),
+    });
+    destroyEntity(state, id);
+  }
+  return { ok: true };
+}
+
+/**
+ * Position dans l'inventaire du premier objet rangé de ce type et de cette couleur (`natural` ou
+ * absente : couleurs d'origine), ou -1.
+ */
+function storedIndex(state: GameState, itemId: string, color?: FurnitureColor): number {
+  const wanted = color && color !== 'natural' ? color : undefined;
+  return state.inventory.findIndex((stored) => stored.itemId === itemId && stored.color === wanted);
+}
+
+/** Ressort un objet de l'inventaire et le pose au sol. */
+export function placeStored(
+  state: GameState,
+  itemId: string,
+  color: FurnitureColor | undefined,
+  x: number,
+  y: number,
+  rotation: number,
+): CommandResult {
+  const index = storedIndex(state, itemId, color);
+  const stored = state.inventory[index];
+  const item = stored ? getFurniture(stored.itemId) : undefined;
+  if (!stored || !item) return { ok: false, error: 'NOT_FOUND' };
+  if (item.accessory || !canPlace(state, item, x, y, rotation))
+    return { ok: false, error: 'INVALID_PLACEMENT' };
+  state.inventory.splice(index, 1);
+  placeFurniture(state, item.id, x, y, rotation, stored.purchasePrice, stored.color);
+  return { ok: true };
+}
+
+/** Ressort un accessoire de l'inventaire et le pose sur un meuble à plateau. */
+export function placeStoredAccessory(
+  state: GameState,
+  itemId: string,
+  color: FurnitureColor | undefined,
+  hostId: EntityId,
+  slot: number,
+  rotation: number,
+): CommandResult {
+  const index = storedIndex(state, itemId, color);
+  const stored = state.inventory[index];
+  const item = stored ? getFurniture(stored.itemId) : undefined;
+  const host = state.components.furniture[hostId];
+  if (!stored || !item || !host) return { ok: false, error: 'NOT_FOUND' };
+  if (!item.accessory || !canHost(state, hostId, slot))
+    return { ok: false, error: 'INVALID_PLACEMENT' };
+  state.inventory.splice(index, 1);
+  const id = placeFurniture(
+    state,
+    item.id,
+    host.x,
+    host.y,
+    rotation,
+    stored.purchasePrice,
+    stored.color,
+  );
+  const placed = state.components.furniture[id];
+  if (placed) {
+    placed.hostId = hostId;
+    placed.slot = slot;
+  }
+  return { ok: true };
+}
+
+/** Revend un objet rangé dans l'inventaire, au même prix qu'un objet posé. */
+export function sellStored(
+  state: GameState,
+  itemId: string,
+  color: FurnitureColor | undefined,
+): CommandResult {
+  const index = storedIndex(state, itemId, color);
+  const stored = state.inventory[index];
+  if (!stored) return { ok: false, error: 'NOT_FOUND' };
+  state.inventory.splice(index, 1);
+  addMoney(state, stored.purchasePrice * RESALE_RATIO);
   return { ok: true };
 }
 
