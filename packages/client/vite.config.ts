@@ -37,6 +37,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,glb,gltf,ogg,mp3,woff2}'],
+        // Les musiques (25 Mo) ne sont pas installées d'avance : elles sont lues en flux quand
+        // on joue en ligne, et hors ligne le jeu reste jouable, simplement sans musique.
+        globIgnores: ['**/assets/music/**'],
         // Le chunk Three.js et certains modèles dépassent la limite par défaut (2 Mo).
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // Les routes de l'API ne doivent jamais recevoir index.html.
