@@ -1,9 +1,9 @@
 /**
  * Formes Three.js qui remplacent les modèles absents des packs Kenney (babyfoot, toboggan,
  * sieste-pod, bureau debout, casques, baie de serveurs, machines à café, frigo à boissons,
- * cactus, écran de métriques, ramen, casque et mini-cactus de bureau, tapis de souris,
- * litières, gamelles, arbres à chat, canapé et bibliothèque détaillés) et servent de secours
- * si un GLB ne se charge pas.
+ * cactus, écran de métriques, ramen, casque et mini-cactus de bureau, tapis de souris, clavier
+ * QWERTY (voir `keyboard.ts`), litières, gamelles, arbres à chat, canapé et bibliothèque
+ * détaillés) et servent de secours si un GLB ne se charge pas.
  * Chaque forme assemble des primitives (boîtes, cylindres) dans la palette low-poly du
  * Furniture Kit, en unités de grille : une case mesure 1 x 1, l'objet est posé au sol (y = 0)
  * et regarde vers +z, comme les modèles Kenney.
@@ -11,6 +11,7 @@
 import * as THREE from 'three';
 import type { MissingAssetId } from './assetManifest';
 import { detailedBookcase, detailedSofa } from './furnitureDetail';
+import { qwertyKeyboard } from './keyboard';
 
 export const PALETTE = {
   wood: 0xc8935b,
@@ -849,6 +850,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   deskHeadset,
   miniCactus,
   mousePad,
+  qwertyKeyboard,
   litterOpen,
   litterCovered,
   litterRobot,

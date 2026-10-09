@@ -137,7 +137,8 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     use: 'desk',
     parts: [
       part(kenney('computerScreen'), [-0.35, DESK_TOP, -0.15]),
-      part(kenney('computerKeyboard'), [-0.35, DESK_TOP, 0.17]),
+      // Clavier QWERTY à vraies touches (celui du kit Kenney est un pavé lisse).
+      part(primitive('qwertyKeyboard'), [-0.35, DESK_TOP, 0.17]),
       // La souris, un peu agrandie, sur un tapis sombre qui la détache du plateau.
       part(primitive('mousePad'), [0.08, DESK_TOP, 0.15]),
       part(kenney('computerMouse'), [0.08, DESK_TOP + MOUSE_PAD, 0.15], { scale: MOUSE_SCALE }),
