@@ -2765,3 +2765,115 @@ legend {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* --- Filtres et tri de l'équipe ------------------------------------------------------- */
+
+.team-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.team-filters-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.team-sort,
+.team-role {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+.team-filters-toggle {
+  flex: none;
+  gap: 0.5rem;
+}
+
+.team-filters-toggle.active {
+  border-color: var(--accent);
+}
+
+.team-filters-toggle .badge {
+  font-size: 0.75rem;
+}
+
+.team-filters-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+}
+
+.team-filters-panel fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.team-filters-panel legend {
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.team-filters-panel .hint {
+  margin: 0;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-chip {
+  gap: 0.35rem;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.filter-chip.grade-chip {
+  font-size: 1rem;
+}
+
+.filter-chip[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.team-filters-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.conflict-tag {
+  color: var(--danger);
+}
+
+/* La ligne d'un dev garde son nom lisible : l'activité passe à la ligne avant lui. */
+.dev-row-main {
+  flex: 1 1 50%;
+  min-width: 0;
+}
+
+.dev-row-activity {
+  flex: 0 1 auto;
+  text-align: right;
+}
