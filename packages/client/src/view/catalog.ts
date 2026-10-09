@@ -59,6 +59,19 @@ interface ItemLook {
    * (centre de l'emprise, avant rotation).
    */
   readonly perches?: readonly (readonly [number, number, number])[];
+  /**
+   * Arbre à chat : pompons sous lesquels un chat joue [x, hauteur, z], dans le repère du meuble.
+   * Le chat se dresse devant le socle et tape la balle.
+   */
+  readonly toys?: readonly (readonly [number, number, number])[];
+  /**
+   * Gamelle : où le chat se tient pour manger et pour boire [x, z], dans le repère du meuble.
+   * Il regarde vers l'arrière du meuble (-z), la tête au-dessus du bol.
+   */
+  readonly feeding?: {
+    readonly food: readonly [number, number];
+    readonly water: readonly [number, number];
+  };
 }
 
 /** Matériaux repeints par défaut : le bois et le tissu des modèles Kenney. */
@@ -108,6 +121,9 @@ const TRESTLE_TOP = 0.69;
 const TV_CABINET_TOP = 0.62;
 const STANDING_TOP = 1.1;
 const BOOKCASE_TOP = 1.58;
+/** Épaisseur du tapis de souris (`mousePad`) et agrandissement de la souris Kenney posée dessus. */
+const MOUSE_PAD = 0.012;
+const MOUSE_SCALE: readonly [number, number, number] = [1.35, 1.35, 1.35];
 
 type SimItemId = (typeof FURNITURE_CATALOG)[number]['id'];
 
@@ -123,7 +139,9 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       part(kenney('computerScreen'), [-0.35, DESK_TOP, -0.15]),
       // Clavier QWERTY à vraies touches (celui du kit Kenney est un pavé lisse).
       part(primitive('qwertyKeyboard'), [-0.35, DESK_TOP, 0.17]),
-      part(kenney('computerMouse'), [0.05, DESK_TOP, 0.17]),
+      // La souris, un peu agrandie, sur un tapis sombre qui la détache du plateau.
+      part(primitive('mousePad'), [0.08, DESK_TOP, 0.15]),
+      part(kenney('computerMouse'), [0.08, DESK_TOP + MOUSE_PAD, 0.15], { scale: MOUSE_SCALE }),
     ],
     surface: [
       [0.3, DESK_TOP, -0.18],
@@ -131,7 +149,7 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       [0.75, DESK_TOP, -0.18],
     ],
   },
-  // Le bureau du garage : tréteaux, un portable et des ramen.
+  // Le bureau du garage : tréteaux, un portable avec sa souris et des ramen.
   'ikea-desk': {
     category: 'work',
     model: kenney('tableCross'),
@@ -139,6 +157,8 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     use: 'desk',
     parts: [
       part(kenney('laptop'), [-0.3, TRESTLE_TOP, 0], { turn: 0 }),
+      part(primitive('mousePad'), [0.14, TRESTLE_TOP, 0.12]),
+      part(kenney('computerMouse'), [0.14, TRESTLE_TOP + MOUSE_PAD, 0.12], { scale: MOUSE_SCALE }),
       part(primitive('ramen'), [0.45, TRESTLE_TOP, 0.05]),
     ],
     surface: [
@@ -165,17 +185,12 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 1.2,
     paint: ['dark'],
   },
-  // Bibliothèque garnie de livres sur chaque étagère.
+  // Bibliothèque en bois : livres un par un, placard, paniers, plante, cadre et trophée.
   bookcase: {
     category: 'work',
-    model: kenney('bookcaseClosedWide'),
+    model: primitive('bookcase'),
     height: 1.6,
-    parts: [
-      part(kenney('books'), [-0.45, 0.06, 0]),
-      part(kenney('books'), [0.2, 0.06, 0]),
-      part(kenney('books'), [0.45, 0.56, 0], { turn: 2 }),
-      part(kenney('books'), [-0.3, 1.04, 0]),
-    ],
+    paint: ['wood', 'woodDark'],
     surface: [
       [-0.45, BOOKCASE_TOP, 0],
       [0.45, BOOKCASE_TOP, 0],
@@ -252,7 +267,14 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   },
   speaker: { category: 'fun', model: kenney('speaker'), height: 1.25 },
   slide: { category: 'fun', model: primitive('slide'), height: 2, paint: ['red'] },
-  sofa: { category: 'comfort', model: kenney('loungeSofa'), height: 0.9, use: 'rest' },
+  // Canapé en tissu : coussins, accoudoirs roulés, pieds en bois, coussins décoratifs, plaid.
+  sofa: {
+    category: 'comfort',
+    model: primitive('sofa'),
+    height: 0.9,
+    use: 'rest',
+    paint: ['fabric', 'fabricDark'],
+  },
   'nap-pod': {
     category: 'comfort',
     model: primitive('napPod'),
@@ -288,14 +310,27 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 0.66,
     paint: ['white'],
   },
-  'cat-bowl': { category: 'pets', model: primitive('catBowl'), height: 0.16, paint: ['wood'] },
-  'cat-feeder': { category: 'pets', model: primitive('catFeeder'), height: 0.5, paint: ['white'] },
+  'cat-bowl': {
+    category: 'pets',
+    model: primitive('catBowl'),
+    height: 0.16,
+    paint: ['wood'],
+    feeding: { food: [0.15, 0.42], water: [-0.15, 0.42] },
+  },
+  'cat-feeder': {
+    category: 'pets',
+    model: primitive('catFeeder'),
+    height: 0.5,
+    paint: ['white'],
+    feeding: { food: [-0.18, 0.46], water: [0.18, 0.46] },
+  },
   'cat-tree-small': {
     category: 'pets',
     model: primitive('catTreeSmall'),
     height: 0.96,
     paint: ['plush'],
     perches: [[0, 0.88, 0]],
+    toys: [[0.24, 0, 0.46]],
   },
   'cat-tree-medium': {
     category: 'pets',
@@ -306,6 +341,7 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       [-0.5, 1.26, 0],
       [0.5, 0.86, 0],
     ],
+    toys: [[0.15, 0, 0.46]],
   },
   'cat-tree-large': {
     category: 'pets',
@@ -316,6 +352,10 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       [0, 1.66, 0],
       [-1, 0.79, 0],
       [1, 1.18, 0],
+    ],
+    toys: [
+      [0.25, 0, 0.46],
+      [1.2, 0, 0.48],
     ],
   },
   // Accessoires : petits objets posés sur les meubles à plateau (voir `surface`).

@@ -3401,6 +3401,10 @@ legend {
   color: #ff9b8f;
 }
 
+.meeting-log .crisis {
+  color: #ffc77a;
+}
+
 .meeting-log {
   display: flex;
   flex-direction: column;

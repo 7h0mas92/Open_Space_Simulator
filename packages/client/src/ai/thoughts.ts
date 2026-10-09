@@ -49,9 +49,15 @@ export interface ThoughtContext {
   readonly fridayFive: boolean;
 }
 
+/** Pensées de la réunion de crise (salle de réunion, prod en panne). */
+const CRISIS: readonly string[] = ['whoDeployed', 'rollback', 'postMortem'];
+
 /** Choisit une pensée, ou `null` si le personnage n'a rien à dire. */
 export function pickThought(context: ThoughtContext, random: Random): string | null {
   if (context.activity === 'REMOTE') return null;
+  // Réunion pendant une panne : c'est la cellule de crise.
+  if (context.incident && context.activity === 'MEETING' && random.chance(0.7))
+    return random.pick(CRISIS);
   if (context.incident && random.chance(0.6)) return 'prodDown';
   if (context.fridayFive && random.chance(0.4)) return 'fridayDeploy';
   if (context.morale < 25 && random.chance(0.5)) return 'quit';
@@ -65,6 +71,7 @@ export const ALL_THOUGHTS: readonly string[] = [
   'prodDown',
   'fridayDeploy',
   'quit',
+  ...CRISIS,
   ...Object.values(BY_ROLE),
   ...Object.values(BY_ACTIVITY).flat(),
 ];

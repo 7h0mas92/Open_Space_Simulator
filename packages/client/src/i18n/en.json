@@ -91,6 +91,9 @@
     "coffeeFuel": "Coffee = code",
     "thirdCup": "3rd cup, I'm fine",
     "couldBeEmail": "This could have been an email",
+    "whoDeployed": "Who deployed?",
+    "rollback": "Do we roll back?",
+    "postMortem": "The post-mortem will be epic",
     "youAreMuted": "You're on mute",
     "didYouSee": "Did you watch the keynote?",
     "newFramework": "New JS framework!",
@@ -689,6 +692,7 @@
       "annexDecor": "Office annex decor: arcade cabinets, pinball, neon sign, tree, fountain, stage, lectern and projection screen as Three.js shapes (bench, potted plant and speakers from the Furniture Kit)",
       "deskHeadset": "Noise-cancelling headset on its stand",
       "miniCactus": "Mini desk cactus",
+      "mousePad": "Mouse pad",
       "qwertyKeyboard": "QWERTY keyboard with keys",
       "litterOpen": "Open litter tray: tray, sand and scoop",
       "litterCovered": "Covered litter box with a flap door",
@@ -702,7 +706,9 @@
       "windowSmall": "Small window and its wall section",
       "windowMedium": "Two-tile window",
       "windowLarge": "Large three-tile window",
-      "glassWall": "Floor-to-ceiling glass wall (building glass)"
+      "glassWall": "Floor-to-ceiling glass wall (building glass)",
+      "sofa": "Fabric sofa: cushions, rolled arms, wooden legs, throw pillows and a plaid",
+      "bookcase": "Stocked bookcase: individual books, cupboard, baskets, plant, frame and trophy"
     },
     "back": "Back"
   },
@@ -1572,7 +1578,11 @@
     "sellWhen": "Stakes are sold during planning or the demo."
   },
   "meetings": {
-    "intro": "Fit out the office meeting room. Each format has a perk and a drawback, and the team meets there every weekday morning at {{hour}}: a useful meeting pays off, a useless one costs morale.",
+    "intro": "Fit out the office meeting room. Each format has a perk and a drawback, and the team meets there every weekday morning at {{hour}}, as soon as they arrive, for {{minutes}} minutes: a useful meeting pays off, a useless one costs morale.",
+    "crisisIntro": "When prod goes down, the room becomes a crisis cell: the culprit if there is one, the {{count}} most solid devs (DevOps and Tech Lead first, culprit included) and the Product Owner or a manager meet there for half an hour. On the way out, the best one takes \"Fix prod\", already under way.",
+    "crisis": "Crisis meetings",
+    "crisisOne": "Crisis meeting",
+    "crisisOdds": "Crisis meeting: fix {{percent}}% done",
     "locked": "No meeting room in the garage: it comes with the Seed office, after your first funding round.",
     "current": "Current room",
     "empty": "The room is empty: no morning team meeting, and no effect. Pick a format below.",

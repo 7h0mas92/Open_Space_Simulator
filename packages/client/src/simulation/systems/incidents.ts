@@ -1,6 +1,7 @@
 import { BALANCE, type EntityId, type GameState, type LocalizedText } from '@oss/shared';
 import { forceCard } from '../../events/draw';
 import { addGauge, addUsers, devsWithRole, notify, text, type SimContext } from '../helpers';
+import { holdCrisisMeeting } from '../meetings';
 import { recordIncident } from '../performance';
 import { urgentProdFix } from '../taskFlow';
 import type { SimClock } from '../time';
@@ -8,7 +9,10 @@ import type { SimClock } from '../time';
 /** Identifiant de la carte « Vendredi 17h04, la prod est down ». */
 export const FRIDAY_CARD_ID = 'friday-prod-down';
 
-/** La prod tombe : stabilité, utilisateurs et hype en prennent un coup. */
+/**
+ * La prod tombe : stabilité, utilisateurs et hype en prennent un coup, et une urgence « Réparer
+ * la prod » s'ouvre (avec une réunion de crise si la salle de réunion est aménagée).
+ */
 export function prodDown(
   state: GameState,
   ctx: SimContext,
@@ -23,7 +27,9 @@ export function prodDown(
   state.stats.prodOutages += 1;
   if (devId) recordIncident(state, devId);
   notify(state, ctx, 'PROD_DOWN', cause, devId);
-  urgentProdFix(state, ctx);
+  const fixId = urgentProdFix(state, ctx);
+  // Salle de réunion aménagée : les personnes concernées s'y réunissent en cellule de crise.
+  if (fixId) holdCrisisMeeting(state, ctx, fixId, devId);
 }
 
 /**

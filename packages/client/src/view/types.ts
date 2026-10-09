@@ -485,6 +485,8 @@ export interface MeetingFormatView {
   readonly minPhase: Phase;
   /** Chance que la réunion d'équipe du matin soit utile (0 à 1). */
   readonly usefulOdds: number;
+  /** Réunion de crise : part de « Réparer la prod » faite en sortant de la salle (0 à 1). */
+  readonly crisisHeadStart: number;
   /** Pourquoi on ne peut pas la choisir maintenant, sinon null. */
   readonly blocker: 'LOCKED' | 'WRONG_STAGE' | 'NOT_ELIGIBLE' | 'NOT_ENOUGH_MONEY' | null;
 }
@@ -500,10 +502,13 @@ export interface MeetingRoomView {
   readonly formats: readonly MeetingFormatView[];
   readonly useful: number;
   readonly useless: number;
-  /** Dernières réunions d'équipe, de la plus récente à la plus ancienne. */
+  /** Réunions de crise tenues quand la prod est tombée. */
+  readonly crisis: number;
+  /** Dernières réunions (du matin ou de crise), de la plus récente à la plus ancienne. */
   readonly recent: readonly {
     readonly tick: number;
     readonly useful: boolean;
+    readonly crisis: boolean;
     readonly text: LocalizedText;
   }[];
 }

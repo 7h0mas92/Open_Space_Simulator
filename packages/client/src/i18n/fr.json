@@ -91,6 +91,9 @@
     "coffeeFuel": "Café = code",
     "thirdCup": "3e tasse, ça va",
     "couldBeEmail": "Ça aurait pu être un mail",
+    "whoDeployed": "Qui a déployé ?",
+    "rollback": "On rollback ?",
+    "postMortem": "Le post-mortem sera épique",
     "youAreMuted": "Tu es en sourdine",
     "didYouSee": "T'as vu la keynote ?",
     "newFramework": "Nouveau framework JS !",
@@ -689,6 +692,7 @@
       "annexDecor": "Décor des annexes du bureau : bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran de projection en formes Three.js (banc, plante en pot et enceintes du Furniture Kit)",
       "deskHeadset": "Casque antibruit sur son support",
       "miniCactus": "Mini-cactus de bureau",
+      "mousePad": "Tapis de souris",
       "qwertyKeyboard": "Clavier QWERTY à touches",
       "litterOpen": "Litière ouverte : bac, sable et pelle",
       "litterCovered": "Litière fermée avec porte battante",
@@ -702,7 +706,9 @@
       "windowSmall": "Petite fenêtre et son pan de mur",
       "windowMedium": "Fenêtre de deux cases",
       "windowLarge": "Grande fenêtre de trois cases",
-      "glassWall": "Baie vitrée pleine hauteur (vitre de building)"
+      "glassWall": "Baie vitrée pleine hauteur (vitre de building)",
+      "sofa": "Canapé en tissu : coussins, accoudoirs roulés, pieds en bois, coussins décoratifs et plaid",
+      "bookcase": "Bibliothèque garnie : livres un par un, placard, paniers, plante, cadre et trophée"
     },
     "back": "Retour"
   },
@@ -1572,7 +1578,11 @@
     "sellWhen": "On revend ses parts pendant la planification ou la démo."
   },
   "meetings": {
-    "intro": "Aménage la salle de réunion du bureau. Chaque formule a un bonus et un malus, et l'équipe s'y retrouve chaque matin de semaine à {{hour}} : une réunion utile rapporte quelque chose, une réunion inutile coûte du moral.",
+    "intro": "Aménage la salle de réunion du bureau. Chaque formule a un bonus et un malus, et l'équipe s'y retrouve chaque matin de semaine à {{hour}}, dès son arrivée, pendant {{minutes}} minutes : une réunion utile rapporte quelque chose, une réunion inutile coûte du moral.",
+    "crisisIntro": "Quand la prod tombe, la salle devient une cellule de crise : le coupable s'il y en a un, les {{count}} devs les plus solides (DevOps et Tech Lead d'abord, coupable compris) et le Product Owner ou un manager s'y réunissent une demi-heure. En sortant, le meilleur prend « Réparer la prod », déjà avancée.",
+    "crisis": "Réunions de crise",
+    "crisisOne": "Réunion de crise",
+    "crisisOdds": "Réunion de crise : réparation avancée de {{percent}} %",
     "locked": "Pas de salle de réunion au garage : elle arrive avec le bureau de la Seed, après ta 1re levée de fonds.",
     "current": "Salle actuelle",
     "empty": "La salle est vide : pas de réunion d'équipe le matin, et aucun effet. Choisis une formule ci-dessous.",

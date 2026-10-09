@@ -409,8 +409,11 @@ flowchart LR
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
   panneau « 🐈 Chats » permet d'adopter jusqu'à 5 chats (5 000 € chacun, 6 robes au choix). Ils
-  se baladent dans l'open space, mangent, se cachent dans la litière fermée, grimpent dans les
-  arbres à chat et sur les canapés, et dorment surtout la nuit. Un chat bien équipé donne du moral
+  se baladent dans l'open space selon leurs besoins (faim, soif, litière, fatigue, envie de
+  jouer) : ils mangent leurs croquettes puis boivent souvent juste après, passent à la litière
+  (cachés dans la litière fermée), jouent avec le pompon de l'arbre à chat en sautant d'un
+  plateau à l'autre, puis s'y endorment, et dorment surtout la nuit. Deux chats ne se posent
+  jamais au même endroit. Un chat bien équipé donne du moral
   et un peu de hype ; s'il manque de l'équipement, il boude. Le confier à une famille n'est pas
   remboursé et attriste l'équipe (`shared/sim/pets.ts`, `ai/cats.ts`, `render/pets.ts`).
 - **Musique** : sept morceaux originaux suivent le moment de la partie : « tycoon » au menu,
@@ -600,10 +603,10 @@ génère que des messages Slack.
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
-  gamelles, arbres à chat et chats, tableau blanc, horloge,
+  gamelles, arbres à chat et chats, canapé et bibliothèque détaillés, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
-  ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Pour les
+  ses bancs…), pour que chacun ait un rendu qui lui est propre. Pour les
   effets sonores et l'ambiance, le lecteur audio (Howler.js) est prêt : il suffit de déposer les
   fichiers et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans la
   page Crédits du jeu.

@@ -2,7 +2,8 @@
  * Chats du bureau en formes Three.js (aucun chat dans les packs Kenney fournis) : un corps,
  * une tête avec oreilles, quatre pattes et une queue en deux segments, aux couleurs de la robe
  * choisie (roux, noir, blanc, tigré, siamois, écaille de tortue). Les postures sont animées
- * par le code : marche, assis, sieste roulé en boule, repas, toilette.
+ * par le code : marche, assis, sieste roulé en boule, repas, boire à petits coups de langue,
+ * toilette, et dressé sur les pattes arrière pour taper le pompon de l'arbre à chat.
  *
  * Le rendu lit les instantanés de `ai/cats.ts` et ne modifie jamais l'état du jeu.
  */
@@ -170,6 +171,31 @@ export function poseCat(rig: CatRig, pose: CatPose, time: number, animate: boole
       tail.rotation.x = 0.4;
       tailTip.rotation.y = wave * 0.5;
       break;
+    case 'drink': {
+      // Tête plongée dans le bol, petits coups de langue rapides.
+      const lap = animate ? Math.sin(time * 14) * 0.012 : 0;
+      head.rotation.x = 0.95;
+      head.position.set(0, 0.04 + lap, 0.18);
+      legs.forEach((leg, i) => (leg.rotation.x = i < 2 ? -0.25 : 0));
+      tail.rotation.x = 0.2;
+      tailTip.rotation.y = wave * 0.3;
+      break;
+    }
+    case 'play': {
+      // Dressé sur les pattes arrière, il tape la balle à coups de patte alternés.
+      const swat = animate ? Math.sin(time * 9) : 0;
+      body.rotation.x = -1;
+      body.position.y = 0.23;
+      head.rotation.x = 0.55;
+      legs.forEach((leg, i) => {
+        if (i === 0) leg.rotation.x = -0.9 + swat * 0.7;
+        else if (i === 1) leg.rotation.x = -0.9 - swat * 0.7;
+        else leg.rotation.x = 1;
+      });
+      tail.rotation.set(-0.2, 0, 0);
+      tailTip.rotation.y = wave * 0.9;
+      break;
+    }
     case 'groom':
       body.rotation.x = -0.55;
       body.position.y = 0.16;

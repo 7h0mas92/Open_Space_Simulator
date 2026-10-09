@@ -512,7 +512,11 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `seed#pet#n` sans toucher au RNG. Commandes `ADOPT_PET` / `REHOME_PET`, état `pets` (vide par
   défaut), stat `petsAdopted`. Chats en Three.js (`render/pets.ts`) qui se baladent en A*, mangent,
   se cachent dans la litière fermée, grimpent aux perchoirs et dorment surtout la nuit
-  (`ai/cats.ts`, graine à part, rendu seulement).
+  (`ai/cats.ts`, graine à part, rendu seulement). Besoins par chat (faim, soif, litière, fatigue,
+  envie de jouer) : croquettes puis souvent eau juste après (places `feeding` devant chaque bol),
+  litière, jeu sous le pompon de l'arbre à chat (`toys`, postures « jouer » et « boire ») en
+  sautant d'un plateau à l'autre, puis sieste. Places réservées : deux chats ne se posent jamais
+  au même endroit, et ils contournent ceux couchés par terre.
 - Équipe web (`shared/sim/teamRoles.ts`, `client/src/simulation/leadership.ts`) : 10 métiers en
   plus des 8 profils (`WEB_ROLES`). Devs Front, Back et Fullstack : côté de la tâche déduit du
   titre anglais (mots-clés puis hachage, sans tirage), `BALANCE.stacks` (1,15 de son côté, 0,6 de
@@ -530,6 +534,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `musicMoodOf`, `ui/useMusic.ts`). Fondu de 1,5 s, reprise du morceau là où il était, lecture en
   flux HTML5, démarrage au premier clic, volume « Musique » des options. Hors précache de la PWA
   (25 Mo) : hors ligne, pas de musique. Crédits : « compositions originales de l'équipe du projet ».
+- Canapé et bibliothèque détaillés (`render/furnitureDetail.ts`, formes `sofa` et `bookcase` des
+  assets manquants) : canapé en tissu gris-bleu (pieds en bois, accoudoirs roulés, coussins
+  séparés, coussins déco, plaid), bibliothèque à deux colonnes (placard, paniers, livres un par un,
+  livres penchés et empilés, plante, cadre, trophée). Pièces fusionnées par matériau, tirages sur
+  une graine fixe propre au fichier ; tissu repeignable (`fabric`, `fabricDark`), dessus de la
+  bibliothèque à 1,58 et assise à 0,44 inchangés. Les modèles Kenney restent dans les salles de
+  réunion.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
