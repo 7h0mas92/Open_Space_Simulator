@@ -6,6 +6,10 @@ import {
   type EventCard,
   type GameMode,
   type GameState,
+  OBJECTIVE_DIFFICULTIES,
+  OBJECTIVE_KINDS,
+  type ObjectiveDifficulty,
+  type ObjectiveKind,
   type Outcome,
   type Phase,
 } from '@oss/shared';
@@ -99,6 +103,17 @@ export interface GameRecord {
   /** Succès débloqués pendant la partie. */
   achievements: string[];
   trace: GaugeTrace;
+  /** Tâches dynamiques : urgences et tâches hebdo réussies ou ratées, objectifs de sprint. */
+  flow: FlowRecord;
+}
+
+export interface FlowRecord {
+  urgentDone: number;
+  urgentMissed: number;
+  weeklyDone: number;
+  weeklyMissed: number;
+  /** Objectifs de sprint : [type, difficulté, réussi]. */
+  objectives: [ObjectiveKind, ObjectiveDifficulty, boolean][];
 }
 
 export function playBalanceGame(
@@ -135,6 +150,23 @@ export function playBalanceGame(
     },
     achievements: [...state.achievements],
     trace: traceGauges(state),
+    flow: {
+      urgentDone: state.stats.urgentDone,
+      urgentMissed: state.stats.urgentMissed,
+      weeklyDone: state.stats.weeklyDone,
+      weeklyMissed: state.stats.weeklyMissed,
+      objectives: state.history.sprints.flatMap((report) =>
+        report.objective
+          ? [
+              [
+                report.objective.kind,
+                report.objective.difficulty,
+                report.objective.status === 'SUCCESS',
+              ] as [ObjectiveKind, ObjectiveDifficulty, boolean],
+            ]
+          : [],
+      ),
+    },
   };
 }
 
@@ -197,6 +229,61 @@ export interface BalanceReport {
   alerts: CardAlert[];
   /** Part des parties qui débloquent chaque succès (vérifie que la difficulté annoncée est juste). */
   achievements: AchievementRate[];
+  /** Tâches dynamiques par bot, et réussite des objectifs par type et difficulté. */
+  flow: { bots: FlowSummary[]; objectives: ObjectiveRate[] };
+}
+
+export interface FlowSummary {
+  bot: BotName;
+  urgentPerGame: number;
+  urgentSuccess: number;
+  weeklySuccess: number;
+  objectivesPerGame: number;
+  objectiveSuccess: number;
+}
+
+export interface ObjectiveRate {
+  kind: ObjectiveKind;
+  difficulty: ObjectiveDifficulty;
+  count: number;
+  success: number;
+}
+
+function summarizeFlow(bot: BotName, records: GameRecord[]): FlowSummary {
+  const n = Math.max(1, records.length);
+  const sum = (pick: (flow: FlowRecord) => number) =>
+    records.reduce((total, record) => total + pick(record.flow), 0);
+  const urgent = sum((f) => f.urgentDone + f.urgentMissed);
+  const weekly = sum((f) => f.weeklyDone + f.weeklyMissed);
+  const objectives = sum((f) => f.objectives.length);
+  return {
+    bot,
+    urgentPerGame: urgent / n,
+    urgentSuccess: urgent > 0 ? sum((f) => f.urgentDone) / urgent : 0,
+    weeklySuccess: weekly > 0 ? sum((f) => f.weeklyDone) / weekly : 0,
+    objectivesPerGame: objectives / n,
+    objectiveSuccess:
+      objectives > 0 ? sum((f) => f.objectives.filter(([, , ok]) => ok).length) / objectives : 0,
+  };
+}
+
+function objectiveRates(records: GameRecord[]): ObjectiveRate[] {
+  const rates: ObjectiveRate[] = [];
+  for (const kind of OBJECTIVE_KINDS) {
+    for (const difficulty of OBJECTIVE_DIFFICULTIES) {
+      let count = 0;
+      let success = 0;
+      for (const record of records) {
+        for (const [k, d, ok] of record.flow.objectives) {
+          if (k !== kind || d !== difficulty) continue;
+          count += 1;
+          if (ok) success += 1;
+        }
+      }
+      if (count > 0) rates.push({ kind, difficulty, count, success: success / count });
+    }
+  }
+  return rates;
 }
 
 export interface AchievementRate {
@@ -434,6 +521,15 @@ export function aggregate(allRecords: GameRecord[], cards: CardLibrary): Balance
     choices,
     alerts,
     achievements,
+    flow: {
+      bots: botNames.map((bot) =>
+        summarizeFlow(
+          bot,
+          records.filter((r) => r.bot === bot),
+        ),
+      ),
+      objectives: objectiveRates(records),
+    },
   };
 }
 
@@ -470,6 +566,24 @@ export function renderReport(report: BalanceReport): string {
       lines.push(
         `| ${b.bot} | ${b.ventures.perGame.toFixed(2)} | ${pct(b.ventures.deadShare)} | ×${b.ventures.returnMultiple.toFixed(2)} |`,
       );
+    }
+  }
+  if (report.flow.bots.length > 0) {
+    lines.push('', '## Tâches dynamiques', '');
+    lines.push(
+      'Urgences (prod cassée, faille, gros client...) et tâches de la semaine réussies à temps ; objectifs de sprint réussis.',
+      '',
+      '| Bot | Urgences par partie | Urgences à temps | Hebdo à temps | Objectifs par partie | Objectifs réussis |',
+      '| --- | ---: | ---: | ---: | ---: | ---: |',
+    );
+    for (const f of report.flow.bots) {
+      lines.push(
+        `| ${f.bot} | ${f.urgentPerGame.toFixed(1)} | ${pct(f.urgentSuccess)} | ${pct(f.weeklySuccess)} | ${f.objectivesPerGame.toFixed(1)} | ${pct(f.objectiveSuccess)} |`,
+      );
+    }
+    lines.push('', '| Objectif | Difficulté | Tirages | Réussite |', '| --- | --- | ---: | ---: |');
+    for (const o of report.flow.objectives) {
+      lines.push(`| ${o.kind} | ${o.difficulty} | ${o.count} | ${pct(o.success)} |`);
     }
   }
   lines.push('', '## Taux de faillite par phase', '');

@@ -17,6 +17,7 @@ import {
   type SimContext,
 } from './helpers';
 import { hypeDrift } from './systems/daily';
+import { rollObjective, settleObjective } from './taskFlow';
 import { refillBacklog } from './tasks';
 import { emergencySale, ventureSprint } from './ventures';
 
@@ -29,6 +30,8 @@ function resetTracker(state: GameState): void {
     expenses: 0,
     hypeAtStart: state.gauges.hype,
     incidents: 0,
+    specialDone: 0,
+    specialMissed: 0,
   };
 }
 
@@ -40,6 +43,7 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
   generateCandidates(state, ctx);
   refillBacklog(state, ctx.rng);
   resetTracker(state);
+  rollObjective(state, ctx);
 }
 
 /** Fin de la planification : le sprint démarre. */
@@ -97,7 +101,8 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   const stabilityFactor = 0.5 + state.gauges.stability / 200;
   const designer = hasRole(state, 'DESIGNER') ? 1 + u.designerBonus : 1;
   for (const task of done) {
-    if (!task) continue;
+    // Les urgences et tâches de la semaine ont leur propre récompense, pas d'effet à la démo.
+    if (!task || task.kind) continue;
     if (task.type === 'REFACTO') refactoPoints += task.size;
     if (task.type !== 'FEATURE') continue;
     if (task.hallucinated) {
@@ -117,6 +122,7 @@ export function endSprint(state: GameState, ctx: SimContext): void {
     'hype',
     featurePoints * u.hypePerFeaturePoint * hypeRoom + refactoPoints * u.hypePerRefactoPoint,
   );
+  const objective = settleObjective(state, ctx);
   ventureSprint(state, ctx);
   state.valuation = computeValuation(state);
 
@@ -133,6 +139,9 @@ export function endSprint(state: GameState, ctx: SimContext): void {
     incidents: state.tracker.incidents,
     valuation: state.valuation,
     feedback: pickFeedback(state, ctx, shipped),
+    ...(objective ? { objective } : {}),
+    specialDone: state.tracker.specialDone,
+    specialMissed: state.tracker.specialMissed,
   });
   closeSprintPerformance(state);
   state.stage = 'DEMO';

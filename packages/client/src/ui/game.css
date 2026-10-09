@@ -601,6 +601,41 @@ button.danger {
   color: var(--accent-text);
 }
 
+.urgent-banner {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  bottom: calc(var(--dock-space) + 8px);
+  left: 50%;
+  z-index: 30;
+  max-width: min(30rem, calc(100vw - 32px));
+  min-height: var(--touch);
+  padding: 0.5rem 1rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: #b3261e;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 35%);
+  color: #fff;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.urgent-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.urgent-banner:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .incident-flash {
   position: absolute;
   inset: 0;
@@ -818,6 +853,104 @@ button.danger {
 
 .task-infra {
   border-left-color: #4caf6e;
+}
+
+.task-urgent {
+  border-color: #e0584a;
+  box-shadow: 0 0 0 1px #e0584a;
+}
+
+.task-special {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+}
+
+.tag-urgent {
+  background: #b3261e;
+  color: #fff;
+  font-weight: 700;
+}
+
+.tag-weekly {
+  background: #2f5f9e;
+  color: #fff;
+  font-weight: 700;
+}
+
+.task-due {
+  color: var(--text-muted);
+}
+
+.objective {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.objective-hard {
+  border-left-color: #e0584a;
+}
+
+.objective-medium {
+  border-left-color: #c58bff;
+}
+
+.objective-reached {
+  border-left-color: #4caf6e;
+}
+
+.objective p {
+  margin: 0;
+}
+
+.objective-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.objective .progress {
+  margin: 0;
+  background: var(--bg);
+}
+
+.objective .objective-goal {
+  margin: 4px 0 6px;
+  font-weight: 600;
+}
+
+.objective .objective-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.objective .objective-hint {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.objective-done {
+  background: #2e6b45;
+  color: #fff;
+}
+
+.demo-objective {
+  margin: 0.75rem 0;
+  font-weight: 600;
 }
 
 .task-drag {

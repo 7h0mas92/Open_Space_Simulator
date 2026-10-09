@@ -370,6 +370,37 @@ export function Alerts({ view }: { view: GameView }) {
           <p className="alert alert-friday">⚠ {t('time.friday')}</p>
         )}
       </div>
+      <UrgentBanner view={view} />
     </>
+  );
+}
+
+/** Tâches urgentes ouvertes : un bandeau au-dessus du dock, qui ouvre le Kanban. */
+function UrgentBanner({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const openPanel = useGame((s) => s.openPanel);
+  const panel = useGame((s) => s.panel);
+  const urgent = view.tasks
+    .filter((task) => task.kind === 'URGENT' && task.column !== 'DONE')
+    .sort((a, b) => (a.hoursLeft ?? 0) - (b.hoursLeft ?? 0));
+  const first = urgent[0];
+  // Panneau ouvert (Kanban compris) : le bandeau s'efface pour ne rien masquer.
+  if (view.step !== 'EXECUTION' || !first || panel !== null) return null;
+  const due = t('kanban.hoursLeft', { hours: Math.ceil(first.hoursLeft ?? 0) });
+  const task = localized(first.title, i18n.language);
+  return (
+    <button
+      type="button"
+      className="urgent-banner"
+      data-testid="urgent-banner"
+      onClick={() => openPanel('kanban')}
+    >
+      <span aria-hidden="true">🚨</span>
+      <span className="urgent-text">
+        {urgent.length > 1
+          ? t('time.urgentMore', { task, count: urgent.length - 1, due })
+          : t('time.urgent', { task, due })}
+      </span>
+    </button>
   );
 }

@@ -9,6 +9,7 @@ import {
 } from './components.js';
 import { CommandLogSchema } from './commands.js';
 import { InvestorArchetypeSchema } from './pitch.js';
+import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
 
 /**
@@ -128,6 +129,11 @@ export const SprintReportSchema = z.object({
   valuation: z.number(),
   /** Retours d'utilisateurs (drôles) affichés à la démo. */
   feedback: z.array(LocalizedTextSchema),
+  /** Objectif du sprint, réussi ou raté (absent si le sprint n'en avait pas). */
+  objective: SprintObjectiveSchema.optional(),
+  /** Tâches urgentes et hebdomadaires réussies et ratées pendant le sprint. */
+  specialDone: z.number().int().optional(),
+  specialMissed: z.number().int().optional(),
 });
 export type SprintReport = z.infer<typeof SprintReportSchema>;
 
@@ -139,6 +145,9 @@ export const SprintTrackerSchema = z.object({
   expenses: z.number(),
   hypeAtStart: z.number(),
   incidents: z.number().int(),
+  /** Tâches urgentes et hebdomadaires réussies et ratées pendant le sprint. */
+  specialDone: z.number().int().default(0),
+  specialMissed: z.number().int().default(0),
 });
 export type SprintTracker = z.infer<typeof SprintTrackerSchema>;
 
@@ -168,6 +177,13 @@ export const GameStatsSchema = z.object({
   /** Filiales créées, et dividendes et reventes encaissés. */
   venturesFounded: z.number().int().default(0),
   ventureCashIn: z.number().default(0),
+  /** Tâches urgentes et hebdomadaires terminées à temps ou ratées, objectifs de sprint. */
+  urgentDone: z.number().int().default(0),
+  urgentMissed: z.number().int().default(0),
+  weeklyDone: z.number().int().default(0),
+  weeklyMissed: z.number().int().default(0),
+  objectivesDone: z.number().int().default(0),
+  objectivesFailed: z.number().int().default(0),
 });
 export type GameStats = z.infer<typeof GameStatsSchema>;
 
@@ -200,6 +216,14 @@ export const NOTIFICATION_KINDS = [
   'VENTURE_DIED',
   'VENTURE_SOLD',
   'VENTURE_DIVIDENDS',
+  'URGENT_TASK',
+  'URGENT_DONE',
+  'URGENT_MISSED',
+  'WEEKLY_TASKS',
+  'WEEKLY_MISSED',
+  'OBJECTIVE_SET',
+  'OBJECTIVE_DONE',
+  'OBJECTIVE_FAILED',
   'SPRINT_LOST',
   'GAME_OVER',
   'ACHIEVEMENT_UNLOCKED',
@@ -265,6 +289,8 @@ export const GameStateSchema = z.object({
   /** Filiales créées par la startup (actives, coulées ou revendues). */
   ventures: z.array(VentureSchema).default([]),
   lastVentureSprint: z.number().int().nullable().default(null),
+  /** Objectif du sprint en cours (certains sprints seulement). */
+  objective: SprintObjectiveSchema.nullable().default(null),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

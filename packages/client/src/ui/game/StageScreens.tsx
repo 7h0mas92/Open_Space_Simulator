@@ -1,6 +1,8 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import type { SprintObjective } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import type { EventView, GameView, GaugeName, PitchView } from '../../view/types';
+import { useObjectiveGoal } from '../kanban/Objective';
 import { useGame } from '../store/game';
 import { formatGauge, formatMoney, localized } from './format';
 import { GAUGE_ICONS } from './Hud';
@@ -251,9 +253,21 @@ function DemoScreen({ view }: { view: GameView }) {
             <dd>{report.featuresShipped}</dd>
             <dt>{t('demo.incidents')}</dt>
             <dd>{report.incidents}</dd>
+            {(report.specialDone ?? 0) + (report.specialMissed ?? 0) > 0 && (
+              <>
+                <dt>{t('demo.special')}</dt>
+                <dd>
+                  {t('demo.specialValue', {
+                    done: report.specialDone ?? 0,
+                    missed: report.specialMissed ?? 0,
+                  })}
+                </dd>
+              </>
+            )}
             <dt>{t('demo.valuation')}</dt>
             <dd>{formatGauge('treasury', report.valuation, i18n.language)}</dd>
           </dl>
+          {report.objective && <ObjectiveResult objective={report.objective} />}
           {report.feedback.length > 0 && (
             <>
               <h3>{t('demo.feedback')}</h3>
@@ -306,6 +320,27 @@ function DemoScreen({ view }: { view: GameView }) {
         </section>
       )}
     </Dialog>
+  );
+}
+
+/** Objectif du sprint à la démo : réussi (bonus encaissé) ou raté. */
+function ObjectiveResult({ objective }: { objective: SprintObjective }) {
+  const { t, i18n } = useTranslation();
+  const goal = useObjectiveGoal()(objective);
+  const success = objective.status === 'SUCCESS';
+  const value = objective.value ?? 0;
+  return (
+    <p className={`demo-objective ${success ? 'up' : 'down'}`} data-testid="demo-objective">
+      <span aria-hidden="true">🎯 </span>
+      {success
+        ? t('kanban.objective.success', {
+            goal,
+            money: formatGauge('treasury', objective.reward.treasury, i18n.language),
+          })
+        : objective.kind === 'ZERO_INCIDENT'
+          ? t('kanban.objective.failedOutage', { goal, count: value })
+          : t('kanban.objective.failed', { goal, value, target: objective.target })}
+    </p>
   );
 }
 

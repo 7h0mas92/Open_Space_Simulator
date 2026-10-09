@@ -16,6 +16,7 @@ export const MESSAGE_BURST = 2;
 /** Événements qu'on ne passe jamais sous silence, même quand le canal est saturé. */
 export const URGENT_TRIGGERS: ReadonlySet<SlackTrigger> = new Set<SlackTrigger>([
   'PROD_DOWN',
+  'URGENT_TASK',
   'FUNDS_RAISED',
   'PITCH_FAILED',
   'DEV_RESIGNED',
