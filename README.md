@@ -307,6 +307,12 @@ flowchart LR
   avec son enseigne et deux places dans l'équipe, et six cartes « filiales » peuvent tomber.
   Le hasard des filiales est tiré sur une graine à part (graine + filiale + sprint) : une partie
   sans filiale reste identique au bit près, donc les anciens replays et le Daily restent valides.
+- **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
+  dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
+  les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
+  démissionner une fois sur deux (il part deux planifications plus tard, badge « 🚪 » dans
+  l'équipe), sinon il reste démotivé et perd deux compétences. Réglages dans `BALANCE.raises` ;
+  le hasard est tiré sur une graine à part, sans toucher au tirage du jeu.
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une
