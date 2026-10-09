@@ -292,6 +292,18 @@ flowchart LR
   `BALANCE.performance`). La fiche montre les 2 derniers sprints côte à côte, l'ancienneté,
   l'XP, la tâche en cours, l'allié et la bête noire ; chaque candidat affiche sa performance
   estimée, le salaire du marché et ses chances d'accepter l'offre.
+- **Équipe web** : 10 métiers s'ajoutent aux 8 profils. Les devs Front et Back vont 15 % plus
+  vite de leur côté de la stack et à 60 % de l'autre ; leur spécialité (React, accessibilité,
+  performance web, mobile, Node.js, bases de données, sécurité, cloud) accélère un type de tâche
+  de 20 %. Le dev Fullstack prend les deux côtés à 85 %, avec une qualité plus faible. Le Tech
+  Lead réduit la dette des features, le DevOps ajoute de la stabilité chaque jour, les testeurs
+  ont leurs tâches de recette (🔍) et réduisent la dette. L'encadrement ne prend pas de tâches :
+  scrum master (réunions du PO allégées), managers (1 pour 6 personnes : productivité, moral,
+  conflits apaisés), sous-directeur et directeur technique (productivité, moral, hype). Les
+  postes s'ouvrent selon la taille de l'équipe et la phase ; le bloc « Encadrement » du panneau
+  Équipe résume les effets et les postes ouverts. Chaque planification propose 2 candidats de
+  l'équipe web en plus des 3 habituels, sur une graine à part (`shared/sim/teamRoles.ts`,
+  `client/src/simulation/leadership.ts`).
 - **Filtres de l'équipe** : la liste se filtre par note de performance, situation (en conflit,
   fatigué·e, moral bas, télétravail, au bureau) et métier, filtres cumulables, et se trie par
   performance, moral, énergie, conflits, salaire, ancienneté ou nom. Chaque ligne indique
@@ -562,7 +574,7 @@ Render et Vercel. Toutes les variables sont décrites dans
 ## Ce que l'application fait et ne fait pas
 
 Elle fait : un jeu de gestion solo complet (6 modes, 39 sprints, 100 cartes, 8 profils de
-devs, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
+devs et 10 métiers d'une équipe web, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
 anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
 Daily, par mode), replays vérifiés par le serveur, 65 succès (dont 22 secrets), un back-office et un Slack
 optionnellement animé par l'IA.

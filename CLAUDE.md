@@ -513,6 +513,17 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   défaut), stat `petsAdopted`. Chats en Three.js (`render/pets.ts`) qui se baladent en A*, mangent,
   se cachent dans la litière fermée, grimpent aux perchoirs et dorment surtout la nuit
   (`ai/cats.ts`, graine à part, rendu seulement).
+- Équipe web (`shared/sim/teamRoles.ts`, `client/src/simulation/leadership.ts`) : 10 métiers en
+  plus des 8 profils (`WEB_ROLES`). Devs Front, Back et Fullstack : côté de la tâche déduit du
+  titre anglais (mots-clés puis hachage, sans tirage), `BALANCE.stacks` (1,15 de son côté, 0,6 de
+  l'autre, fullstack 0,85, spécialité x1,2 sur son type de tâche), `identity.specialty` optionnelle.
+  Tech Lead (-15 % de dette des features), DevOps (+stabilité par jour), testeurs QA (métier `QA`,
+  12 tâches de recette, -10 % de dette par testeur, 30 % au plus). Encadrement sans tâches
+  (`ROLE_TRADE` à null) : scrum master, managers (1 pour 6), sous-directeur, directeur technique,
+  effets dans `BALANCE.leadership`. Postes ouverts selon l'équipe et la phase (`roleLimit`), bloc
+  « Encadrement » du panneau Équipe. 3 candidats habituels inchangés + 2 de l'équipe web sur
+  `seed#web-roles#sprint` (replays, Daily, sauvegardes inchangés). `pnpm balance` : faillite
+  inchangée, licornes réparties autrement, car les bots ne savent pas composer une équipe web.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
