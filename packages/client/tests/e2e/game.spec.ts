@@ -266,6 +266,8 @@ test('mode construction : au doigt, on fait glisser l’aperçu sans bouger la c
 });
 
 test('inventaire : ranger un objet posé puis le reposer gratuitement', async ({ page }) => {
+  // Long parcours (poser, ranger, reposer) : il frôlait déjà les 30 s par défaut en 1440 px.
+  test.slow();
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();
   await page.getByRole('tab', { name: /Déco/ }).click();
