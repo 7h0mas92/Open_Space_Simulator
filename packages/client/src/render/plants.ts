@@ -319,9 +319,9 @@ export function kentiaPalm(): THREE.Group {
     const yaw = f * GOLDEN;
     const inner = f < 3;
     // Les palmes du cœur montent presque droit, celles du tour s'ouvrent davantage.
-    const rise = inner ? 1.45 : 1.3 - random() * 0.15;
-    const fall = inner ? 0.75 : 0.15 - random() * 0.2;
-    const length = inner ? 1.45 + random() * 0.15 : 1.05 + random() * 0.2;
+    const rise = inner ? 1.5 : 1.35 - random() * 0.15;
+    const fall = inner ? 0.9 : 0.3 - random() * 0.2;
+    const length = inner ? 1.6 + random() * 0.15 : 0.95 + random() * 0.15;
     const steps = 11;
     let point: Vec3 = around(yaw, 0.03, soil);
     for (let s = 1; s <= steps; s += 1) {
