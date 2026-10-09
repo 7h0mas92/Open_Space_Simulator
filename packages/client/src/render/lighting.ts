@@ -9,7 +9,7 @@ export interface LightingState {
   /** Lumière d'ambiance (hémisphérique). */
   readonly ambient: number;
   readonly skyColor: number;
-  /** Couleur de fond de la scène. */
+  /** Couleur du ciel et de la brume sur la ville (fond de la scène). */
   readonly background: number;
   /** Angle du soleil autour de la scène, en radians. */
   readonly sunAzimuth: number;
@@ -42,7 +42,7 @@ const KEYFRAMES: readonly Keyframe[] = [
     sunColor: 0x6b7bd6,
     ambient: 0.55,
     skyColor: 0x8a96d8,
-    background: 0x10131f,
+    background: 0x121a30,
     lamps: 0.65,
     windowColor: 0x18204a,
   },
@@ -52,7 +52,7 @@ const KEYFRAMES: readonly Keyframe[] = [
     sunColor: 0xffb47a,
     ambient: 0.7,
     skyColor: 0xb3a6d8,
-    background: 0x2b2f4a,
+    background: 0x6d6a8e,
     lamps: 0.6,
     windowColor: 0xf0a87a,
   },
@@ -62,7 +62,7 @@ const KEYFRAMES: readonly Keyframe[] = [
     sunColor: 0xfff1dc,
     ambient: 0.9,
     skyColor: 0xd6e6ff,
-    background: 0x3a4466,
+    background: 0x9fb3cc,
     lamps: 0.12,
     windowColor: 0xbfe3ff,
   },
@@ -72,7 +72,7 @@ const KEYFRAMES: readonly Keyframe[] = [
     sunColor: 0xfff6e8,
     ambient: 0.95,
     skyColor: 0xe0ecff,
-    background: 0x3d4870,
+    background: 0xa9bdd4,
     lamps: 0.12,
     windowColor: 0xcde8ff,
   },
@@ -82,7 +82,7 @@ const KEYFRAMES: readonly Keyframe[] = [
     sunColor: 0xff9b5c,
     ambient: 0.85,
     skyColor: 0xf0b48a,
-    background: 0x34304f,
+    background: 0xc9937a,
     lamps: 0.55,
     windowColor: 0xffa860,
   },
@@ -92,7 +92,7 @@ const KEYFRAMES: readonly Keyframe[] = [
     sunColor: 0x7a6bd6,
     ambient: 0.7,
     skyColor: 0xffd9a8,
-    background: 0x1a1830,
+    background: 0x2a2848,
     lamps: 1,
     windowColor: 0x3a2f6a,
   },
@@ -102,7 +102,7 @@ const KEYFRAMES: readonly Keyframe[] = [
     sunColor: 0x6b7bd6,
     ambient: 0.55,
     skyColor: 0x8a96d8,
-    background: 0x10131f,
+    background: 0x121a30,
     lamps: 0.65,
     windowColor: 0x18204a,
   },

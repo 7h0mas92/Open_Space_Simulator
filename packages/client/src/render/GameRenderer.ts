@@ -57,6 +57,7 @@ import { accessoryMatrix, itemMatrix, OfficeView } from './office';
 import { OfficeLights } from './officeLights';
 import { pixelRatioFor, QUALITY_PRESETS, type QualityLevel } from './quality';
 import { ScreenGlow } from './screens';
+import { SkylineView } from './skyline';
 
 export type PickTarget =
   | { readonly type: 'dev'; readonly id: string }
@@ -99,6 +100,12 @@ export interface RendererOptions {
 const MAX_STEPS_PER_FRAME = 8;
 /** Écart d'heure suivi tel quel par l'éclairage ; au-delà, il le rattrape en douceur. */
 const SMOOTH_SNAP_MINUTES = 45;
+/** Distance caméra-cible et plan lointain : la vue plonge jusqu'à la rue de New York. */
+const CAMERA_DISTANCE = 120;
+const CAMERA_FAR = 420;
+/** Brume sur la ville : au-delà du bureau (≈ 120 à 145 de la caméra), jusqu'à l'horizon. */
+const HAZE_NEAR = 150;
+const HAZE_FAR = 300;
 const SELECTION_COLOR = 0xf5b942;
 const VALID_COLOR = 0x4caf6e;
 const INVALID_COLOR = 0xe0584a;
@@ -113,7 +120,8 @@ const INVALID_GHOST = new THREE.MeshBasicMaterial({
 export class GameRenderer {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
-  private readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
+  // Loin du bureau (l'ortho ne change pas d'échelle) pour embrasser la ville jusqu'à la rue.
+  private readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, CAMERA_FAR);
   private readonly sun = new THREE.DirectionalLight(0xffffff, 1.5);
   private readonly hemi = new THREE.HemisphereLight(0xd6e6ff, 0x6b5a48, 0.9);
   private readonly assets = new AssetLibrary();
@@ -123,6 +131,8 @@ export class GameRenderer {
   private decorModes: Partial<Record<DecorTheme, DecorMode>> = {};
   private readonly roomLights = new OfficeLights(this.assets);
   private readonly screens = new ScreenGlow();
+  /** La ville de New York autour de la tour, vue par les baies vitrées. */
+  private readonly skyline = new SkylineView();
   /** Rôle de chaque dev : choisit le contenu de son écran. */
   private roles = new Map<string, DevRole>();
   private readonly characters = new Map<string, CharacterView>();
@@ -196,6 +206,7 @@ export class GameRenderer {
       this.hemi,
       this.sun,
       this.sun.target,
+      this.skyline.root,
       this.office.root,
       this.decorations.root,
       this.roomLights.root,
@@ -245,6 +256,7 @@ export class GameRenderer {
     this.view = view;
     this.layout = layoutOf(view);
     this.office.setLayout(this.layout);
+    this.skyline.setLayout(this.layout);
     const english = document.documentElement.lang.startsWith('en');
     this.office.setWingSigns(
       this.layout,
@@ -466,6 +478,7 @@ export class GameRenderer {
     this.office.dispose();
     this.decorations.dispose();
     this.roomLights.dispose();
+    this.skyline.dispose();
     this.screens.dispose();
     this.composer?.dispose();
     this.renderer.dispose();
@@ -528,6 +541,7 @@ export class GameRenderer {
       const minute = liveSprintMinutes(view.time, now) % 1440;
       const light = this.applyLighting(this.smoothMinute(minute, delta));
       this.roomLights.update(light, this.pixelsPerUnit());
+      this.skyline.update(light, delta, this.pixelsPerUnit(), !this.reducedMotion);
       this.screens.update(
         { items: view.items, roles: this.roles, agents: this.current },
         delta,
@@ -635,7 +649,7 @@ export class GameRenderer {
     this.camera.top = halfHeight;
     this.camera.bottom = -halfHeight;
     const dir = cameraDirection(this.cameraState.quarter);
-    const distance = 60;
+    const distance = CAMERA_DISTANCE;
     const { targetX, targetZ } = this.cameraState;
     this.camera.position.set(
       targetX + dir.x * distance,
@@ -681,6 +695,8 @@ export class GameRenderer {
     this.hemi.intensity = light.ambient;
     this.hemi.color.setHex(light.skyColor);
     this.scene.background = new THREE.Color(light.background);
+    if (this.scene.fog instanceof THREE.Fog) this.scene.fog.color.setHex(light.background);
+    else this.scene.fog = new THREE.Fog(light.background, HAZE_NEAR, HAZE_FAR);
     this.sun.position.set(
       cx + Math.cos(light.sunAzimuth) * radius,
       radius * 1.2,

@@ -71,7 +71,12 @@ export function floorStyle(kind: RoomKind, style = 0): FloorStyle {
   const styles = FLOOR_STYLES[kind];
   return styles[style] ?? (styles[0] as FloorStyle);
 }
-const WALL_HEIGHT = 2.2;
+
+/** Hauteur sous plafond : les baies vitrées du fond montent jusque-là. */
+export const WALL_HEIGHT = 2.2;
+/** Allège (en bas) et linteau (en haut) des baies vitrées. */
+export const GLASS_SILL = 0.14;
+export const GLASS_HEADER = 0.24;
 const PARTITION_HEIGHT = 1.3;
 
 /** Partie d'un gabarit : un maillage et sa transformation relative à la racine. */
@@ -428,16 +433,23 @@ function buildWalls(layout: OfficeLayout): THREE.Object3D {
   const wall = material(0xece6da);
   const trim = material(PALETTE.woodDark);
   const { width, depth } = layout;
-  const add = (w: number, h: number, d: number, x: number, z: number, mat = wall) => {
+  const frame = material(0x4a5160);
+  const add = (w: number, h: number, d: number, x: number, z: number, mat = wall, y = 0) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-    mesh.position.set(x, h / 2, z);
+    mesh.position.set(x, y + h / 2, z);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     group.add(mesh);
   };
-  // Murs du fond, hauts ; murs avant, bas (on voit l'intérieur depuis la caméra isométrique).
-  add(width + 0.4, WALL_HEIGHT, 0.2, (width - 1) / 2, -0.6);
-  add(0.2, WALL_HEIGHT, depth + 0.2, -0.6, (depth - 1) / 2);
+  // Murs du fond : de grandes baies vitrées sur la ville (vitres, montants et poteaux dans
+  // officeLights.ts), tenues par une allège, un linteau et un poteau d'angle.
+  const headerY = WALL_HEIGHT - GLASS_HEADER;
+  add(width + 0.4, GLASS_SILL, 0.2, (width - 1) / 2, -0.6, frame);
+  add(0.2, GLASS_SILL, depth + 0.2, -0.6, (depth - 1) / 2, frame);
+  add(width + 0.4, GLASS_HEADER, 0.2, (width - 1) / 2, -0.6, frame, headerY);
+  add(0.2, GLASS_HEADER, depth + 0.2, -0.6, (depth - 1) / 2, frame, headerY);
+  add(0.3, WALL_HEIGHT, 0.3, -0.6, -0.6, wall);
+  // Murs avant, bas (on voit l'intérieur depuis la caméra isométrique).
   add(width + 0.4, 0.25, 0.2, (width - 1) / 2, depth - 0.4, trim);
   add(0.2, 0.25, depth + 0.2, width - 0.4, (depth - 1) / 2, trim);
   // Cloisons intérieures, à mi-hauteur.
