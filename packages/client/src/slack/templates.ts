@@ -2791,6 +2791,115 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
       'My classmates are asking if we’re hiring. Are we?',
     ),
   },
+  // ─── Tâches dynamiques : urgences, tâches de la semaine, objectifs ──────────
+  {
+    trigger: 'URGENT_TASK',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('🚨 {event}', '🚨 {event}'),
+  },
+  {
+    trigger: 'URGENT_TASK',
+    channel: 'incidents',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} Je mets ça tout en haut du Kanban. Tout en haut.',
+      '{event} Putting it at the very top of the board. The very top.',
+    ),
+  },
+  {
+    trigger: 'URGENT_TASK',
+    channel: 'incidents',
+    author: dev(),
+    text: t(
+      '{event} Qui a dit « on n’a jamais d’urgence le jeudi » ?',
+      '{event} Who said "we never get emergencies on Thursdays"?',
+    ),
+  },
+  {
+    trigger: 'URGENT_DONE',
+    channel: 'incidents',
+    author: dev(),
+    text: t(
+      '{event} Je retourne à ma vraie tâche. Elle avait quoi déjà ?',
+      '{event} Back to my real task. What was it again?',
+    ),
+  },
+  {
+    trigger: 'URGENT_DONE',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t(
+      '✅ {event} Incident clos, post-mortem « plus tard ».',
+      '✅ {event} Incident closed, post-mortem "later".',
+    ),
+  },
+  {
+    trigger: 'URGENT_MISSED',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('⏰ {event}', '⏰ {event}'),
+  },
+  {
+    trigger: 'URGENT_MISSED',
+    channel: 'general',
+    author: dev(),
+    text: t(
+      '{event} En vrai on n’avait pas le temps, on était en réunion.',
+      '{event} To be fair we had no time, we were in a meeting.',
+    ),
+  },
+  {
+    trigger: 'WEEKLY_TASKS',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t('Bon lundi ! 📋 {event}', 'Happy Monday! 📋 {event}'),
+  },
+  {
+    trigger: 'WEEKLY_TASKS',
+    channel: 'general',
+    author: bot('github'),
+    text: t('📅 {event}', '📅 {event}'),
+  },
+  {
+    trigger: 'WEEKLY_MISSED',
+    channel: 'general',
+    author: dev('SENIOR_BEARD'),
+    text: t('{event} Comme chaque semaine depuis 2019.', '{event} Same as every week since 2019.'),
+  },
+  {
+    trigger: 'OBJECTIVE_SET',
+    channel: 'general',
+    author: bot('investors'),
+    text: t('🎯 {event}', '🎯 {event}'),
+  },
+  {
+    trigger: 'OBJECTIVE_SET',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t('🎯 {event} On s’aligne ? On s’aligne.', '🎯 {event} Are we aligned? We are aligned.'),
+  },
+  {
+    trigger: 'OBJECTIVE_DONE',
+    channel: 'general',
+    author: bot('investors'),
+    text: t('🏆 {event}', '🏆 {event}'),
+  },
+  {
+    trigger: 'OBJECTIVE_DONE',
+    channel: 'random',
+    author: dev(),
+    text: t('{event} Ça mérite un afterwork, non ?', '{event} That deserves drinks, right?'),
+  },
+  {
+    trigger: 'OBJECTIVE_FAILED',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} On va dire que c’était un objectif « aspirationnel ».',
+      '{event} Let’s call it an "aspirational" goal.',
+    ),
+  },
 ];
 
 /** Index des templates par déclencheur, construit une seule fois. */

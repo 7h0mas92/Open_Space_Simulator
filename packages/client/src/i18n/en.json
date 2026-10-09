@@ -244,7 +244,9 @@
     "speeds": "Game speed",
     "startSprint": "Start sprint",
     "friday": "Friday 5pm: do not deploy.",
-    "incident": "Production incident!"
+    "incident": "Production incident!",
+    "urgent": "Urgent: {{task}} ({{due}})",
+    "urgentMore": "Urgent: {{task}} and {{count}} more ({{due}})"
   },
   "panels": {
     "kanban": "Kanban",
@@ -290,7 +292,38 @@
     "impact": "Impact",
     "empty": "Nothing here. Enjoy.",
     "moved": "\"{{task}}\" moved to {{column}}",
-    "hallucinated": "hallucinated"
+    "hallucinated": "hallucinated",
+    "urgent": "Urgent",
+    "weekly": "Weekly",
+    "due": "by {{day}} {{hour}}h",
+    "hoursLeft": "{{hours}}h left",
+    "urgentHint": "Urgent task: devs pick it up first. Done in time, it pays a bonus; missed, it costs you.",
+    "weeklyHint": "Weekly task: finish it by Friday 6pm for a small bonus, or take a small hit.",
+    "objective": {
+      "title": "Sprint goal",
+      "difficulty": {
+        "EASY": "Easy",
+        "MEDIUM": "Medium",
+        "HARD": "Hard"
+      },
+      "kinds": {
+        "SHIP_FEATURES": "Ship {{target}} features",
+        "CLOSE_TASKS": "Finish {{target}} tasks",
+        "ZERO_INCIDENT": "No prod outage for the whole sprint",
+        "REDUCE_DEBT": "Bring tech debt down by {{target}} points",
+        "GAIN_USERS": "Gain {{target}} users"
+      },
+      "progress": "{{value}} / {{target}}",
+      "noOutageYet": "No outage so far",
+      "outages": "Missed: {{count}} outage(s)",
+      "usersHint": "Users from shipped features arrive at the demo.",
+      "reward": "Reward: {{money}}, hype +{{hype}}",
+      "rewardMoral": "Reward: {{money}}, hype +{{hype}}, morale +{{moral}}",
+      "reached": "Reached",
+      "success": "Goal reached: {{goal}}. Bonus cashed in: {{money}}.",
+      "failed": "Goal missed: {{goal}} ({{value}} / {{target}}).",
+      "failedOutage": "Goal missed: {{goal}} ({{count}} outage(s))."
+    }
   },
   "team": {
     "age": "{{age}} y/o",
@@ -599,6 +632,7 @@
       "soundPacks": "Kenney sound packs (audio coming later)",
       "seasonalDecor": "Seasonal decorations (12 themes) and the birthday table: Three.js cake, presents and balloons on the Furniture Kit's tablecloth table",
       "meetingRoomProps": "Meeting room: whiteboard, stand-up clock, fish tank, war room screens, boardroom painting and glass walls as Three.js shapes, with the Furniture Kit's tables and chairs",
+      "citySkyline": "Glass walls and a New York-style city view (towers, water tanks, park, river, taxis) made of Three.js shapes, with no real building",
       "mug": "Dev mug",
       "rubberDuck": "Rubber duck",
       "trophy": "Hackathon trophy",
@@ -663,7 +697,9 @@
     "offerTitle": "Acquisition offer",
     "offer": "{{buyer}} offers to buy your startup for {{amount}}.",
     "accept": "Accept",
-    "refuse": "Decline"
+    "refuse": "Decline",
+    "special": "Emergencies and weekly tasks",
+    "specialValue": "{{done}} in time, {{missed}} missed"
   },
   "raise": {
     "kicker": "Raise request",
@@ -1207,6 +1243,10 @@
             "title": "Production incident",
             "body": "The screen flashes red and smoke comes out of the servers: production is down.\n\nAn outage costs stability, hype and 2% of your users. The worse your stability and debt, the more often outages happen."
           },
+          "urgent": {
+            "title": "An urgent task",
+            "body": "When prod goes down, an urgent \"Fix prod\" task jumps to the top of To do, with a red banner above the dock. Tap it to open the board.\n\nFree devs pick up emergencies first. Done in time, it restores stability; missed, it costs users. Other emergencies pop up too: a security hole, a pushy big client, broken payments."
+          },
           "fix": {
             "title": "Avoiding the next one",
             "body": "Next sprint, put bugfixes and infra in \"To do\", plus some refactoring if the debt is high.\n\nIn the office, a server rack raises stability a little every day, and a trash can nibbles at the debt. And avoid leaving interns alone in charge on Fridays."
@@ -1223,6 +1263,10 @@
           "read": {
             "title": "Reading the results",
             "body": "Compare expenses with revenue: as long as you spend more than you earn, your cash melts. Watch how fast, and raise money before it's too late.\n\nThe user feedback at the bottom is mostly there for laughs. Mostly."
+          },
+          "goals": {
+            "title": "Weekly tasks and goals",
+            "body": "Every Monday, a few weekly tasks land in To do: done by Friday 6pm, they pay a small bonus, otherwise a small penalty.\n\nSome sprints also come with a goal (ship features, finish tasks, zero outage...), shown at the top of the board. The harder it is, the bigger the reward. The bigger your team, the more ideas fill the backlog."
           },
           "next": {
             "title": "What now?",

@@ -26,6 +26,7 @@ import {
 import { lightingAt, mixColor } from '../../../src/render/lighting';
 import {
   defaultQuality,
+  isSoftwareRenderer,
   MAX_PIXEL_RATIO,
   pixelRatioFor,
   QUALITY_PRESETS,
@@ -49,6 +50,18 @@ describe('qualité graphique', () => {
       defaultQuality({ coarsePointer: false, screenWidth: 1440, hardwareConcurrency: 2 }),
     ).toBe('medium');
     expect(defaultQuality({ coarsePointer: false, screenWidth: 1440 })).toBe('high');
+    // Sans carte graphique, le processeur dessine chaque pixel : qualité basse.
+    expect(
+      defaultQuality({
+        coarsePointer: false,
+        screenWidth: 1440,
+        gpuRenderer:
+          'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)), SwiftShader driver)',
+      }),
+    ).toBe('low');
+    expect(isSoftwareRenderer('llvmpipe (LLVM 15.0.7, 256 bits)')).toBe(true);
+    expect(isSoftwareRenderer('ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11)')).toBe(false);
+    expect(isSoftwareRenderer(undefined)).toBe(false);
   });
 });
 

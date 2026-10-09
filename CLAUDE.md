@@ -453,9 +453,22 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
   jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
   variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
+- Baies vitrées et vue sur New York (`render/skyline.ts`) : les deux murs du fond sont des vitres
+  du sol au plafond ; le bureau est au dernier étage d'une tour, dans une ville low-poly façon
+  Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
+  bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
+  (`maxTop`) ; brume, fenêtres, lampadaires et balises qui suivent le jour et la nuit.
+  Qualité basse par défaut quand WebGL tourne sans carte graphique (SwiftShader, llvmpipe).
 - Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
   tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
   `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.
+- Tâches dynamiques (`shared/sim/taskFlow.ts`, `client/src/simulation/taskFlow.ts`) : backlog
+  jusqu'à 2,5 idées par dev ; urgences avec délai en heures ouvrées, message et bandeau rouge
+  (« Réparer la prod » à chaque panne, 5 autres au hasard à 10h, plus fréquentes avec l'équipe),
+  servies en premier, bonus à temps, pénalité ratée ; 1 à 3 tâches de la semaine le lundi 9h, dues
+  vendredi 18h ; objectif de sprint (4 sprints sur 10 dès le 2e, facile, moyen ou difficile,
+  récompense à la démo) affiché en haut du Kanban. Seule la récompense propre compte pour ces
+  tâches. Hasard sur une graine à part (`seed#tasks#…`), champs `kind`, `objective` par défaut.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

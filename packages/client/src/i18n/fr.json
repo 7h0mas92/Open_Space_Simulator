@@ -244,7 +244,9 @@
     "speeds": "Vitesse du jeu",
     "startSprint": "Lancer le sprint",
     "friday": "Vendredi 17h : ne déploie pas.",
-    "incident": "Incident en production !"
+    "incident": "Incident en production !",
+    "urgent": "Urgent : {{task}} ({{due}})",
+    "urgentMore": "Urgent : {{task}} et {{count}} autre(s) ({{due}})"
   },
   "panels": {
     "kanban": "Kanban",
@@ -290,7 +292,38 @@
     "impact": "Impact",
     "empty": "Rien ici. Profite.",
     "moved": "« {{task}} » déplacée vers {{column}}",
-    "hallucinated": "hallucinée"
+    "hallucinated": "hallucinée",
+    "urgent": "Urgent",
+    "weekly": "Hebdo",
+    "due": "avant {{day}} {{hour}}h",
+    "hoursLeft": "encore {{hours}} h",
+    "urgentHint": "Tâche urgente : les devs la prennent en priorité. Finie à temps, elle rapporte un bonus ; ratée, elle coûte cher.",
+    "weeklyHint": "Tâche de la semaine : à finir avant vendredi 18h pour un petit bonus, sinon petit malus.",
+    "objective": {
+      "title": "Objectif du sprint",
+      "difficulty": {
+        "EASY": "Facile",
+        "MEDIUM": "Moyen",
+        "HARD": "Difficile"
+      },
+      "kinds": {
+        "SHIP_FEATURES": "Livrer {{target}} features",
+        "CLOSE_TASKS": "Terminer {{target}} tâches",
+        "ZERO_INCIDENT": "Aucune panne de prod de tout le sprint",
+        "REDUCE_DEBT": "Faire baisser la dette technique de {{target}} points",
+        "GAIN_USERS": "Gagner {{target}} utilisateurs"
+      },
+      "progress": "{{value}} / {{target}}",
+      "noOutageYet": "Aucune panne pour l’instant",
+      "outages": "Raté : {{count}} panne(s)",
+      "usersHint": "Les utilisateurs des features livrées arrivent à la démo.",
+      "reward": "Récompense : {{money}}, hype +{{hype}}",
+      "rewardMoral": "Récompense : {{money}}, hype +{{hype}}, moral +{{moral}}",
+      "reached": "Atteint",
+      "success": "Objectif atteint : {{goal}}. Bonus encaissé : {{money}}.",
+      "failed": "Objectif raté : {{goal}} ({{value}} / {{target}}).",
+      "failedOutage": "Objectif raté : {{goal}} ({{count}} panne(s))."
+    }
   },
   "team": {
     "age": "{{age}} ans",
@@ -599,6 +632,7 @@
       "soundPacks": "Packs sons Kenney (audio à venir)",
       "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit",
       "meetingRoomProps": "Salle de réunion : tableau blanc, horloge du stand-up, aquarium, écrans de la war room, tableau de la salle du conseil et parois vitrées en formes Three.js, avec les tables et chaises du Furniture Kit",
+      "citySkyline": "Baies vitrées et vue sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve, taxis) en formes Three.js, sans bâtiment réel",
       "mug": "Mug de dev",
       "rubberDuck": "Canard en plastique",
       "trophy": "Trophée de hackathon",
@@ -663,7 +697,9 @@
     "offerTitle": "Offre de rachat",
     "offer": "{{buyer}} propose de racheter ta startup pour {{amount}}.",
     "accept": "Accepter",
-    "refuse": "Refuser"
+    "refuse": "Refuser",
+    "special": "Urgences et tâches hebdo",
+    "specialValue": "{{done}} à temps, {{missed}} ratée(s)"
   },
   "raise": {
     "kicker": "Demande d'augmentation",
@@ -1207,6 +1243,10 @@
             "title": "Incident en production",
             "body": "L'écran clignote en rouge et de la fumée sort des serveurs : la prod est en panne.\n\nUne panne fait perdre de la stabilité, de la hype et 2 % de tes utilisateurs. Plus la stabilité et la dette sont mauvaises, plus les pannes sont fréquentes."
           },
+          "urgent": {
+            "title": "Une tâche urgente",
+            "body": "Quand la prod tombe, une tâche urgente « Réparer la prod » arrive en tête de « À faire », avec un bandeau rouge au-dessus du dock. Touche-le pour ouvrir le Kanban.\n\nLes devs libres prennent les urgences en premier. Finie à temps, elle rend de la stabilité ; ratée, elle coûte des utilisateurs. D'autres urgences tombent parfois : faille de sécurité, gros client pressé, paiement cassé."
+          },
           "fix": {
             "title": "Éviter la prochaine",
             "body": "Au prochain sprint, mets des bugfix et de l'infra dans « À faire », et un peu de refacto si la dette est haute.\n\nDans le bureau, une baie de serveurs remonte un peu la stabilité chaque jour, et une poubelle grignote la dette. Et évite les stagiaires seuls aux commandes le vendredi."
@@ -1223,6 +1263,10 @@
           "read": {
             "title": "Lire le bilan",
             "body": "Compare les dépenses au chiffre d'affaires : tant que tu dépenses plus que tu ne gagnes, ta trésorerie fond. Regarde à quelle vitesse, et lève des fonds avant qu'il ne soit trop tard.\n\nLes retours d'utilisateurs, en bas, sont surtout là pour rire. Enfin, presque."
+          },
+          "goals": {
+            "title": "Tâches de la semaine et objectifs",
+            "body": "Chaque lundi, quelques tâches de la semaine arrivent dans « À faire » : finies avant vendredi 18h, elles rapportent un petit bonus, sinon un petit malus.\n\nCertains sprints ont aussi un objectif (livrer des features, finir des tâches, zéro panne...), affiché en haut du Kanban. Plus il est difficile, plus la récompense est grosse. Plus ton équipe grandit, plus il y a de tâches dans le backlog."
           },
           "next": {
             "title": "Et maintenant ?",

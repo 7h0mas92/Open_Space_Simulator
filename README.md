@@ -257,7 +257,15 @@ flowchart LR
 - **Contrôles** : glisser pour déplacer, molette ou pincer pour zoomer, appui long pour
   sélectionner sur mobile, flèches, `+`/`-`, `Q`/`E` au clavier.
 - **Qualité réglable** (bas, moyen, haut) : devicePixelRatio plafonné à 2, ombres coupées en
-  bas (défaut sur mobile), petits objets masqués quand on dézoome (LOD).
+  bas (défaut sur mobile et quand WebGL tourne sans carte graphique, comme sur la CI), petits
+  objets masqués quand on dézoome (LOD).
+- **Vue sur New York** : les deux murs du fond sont de grandes baies vitrées. Le bureau est au
+  dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
+  gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
+  Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
+  hasard du jeu) et tient en une dizaine d'appels de dessin. Aucun toit proche ne dépasse le
+  plancher, donc rien ne cache la salle. La brume suit la couleur du ciel, et le soir les
+  fenêtres, les lampadaires et les balises rouges des tours s'allument (`render/skyline.ts`).
 - **Écran de jeu** : en haut ce qu'on lit (phase, équipe, mois de trésorerie restants, six
   jauges avec icône, tendance et couleur, horloge et avancement du sprint) ; en bas ce qu'on
   fait (dock d'actions et commande de l'étape : lancer le sprint, lever des fonds, vitesses).
@@ -324,6 +332,16 @@ flowchart LR
   places de plus dans l'équipe. Les sols des autres pièces changent d'une partie à l'autre
   (parquet, damier, terre cuite, moquette…), selon la graine (`view/layout.ts`,
   `render/annexDecor.ts`).
+- **Tâches dynamiques** : le backlog garde jusqu'à 2,5 idées par dev. Pendant le sprint, des
+  urgences tombent : « Réparer la prod » à chaque panne, et au hasard (plus souvent avec une
+  grande équipe) une faille de sécurité, le « petit bouton » du gros client, un paiement cassé,
+  une demande RGPD ou une démo qui plante. Chacune a un délai en heures ouvrées, un message et
+  un bandeau rouge qui ouvre le Kanban ; les devs libres la prennent en premier. Finie à temps,
+  petit bonus ; ratée, elle disparaît et sa pénalité tombe. Chaque lundi à 9h, 1 à 3 tâches de
+  la semaine sont à finir avant vendredi 18h. Environ 4 sprints sur 10 ont un objectif (livrer
+  N features, finir N tâches, zéro panne, baisser la dette, gagner N utilisateurs), facile,
+  moyen ou difficile, récompensé à la démo selon sa difficulté. Le hasard est tiré sur une
+  graine à part (`shared/sim/taskFlow.ts`, `client/src/simulation/taskFlow.ts`).
 - **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
   dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
   les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
@@ -457,7 +475,9 @@ financements hors tour de table) et produit un rapport : taux de faillite (globa
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
-Only, 3 sprints). Le dernier rapport est dans [`docs/balance.md`](docs/balance.md).
+Only, 3 sprints). Une section suit les tâches dynamiques : urgences et tâches de la semaine
+finies à temps, réussite des objectifs par type et difficulté. Le dernier rapport est dans
+[`docs/balance.md`](docs/balance.md).
 
 Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
 `packages/shared/src/sim/balance.ts`) :
@@ -522,7 +542,7 @@ génère que des messages Slack.
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
+  pupitre et écran de projection des annexes, ville et baies vitrées, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
   ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
   lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs

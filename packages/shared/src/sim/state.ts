@@ -13,6 +13,7 @@ import { FinancingStateSchema } from './funding.js';
 import { MeetingRoomSchema } from './meetings.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
+import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
 
 /**
@@ -168,6 +169,11 @@ export const SprintReportSchema = z.object({
   valuation: z.number(),
   /** Retours d'utilisateurs (drôles) affichés à la démo. */
   feedback: z.array(LocalizedTextSchema),
+  /** Objectif du sprint, réussi ou raté (absent si le sprint n'en avait pas). */
+  objective: SprintObjectiveSchema.optional(),
+  /** Tâches urgentes et hebdomadaires réussies et ratées pendant le sprint. */
+  specialDone: z.number().int().optional(),
+  specialMissed: z.number().int().optional(),
 });
 export type SprintReport = z.infer<typeof SprintReportSchema>;
 
@@ -179,6 +185,9 @@ export const SprintTrackerSchema = z.object({
   expenses: z.number(),
   hypeAtStart: z.number(),
   incidents: z.number().int(),
+  /** Tâches urgentes et hebdomadaires réussies et ratées pendant le sprint. */
+  specialDone: z.number().int().default(0),
+  specialMissed: z.number().int().default(0),
 });
 export type SprintTracker = z.infer<typeof SprintTrackerSchema>;
 
@@ -211,6 +220,13 @@ export const GameStatsSchema = z.object({
   /** Réunions d'équipe du matin jugées utiles, puis inutiles (salle de réunion aménagée). */
   meetingsUseful: z.number().int().default(0),
   meetingsUseless: z.number().int().default(0),
+  /** Tâches urgentes et hebdomadaires terminées à temps ou ratées, objectifs de sprint. */
+  urgentDone: z.number().int().default(0),
+  urgentMissed: z.number().int().default(0),
+  weeklyDone: z.number().int().default(0),
+  weeklyMissed: z.number().int().default(0),
+  objectivesDone: z.number().int().default(0),
+  objectivesFailed: z.number().int().default(0),
 });
 export type GameStats = z.infer<typeof GameStatsSchema>;
 
@@ -252,6 +268,14 @@ export const NOTIFICATION_KINDS = [
   'MEETING_ROOM_FITTED',
   'MEETING_USEFUL',
   'MEETING_USELESS',
+  'URGENT_TASK',
+  'URGENT_DONE',
+  'URGENT_MISSED',
+  'WEEKLY_TASKS',
+  'WEEKLY_MISSED',
+  'OBJECTIVE_SET',
+  'OBJECTIVE_DONE',
+  'OBJECTIVE_FAILED',
   'SPRINT_LOST',
   'GAME_OVER',
   'ACHIEVEMENT_UNLOCKED',
@@ -319,6 +343,8 @@ export const GameStateSchema = z.object({
   lastVentureSprint: z.number().int().nullable().default(null),
   /** Aménagement de la salle de réunion (null : salle vide, ou pas encore de salle). */
   meetingRoom: MeetingRoomSchema.nullable().default(null),
+  /** Objectif du sprint en cours (certains sprints seulement). */
+  objective: SprintObjectiveSchema.nullable().default(null),
   /** Financements hors tour de table (prêt en cours, cooldowns). */
   financing: FinancingStateSchema.default({ lastSprint: {}, loan: null }),
   /** Inventaire : objets rangés, du plus ancien au plus récent (absent des vieilles sauvegardes). */
