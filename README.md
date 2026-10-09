@@ -308,6 +308,22 @@ flowchart LR
   avec son enseigne et deux places dans l'équipe, et six cartes « filiales » peuvent tomber.
   Le hasard des filiales est tiré sur une graine à part (graine + filiale + sprint) : une partie
   sans filiale reste identique au bit près, donc les anciens replays et le Daily restent valides.
+- **Levées de fonds** : le bouton « Lever des fonds » ouvre un panneau avec le prochain tour de
+  table et sa difficulté. Chaque tour est plus dur (Seed, Série A, B, C, D puis pré-IPO) :
+  plus de questions (3 à 5) et de réponses proposées (3 à 4), une barre plus haute, des
+  bluffs démasqués plus souvent, des arguments qui demandent de vrais chiffres, de gros fonds
+  (souverain, crossover) et, dès la Série B, un investisseur qui peut quitter la salle. À chaque
+  manche il pose une question (traction, technique, équipe, vision, buzzword) : une réponse hors
+  sujet fait baisser son intérêt, affiché avec ses réactions. Quatre autres financements, sans
+  hasard : business angels (6 % du capital), prêt bancaire (remboursé sur 12 mois), financement
+  participatif (+hype, +dette) et subvention à l'innovation (-moral). Questions et bluffs sont
+  tirés sur une graine à part (graine + pitch + sprint) (`shared/sim/pitch.ts`,
+  `shared/sim/funding.ts`, commande `TAKE_FINANCING`, état `financing`).
+- **Annexes du bureau** : dès la Série B, chaque tour réussi ouvre une annexe sur toute la
+  largeur du bureau (salle d'arcade, jardin intérieur, auditorium) avec son décor fixe et deux
+  places de plus dans l'équipe. Les sols des autres pièces changent d'une partie à l'autre
+  (parquet, damier, terre cuite, moquette…), selon la graine (`view/layout.ts`,
+  `render/annexDecor.ts`).
 - **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
   dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
   les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
@@ -435,8 +451,9 @@ bouton 🛠 du menu principal.
 
 ## Équilibrage
 
-`pnpm balance` joue 10 000 parties avec cinq stratégies automatiques (aléatoire, « ship it »,
-équilibrée, prudente, investisseuse qui crée des filiales) et produit un rapport : taux de faillite (global et par phase),
+`pnpm balance` joue 10 000 parties avec six stratégies automatiques (aléatoire, « ship it »,
+équilibrée, prudente, investisseuse qui crée des filiales, financière qui use des
+financements hors tour de table) et produit un rapport : taux de faillite (global et par phase),
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
@@ -504,7 +521,8 @@ génère que des messages Slack.
   sieste-pod, standing desk, casques antibruit et leur portant, baie de serveurs, cafetière à
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
-  mini-cactus de bureau, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
+  mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
+  pupitre et écran de projection des annexes, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
   ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
   lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
