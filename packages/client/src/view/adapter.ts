@@ -20,6 +20,7 @@ import {
   getPitchArgument,
   type Command,
   type EventCard,
+  type FurnitureColor,
   type GameState,
   type Identity,
   type Speed,
@@ -63,6 +64,7 @@ import type {
   GaugeName,
   KanbanColumn,
   PlacedItemView,
+  StoredItemView,
   RemoteReason,
   Rotation,
   TaskType,
@@ -285,6 +287,30 @@ function itemViews(state: GameState): PlacedItemView[] {
   }));
 }
 
+function inventoryView(state: GameState): StoredItemView[] {
+  const stacks = new Map<string, StoredItemView>();
+  for (const stored of state.inventory) {
+    const color = stored.color ?? 'natural';
+    const key = `${stored.itemId}#${color}`;
+    const stack = stacks.get(key);
+    stacks.set(
+      key,
+      stack
+        ? { ...stack, count: stack.count + 1 }
+        : {
+            kind: stored.itemId,
+            color,
+            count: 1,
+            resale: Math.round(stored.purchasePrice * RESALE_RATIO),
+          },
+    );
+  }
+  return [...stacks.values()];
+}
+
+/** Couleur d'une commande d'inventaire : `natural` n'est pas transmise. */
+const storedColor = (color: FurnitureColor) => (color === 'natural' ? {} : { color });
+
 function eventView(state: GameState, context: ViewContext): EventView | null {
   const pending = state.events.pending;
   const card = pending ? context.card(pending.cardId) : undefined;
@@ -417,6 +443,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     tasks: taskViews(state),
     candidates: candidateViews(state),
     items: itemViews(state),
+    inventory: inventoryView(state),
     incident:
       state.stage === 'EXECUTION' &&
       lastIncident !== undefined &&
@@ -541,6 +568,28 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
     }
     case 'sellItem':
       return { type: 'SELL_FURNITURE', furnitureId: command.itemId };
+    case 'storeItem':
+      return { type: 'STORE_FURNITURE', furnitureId: command.itemId };
+    case 'placeStored':
+      return {
+        type: 'PLACE_STORED',
+        itemId: command.kind,
+        ...storedColor(command.color),
+        x: command.x,
+        y: command.z,
+        rotation: command.rotation,
+      };
+    case 'placeStoredAccessory':
+      return {
+        type: 'PLACE_STORED_ACCESSORY',
+        itemId: command.kind,
+        ...storedColor(command.color),
+        hostId: command.host.id,
+        slot: command.host.slot,
+        rotation: command.rotation,
+      };
+    case 'sellStored':
+      return { type: 'SELL_STORED', itemId: command.kind, ...storedColor(command.color) };
     case 'startSprint':
       return { type: 'START_SPRINT' };
     case 'resolveEvent':

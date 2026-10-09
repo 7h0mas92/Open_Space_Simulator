@@ -4,6 +4,7 @@ import { LocalizedTextSchema } from '../i18n.js';
 import {
   ComponentStoresSchema,
   EntityIdSchema,
+  FurnitureColorSchema,
   IdentitySchema,
   StatsSchema,
 } from './components.js';
@@ -98,6 +99,20 @@ export const AcquisitionOfferSchema = z.object({
   expiresAtSprint: z.number().int(),
 });
 export type AcquisitionOffer = z.infer<typeof AcquisitionOfferSchema>;
+
+/**
+ * Objet rangé dans l'inventaire (la réserve) : retiré de l'open space sans être revendu. Il ne
+ * donne plus aucun effet mais compte toujours dans le maximum d'exemplaires de la boutique.
+ */
+export const StoredItemSchema = z.object({
+  itemId: z.string(),
+  purchasePrice: z.number().nonnegative(),
+  color: FurnitureColorSchema.optional(),
+});
+export type StoredItem = z.infer<typeof StoredItemSchema>;
+
+/** Taille maximale de l'inventaire (bien au-delà de ce qu'un bureau peut contenir). */
+export const INVENTORY_MAX = 200;
 
 export const HistoryPointSchema = z.object({
   day: z.number().int(),
@@ -265,6 +280,8 @@ export const GameStateSchema = z.object({
   /** Filiales créées par la startup (actives, coulées ou revendues). */
   ventures: z.array(VentureSchema).default([]),
   lastVentureSprint: z.number().int().nullable().default(null),
+  /** Inventaire : objets rangés, du plus ancien au plus récent (absent des vieilles sauvegardes). */
+  inventory: z.array(StoredItemSchema).max(INVENTORY_MAX).default([]),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

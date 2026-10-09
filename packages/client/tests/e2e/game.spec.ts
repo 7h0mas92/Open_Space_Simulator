@@ -246,6 +246,43 @@ test('mode construction : au doigt, on fait glisser l’aperçu sans bouger la c
   expect(after.zoom).toBe(zoom);
 });
 
+test('inventaire : ranger un objet posé puis le reposer gratuitement', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: /Construction/ }).click();
+  await page.getByRole('tab', { name: /Déco/ }).click();
+  await page.getByTestId('catalog-plant').click();
+  await expect.poll(async () => (await debug(page))?.ghost ?? null).not.toBeNull();
+  const spot = (await debug(page))!.ghost!;
+  const count = async () => (await debug(page))!.items;
+  const items = await count();
+  await page.getByTestId('place').click();
+  await expect.poll(count).toBe(items + 1);
+  await page.getByRole('button', { name: /Annuler/ }).click();
+
+  // Toucher l'objet posé le sélectionne : « Ranger » le met dans l'inventaire.
+  await page.getByTestId('scene').click({ position: spot });
+  await page.getByTestId('store-item').click();
+  await expect(page.getByText('Plante verte : rangé dans l’inventaire.')).toBeVisible();
+  await expect.poll(count).toBe(items);
+  await expect(page.getByTestId('inventory-count')).toHaveText('1');
+
+  await page.getByTestId('catalog-tab-inventory').click();
+  await expect(page.getByTestId('inventory')).toContainText('1 en stock');
+  const tooSmall = await page.evaluate(() =>
+    [...document.querySelectorAll('.build-hud button')]
+      .map((element) => element.getBoundingClientRect())
+      .filter(({ width, height }) => width > 0 && (width < 44 || height < 44)),
+  );
+  expect(tooSmall).toEqual([]);
+  const treasury = await page.getByTestId('build-money').textContent();
+  await page.getByTestId('stored-plant').click();
+  await expect(page.getByTestId('stock-count')).toContainText('Gratuit');
+  await page.getByTestId('place').click();
+  await expect.poll(count).toBe(items + 1);
+  await expect(page.getByTestId('build-money')).toHaveText(treasury!);
+  await expect(page.getByTestId('inventory')).toContainText('L’inventaire est vide');
+});
+
 test('la caméra zoome à la molette et au clavier', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Molette et clavier : ordinateur uniquement');
   await startAsGuest(page);

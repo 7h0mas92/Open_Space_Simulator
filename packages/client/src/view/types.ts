@@ -213,6 +213,18 @@ export interface PlacedItemView {
   readonly host: ItemHost | null;
 }
 
+/**
+ * Pile d'objets rangés dans l'inventaire (la réserve du mode construction) : même type et même
+ * couleur, dans l'ordre où ils ont été rangés pour la première fois.
+ */
+export interface StoredItemView {
+  readonly kind: string;
+  readonly color: FurnitureColor;
+  readonly count: number;
+  /** Somme remboursée à la revente du premier exemplaire de la pile. */
+  readonly resale: number;
+}
+
 /** Emplacement d'un accessoire sur le plateau d'un meuble. */
 export interface ItemHost {
   readonly id: string;
@@ -347,6 +359,8 @@ export interface GameView {
   readonly tasks: readonly TaskView[];
   readonly candidates: readonly CandidateView[];
   readonly items: readonly PlacedItemView[];
+  /** Inventaire : objets rangés, sans effet tant qu'ils ne sont pas reposés. */
+  readonly inventory: readonly StoredItemView[];
   /** Vrai pendant un incident de production (fumée, écran rouge). */
   readonly incident: boolean;
   /** Taille maximale de l'équipe à cette phase. */
@@ -421,6 +435,23 @@ export type GameCommand =
     }
   | { readonly type: 'rotateItem'; readonly itemId: string }
   | { readonly type: 'sellItem'; readonly itemId: string }
+  | { readonly type: 'storeItem'; readonly itemId: string }
+  | {
+      readonly type: 'placeStored';
+      readonly kind: string;
+      readonly color: FurnitureColor;
+      readonly x: number;
+      readonly z: number;
+      readonly rotation: Rotation;
+    }
+  | {
+      readonly type: 'placeStoredAccessory';
+      readonly kind: string;
+      readonly color: FurnitureColor;
+      readonly host: ItemHost;
+      readonly rotation: Rotation;
+    }
+  | { readonly type: 'sellStored'; readonly kind: string; readonly color: FurnitureColor }
   | { readonly type: 'startSprint' }
   | { readonly type: 'resolveEvent'; readonly choiceIndex: number }
   | { readonly type: 'startPitch' }

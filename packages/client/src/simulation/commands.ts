@@ -9,7 +9,11 @@ import {
   moveAccessory,
   moveFurniture,
   paintFurniture,
+  placeStored,
+  placeStoredAccessory,
   sellFurniture,
+  sellStored,
+  storeFurniture,
 } from './furniture';
 import type { SimContext } from './helpers';
 import { endDemo, startSprint } from './sprint';
@@ -89,6 +93,29 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')
         : sellFurniture(state, command.furnitureId);
+    case 'STORE_FURNITURE':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : storeFurniture(state, command.furnitureId);
+    case 'PLACE_STORED':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : placeStored(state, command.itemId, command.color, command.x, command.y, command.rotation);
+    case 'PLACE_STORED_ACCESSORY':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : placeStoredAccessory(
+            state,
+            command.itemId,
+            command.color,
+            command.hostId,
+            command.slot,
+            command.rotation,
+          );
+    case 'SELL_STORED':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : sellStored(state, command.itemId, command.color);
     case 'START_PITCH':
       return startPitch(state, ctx);
     case 'PITCH_ARGUMENT':

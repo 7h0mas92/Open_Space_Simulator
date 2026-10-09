@@ -68,6 +68,11 @@ export interface BuildState {
   readonly color: FurnitureColor;
   /** Exemplaires déjà posés depuis la prise en main (pose en série). */
   readonly placed: number;
+  /**
+   * Objet sorti de l'inventaire : la pose est gratuite et prend le premier exemplaire rangé de
+   * ce type et de cette couleur (`color`).
+   */
+  readonly fromStock?: boolean;
 }
 
 /** Rien en main : le catalogue est ouvert. */
@@ -171,6 +176,8 @@ interface GameStore {
   exitBuild(): void;
   /** Prend un objet du catalogue en main : le catalogue se replie. */
   pickItem(kind: string): void;
+  /** Prend en main un objet rangé dans l'inventaire (type et couleur). */
+  pickStored(kind: string, color: FurnitureColor): void;
   /** Reprend en main un objet déjà posé pour le déplacer. */
   startMove(itemId: string): void;
   setBuildCell(cell: Cell | null): void;
@@ -344,6 +351,10 @@ export const useGame = create<GameStore>((set, get) => ({
     });
   },
 
+  pickStored(kind, color) {
+    set({ build: { ...EMPTY_BUILD, kind, color, fromStock: true }, selected: null });
+  },
+
   startMove(itemId) {
     const item = get().view?.items.find((i) => i.id === itemId);
     if (!item) return;
@@ -377,6 +388,7 @@ export const useGame = create<GameStore>((set, get) => ({
   setBuildColor(color) {
     const { build } = get();
     if (!build?.kind) return;
+    if (build.fromStock) return; // un objet rangé garde sa couleur (« Peindre » une fois posé)
     if (!build.movingItemId) lastColors.set(build.kind, color);
     set({ build: { ...build, color } });
   },
@@ -410,26 +422,51 @@ export const useGame = create<GameStore>((set, get) => ({
     const host = resolved && 'host' in resolved ? resolved.host : null;
     if (def.accessory && !host) return false;
     const moving = build.movingItemId;
-    const command: GameCommand | null = host
-      ? moving
-        ? { type: 'moveAccessory', itemId: moving, host, rotation: build.rotation }
-        : {
-            type: 'placeAccessory',
-            kind: build.kind,
+    // Objet sorti de l'inventaire : la pile de ce type et de cette couleur.
+    const stock = build.fromStock
+      ? view.inventory.find((stored) => stored.kind === build.kind && stored.color === build.color)
+      : undefined;
+    if (build.fromStock && !stock) {
+      get().cancelPlacement();
+      return false;
+    }
+    const command: GameCommand | null = stock
+      ? host
+        ? {
+            type: 'placeStoredAccessory',
+            kind: stock.kind,
+            color: stock.color,
             host,
             rotation: build.rotation,
-            color: build.color,
           }
-      : moving
-        ? { type: 'moveItem', itemId: moving, x: cell.x, z: cell.z, rotation: build.rotation }
         : {
-            type: 'placeItem',
-            kind: build.kind,
+            type: 'placeStored',
+            kind: stock.kind,
+            color: stock.color,
             x: cell.x,
             z: cell.z,
             rotation: build.rotation,
-            color: build.color,
-          };
+          }
+      : host
+        ? moving
+          ? { type: 'moveAccessory', itemId: moving, host, rotation: build.rotation }
+          : {
+              type: 'placeAccessory',
+              kind: build.kind,
+              host,
+              rotation: build.rotation,
+              color: build.color,
+            }
+        : moving
+          ? { type: 'moveItem', itemId: moving, x: cell.x, z: cell.z, rotation: build.rotation }
+          : {
+              type: 'placeItem',
+              kind: build.kind,
+              x: cell.x,
+              z: cell.z,
+              rotation: build.rotation,
+              color: build.color,
+            };
     const result = await dispatch(command);
     if (!result.ok) return false;
     const name = localized(def.name, i18n.language);
@@ -440,9 +477,20 @@ export const useGame = create<GameStore>((set, get) => ({
       return true;
     }
 
+    if (stock) {
+      // Pose en série depuis l'inventaire : tant qu'il en reste en stock.
+      if (stock.count <= 1) {
+        notify('build.stopInventory', 'info', { item: name });
+        get().cancelPlacement();
+        return true;
+      }
+    }
     // Pose en série : l'objet reste en main tant qu'on peut en acheter un autre.
-    const owned = view.items.filter((item) => item.kind === build.kind).length + 1;
-    if (owned >= def.maxCount || view.gauges.treasury - def.price < def.price) {
+    const owned =
+      view.items.filter((item) => item.kind === build.kind).length +
+      view.inventory.reduce((sum, s) => sum + (s.kind === build.kind ? s.count : 0), 0) +
+      1;
+    if (!stock && (owned >= def.maxCount || view.gauges.treasury - def.price < def.price)) {
       notify(owned >= def.maxCount ? 'build.stopSoldOut' : 'build.stopMoney', 'info', {
         item: name,
       });
