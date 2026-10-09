@@ -2,6 +2,7 @@ import {
   BALANCE,
   ROLE_TRADE,
   TASK_TRADES,
+  TASK_FLOW,
   TASK_TYPES,
   taskTrade,
   type CommandResult,
@@ -91,19 +92,29 @@ function pickTrade(rng: Rng, team: Record<TaskTrade, number>): TaskTrade {
   return rng.weighted(present, (trade) => team[trade]) ?? 'DEV';
 }
 
+/** Taille maximale du backlog : elle grandit avec l'équipe. */
+export function backlogMax(state: GameState): number {
+  const team = Object.keys(state.components.identity).length;
+  return Math.max(BALANCE.start.backlogMax, Math.ceil(team * TASK_FLOW.backlogPerDev));
+}
+
 /**
- * Nouvelles idées à chaque sprint : au moins `newTasksPerSprint` (2 par dev pour une
- * grande équipe). Au-delà de `backlogMax`, les plus vieilles idées sont oubliées.
+ * Nouvelles idées à chaque sprint : au moins `newTasksPerSprint`, sinon 2 par dev. Le backlog
+ * garde jusqu'à `backlogMax` idées (davantage pour une grande équipe) ; au-delà, les plus
+ * vieilles sont oubliées.
  */
 export function refillBacklog(state: GameState, rng: Rng): void {
   const { start } = BALANCE;
   const existing = tasksInColumn(state, 'BACKLOG').length;
   const team = Object.keys(state.components.identity).length;
-  const toCreate = existing === 0 ? start.backlogSize : Math.max(start.newTasksPerSprint, team * 2);
+  const toCreate =
+    existing === 0
+      ? start.backlogSize
+      : Math.max(start.newTasksPerSprint, Math.ceil(team * TASK_FLOW.ideasPerDev));
   const trades = teamByTrade(state);
   for (let i = 0; i < toCreate; i++) createTask(state, rng, undefined, pickTrade(rng, trades));
   const backlog = tasksInColumn(state, 'BACKLOG');
-  const overflow = backlog.length - start.backlogMax;
+  const overflow = backlog.length - backlogMax(state);
   if (overflow <= 0) return;
   const oldest = [...backlog].sort(
     (a, b) =>
@@ -114,7 +125,7 @@ export function refillBacklog(state: GameState, rng: Rng): void {
 }
 
 /** Réattribue des ordres 0, 1, 2... dans une colonne, en insérant `taskId` à `index`. */
-function reorder(
+export function reorder(
   state: GameState,
   column: TaskColumn,
   taskId: EntityId,
@@ -156,6 +167,12 @@ export function moveAllToTodo(state: GameState): CommandResult {
     reorder(state, 'TODO', id, undefined);
   }
   return { ok: true };
+}
+
+/** Retire une tâche du Kanban (en libérant le dev qui y travaillait). */
+export function removeTask(state: GameState, taskId: EntityId): void {
+  unassign(state, taskId);
+  destroyEntity(state, taskId);
 }
 
 function unassign(state: GameState, taskId: EntityId): void {
@@ -213,13 +230,15 @@ export function hasFreeTask(state: GameState, trade: TaskTrade): boolean {
 }
 
 /**
- * Un dev sans tâche prend la suivante de son métier : d'abord une tâche commencée puis
- * abandonnée, sinon la première de la colonne TODO. Il ne touche jamais aux tâches des
- * autres métiers : seul le joueur peut les lui confier à la main.
+ * Un dev sans tâche prend la suivante de son métier : d'abord une tâche urgente, puis une
+ * tâche commencée puis abandonnée, sinon la première de la colonne TODO. Il ne touche jamais
+ * aux tâches des autres métiers : seul le joueur peut les lui confier à la main.
  */
 export function autoAssign(state: GameState, devId: EntityId): EntityId | null {
   const trade = devTrade(state, devId);
-  const candidates = [...tasksInColumn(state, 'IN_PROGRESS'), ...tasksInColumn(state, 'TODO')];
+  const queue = [...tasksInColumn(state, 'IN_PROGRESS'), ...tasksInColumn(state, 'TODO')];
+  const isUrgent = (id: EntityId) => state.components.task[id]?.kind === 'URGENT';
+  const candidates = [...queue.filter(isUrgent), ...queue.filter((id) => !isUrgent(id))];
   const next = candidates.find((id) => {
     const task = state.components.task[id];
     return task?.assigneeId === null && taskTrade(task) === trade;

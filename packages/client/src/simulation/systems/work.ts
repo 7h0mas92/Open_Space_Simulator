@@ -20,6 +20,7 @@ import {
   type SimContext,
 } from '../helpers';
 import { recordTaskDone, recordWork } from '../performance';
+import { completeSpecialTask } from '../taskFlow';
 
 /** Le dev pense en Rust : le Rustacé lui-même, ou un collègue converti. */
 export function thinksInRust(state: GameState, devId: EntityId): boolean {
@@ -146,6 +147,16 @@ function completeTask(state: GameState, ctx: SimContext, taskId: EntityId, devId
   const employment = state.components.employment[devId];
   if (employment) employment.tasksDone += 1;
   recordTaskDone(state, devId, task.size);
+  // Tâche urgente ou hebdomadaire : seule sa récompense compte (pas l'effet de son type).
+  if (task.kind) {
+    completeSpecialTask(state, ctx, task);
+    addDevLog(
+      state,
+      devId,
+      text(['A terminé « {task} ».', 'Finished "{task}".'], { task: task.title }),
+    );
+    return;
+  }
 
   const quality = task.progress > 0 ? task.qualitySum / task.progress : 0.5;
   const debtMultiplier = task.progress > 0 ? task.debtFactor / task.progress : 1;

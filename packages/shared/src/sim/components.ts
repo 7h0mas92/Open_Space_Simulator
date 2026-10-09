@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { LocalizedTextSchema } from '../i18n.js';
 import { BirthdaySchema } from './calendar.js';
 import { FURNITURE_COLORS } from './furniture.js';
+import { TaskKindSchema } from './taskFlow.js';
 
 /**
  * Composants de l'ECS (Entity Component System) de la simulation.
@@ -188,6 +189,12 @@ export const TaskSchema = z.object({
   hallucinated: z.boolean(),
   createdAtSprint: z.number().int(),
   doneAtSprint: z.number().int().nullable(),
+  /** Tâche urgente ou hebdomadaire (absent : tâche ordinaire du backlog). */
+  kind: TaskKindSchema.optional(),
+  /** Modèle de la tâche spéciale (`URGENT_TEMPLATES`, `WEEKLY_TEMPLATES`). */
+  template: z.string().optional(),
+  /** Échéance en « temps de sprint » (sprint × ticks par sprint + tick du sprint). */
+  deadline: z.number().int().optional(),
 });
 export type Task = z.infer<typeof TaskSchema>;
 

@@ -26,8 +26,10 @@ import type {
   PitchResult,
   VentureRisk,
   VentureStatus,
+  SprintObjective,
   SprintReport,
   Speed,
+  TaskKind,
   TaskTrade,
 } from '@oss/shared';
 
@@ -194,6 +196,23 @@ export interface TaskView {
   readonly impact: Partial<Gauges>;
   /** Feature hallucinée par l'IA Agent : livrée, mais elle n'existe pas. */
   readonly hallucinated: boolean;
+  /** Tâche urgente ou hebdomadaire (null : tâche ordinaire). */
+  readonly kind: TaskKind | null;
+  /** Échéance d'une tâche spéciale : jour de la semaine (1 = lundi) et heure. */
+  readonly due: { readonly dayOfWeek: number; readonly hour: number } | null;
+  /** Heures simulées avant l'échéance (null sans échéance). */
+  readonly hoursLeft: number | null;
+}
+
+/** Objectif du sprint en cours, avec la valeur atteinte jusqu'ici. */
+export interface ObjectiveView {
+  readonly kind: SprintObjective['kind'];
+  readonly difficulty: SprintObjective['difficulty'];
+  readonly target: number;
+  readonly value: number;
+  /** Vrai si la cible est atteinte à cet instant (pour « aucune panne » : pas encore de panne). */
+  readonly reached: boolean;
+  readonly reward: SprintObjective['reward'];
 }
 
 export interface CandidateView {
@@ -462,6 +481,8 @@ export interface GameView {
   readonly event: EventView | null;
   /** Bilan du dernier sprint (affiché à l'écran de démo). */
   readonly lastReport: SprintReport | null;
+  /** Objectif du sprint en cours (certains sprints seulement), sinon null. */
+  readonly objective: ObjectiveView | null;
   readonly pitch: PitchView | null;
   /** Peut-on lancer une levée de fonds maintenant ? Sinon, la raison. */
   readonly pitchBlocker: 'WRONG_STAGE' | 'NO_HYPE' | 'COOLDOWN' | null;

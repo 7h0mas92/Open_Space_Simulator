@@ -444,6 +444,21 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salaire relevé, +20 moral, 2 compétences +1. Refusé : 50 % de démission (départ 2 planifications
   plus tard, badge dans l'équipe), sinon -15 moral et 2 compétences -1. Commande `ANSWER_RAISE`,
   hasard sur une graine à part, état `raises` par défaut pour les anciennes sauvegardes.
+- Levées de fonds (`shared/sim/pitch.ts`, `shared/sim/funding.ts`, panneau « Lever des fonds ») :
+  6 tours de plus en plus durs (Seed à pré-IPO : 3 à 5 questions, 3 à 4 réponses, barre plus
+  haute, bluffs démasqués plus souvent, gros fonds, départ de l'investisseur dès la Série B) ;
+  question par manche, réponse hors sujet pénalisée, jauge d'intérêt et réactions. Business
+  angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
+  `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
+- Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
+  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
+  variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
+- Baies vitrées et vue sur New York (`render/skyline.ts`) : les deux murs du fond sont des vitres
+  du sol au plafond ; le bureau est au dernier étage d'une tour, dans une ville low-poly façon
+  Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
+  bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
+  (`maxTop`) ; brume, fenêtres, lampadaires et balises qui suivent le jour et la nuit.
+  Qualité basse par défaut quand WebGL tourne sans carte graphique (SwiftShader, llvmpipe).
 - Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
   tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
   `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.

@@ -10,6 +10,7 @@ import {
 } from '../../view/types';
 import { localized } from '../game/format';
 import { useGame } from '../store/game';
+import { ObjectiveBanner } from './Objective';
 import { PLAYER_COLUMNS, useDragAndDrop, type DropTarget } from './useDragAndDrop';
 
 const IMPACT_KEYS = ['users', 'hype', 'debt', 'stability'] as const;
@@ -61,6 +62,7 @@ export function Kanban({ view }: { view: GameView }) {
 
   return (
     <div className="kanban">
+      {view.objective && <ObjectiveBanner objective={view.objective} />}
       <div className="kanban-toolbar">
         <p className="hint">{t('kanban.dragHint')}</p>
         {backlogCount > 0 && (
@@ -154,9 +156,10 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
       {dev.name} · {t(`roles.${dev.role}`)}
     </option>
   );
+  const days = t('time.days', { returnObjects: true }) as unknown as string[];
   return (
     <article
-      className={`task-card task-${task.type.toLowerCase()} ${dragging ? 'dragging' : ''}`}
+      className={`task-card task-${task.type.toLowerCase()} ${task.kind ? `task-${task.kind.toLowerCase()}` : ''} ${dragging ? 'dragging' : ''}`}
       data-task-id={task.id}
       aria-label={title}
     >
@@ -179,6 +182,27 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
               <span className="tag tag-warning"> {t('kanban.hallucinated')}</span>
             )}
           </h4>
+          {task.kind && task.column !== 'DONE' && (
+            <p
+              className="task-special"
+              title={t(task.kind === 'URGENT' ? 'kanban.urgentHint' : 'kanban.weeklyHint')}
+            >
+              <span className={`tag tag-${task.kind.toLowerCase()}`}>
+                {task.kind === 'URGENT' ? '🚨' : '📅'}{' '}
+                {t(task.kind === 'URGENT' ? 'kanban.urgent' : 'kanban.weekly')}
+              </span>
+              {task.due && (
+                <span className="task-due">
+                  {task.hoursLeft !== null && task.hoursLeft <= 12
+                    ? t('kanban.hoursLeft', { hours: Math.ceil(task.hoursLeft) })
+                    : t('kanban.due', {
+                        day: days[task.due.dayOfWeek - 1] ?? '',
+                        hour: Math.floor(task.due.hour),
+                      })}
+                </span>
+              )}
+            </p>
+          )}
           <p className="task-meta">
             <span className={`tag tag-trade trade-${task.trade.toLowerCase()}`}>
               <span aria-hidden="true">{TRADE_ICONS[task.trade]}</span> {t(`trades.${task.trade}`)}
