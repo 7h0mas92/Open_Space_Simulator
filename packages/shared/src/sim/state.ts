@@ -10,6 +10,7 @@ import {
 } from './components.js';
 import { CommandLogSchema } from './commands.js';
 import { FinancingStateSchema } from './funding.js';
+import { MeetingRoomSchema } from './meetings.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
@@ -216,6 +217,9 @@ export const GameStatsSchema = z.object({
   /** Filiales créées, et dividendes et reventes encaissés. */
   venturesFounded: z.number().int().default(0),
   ventureCashIn: z.number().default(0),
+  /** Réunions d'équipe du matin jugées utiles, puis inutiles (salle de réunion aménagée). */
+  meetingsUseful: z.number().int().default(0),
+  meetingsUseless: z.number().int().default(0),
   /** Tâches urgentes et hebdomadaires terminées à temps ou ratées, objectifs de sprint. */
   urgentDone: z.number().int().default(0),
   urgentMissed: z.number().int().default(0),
@@ -261,6 +265,9 @@ export const NOTIFICATION_KINDS = [
   'VENTURE_DIED',
   'VENTURE_SOLD',
   'VENTURE_DIVIDENDS',
+  'MEETING_ROOM_FITTED',
+  'MEETING_USEFUL',
+  'MEETING_USELESS',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -334,6 +341,8 @@ export const GameStateSchema = z.object({
   /** Filiales créées par la startup (actives, coulées ou revendues). */
   ventures: z.array(VentureSchema).default([]),
   lastVentureSprint: z.number().int().nullable().default(null),
+  /** Aménagement de la salle de réunion (null : salle vide, ou pas encore de salle). */
+  meetingRoom: MeetingRoomSchema.nullable().default(null),
   /** Objectif du sprint en cours (certains sprints seulement). */
   objective: SprintObjectiveSchema.nullable().default(null),
   /** Financements hors tour de table (prêt en cours, cooldowns). */

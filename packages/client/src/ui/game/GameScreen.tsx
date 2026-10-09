@@ -13,6 +13,7 @@ import { useGame, type PanelId, type Toast } from '../store/game';
 import { useSettings } from '../store/settings';
 import { Funding } from '../funding/Funding';
 import { Group } from '../group/Group';
+import { MeetingRoom } from '../meetings/MeetingRoom';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
@@ -43,6 +44,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Hiring view={view} />;
     case 'group':
       return <Group view={view} />;
+    case 'meetings':
+      return <MeetingRoom view={view} />;
     case 'funding':
       return <Funding view={view} />;
     case 'dashboard':

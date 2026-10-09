@@ -35,6 +35,7 @@ import type { GameView, Rotation } from '../view/types';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
 import { DecorationsView } from './decorations';
+import { MeetingRoomView } from './meetingRoom';
 import { THEME_MODELS } from './decorModels';
 import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
@@ -127,6 +128,7 @@ export class GameRenderer {
   private readonly assets = new AssetLibrary();
   private readonly office = new OfficeView(this.assets);
   private readonly decorations = new DecorationsView(this.assets);
+  private readonly meetingRoom = new MeetingRoomView(this.assets);
   /** Réglage de chaque thème de décoration au back-office (absent = pendant sa période). */
   private decorModes: Partial<Record<DecorTheme, DecorMode>> = {};
   private readonly roomLights = new OfficeLights(this.assets);
@@ -209,6 +211,7 @@ export class GameRenderer {
       this.skyline.root,
       this.office.root,
       this.decorations.root,
+      this.meetingRoom.root,
       this.roomLights.root,
       this.screens.root,
     );
@@ -477,6 +480,7 @@ export class GameRenderer {
     for (const bubble of this.bubbles.values()) bubble.remove();
     this.office.dispose();
     this.decorations.dispose();
+    this.meetingRoom.dispose();
     this.roomLights.dispose();
     this.skyline.dispose();
     this.screens.dispose();
@@ -486,11 +490,15 @@ export class GameRenderer {
 
   // --- Décorations -------------------------------------------------------------------------
 
-  /** Décorations de saison et table d'anniversaire du jour (obstacles pour les personnages). */
+  /**
+   * Décorations de saison, table d'anniversaire du jour et mobilier de la salle de réunion
+   * (obstacles pour les personnages).
+   */
   private updateDecor(view: GameView): void {
     const themes = decoratedThemes(view.calendar.seasons, this.decorModes);
     const birthday = view.calendar.birthdays.length > 0;
-    const key = decorKey(this.layout, view.items, themes, birthday);
+    const format = view.meetingRoom.format;
+    const key = decorKey(this.layout, view.items, themes, birthday, format);
     if (key === this.decorPlanKey && this.decorPlan) return;
     const plan = planDecor(
       this.layout,
@@ -498,11 +506,13 @@ export class GameRenderer {
       themes,
       birthday,
       (theme) => THEME_MODELS[theme].floor.length,
+      format,
     );
     this.decorPlanKey = key;
     this.decorPlan = plan;
-    this.world.setDecor(plan.blocked, plan.party);
+    this.world.setDecor(plan.blocked, plan.party, plan.meeting?.seats ?? []);
     void this.decorations.update(key, plan, this.layout, view.items);
+    void this.meetingRoom.update(key, plan.meeting, this.layout);
   }
 
   // --- Boucle ------------------------------------------------------------------------------

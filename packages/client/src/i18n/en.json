@@ -274,9 +274,11 @@
       "dashboard": "Stats",
       "slack": "Slack",
       "group": "Invest",
+      "meetings": "Meetings",
       "funding": "Raise"
     },
     "group": "Invest",
+    "meetings": "Meeting room",
     "funding": "Raise funds"
   },
   "kanban": {
@@ -639,6 +641,7 @@
       "uiPack": "Kenney UI pack (CSS interface)",
       "soundPacks": "Kenney sound packs (audio coming later)",
       "seasonalDecor": "Seasonal decorations (12 themes) and the birthday table: Three.js cake, presents and balloons on the Furniture Kit's tablecloth table",
+      "meetingRoomProps": "Meeting room: whiteboard, stand-up clock, fish tank, war room screens, boardroom painting and glass walls as Three.js shapes, with the Furniture Kit's tables and chairs",
       "citySkyline": "Glass walls and a New York-style city view (towers, water tanks, park, river, taxis) made of Three.js shapes, with no real building",
       "mug": "Dev mug",
       "rubberDuck": "Rubber duck",
@@ -1503,6 +1506,29 @@
     "confirmSell": "Confirm sale ({{price}})",
     "cancel": "Cancel",
     "sellWhen": "Stakes are sold during planning or the demo."
+  },
+  "meetings": {
+    "intro": "Fit out the office meeting room. Each format has a perk and a drawback, and the team meets there every weekday morning at {{hour}}: a useful meeting pays off, a useless one costs morale.",
+    "locked": "No meeting room in the garage: it comes with the Seed office, after your first funding round.",
+    "current": "Current room",
+    "empty": "The room is empty: no morning team meeting, and no effect. Pick a format below.",
+    "useful": "Useful meetings",
+    "useless": "Useless meetings",
+    "recent": "Latest meetings",
+    "formats": "Formats",
+    "installed": "Installed",
+    "bonus": "Perk",
+    "malus": "Drawback",
+    "odds": "Morning meeting useful {{percent}}% of the time",
+    "fit": "Fit out ({{price}})",
+    "switch": "Replace ({{price}}, {{refund}} back)",
+    "clear": "Empty the room ({{refund}} back)",
+    "confirmClear": "Confirm ({{refund}} back)",
+    "blockers": {
+      "LOCKED": "Unlocked at {{phase}}.",
+      "WRONG_STAGE": "Not possible during a funding pitch.",
+      "NOT_ENOUGH_MONEY": "Not enough cash."
+    }
   },
   "funding": {
     "rounds": "Funding rounds",

@@ -1505,6 +1505,93 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── MEETING_ROOM_FITTED ──────────────────────────────────────────────────
+  {
+    trigger: 'MEETING_ROOM_FITTED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🗓️ {event} Les réservations se font sur le Google Agenda partagé que personne ne regarde.',
+      '🗓️ {event} Bookings go through the shared Google Calendar nobody checks.',
+    ),
+  },
+  {
+    trigger: 'MEETING_ROOM_FITTED',
+    channel: 'random',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      'Enfin une vraie salle ! Je viens de la réserver tous les jours de 9h à 18h.',
+      'Finally a real room! I just booked it every day from 9am to 6pm.',
+    ),
+  },
+  {
+    trigger: 'MEETING_ROOM_FITTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Quelqu’un sait comment on allume l’écran de la salle de réunion ?',
+      'Does anyone know how to turn on the meeting room screen?',
+    ),
+  },
+
+  // ─── MEETING_USEFUL ───────────────────────────────────────────────────────
+  {
+    trigger: 'MEETING_USEFUL',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t('✅ {event}', '✅ {event}'),
+  },
+  {
+    trigger: 'MEETING_USEFUL',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Je crois qu’on vient d’avoir une réunion utile. Je note la date.',
+      'I think we just had a useful meeting. Writing down the date.',
+    ),
+  },
+  {
+    trigger: 'MEETING_USEFUL',
+    channel: 'random',
+    author: dev('SENIOR_BEARD'),
+    text: t(
+      'Réunion finie à l’heure. En 20 ans de carrière, c’est la deuxième fois.',
+      'Meeting ended on time. Second time in my 20-year career.',
+    ),
+  },
+
+  // ─── MEETING_USELESS ──────────────────────────────────────────────────────
+  {
+    trigger: 'MEETING_USELESS',
+    channel: 'general',
+    author: dev(),
+    text: t('😩 {event}', '😩 {event}'),
+  },
+  {
+    trigger: 'MEETING_USELESS',
+    channel: 'random',
+    author: dev(),
+    text: t('Cette réunion aurait pu être un mail.', 'This meeting could have been an email.'),
+  },
+  {
+    trigger: 'MEETING_USELESS',
+    channel: 'random',
+    author: dev('TEN_X'),
+    text: t(
+      'Pendant la réunion, j’ai codé une feature, l’ai déployée et rollbackée.',
+      'During the meeting I coded a feature, shipped it and rolled it back.',
+    ),
+  },
+  {
+    trigger: 'MEETING_USELESS',
+    channel: 'random',
+    author: dev('INTERN'),
+    text: t(
+      'C’était quoi « on prend ça en offline » ? J’ai pas osé demander.',
+      'What did "let\'s take this offline" mean? I didn\'t dare ask.',
+    ),
+  },
+
   // ─── SPRINT_LOST ──────────────────────────────────────────────────────────
   {
     trigger: 'SPRINT_LOST',

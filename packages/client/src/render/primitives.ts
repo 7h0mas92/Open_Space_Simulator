@@ -519,6 +519,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   miniCactus,
   officeCharacters: null,
   seasonalDecor: null,
+  meetingRoomProps: null,
   citySkyline: null,
   annexDecor: null,
   uiPack: null,

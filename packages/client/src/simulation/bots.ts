@@ -1,6 +1,7 @@
 import {
   FURNITURE_CATALOG,
   ROLE_PROFILES,
+  getMeetingFormat,
   ROLE_TRADE,
   taskTrade,
   type CardEffects,
@@ -9,6 +10,7 @@ import {
   type EventCard,
   type FinancingKind,
   type GameState,
+  type MeetingFormatId,
   type TaskTrade,
   type TaskType,
 } from '@oss/shared';
@@ -18,6 +20,7 @@ import { financingOffers } from './financing';
 import { expectedAnswer } from './fundraising';
 import { canPlace, phaseIndex } from './furniture';
 import { devIds, teamMax, teamMoral, teamSize } from './helpers';
+import { meetingFormatBlocker } from './meetings';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
 import { tasksInColumn } from './tasks';
@@ -98,6 +101,8 @@ interface PlanningStyle {
   buysFurniture: boolean;
   /** Crée des filiales dès que possible (et revend ses parts si l'argent manque). */
   invests?: boolean;
+  /** Formule voulue pour la salle de réunion (null : salle vide). */
+  meetingRoom?: (state: Readonly<GameState>) => MeetingFormatId | null;
   /** Utilise les autres financements (prêt, business angels…) quand l'argent manque. */
   finances?: boolean;
 }
@@ -187,6 +192,13 @@ class PlannerBot implements Bot {
 
     // 2. Filiales : un projet audacieux, sinon prudent, si la trésorerie le permet.
     if (style.invests) commands.push(...this.invest(state, runway));
+
+    // 2 bis. Salle de réunion : la formule voulue, si on a de la marge.
+    const format = style.meetingRoom?.(state) ?? null;
+    if (format && format !== state.meetingRoom?.format && runway > 9) {
+      const blocker = meetingFormatBlocker(state as GameState, getMeetingFormat(format));
+      if (blocker === null) commands.push({ type: 'FIT_MEETING_ROOM', format });
+    }
 
     // 3. Recrutement.
     if (teamSize(state) < teamMax(state) && runway > style.hireRunway) {
@@ -352,9 +364,56 @@ export const BOT_NAMES = [
   'balanced',
   'cautious',
   'investor',
+  'organizer',
   'financier',
 ] as const;
 export type BotName = (typeof BOT_NAMES)[number];
+
+const balancedPriority = (type: TaskType, state: Readonly<GameState>) => {
+  if (type === 'REFACTO') return state.gauges.debt > 35 ? 4 : 1;
+  if (type === 'BUGFIX' || type === 'INFRA') return fixPriority(state) ? 4 : 1;
+  return 3;
+};
+
+/**
+ * Comme « balanced », mais il aménage la salle de réunion avec la formule que `pick` choisit.
+ * `pnpm balance` s'en sert pour comparer les formules entre elles.
+ */
+export function createOrganizerBot(
+  name: string,
+  pick: (state: Readonly<GameState>) => MeetingFormatId | null,
+): Bot {
+  return new PlannerBot(name, {
+    priority: balancedPriority,
+    avoidRoles: ['INTERN'],
+    hireRunway: 10,
+    offerRatio: 1.05,
+    pitchRunway: 10,
+    buysFurniture: true,
+    meetingRoom: pick,
+  });
+}
+
+/** La formule qu'un joueur attentif choisirait selon la phase et l'état du bureau. */
+export function sensibleMeetingRoom(state: Readonly<GameState>): MeetingFormatId | null {
+  const hasPO = Object.values(state.components.identity).some((i) => i.role === 'PRODUCT_OWNER');
+  switch (state.phase) {
+    case 'GARAGE':
+      return null;
+    case 'SEED':
+      return hasPO ? 'standup' : 'brainstorm';
+    case 'SERIES_A':
+      return state.gauges.stability < 60
+        ? 'war-room'
+        : teamMoral(state) < 55
+          ? 'zen'
+          : 'brainstorm';
+    default:
+      return state.meetingRoom?.format === 'boardroom' || state.gauges.treasury > 2_000_000
+        ? 'boardroom'
+        : (state.meetingRoom?.format ?? 'brainstorm');
+  }
+}
 
 /** Crée un bot par son nom. `seed` ne sert qu'au bot aléatoire. */
 export function createBot(name: BotName, seed: string): Bot {
@@ -400,6 +459,9 @@ export function createBot(name: BotName, seed: string): Bot {
         buysFurniture: true,
         invests: true,
       });
+    case 'organizer':
+      // Comme « balanced », et il aménage la salle de réunion selon la phase.
+      return createOrganizerBot(name, sensibleMeetingRoom);
     case 'financier':
       // Comme « balanced », mais il complète les tours de table par les autres financements.
       return new PlannerBot(name, {

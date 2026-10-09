@@ -8,6 +8,7 @@ import {
   type TaskTrade,
 } from '@oss/shared';
 import { clamp, devIds, devsWithRole, type SimContext } from '../helpers';
+import { holdTeamMeeting, isTeamMeetingTime } from '../meetings';
 import { autoAssign, devTrade, hasFreeTask } from '../tasks';
 import type { SimClock } from '../time';
 
@@ -121,6 +122,10 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
   const hasPO = devsWithRole(state, 'PRODUCT_OWNER').length > 0;
   const meeting = hasPO && isMeetingTime(clock);
   if (meeting) state.stats.meetings += 1;
+  // Réunion d'équipe du matin, dès que la salle de réunion est aménagée.
+  const teamMeeting = isTeamMeetingTime(state, clock);
+  if (teamMeeting) state.stats.meetings += 1;
+  const attendees: EntityId[] = [];
   const { activity: odds } = BALANCE;
   // Reste-t-il des tâches à prendre, métier par métier ? Calculé seulement si un dev est
   // sans tâche, pour ne pas parcourir le Kanban à chaque tick.
@@ -194,6 +199,11 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
       setActivity(state, id, nap ? 'SLEEPING' : work, 1);
       continue;
     }
+    if (teamMeeting) {
+      setActivity(state, id, 'MEETING', 1);
+      attendees.push(id);
+      continue;
+    }
     if (meeting && !ctx.office.meetingShielded[id]) {
       setActivity(state, id, 'MEETING', 1);
       continue;
@@ -255,4 +265,5 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
     setActivity(state, id, work, 1);
     available.add(id);
   }
+  if (teamMeeting) holdTeamMeeting(state, ctx, attendees);
 }

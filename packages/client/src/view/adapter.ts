@@ -10,6 +10,7 @@
 import {
   ANNEXES,
   BALANCE,
+  MEETING_FORMATS,
   FUNDING_TIERS,
   PITCH_QUESTIONS,
   ROLE_PROFILES,
@@ -57,6 +58,11 @@ import { tasksInColumn } from '../simulation/tasks';
 import { birthdayOf, birthdayPartyIds, calendarDay } from '../simulation/systems/calendar';
 import { clockAt, getClock } from '../simulation/time';
 import {
+  meetingFormatBlocker,
+  meetingRoomRefund,
+  meetingRoomUnlocked,
+} from '../simulation/meetings';
+import {
   investableCash,
   officeWings,
   salePrice,
@@ -79,6 +85,7 @@ import type {
   FundingView,
   GroupView,
   GameView,
+  MeetingRoomView,
   GaugeName,
   KanbanColumn,
   ObjectiveView,
@@ -542,6 +549,39 @@ function groupView(state: GameState): GroupView {
   };
 }
 
+/** Nombre de réunions récentes affichées dans le panneau de la salle. */
+const RECENT_MEETINGS = 4;
+
+function meetingRoomView(state: GameState): MeetingRoomView {
+  const recent = state.notifications
+    .filter((n) => n.kind === 'MEETING_USEFUL' || n.kind === 'MEETING_USELESS')
+    .slice(-RECENT_MEETINGS)
+    .reverse()
+    .map((n) => ({ tick: n.tick, useful: n.kind === 'MEETING_USEFUL', text: n.text }));
+  return {
+    unlocked: meetingRoomUnlocked(state),
+    format: state.meetingRoom?.format ?? null,
+    refund: meetingRoomRefund(state),
+    formats: MEETING_FORMATS.map((format) => {
+      const blocker = meetingFormatBlocker(state, format);
+      return {
+        id: format.id,
+        icon: format.icon,
+        name: format.name,
+        bonus: format.bonus,
+        malus: format.malus,
+        price: format.price,
+        minPhase: format.minPhase,
+        usefulOdds: format.usefulOdds,
+        blocker: blocker === 'NOT_FOUND' ? 'LOCKED' : blocker,
+      };
+    }),
+    useful: state.stats.meetingsUseful,
+    useless: state.stats.meetingsUseless,
+    recent,
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -606,6 +646,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     acquisitionOffer: state.acquisitionOffer,
     raiseRequest: raiseRequestView(state),
     group: groupView(state),
+    meetingRoom: meetingRoomView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
       state.phase === 'UNICORN' &&
@@ -747,5 +788,9 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'FOUND_VENTURE', ideaId: command.ideaId };
     case 'sellVenture':
       return { type: 'SELL_VENTURE', ventureId: command.ventureId };
+    case 'fitMeetingRoom':
+      return { type: 'FIT_MEETING_ROOM', format: command.format };
+    case 'clearMeetingRoom':
+      return { type: 'CLEAR_MEETING_ROOM' };
   }
 }
