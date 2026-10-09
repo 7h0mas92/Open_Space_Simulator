@@ -18,6 +18,7 @@ import {
 } from './furniture';
 import type { SimContext } from './helpers';
 import { clearMeetingRoom, fitMeetingRoom } from './meetings';
+import { adoptPet, rehomePet } from './pets';
 import { answerRaise } from './raises';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -156,5 +157,9 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return fitMeetingRoom(state, ctx, command.format);
     case 'CLEAR_MEETING_ROOM':
       return clearMeetingRoom(state);
+    case 'ADOPT_PET':
+      return adoptPet(state, ctx, command.coat);
+    case 'REHOME_PET':
+      return rehomePet(state, ctx, command.petId);
   }
 }

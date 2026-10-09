@@ -19,6 +19,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents';
+import { CatWorld, type CatSnapshot } from '../ai/cats';
 import { itemCells } from '../ai/grid';
 import { catalogItem, footprint } from '../view/catalog';
 import { decorKey, planDecor } from '../view/decor';
@@ -41,6 +42,7 @@ import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
 import { interpolateAgent } from './interpolation';
+import { PetsView } from './pets';
 import {
   cameraDirection,
   clampTarget,
@@ -139,6 +141,11 @@ export class GameRenderer {
   private roles = new Map<string, DevRole>();
   private readonly characters = new Map<string, CharacterView>();
   private readonly world: AgentWorld;
+  /** Les chats du bureau : leur IA (déplacements) et leurs modèles. */
+  private readonly cats = new CatWorld(1);
+  private readonly pets = new PetsView();
+  private previousCats = new Map<string, CatSnapshot>();
+  private currentCats: CatSnapshot[] = [];
   private readonly gestures = new GestureRecognizer();
   private readonly raycaster = new THREE.Raycaster();
   private readonly smoke: SmokeEffect;
@@ -214,6 +221,7 @@ export class GameRenderer {
       this.meetingRoom.root,
       this.roomLights.root,
       this.screens.root,
+      this.pets.root,
     );
 
     this.smoke = new SmokeEffect(preset.maxParticles);
@@ -273,6 +281,8 @@ export class GameRenderer {
     void this.roomLights.setLayout(this.layout, QUALITY_PRESETS[this.quality].roomLights);
     this.roles = new Map(view.devs.map((dev) => [dev.id, dev.role]));
     this.world.sync(view);
+    this.cats.sync(view, this.decorPlan?.blocked ?? []);
+    this.pets.sync(view.pets.pets);
     if (phaseChanged) this.fitCamera();
 
     const ids = new Set(view.devs.map((dev) => dev.id));
@@ -447,6 +457,8 @@ export class GameRenderer {
     screens: number;
     /** Vraies lampes ponctuelles de la salle. */
     roomLights: number;
+    /** Chats visibles dans la scène. */
+    cats: number;
   } {
     const tile = this.footprintTile;
     let ghost: { x: number; y: number } | null = null;
@@ -469,6 +481,7 @@ export class GameRenderer {
       ghost,
       screens: this.screens.count,
       roomLights: this.roomLights.realLights,
+      cats: this.currentCats.filter((cat) => cat.visible).length,
     };
   }
 
@@ -484,6 +497,7 @@ export class GameRenderer {
     this.roomLights.dispose();
     this.skyline.dispose();
     this.screens.dispose();
+    this.pets.dispose();
     this.composer?.dispose();
     this.renderer.dispose();
   }
@@ -536,6 +550,9 @@ export class GameRenderer {
       this.previous = new Map(this.current.map((agent) => [agent.id, agent]));
       this.world.step();
       this.current = this.world.snapshot();
+      this.previousCats = new Map(this.currentCats.map((cat) => [cat.id, cat]));
+      this.cats.step();
+      this.currentCats = this.cats.snapshot();
       this.accumulator -= AGENT_TICK_SECONDS;
       steps++;
     }
@@ -546,6 +563,9 @@ export class GameRenderer {
       const shown = interpolateAgent(this.previous.get(agent.id), agent, alpha);
       this.characters.get(agent.id)?.update(shown, delta * speed, this.reducedMotion);
     }
+    if (this.currentCats.length === 0 && view && view.pets.pets.length > 0)
+      this.currentCats = this.cats.snapshot();
+    this.pets.update(this.previousCats, this.currentCats, alpha, delta * speed, this.reducedMotion);
 
     if (view) {
       const minute = liveSprintMinutes(view.time, now) % 1440;

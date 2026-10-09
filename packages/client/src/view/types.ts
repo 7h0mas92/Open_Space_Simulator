@@ -21,6 +21,8 @@ import type {
   GameResult,
   LocalizedText,
   MeetingFormatId,
+  PetCoat,
+  PetNeed,
   NotificationKind,
   Phase,
   PitchCategory,
@@ -465,6 +467,28 @@ export interface MeetingRoomView {
   }[];
 }
 
+/** Un chat du bureau. */
+export interface PetView {
+  /** Identifiant stable : sert aussi de graine à son animation. */
+  readonly id: string;
+  readonly name: string;
+  readonly coat: PetCoat;
+  readonly adoptedSprint: number;
+}
+
+/** Les chats du bureau et ce qu'il faut pour en adopter un. */
+export interface PetsView {
+  readonly pets: readonly PetView[];
+  readonly max: number;
+  readonly price: number;
+  /** Équipement posé dans l'open space : litière, gamelle, arbre à chat. */
+  readonly needs: Readonly<Record<PetNeed, boolean>>;
+  /** Tout l'équipement est posé : les chats sont heureux (sinon ils boudent). */
+  readonly happy: boolean;
+  /** Pourquoi on ne peut pas adopter maintenant, sinon null. */
+  readonly blocker: 'LOCKED' | 'NOT_ELIGIBLE' | 'NOT_ENOUGH_MONEY' | 'WRONG_STAGE' | null;
+}
+
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
 export interface GameNotification {
   readonly tick: number;
@@ -530,6 +554,8 @@ export interface GameView {
   readonly group: GroupView;
   /** Salle de réunion (à partir de la Seed). */
   readonly meetingRoom: MeetingRoomView;
+  /** Chats du bureau. */
+  readonly pets: PetsView;
   readonly canIpo: boolean;
   readonly result: GameResult | null;
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */
@@ -615,7 +641,9 @@ export type GameCommand =
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }
   | { readonly type: 'fitMeetingRoom'; readonly format: MeetingFormatId }
-  | { readonly type: 'clearMeetingRoom' };
+  | { readonly type: 'clearMeetingRoom' }
+  | { readonly type: 'adoptPet'; readonly coat: PetCoat }
+  | { readonly type: 'rehomePet'; readonly petId: string };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

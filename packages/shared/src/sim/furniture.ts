@@ -1,5 +1,6 @@
 import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
+import type { PetNeed } from './pets.js';
 
 /**
  * Catalogue des objets du mode construction. Chaque objet a un effet réel sur la
@@ -53,6 +54,8 @@ export interface FurnitureDefinition {
   surfaceSlots?: number;
   /** Accessoire : il se pose sur un meuble à plateau, jamais au sol. */
   accessory?: boolean;
+  /** Équipement pour chat : il en faut un de chaque sorte posé pour adopter (voir `pets.ts`). */
+  petNeed?: PetNeed;
 }
 
 /**
@@ -383,6 +386,127 @@ export const FURNITURE_CATALOG = [
     maxCount: 4,
     effects: { moral: 0.2, coffeeRestock: 10 },
     surfaceSlots: 4,
+  },
+  // --- Animaux : l'équipement à poser avant d'adopter un chat (voir `pets.ts`). ---
+  {
+    id: 'litter-open',
+    name: t('Litière ouverte', 'Open litter tray'),
+    description: t(
+      'Un bac et du sable. Fait l’affaire, mais toute l’équipe le sait : léger −moral.',
+      'A tray and some sand. It works, but the whole team knows it: slight −morale.',
+    ),
+    price: 60,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 5,
+    effects: { moral: -0.02 },
+    petNeed: 'litter',
+  },
+  {
+    id: 'litter-covered',
+    name: t('Litière fermée', 'Covered litter box'),
+    description: t(
+      'Avec un toit et une porte battante : plus d’odeur, très léger +moral.',
+      'With a roof and a flap door: no more smell, tiny +morale.',
+    ),
+    price: 220,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 5,
+    effects: { moral: 0.02 },
+    petNeed: 'litter',
+  },
+  {
+    id: 'litter-robot',
+    name: t('Litière robot autonome', 'Self-cleaning robot litter'),
+    description: t(
+      'Se nettoie seule et envoie des notifications push : +moral, +hype.',
+      'Cleans itself and sends push notifications: +morale, +hype.',
+    ),
+    price: 1200,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 5,
+    effects: { moral: 0.06, hypePerDay: 0.01 },
+    petNeed: 'litter',
+  },
+  {
+    id: 'cat-bowl',
+    name: t('Gamelle double eau et croquettes', 'Double water and food bowl'),
+    description: t(
+      'Deux bols sur un support : l’eau d’un côté, les croquettes de l’autre.',
+      'Two bowls on a stand: water on one side, kibble on the other.',
+    ),
+    price: 40,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 5,
+    effects: { moral: 0.01 },
+    petNeed: 'bowl',
+  },
+  {
+    id: 'cat-feeder',
+    name: t('Fontaine et distributeur', 'Fountain and feeder'),
+    description: t(
+      'Croquettes à heure fixe et eau qui coule : les chats ne réveillent plus personne. +moral.',
+      'Kibble on schedule and running water: cats stop waking people up. +morale.',
+    ),
+    price: 380,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 5,
+    effects: { moral: 0.04 },
+    petNeed: 'bowl',
+  },
+  {
+    id: 'cat-tree-small',
+    name: t('Arbre à chat compact', 'Compact cat tree'),
+    description: t(
+      'Un griffoir et un coussin sur une case : les canapés sont épargnés. Léger +moral.',
+      'A scratching post and a cushion on one tile: the sofas are spared. Slight +morale.',
+    ),
+    price: 180,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 4,
+    effects: { moral: 0.03 },
+    petNeed: 'tree',
+  },
+  {
+    id: 'cat-tree-medium',
+    name: t('Arbre à chat double', 'Double cat tree'),
+    description: t(
+      'Deux tours, un hamac et une niche sur deux cases. +moral.',
+      'Two towers, a hammock and a cubby over two tiles. +morale.',
+    ),
+    price: 450,
+    width: 2,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 4,
+    effects: { moral: 0.06 },
+    petNeed: 'tree',
+  },
+  {
+    id: 'cat-tree-large',
+    name: t('Arbre à chat géant', 'Giant cat tree'),
+    description: t(
+      'Trois tours, trois étages et une vue sur tout l’open space : +moral, +hype.',
+      'Three towers, three levels and a view of the whole office: +morale, +hype.',
+    ),
+    price: 1100,
+    width: 3,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 4,
+    effects: { moral: 0.1, hypePerDay: 0.02 },
+    petNeed: 'tree',
   },
   // --- Accessoires : posés sur les meubles à plateau (bureaux, bibliothèque, frigo…). ---
   {
