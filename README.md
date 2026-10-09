@@ -259,7 +259,7 @@ flowchart LR
 - **Qualité réglable** (bas, moyen, haut) : devicePixelRatio plafonné à 2, ombres coupées en
   bas (défaut sur mobile et quand WebGL tourne sans carte graphique, comme sur la CI), petits
   objets masqués quand on dézoome (LOD).
-- **Vue sur New York** : les deux murs du fond sont de grandes baies vitrées. Le bureau est au
+- **Vue sur New York** : on la voit par les fenêtres achetées. Le bureau est au
   dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
   gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
   Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
@@ -382,6 +382,10 @@ flowchart LR
   sur un bureau protège un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
+- **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
+  fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
+  au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
+  (« ⟳ Changer de mur »), percent le mur pour montrer la ville et font entrer le soleil.
 - **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
   revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
   les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
@@ -562,7 +566,7 @@ génère que des messages Slack.
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, ville et baies vitrées, tableau blanc, horloge,
+  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
   ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
