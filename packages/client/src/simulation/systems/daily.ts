@@ -1,6 +1,6 @@
 import { BALANCE, type GameState } from '@oss/shared';
 import { resignDev } from '../devs';
-import { computeValuation, monthlyExpenses, monthlyRevenue } from '../economy';
+import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from '../economy';
 import {
   addDevLog,
   addGauge,
@@ -25,6 +25,7 @@ const DAYS_PER_MONTH = 30;
 function economy(state: GameState): void {
   addMoney(state, -monthlyExpenses(state) / DAYS_PER_MONTH);
   addMoney(state, monthlyRevenue(state) / DAYS_PER_MONTH);
+  repayLoan(state, 1);
 }
 
 /** Croissance organique (hype) et départs (churn, aggravé par l'instabilité). */

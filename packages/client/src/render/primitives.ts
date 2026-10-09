@@ -520,6 +520,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   officeCharacters: null,
   seasonalDecor: null,
   citySkyline: null,
+  annexDecor: null,
   uiPack: null,
   soundPacks: null,
 };

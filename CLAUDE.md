@@ -419,6 +419,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   maximum ou si la trésorerie manque) ; 12 accessoires posés sur les meubles (`surfaceSlots`,
   commandes `BUY_ACCESSORY` / `MOVE_ACCESSORY`, revendus et déplacés avec leur meuble) ; 12 couleurs
   au choix à l'achat ou via « Peindre » (`PAINT_FURNITURE`, `client/src/view/colors.ts`).
+- Accessoires de bureau et inventaire : casque antibruit (`desk-headset`, protège 1 dev des
+  réunions) et mini-cactus (`mini-cactus`) posés sur les bureaux, 3 emplacements par bureau ; le
+  portant au sol et le cactus au sol restent (« Portant de casques antibruit », « Cactus en pot »).
+  « 📦 Ranger » met un objet et ses accessoires dans l'inventaire (onglet du catalogue) ; on l'en
+  ressort gratuitement ou on le revend. Commandes `STORE_FURNITURE`, `PLACE_STORED`,
+  `PLACE_STORED_ACCESSORY`, `SELL_STORED` ; état `inventory` (vide par défaut) ; un objet rangé n'a
+  plus d'effet mais compte dans le maximum de la boutique.
 - Vraies pauses (`BALANCE.breaks`, `scheduledBreak` dans `simulation/systems/activity.ts`) :
   10h30, déjeuner 12h (1 h), 15h, un dev sur deux décalé de 30 min ; café, babyfoot ou balade en
   cuisine selon le caractère (activités `BREAK` et `LUNCH`). Rendu (`ai/agents.ts`) : marche à
@@ -437,6 +444,15 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salaire relevé, +20 moral, 2 compétences +1. Refusé : 50 % de démission (départ 2 planifications
   plus tard, badge dans l'équipe), sinon -15 moral et 2 compétences -1. Commande `ANSWER_RAISE`,
   hasard sur une graine à part, état `raises` par défaut pour les anciennes sauvegardes.
+- Levées de fonds (`shared/sim/pitch.ts`, `shared/sim/funding.ts`, panneau « Lever des fonds ») :
+  6 tours de plus en plus durs (Seed à pré-IPO : 3 à 5 questions, 3 à 4 réponses, barre plus
+  haute, bluffs démasqués plus souvent, gros fonds, départ de l'investisseur dès la Série B) ;
+  question par manche, réponse hors sujet pénalisée, jauge d'intérêt et réactions. Business
+  angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
+  `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
+- Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
+  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
+  variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
 - Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
   tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
   `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.

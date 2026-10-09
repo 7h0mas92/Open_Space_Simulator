@@ -1,20 +1,20 @@
 import {
   FURNITURE_CATALOG,
-  INVESTORS,
   ROLE_PROFILES,
-  getPitchArgument,
   type CardEffects,
   type Command,
   type DevRole,
   type EventCard,
+  type FinancingKind,
   type GameState,
   type TaskType,
 } from '@oss/shared';
 import type { CardLibrary } from '../events/library';
 import { runwayMonths } from './economy';
+import { financingOffers } from './financing';
+import { expectedAnswer } from './fundraising';
 import { canPlace, phaseIndex } from './furniture';
 import { devIds, teamMax, teamMoral, teamSize } from './helpers';
-import { log10Approx } from './math';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
 import { tasksInColumn } from './tasks';
@@ -81,28 +81,6 @@ function countFurniture(state: Readonly<GameState>, itemId: string): number {
   return Object.values(state.components.furniture).filter((f) => f.itemId === itemId).length;
 }
 
-/** Estimation de la force d'un argument, sans tirage au sort (le bot ne triche pas). */
-function expectedStrength(state: Readonly<GameState>, argumentId: string): number {
-  const argument = getPitchArgument(argumentId);
-  if (!argument) return 0;
-  const { users, debt, stability, hype } = state.gauges;
-  if (argumentId === 'retention') return (stability - 50) / 25;
-  if (argumentId === 'uptime') return (stability - 60) / 20;
-  if (argumentId === 'live-demo') return (stability / 100) * 3.5 - 1.5;
-  switch (argument.category) {
-    case 'TRACTION':
-      return log10Approx(users) / 2 - 1;
-    case 'TECH':
-      return (60 - debt) / 30;
-    case 'TEAM':
-      return (teamMoral(state) - 50) / 25 + teamSize(state) / 10;
-    case 'VISION':
-      return (hype - 40) / 30;
-    case 'BUZZWORD':
-      return 0.5;
-  }
-}
-
 interface PlanningStyle {
   /** Priorité de chaque type de tâche (plus haut = d'abord). */
   priority: (type: TaskType, state: Readonly<GameState>) => number;
@@ -117,6 +95,8 @@ interface PlanningStyle {
   buysFurniture: boolean;
   /** Crée des filiales dès que possible (et revend ses parts si l'argent manque). */
   invests?: boolean;
+  /** Utilise les autres financements (prêt, business angels…) quand l'argent manque. */
+  finances?: boolean;
 }
 
 /** Bot « raisonnable », paramétré par un style de jeu. */
@@ -155,13 +135,11 @@ class PlannerBot implements Bot {
   private pitch(state: Readonly<GameState>): Command[] {
     const pitch = state.pitch;
     if (!pitch || pitch.result) return [{ type: 'CLOSE_PITCH' }];
-    const investor = INVESTORS.find((i) => i.archetype === pitch.investor);
+    // Le bot ne triche pas : il estime chaque réponse sans connaître les tirages.
     let best = pitch.options[0] ?? '';
     let bestValue = Number.NEGATIVE_INFINITY;
     for (const id of pitch.options) {
-      const argument = getPitchArgument(id);
-      const like = argument && investor ? investor.likes[argument.category] : 1;
-      const value = expectedStrength(state, id) * like;
+      const value = expectedAnswer(state as GameState, pitch, id);
       if (value > bestValue) {
         bestValue = value;
         best = id;
@@ -201,6 +179,8 @@ class PlannerBot implements Bot {
       teamSize(state) >= teamMax(state) && (state.phase === 'GARAGE' || state.phase === 'SEED');
     const wantsMoney = runway < style.pitchRunway || blockedByPhase;
     if (cooldownOk && wantsMoney && state.gauges.hype > 15) return [{ type: 'START_PITCH' }];
+    // Sinon, un financement sans pitch : subvention et prêt d'abord (sans dilution).
+    if (style.finances && runway < style.pitchRunway) commands.push(...this.finance(state));
 
     // 2. Filiales : un projet audacieux, sinon prudent, si la trésorerie le permet.
     if (style.invests) commands.push(...this.invest(state, runway));
@@ -269,6 +249,14 @@ class PlannerBot implements Bot {
       offers.find((offer) => offer.idea.risk === 'SAFE');
     if (pick) commands.push({ type: 'FOUND_VENTURE', ideaId: pick.idea.id });
     return commands;
+  }
+
+  private finance(state: Readonly<GameState>): Command[] {
+    const order: FinancingKind[] = ['GRANT', 'LOAN', 'CROWDFUNDING', 'BRIDGE'];
+    const offer = order
+      .map((kind) => financingOffers(state as GameState).find((o) => o.kind === kind))
+      .find((o) => o !== undefined && o.blocker === null);
+    return offer ? [{ type: 'TAKE_FINANCING', kind: offer.kind }] : [];
   }
 
   private furniture(state: Readonly<GameState>): Command[] {
@@ -349,7 +337,14 @@ class RandomBot implements Bot {
 
 const fixPriority = (state: Readonly<GameState>) => state.gauges.stability < 60;
 
-export const BOT_NAMES = ['random', 'shipper', 'balanced', 'cautious', 'investor'] as const;
+export const BOT_NAMES = [
+  'random',
+  'shipper',
+  'balanced',
+  'cautious',
+  'investor',
+  'financier',
+] as const;
 export type BotName = (typeof BOT_NAMES)[number];
 
 /** Crée un bot par son nom. `seed` ne sert qu'au bot aléatoire. */
@@ -395,6 +390,21 @@ export function createBot(name: BotName, seed: string): Bot {
         pitchRunway: 10,
         buysFurniture: true,
         invests: true,
+      });
+    case 'financier':
+      // Comme « balanced », mais il complète les tours de table par les autres financements.
+      return new PlannerBot(name, {
+        priority: (type, state) => {
+          if (type === 'REFACTO') return state.gauges.debt > 35 ? 4 : 1;
+          if (type === 'BUGFIX' || type === 'INFRA') return fixPriority(state) ? 4 : 1;
+          return 3;
+        },
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        finances: true,
       });
     case 'cautious':
       // Code propre, petite équipe, levées tardives.
