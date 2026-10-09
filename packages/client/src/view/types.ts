@@ -18,6 +18,7 @@ import type {
   GameMode,
   GameResult,
   LocalizedText,
+  MeetingFormatId,
   NotificationKind,
   Phase,
   PitchResult,
@@ -313,6 +314,40 @@ export interface GroupView {
   readonly portfolio: number;
 }
 
+/** Une formule d'aménagement de la salle de réunion. */
+export interface MeetingFormatView {
+  readonly id: MeetingFormatId;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly bonus: LocalizedText;
+  readonly malus: LocalizedText;
+  readonly price: number;
+  readonly minPhase: Phase;
+  /** Chance que la réunion d'équipe du matin soit utile (0 à 1). */
+  readonly usefulOdds: number;
+  /** Pourquoi on ne peut pas la choisir maintenant, sinon null. */
+  readonly blocker: 'LOCKED' | 'WRONG_STAGE' | 'NOT_ELIGIBLE' | 'NOT_ENOUGH_MONEY' | null;
+}
+
+/** La salle de réunion : son aménagement et le bilan de ses réunions. */
+export interface MeetingRoomView {
+  /** Le bureau a une salle de réunion (à partir de la Seed). */
+  readonly unlocked: boolean;
+  /** Formule choisie, ou null si la salle est vide. */
+  readonly format: MeetingFormatId | null;
+  /** Somme rendue si l'on démonte l'aménagement actuel. */
+  readonly refund: number;
+  readonly formats: readonly MeetingFormatView[];
+  readonly useful: number;
+  readonly useless: number;
+  /** Dernières réunions d'équipe, de la plus récente à la plus ancienne. */
+  readonly recent: readonly {
+    readonly tick: number;
+    readonly useful: boolean;
+    readonly text: LocalizedText;
+  }[];
+}
+
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
 export interface GameNotification {
   readonly tick: number;
@@ -368,6 +403,8 @@ export interface GameView {
   readonly acquisitionOffer: AcquisitionOffer | null;
   /** Filiales (débloquées en Série A). */
   readonly group: GroupView;
+  /** Salle de réunion (à partir de la Seed). */
+  readonly meetingRoom: MeetingRoomView;
   readonly canIpo: boolean;
   readonly result: GameResult | null;
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */
@@ -430,7 +467,9 @@ export type GameCommand =
   | { readonly type: 'answerAcquisition'; readonly accept: boolean }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
-  | { readonly type: 'sellVenture'; readonly ventureId: string };
+  | { readonly type: 'sellVenture'; readonly ventureId: string }
+  | { readonly type: 'fitMeetingRoom'; readonly format: MeetingFormatId }
+  | { readonly type: 'clearMeetingRoom' };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

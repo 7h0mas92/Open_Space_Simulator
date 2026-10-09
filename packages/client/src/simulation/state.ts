@@ -72,6 +72,7 @@ export function createEmptyState(config: GameConfig): GameState {
     acquisitionOffer: null,
     ventures: [],
     lastVentureSprint: null,
+    meetingRoom: null,
     lostSprintsPending: 0,
     tracker: {
       usersAtStart: 0,
@@ -103,6 +104,8 @@ export function createEmptyState(config: GameConfig): GameState {
       remoteDays: 0,
       venturesFounded: 0,
       ventureCashIn: 0,
+      meetingsUseful: 0,
+      meetingsUseless: 0,
     },
     achievements: [],
     notifications: [],

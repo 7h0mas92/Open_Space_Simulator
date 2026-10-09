@@ -9,6 +9,7 @@ export * from './sim/cards.js';
 export * from './sim/commands.js';
 export * from './sim/components.js';
 export * from './sim/furniture.js';
+export * from './sim/meetings.js';
 export * from './sim/pitch.js';
 export * from './sim/state.js';
 export * from './sim/ventures.js';

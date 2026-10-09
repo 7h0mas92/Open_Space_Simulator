@@ -83,11 +83,12 @@ export class Simulation {
   /**
    * Toute modification du mobilier ou de l'équipe ajoute une entité (nextEntityId change)
    * ou en retire une (un des deux compteurs change). Les postes vont aux devs présents au
-   * bureau : la liste des télétravailleurs fait donc aussi partie de la clé.
+   * bureau : la liste des télétravailleurs fait donc aussi partie de la clé, comme la formule
+   * de la salle de réunion.
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;

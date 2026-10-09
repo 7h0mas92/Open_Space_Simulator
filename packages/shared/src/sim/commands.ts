@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EntityIdSchema, FurnitureColorSchema } from './components.js';
+import { MeetingFormatIdSchema } from './meetings.js';
 
 /**
  * Commandes typées envoyées par l'interface à la simulation. C'est le SEUL moyen de
@@ -79,6 +80,10 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('FOUND_VENTURE'), ideaId: z.string() }),
   /** Revend les parts détenues dans une filiale. */
   z.object({ type: z.literal('SELL_VENTURE'), ventureId: z.string() }),
+  /** Aménage la salle de réunion avec une formule (remplace l'aménagement précédent). */
+  z.object({ type: z.literal('FIT_MEETING_ROOM'), format: MeetingFormatIdSchema }),
+  /** Démonte l'aménagement de la salle de réunion (remboursé en partie). */
+  z.object({ type: z.literal('CLEAR_MEETING_ROOM') }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export type CommandType = Command['type'];

@@ -244,6 +244,7 @@ export const MISSING_ASSETS = [
   { id: 'ramen', replacement: 'primitive' },
   { id: 'officeCharacters', replacement: 'character' },
   { id: 'seasonalDecor', replacement: 'decor' },
+  { id: 'meetingRoomProps', replacement: 'decor' },
   { id: 'mug', replacement: 'primitive' },
   { id: 'rubberDuck', replacement: 'primitive' },
   { id: 'trophy', replacement: 'primitive' },

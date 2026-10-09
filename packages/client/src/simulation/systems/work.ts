@@ -55,9 +55,10 @@ export function productivity(
   rate *= 0.6 + (0.5 * mood.moral) / 100;
   if (mood.energy < 30) rate *= 0.75;
   rate *= 1 - state.gauges.debt / BALANCE.work.debtProductivityDivider;
-  // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf casque antibruit).
+  // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf casque antibruit) ;
+  // la salle de réunion rend ce malus plus léger (stand-up) ou plus lourd (brainstorming).
   if (hasProductOwner && !ctx.office.meetingShielded[devId]) {
-    rate *= 1 - BALANCE.work.poMeetingPenalty;
+    rate *= 1 - BALANCE.work.poMeetingPenalty * ctx.office.meetingPenalty;
   }
   rate *= 1 + ctx.office.teamProductivity + (ctx.office.seatProductivity[devId] ?? 0);
   if (identity.role === 'SENIOR_BEARD' && task.shinyFramework)

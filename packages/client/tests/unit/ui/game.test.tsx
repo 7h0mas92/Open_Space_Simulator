@@ -91,12 +91,13 @@ describe('HUD', () => {
   it('sépare le dock d’actions des boutons système (sauvegardes, options)', async () => {
     await startGame();
     const dock = screen.getByRole('navigation', { name: 'Actions du jeu' });
-    expect(within(dock).getAllByRole('button')).toHaveLength(7);
+    expect(within(dock).getAllByRole('button')).toHaveLength(8);
     for (const name of [
       'Kanban',
       'Équipe',
       'Recrutement',
       'Investir',
+      'Salle de réunion',
       'Construction',
       'Dashboard',
       'Slack',

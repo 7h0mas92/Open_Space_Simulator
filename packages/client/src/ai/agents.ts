@@ -223,7 +223,7 @@ export const BRAIN: BTNode<BrainContext> = selector(
   sequence(
     'meeting',
     is('MEETING'),
-    goTo('toMeeting', (c) => c.world.poiFor(c.agent, 'meeting') ?? c.world.deskOf(c.agent)),
+    goTo('toMeeting', (c) => c.world.meetingSpot(c.agent) ?? c.world.deskOf(c.agent)),
     pose('meeting'),
   ),
   sequence(
@@ -281,6 +281,8 @@ export class AgentWorld {
   /** Décorations posées au sol et table d'anniversaire (voir `view/decor.ts`). */
   private decorBlocked: readonly Cell[] = [];
   private party: PointOfInterest | null = null;
+  /** Places autour de la table de la salle de réunion aménagée (vide sinon). */
+  private meetingSeats: PointOfInterest[] = [];
   private decorKey = '';
   private incident = false;
   private fridayFive = false;
@@ -343,7 +345,19 @@ export class AgentWorld {
   setDecor(
     blocked: readonly Cell[],
     party: { access: Cell; center: { x: number; z: number } } | null,
+    meetingSeats: readonly { cell: Cell; center: { x: number; z: number } }[] = [],
   ) {
+    this.meetingSeats = meetingSeats.map((seat, index) => ({
+      item: {
+        id: `meeting-${index}`,
+        kind: 'meeting-seat',
+        x: seat.cell.x,
+        z: seat.cell.z,
+        rotation: 0,
+      },
+      access: seat.cell,
+      center: seat.center,
+    }));
     this.decorBlocked = blocked;
     this.party = party
       ? {
@@ -406,6 +420,18 @@ export class AgentWorld {
     const desk = this.desks[index];
     if (desk) return desk;
     return { x: Math.floor(this.layout.width / 2), z: Math.floor(this.layout.depth / 2) };
+  }
+
+  /**
+   * Où se tient la réunion : une place autour de la table de la salle de réunion aménagée
+   * (chacun la sienne, dans l'ordre de l'équipe), sinon la table de cantine la plus proche.
+   */
+  meetingSpot(agent: Agent): PointOfInterest | null {
+    if (this.meetingSeats.length > 0) {
+      const index = this.agents.indexOf(agent);
+      return this.meetingSeats[Math.max(0, index) % this.meetingSeats.length] ?? null;
+    }
+    return this.poiFor(agent, 'meeting');
   }
 
   poiFor(agent: Agent, use: string): PointOfInterest | null {

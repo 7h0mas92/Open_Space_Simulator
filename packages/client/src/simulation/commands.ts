@@ -12,6 +12,7 @@ import {
   sellFurniture,
 } from './furniture';
 import type { SimContext } from './helpers';
+import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
@@ -116,5 +117,9 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return foundVenture(state, ctx, command.ideaId);
     case 'SELL_VENTURE':
       return sellVenture(state, ctx, command.ventureId);
+    case 'FIT_MEETING_ROOM':
+      return fitMeetingRoom(state, ctx, command.format);
+    case 'CLEAR_MEETING_ROOM':
+      return clearMeetingRoom(state);
   }
 }

@@ -36,6 +36,9 @@ const CHANCE: Partial<Record<SlackTrigger, number>> = {
   SPRINT_STARTED: 0.8,
   DEV_LEVEL_UP: 0.6,
   DEV_REMOTE: 0.6,
+  // Une réunion d'équipe chaque matin : un message une fois sur deux suffit.
+  MEETING_USEFUL: 0.5,
+  MEETING_USELESS: 0.5,
 };
 
 /** Probabilité qu'un déclencheur donne lieu à un message (1 si rien n'est précisé). */

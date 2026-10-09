@@ -84,7 +84,7 @@ test('la bande des jauges et le dock ne se chevauchent pas, même panneau ouvert
   const dock = (await page.locator('.command-dock').boundingBox())!;
   expect(top.y + top.height).toBeLessThan(dock.y);
   // Toutes les actions de jeu sont dans le dock, la commande de l'étape aussi.
-  await expect(page.locator('.command-dock button')).toHaveCount(9);
+  await expect(page.locator('.command-dock button')).toHaveCount(10);
 
   await page.locator('[data-tutorial="panel-team"]').click();
   const sheet = page.getByRole('dialog', { name: 'Équipe' });

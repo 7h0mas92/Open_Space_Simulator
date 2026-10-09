@@ -12,6 +12,7 @@ import {
 } from '@oss/shared';
 import { addComponent, createEntity, destroyEntity, query } from './ecs';
 import { addMoney, devIds } from './helpers';
+import { meetingFormat } from './meetings';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
 export function phaseIndex(phase: Phase): number {
@@ -259,6 +260,8 @@ export interface OfficeEffects {
   seatProductivity: Record<EntityId, number>;
   seatEnergySaving: Record<EntityId, number>;
   meetingShielded: Record<EntityId, boolean>;
+  /** Multiplicateur du malus des réunions du Product Owner (salle de réunion ; 1 sans salle). */
+  meetingPenalty: number;
 }
 
 /** Distribue des bonus "par poste" (meilleurs d'abord) aux devs présents au bureau. */
@@ -286,6 +289,7 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     seatProductivity: {},
     seatEnergySaving: {},
     meetingShielded: {},
+    meetingPenalty: 1,
   };
   const productivitySeats: number[] = [];
   const energySeats: number[] = [];
@@ -311,6 +315,18 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
       if (e.seatEnergySaving) energySeats.push(e.seatEnergySaving);
     }
     if (e.meetingShield) shieldSeats += seats;
+  }
+  // L'aménagement de la salle de réunion s'ajoute au mobilier (bonus et malus).
+  const room = meetingFormat(state);
+  if (room) {
+    const r = room.effects;
+    effects.moral += r.moral ?? 0;
+    effects.teamProductivity += r.teamProductivity ?? 0;
+    effects.quality += r.quality ?? 0;
+    effects.hypePerDay += r.hypePerDay ?? 0;
+    effects.stabilityPerDay += r.stabilityPerDay ?? 0;
+    effects.restBonus += r.restBonus ?? 0;
+    effects.meetingPenalty = room.poPenalty;
   }
   const inOffice = devIds(state).filter((id) => !(id in state.components.remote));
   effects.seatProductivity = distribute(productivitySeats, inOffice);

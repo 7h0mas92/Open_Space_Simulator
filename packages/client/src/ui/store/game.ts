@@ -42,6 +42,7 @@ export const PANELS = [
   'team',
   'hiring',
   'group',
+  'meetings',
   'dashboard',
   'slack',
   'saves',
@@ -116,6 +117,7 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   VENTURE_DIED: 'error',
   VENTURE_SOLD: 'success',
   VENTURE_DIVIDENDS: 'info',
+  MEETING_ROOM_FITTED: 'success',
   SPRINT_LOST: 'error',
   ACHIEVEMENT_UNLOCKED: 'success',
 };

@@ -9,6 +9,7 @@ import {
 } from './components.js';
 import { CommandLogSchema } from './commands.js';
 import { InvestorArchetypeSchema } from './pitch.js';
+import { MeetingRoomSchema } from './meetings.js';
 import { VentureSchema } from './ventures.js';
 
 /**
@@ -168,6 +169,9 @@ export const GameStatsSchema = z.object({
   /** Filiales créées, et dividendes et reventes encaissés. */
   venturesFounded: z.number().int().default(0),
   ventureCashIn: z.number().default(0),
+  /** Réunions d'équipe du matin jugées utiles, puis inutiles (salle de réunion aménagée). */
+  meetingsUseful: z.number().int().default(0),
+  meetingsUseless: z.number().int().default(0),
 });
 export type GameStats = z.infer<typeof GameStatsSchema>;
 
@@ -200,6 +204,9 @@ export const NOTIFICATION_KINDS = [
   'VENTURE_DIED',
   'VENTURE_SOLD',
   'VENTURE_DIVIDENDS',
+  'MEETING_ROOM_FITTED',
+  'MEETING_USEFUL',
+  'MEETING_USELESS',
   'SPRINT_LOST',
   'GAME_OVER',
   'ACHIEVEMENT_UNLOCKED',
@@ -265,6 +272,8 @@ export const GameStateSchema = z.object({
   /** Filiales créées par la startup (actives, coulées ou revendues). */
   ventures: z.array(VentureSchema).default([]),
   lastVentureSprint: z.number().int().nullable().default(null),
+  /** Aménagement de la salle de réunion (null : salle vide, ou pas encore de salle). */
+  meetingRoom: MeetingRoomSchema.nullable().default(null),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

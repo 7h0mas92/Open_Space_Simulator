@@ -2765,3 +2765,116 @@ legend {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* --- Salle de réunion ------------------------------------------------------------------- */
+.meeting-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.meeting-current {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meeting-current-name {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.meeting-panel dd.up,
+.meeting-log .up,
+.meeting-effect.up {
+  color: #7fd18b;
+}
+
+.meeting-panel dd.down,
+.meeting-log .down,
+.meeting-effect.down {
+  color: #ff9b8f;
+}
+
+.meeting-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.meeting-formats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meeting-format {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.meeting-format.current {
+  border-left-color: #7fd18b;
+}
+
+.meeting-format.locked {
+  opacity: 0.75;
+  border-left-color: var(--text-muted);
+}
+
+.meeting-format h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.meeting-effect {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.meeting-format > button {
+  margin-top: auto;
+}
+
+.meeting-format .hint {
+  margin: 0;
+}
+
+/* Téléphone en portrait : huit actions ne tiennent pas toujours à 44 px ; la barre défile. */
+@media (max-width: 479px) {
+  .action-bar {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .action-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .action-bar button {
+    flex: 1 0 auto;
+    min-width: 2.9rem;
+    padding: 4px 3px;
+    scroll-snap-align: start;
+  }
+}
