@@ -266,6 +266,8 @@ export const MISSING_ASSETS = [
   { id: 'windowMedium', replacement: 'primitive' },
   { id: 'windowLarge', replacement: 'primitive' },
   { id: 'glassWall', replacement: 'primitive' },
+  { id: 'sofa', replacement: 'primitive' },
+  { id: 'bookcase', replacement: 'primitive' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;

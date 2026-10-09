@@ -702,7 +702,9 @@
       "windowSmall": "Petite fenêtre et son pan de mur",
       "windowMedium": "Fenêtre de deux cases",
       "windowLarge": "Grande fenêtre de trois cases",
-      "glassWall": "Baie vitrée pleine hauteur (vitre de building)"
+      "glassWall": "Baie vitrée pleine hauteur (vitre de building)",
+      "sofa": "Canapé en tissu : coussins, accoudoirs roulés, pieds en bois, coussins décoratifs et plaid",
+      "bookcase": "Bibliothèque garnie : livres un par un, placard, paniers, plante, cadre et trophée"
     },
     "back": "Retour"
   },

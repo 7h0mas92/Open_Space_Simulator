@@ -702,7 +702,9 @@
       "windowSmall": "Small window and its wall section",
       "windowMedium": "Two-tile window",
       "windowLarge": "Large three-tile window",
-      "glassWall": "Floor-to-ceiling glass wall (building glass)"
+      "glassWall": "Floor-to-ceiling glass wall (building glass)",
+      "sofa": "Fabric sofa: cushions, rolled arms, wooden legs, throw pillows and a plaid",
+      "bookcase": "Stocked bookcase: individual books, cupboard, baskets, plant, frame and trophy"
     },
     "back": "Back"
   },
