@@ -5,6 +5,7 @@ import type { DevView, GameView } from '../../view/types';
 import { formatBirthday, formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { conflictsOf, CONFLICT_AFFINITY, FRIEND_AFFINITY, filterTeam } from './filters';
+import { LeadershipSummary, SpecialtyLine } from './Leadership';
 import { GradeBadge, PerformancePanel, SprintProductivity, Strengths } from './Performance';
 import { moodEmoji, StatBars } from './StatBars';
 import { TeamFilterBar } from './TeamFilterBar';
@@ -34,6 +35,7 @@ export function Team({ view }: { view: GameView }) {
         })}
       </p>
       {noDesk && <p className="hint">{t('team.noDeskHint')}</p>}
+      <LeadershipSummary leadership={view.leadership} />
       {view.devs.length > 1 && (
         <TeamFilterBar
           team={view.devs}
@@ -141,6 +143,7 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
         )}
         <p className="bio">{localized(dev.bio, i18n.language)}</p>
         <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
+        <SpecialtyLine dev={dev} />
       </header>
       <PerformancePanel performance={dev.performance} />
       <SprintProductivity performance={dev.performance} />

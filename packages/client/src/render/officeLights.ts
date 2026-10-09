@@ -1,8 +1,8 @@
 /**
- * Baies vitrées et éclairage de la salle : les deux murs du fond sont de grandes baies vitrées
- * sur la ville (vitres teintées par le ciel, montants, poteaux), les appliques murales (modèle
- * Kenney `lampWall`) sont fixées sur les poteaux, avec des halos autour des ampoules, des
- * flaques de lumière au sol sous les plafonniers et des taches de soleil le jour.
+ * Éclairage de la salle : les appliques murales (modèle Kenney `lampWall`) sont fixées sur les
+ * murs du fond, avec des halos autour des ampoules, des flaques de lumière au sol sous les
+ * plafonniers et, le jour, des taches de soleil devant les fenêtres achetées (le verre des
+ * fenêtres prend la couleur du ciel).
  *
  * Tout est « faux » (textures additives) sauf quelques vraies lampes ponctuelles selon la
  * qualité graphique : en qualité basse (mobile), aucune lumière en plus, l'effet ne coûte que
@@ -12,16 +12,22 @@ import * as THREE from 'three';
 import type { OfficeLayout, Room } from '../view/layout';
 import type { AssetLibrary } from './assets';
 import type { LightingState } from './lighting';
-import { flattenTemplate, GLASS_HEADER, GLASS_SILL, WALL_HEIGHT } from './office';
-import { PixelCanvas, radialGlowTexture, softRectTexture } from './pixels';
-import { material, PALETTE } from './primitives';
+import type { WallOpening } from '../view/windows';
+import { flattenTemplate } from './office';
+import { radialGlowTexture, softRectTexture } from './pixels';
+import { material, PALETTE, windowGlass } from './primitives';
 
 /** Emplacement sur un mur extérieur : position au pied du mur, rotation (le mur regarde +z). */
 export interface WallSlot {
   readonly x: number;
   readonly z: number;
   readonly turn: number;
-  readonly kind: 'window' | 'lamp';
+}
+
+/** Tache de soleil devant une fenêtre : son emplacement, sa largeur et sa profondeur. */
+interface SunSlot extends WallSlot {
+  readonly width: number;
+  readonly depth: number;
 }
 
 /** Point lumineux au plafond (invisible : on ne voit que la lumière qu'il projette). */
@@ -32,27 +38,44 @@ export interface CeilingLight {
 }
 
 const WALL_FACE = -0.5;
-/** Axe des murs du fond (les vitres y sont posées). */
-const WALL_AXIS = -0.6;
 const LAMP_HEIGHT = 1.5;
-/** Les reflets des vitres se répètent tous les `GLASS_REPEAT` cases. */
-const GLASS_REPEAT = 3;
 const WARM = 0xffcf8f;
 
 /**
- * Emplacements le long des deux murs du fond, une case sur deux, en alternance : un poteau
- * portant une applique (`lamp`), ou une travée de vitre devant laquelle le soleil entre
- * (`window`). Les murs de devant sont bas (la caméra regarde par-dessus) : rien n'y est accroché.
+ * Appliques le long des deux murs du fond, une case sur quatre. Les murs de devant sont bas (la
+ * caméra regarde par-dessus) : rien n'y est accroché.
  */
 export function wallSlots(layout: OfficeLayout): WallSlot[] {
   const slots: WallSlot[] = [];
-  let index = 0;
-  for (let x = 1; x <= layout.width - 2; x += 2)
-    slots.push({ x, z: WALL_FACE, turn: 0, kind: index++ % 2 === 0 ? 'window' : 'lamp' });
-  index = 1;
-  for (let z = 1; z <= layout.depth - 2; z += 2)
-    slots.push({ x: WALL_FACE, z, turn: 1, kind: index++ % 2 === 0 ? 'window' : 'lamp' });
+  for (let x = 3; x <= layout.width - 2; x += 4) slots.push({ x, z: WALL_FACE, turn: 0 });
+  for (let z = 1; z <= layout.depth - 2; z += 4) slots.push({ x: WALL_FACE, z, turn: 1 });
   return slots;
+}
+
+/** Une applique tombe-t-elle sur une fenêtre ? Elle n'est alors pas accrochée. */
+function coveredByWindow(slot: WallSlot, openings: readonly WallOpening[]): boolean {
+  const along = slot.turn === 0 ? slot.x : slot.z;
+  return openings.some(
+    (o) => o.wall === slot.turn && along >= o.start && along < o.start + o.length,
+  );
+}
+
+/** Taches de soleil : une devant chaque fenêtre, plus profonde devant une baie pleine hauteur. */
+export function sunSlots(openings: readonly WallOpening[]): SunSlot[] {
+  return openings.map((o) => {
+    const center = o.start + (o.length - 1) / 2;
+    return {
+      x: o.wall === 0 ? center : WALL_FACE,
+      z: o.wall === 0 ? WALL_FACE : center,
+      turn: o.wall,
+      width: o.length + 0.2,
+      depth: o.full ? 2.4 : 1.6,
+    };
+  });
+}
+
+function sunMatrix(slot: SunSlot, shift: number): THREE.Matrix4 {
+  return slotMatrix(slot, at(shift, 0.014, slot.depth / 2 + 0.1, slot.width, 1, slot.depth));
 }
 
 /** Plafonniers d'une salle : une grille régulière, environ un tous les 4 cases. */
@@ -119,31 +142,6 @@ function instanced(
   return mesh;
 }
 
-/**
- * Texture des vitres : un verre presque uni barré de deux reflets en diagonale, pour qu'on
- * voie la vitre sans qu'elle cache la ville.
- */
-export function glassTexture(): PixelCanvas {
-  const size = 64;
-  const canvas = new PixelCanvas(size, size).fill(0x5a5a5a);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const band = (x + y * 0.6) % size;
-      if ((band > 8 && band < 18) || (band > 22 && band < 25)) canvas.rect(x, y, 1, 1, 0xffffff);
-    }
-  }
-  return canvas;
-}
-
-/** Vitre d'un mur : un plan dont les UV se répètent pour garder des reflets à l'échelle. */
-function glassPane(length: number, height: number): THREE.PlaneGeometry {
-  const geometry = new THREE.PlaneGeometry(length, height);
-  const uv = geometry.getAttribute('uv');
-  for (let i = 0; i < uv.count; i++) uv.setX(i, (uv.getX(i) * length) / GLASS_REPEAT);
-  uv.needsUpdate = true;
-  return geometry;
-}
-
 function additive(map: THREE.Texture, color: number): THREE.MeshBasicMaterial {
   return new THREE.MeshBasicMaterial({
     map,
@@ -164,15 +162,6 @@ export class OfficeLights {
   private readonly washMaterial = additive(this.glow, WARM);
   private readonly window = softRectTexture(64, 0.25);
   private readonly sunMaterial = additive(this.window, 0xffe9b8);
-  private readonly glassMap = repeatingTexture(glassTexture());
-  private readonly glassMaterial = new THREE.MeshBasicMaterial({
-    color: 0xbfe3ff,
-    map: this.glassMap,
-    transparent: true,
-    opacity: 0.2,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-  });
   private readonly haloMaterial = new THREE.PointsMaterial({
     map: this.glow,
     color: 0xffe2b0,
@@ -193,7 +182,7 @@ export class OfficeLights {
   });
   private readonly lights: THREE.PointLight[] = [];
   private sunPatches: THREE.InstancedMesh | null = null;
-  private sunSlots: WallSlot[] = [];
+  private sunSlots: SunSlot[] = [];
   private key = '';
   private buildId = 0;
 
@@ -206,9 +195,14 @@ export class OfficeLights {
     return this.lights.length;
   }
 
-  /** Reconstruit les luminaires quand le bureau ou la qualité graphique changent. */
-  async setLayout(layout: OfficeLayout, maxRealLights: number): Promise<void> {
-    const key = `${layout.phase}:${layout.width}x${layout.depth}:${maxRealLights}`;
+  /** Reconstruit les luminaires quand le bureau, ses fenêtres ou la qualité graphique changent. */
+  async setLayout(
+    layout: OfficeLayout,
+    maxRealLights: number,
+    openings: readonly WallOpening[] = [],
+  ): Promise<void> {
+    const windows = openings.map((o) => `${o.wall}:${o.start}:${o.length}`).join(',');
+    const key = `${layout.phase}:${layout.width}x${layout.depth}:${maxRealLights}:${windows}`;
     if (key === this.key) return;
     this.key = key;
     const buildId = ++this.buildId;
@@ -216,46 +210,16 @@ export class OfficeLights {
     if (buildId !== this.buildId) return;
     this.clear();
 
-    const slots = wallSlots(layout);
-    const windows = slots.filter((slot) => slot.kind === 'window');
-    const lamps = slots.filter((slot) => slot.kind === 'lamp');
+    const lamps = wallSlots(layout).filter((slot) => !coveredByWindow(slot, openings));
     const pools = ceilingLights(layout);
-
-    // Baies vitrées : une vitre par mur, un montant à chaque case, un poteau par applique.
-    const frame = material(0x4a5160);
-    const pillar = material(0xece6da);
-    const box = new THREE.BoxGeometry(1, 1, 1);
     const plane = new THREE.PlaneGeometry(1, 1);
-    const glassHeight = WALL_HEIGHT - GLASS_SILL - GLASS_HEADER;
-    const glassY = GLASS_SILL + glassHeight / 2;
-    const back = new THREE.Mesh(glassPane(layout.width + 0.4, glassHeight), this.glassMaterial);
-    back.position.set((layout.width - 1) / 2, glassY, WALL_AXIS);
-    back.name = 'glass-back';
-    const side = new THREE.Mesh(glassPane(layout.depth + 0.2, glassHeight), this.glassMaterial);
-    side.position.set(WALL_AXIS, glassY, (layout.depth - 1) / 2);
-    side.rotation.y = Math.PI / 2;
-    side.name = 'glass-side';
-    const mullions = [
-      ...Array.from({ length: layout.width + 1 }, (_, k) =>
-        at(k - 0.5, glassY, WALL_AXIS, 0.05, glassHeight, 0.12),
-      ),
-      ...Array.from({ length: layout.depth + 1 }, (_, k) =>
-        at(WALL_AXIS, glassY, k - 0.5, 0.12, glassHeight, 0.05),
-      ),
-    ];
-    const pillars = lamps.map((s) =>
-      slotMatrix(s, at(0, WALL_HEIGHT / 2, -0.1, 0.5, WALL_HEIGHT, 0.24)),
-    );
-    const pillarMesh = instanced(box, pillar, pillars, 'glass-pillars');
-    pillarMesh.castShadow = true;
-    pillarMesh.receiveShadow = true;
-    this.fixtures.add(back, side, instanced(box, frame, mullions, 'glass-mullions'), pillarMesh);
+
     // Taches de soleil devant les fenêtres (déplacées selon la course du soleil).
-    this.sunSlots = windows;
+    this.sunSlots = sunSlots(openings);
     this.sunPatches = instanced(
       new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
       this.sunMaterial,
-      windows.map((s) => slotMatrix(s, at(0, 0.014, 1.1, 2.2, 1, 2))),
+      this.sunSlots.map((slot) => sunMatrix(slot, 0)),
       'sun-patches',
     );
     this.fixtures.add(this.sunPatches);
@@ -319,7 +283,7 @@ export class OfficeLights {
     this.haloMaterial.opacity = 0.15 + 0.85 * lamps;
     this.haloMaterial.size = 0.9 * pixelsPerUnit;
     this.shadeMaterial.emissiveIntensity = 0.2 + 1.4 * lamps;
-    this.glassMaterial.color.setHex(light.windowColor);
+    windowGlass.color.setHex(light.windowColor);
     for (const point of this.lights) point.intensity = 5 * lamps;
 
     this.sunMaterial.opacity = 0.45 * light.daylight;
@@ -328,21 +292,18 @@ export class OfficeLights {
       patches.visible = light.daylight > 0.01;
       // La tache glisse selon la course du soleil (de gauche à droite au fil de la journée).
       const shift = -Math.cos(light.sunAzimuth) * 0.6;
-      this.sunSlots.forEach((slot, index) => {
-        patches.setMatrixAt(index, slotMatrix(slot, at(shift, 0.014, 1.1, 2.2, 1, 2)));
-      });
+      this.sunSlots.forEach((slot, index) => patches.setMatrixAt(index, sunMatrix(slot, shift)));
       patches.instanceMatrix.needsUpdate = true;
     }
   }
 
   dispose(): void {
     this.clear();
-    for (const texture of [this.glow, this.soft, this.window, this.glassMap]) texture.dispose();
+    for (const texture of [this.glow, this.soft, this.window]) texture.dispose();
     for (const mat of [
       this.poolMaterial,
       this.washMaterial,
       this.sunMaterial,
-      this.glassMaterial,
       this.haloMaterial,
       this.shadeMaterial,
     ])
@@ -377,14 +338,6 @@ export class OfficeLights {
     });
     return flattenTemplate(object);
   }
-}
-
-function repeatingTexture(canvas: PixelCanvas): THREE.DataTexture {
-  const texture = canvas.texture();
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.needsUpdate = true;
-  return texture;
 }
 
 /** Applique de secours si le modèle Kenney manque : un abat-jour sur une platine. */

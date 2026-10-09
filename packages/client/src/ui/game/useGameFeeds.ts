@@ -13,6 +13,7 @@ import { useSettings, type Settings } from '../store/settings';
 import { useSlackAiAvailable } from '../slack/useSlackAiAvailable';
 
 const volumesOf = (settings: Settings) => ({
+  // La musique a son propre lecteur, branché sur toute l'application (`ui/useMusic.ts`).
   music: settings.musicVolume,
   sfx: settings.sfxVolume,
   ambience: settings.ambienceVolume,
@@ -42,7 +43,6 @@ export function useGameFeeds() {
     const feed = new SlackFeed({ callAi });
     const audio = new AudioPlayer(volumesOf(useSettings.getState()));
     useSlack.getState().reset();
-    audio.play('music');
     audio.play('keyboard');
     const stopNotifications = onGameNotifications((notifications) => {
       const view = useGame.getState().view;

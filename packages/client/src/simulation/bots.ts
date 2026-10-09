@@ -222,12 +222,13 @@ class PlannerBot implements Bot {
 
     // 5. Kanban : on remplit TODO selon la capacité estimée de chaque métier (un 10x ou une
     // IA abattent plus de travail qu'un dev moyen ; la designeuse ne code pas).
-    const capacity: Record<TaskTrade, number> = { DEV: 0, DESIGN: 0, PRODUCT: 0 };
+    const capacity: Record<TaskTrade, number> = { DEV: 0, DESIGN: 0, PRODUCT: 0, QA: 0 };
     for (const id of devIds(state)) {
       const role = state.components.identity[id]?.role;
-      if (role) capacity[ROLE_TRADE[role]] += 9 * ROLE_PROFILES[role].speedMultiplier;
+      const trade = role ? ROLE_TRADE[role] : null;
+      if (role && trade) capacity[trade] += 9 * ROLE_PROFILES[role].speedMultiplier;
     }
-    const planned: Record<TaskTrade, number> = { DEV: 0, DESIGN: 0, PRODUCT: 0 };
+    const planned: Record<TaskTrade, number> = { DEV: 0, DESIGN: 0, PRODUCT: 0, QA: 0 };
     for (const id of [
       ...tasksInColumn(state as GameState, 'TODO'),
       ...tasksInColumn(state as GameState, 'IN_PROGRESS'),

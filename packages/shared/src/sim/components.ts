@@ -17,8 +17,8 @@ import { TaskKindSchema } from './taskFlow.js';
 export const EntityIdSchema = z.string().regex(/^e\d+$/);
 export type EntityId = z.infer<typeof EntityIdSchema>;
 
-/** Les 8 profils de développeurs du jeu. */
-export const DEV_ROLES = [
+/** Les 8 profils historiques du cahier des charges, aux personnalités bien marquées. */
+export const CLASSIC_ROLES = [
   'SENIOR_BEARD',
   'TEN_X',
   'INTERN',
@@ -28,6 +28,28 @@ export const DEV_ROLES = [
   'AI_AGENT',
   'GHOST',
 ] as const;
+export type ClassicRole = (typeof CLASSIC_ROLES)[number];
+
+/**
+ * Les métiers d'une vraie équipe web, recrutés en plus des profils historiques (voir
+ * `teamRoles.ts`) : des devs front, back ou fullstack, un tech lead, un DevOps, des testeurs,
+ * puis l'encadrement (scrum master, managers, sous-directeur et directeur technique).
+ */
+export const WEB_ROLES = [
+  'FRONTEND',
+  'BACKEND',
+  'FULLSTACK',
+  'TECH_LEAD',
+  'DEVOPS',
+  'QA_TESTER',
+  'SCRUM_MASTER',
+  'MANAGER',
+  'DEPUTY_DIRECTOR',
+  'DIRECTOR',
+] as const;
+
+/** Tous les profils de l'équipe. */
+export const DEV_ROLES = [...CLASSIC_ROLES, ...WEB_ROLES] as const;
 export const DevRoleSchema = z.enum(DEV_ROLES);
 export type DevRole = z.infer<typeof DevRoleSchema>;
 
@@ -76,12 +98,15 @@ export type TaskType = z.infer<typeof TaskTypeSchema>;
  * Métiers : chaque tâche relève d'un métier, et l'assignation automatique ne la donne
  * qu'à un membre de l'équipe de ce métier (le joueur peut passer outre à la main).
  */
-export const TASK_TRADES = ['DEV', 'DESIGN', 'PRODUCT'] as const;
+export const TASK_TRADES = ['DEV', 'DESIGN', 'PRODUCT', 'QA'] as const;
 export const TaskTradeSchema = z.enum(TASK_TRADES);
 export type TaskTrade = z.infer<typeof TaskTradeSchema>;
 
-/** Métier de chaque profil : la designeuse dessine, le PO écrit des specs, les autres codent. */
-export const ROLE_TRADE: Record<DevRole, TaskTrade> = {
+/**
+ * Métier de chaque profil : la designeuse dessine, le PO écrit des specs, les testeurs font la
+ * recette, les autres codent. L'encadrement (`null`) ne prend aucune tâche du Kanban.
+ */
+export const ROLE_TRADE: Record<DevRole, TaskTrade | null> = {
   SENIOR_BEARD: 'DEV',
   TEN_X: 'DEV',
   INTERN: 'DEV',
@@ -90,7 +115,36 @@ export const ROLE_TRADE: Record<DevRole, TaskTrade> = {
   PRODUCT_OWNER: 'PRODUCT',
   AI_AGENT: 'DEV',
   GHOST: 'DEV',
+  FRONTEND: 'DEV',
+  BACKEND: 'DEV',
+  FULLSTACK: 'DEV',
+  TECH_LEAD: 'DEV',
+  DEVOPS: 'DEV',
+  QA_TESTER: 'QA',
+  SCRUM_MASTER: null,
+  MANAGER: null,
+  DEPUTY_DIRECTOR: null,
+  DIRECTOR: null,
 };
+
+/** Côté d'une tâche de code : l'interface (front) ou le serveur (back). */
+export const TASK_STACKS = ['FRONT', 'BACK'] as const;
+export const TaskStackSchema = z.enum(TASK_STACKS);
+export type TaskStack = z.infer<typeof TaskStackSchema>;
+
+/** Spécialité d'un dev front ou back : un type de tâche où il va plus vite. */
+export const DEV_SPECIALTIES = [
+  'REACT',
+  'ACCESSIBILITY',
+  'WEB_PERF',
+  'MOBILE',
+  'NODE',
+  'DATABASE',
+  'SECURITY',
+  'CLOUD',
+] as const;
+export const DevSpecialtySchema = z.enum(DEV_SPECIALTIES);
+export type DevSpecialty = z.infer<typeof DevSpecialtySchema>;
 
 /** Colonnes du Kanban. Le joueur déplace les tâches entre BACKLOG et TODO. */
 export const TASK_COLUMNS = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'DONE'] as const;
@@ -108,6 +162,11 @@ export const IdentitySchema = z.object({
   bio: LocalizedTextSchema,
   /** Variante visuelle (0 à 17) : le rendu choisit le modèle de personnage avec. */
   look: z.number().int().min(0),
+  /**
+   * Spécialité des devs front, back et DevOps (absente pour les autres profils). Placée avant
+   * l'anniversaire, ajouté après coup : l'ordre des clés reste le même après un rechargement.
+   */
+  specialty: DevSpecialtySchema.optional(),
   /** Date d'anniversaire (absente des sauvegardes d'avant les anniversaires). */
   birthday: BirthdaySchema.optional(),
 });

@@ -37,6 +37,16 @@ const CONTENT_BY_ROLE: Record<DevRole, ScreenContent> = {
   PRODUCT_OWNER: 'board',
   AI_AGENT: 'terminal',
   GHOST: 'code',
+  FRONTEND: 'code',
+  BACKEND: 'terminal',
+  FULLSTACK: 'code',
+  TECH_LEAD: 'vim',
+  DEVOPS: 'terminal',
+  QA_TESTER: 'forum',
+  SCRUM_MASTER: 'board',
+  MANAGER: 'board',
+  DEPUTY_DIRECTOR: 'board',
+  DIRECTOR: 'board',
 };
 
 /** Poses pendant lesquelles l'écran du bureau reste allumé. */

@@ -5,6 +5,7 @@ import {
   getMeetingFormat,
   type CommandError,
   type CommandResult,
+  type DevRole,
   type EntityId,
   type GameState,
   type MeetingFormat,
@@ -162,17 +163,21 @@ function onSite(state: GameState, id: EntityId): boolean {
   return kind !== undefined && kind !== 'GONE' && !(id in state.components.remote);
 }
 
-/** Solidité d'un dev face à une panne : qualité et expérience (à égalité, l'ordre de l'équipe). */
+/** Les premiers appelés quand la prod tombe : ceux qui la font tourner, puis le back. */
+const ON_CALL_BONUS: Partial<Record<DevRole, number>> = { DEVOPS: 6, TECH_LEAD: 5, BACKEND: 2 };
+
+/** Solidité d'un dev face à une panne : métier, qualité et expérience (à égalité, l'ordre de l'équipe). */
 function firefighterScore(state: GameState, id: EntityId): number {
+  const role = state.components.identity[id]?.role;
   const quality = state.components.stats[id]?.quality ?? 0;
   const level = state.components.employment[id]?.level ?? 1;
-  return quality + level * 0.5;
+  return (role ? (ON_CALL_BONUS[role] ?? 0) : 0) + quality + level * 0.5;
 }
 
 /**
  * Les personnes concernées par une panne : le coupable s'il est là, puis les devs du code les
- * plus solides jusqu'à `MEETINGS.crisisDevs`, et le Product Owner (c'est lui qui prévient les
- * clients). Le premier dev qui n'est pas le coupable mène la réparation.
+ * plus solides jusqu'à `MEETINGS.crisisDevs` (DevOps et Tech Lead d'abord), et le Product Owner
+ * ou, à défaut, un manager (c'est lui qui prévient les clients). Le premier dev qui n'est pas le coupable mène la réparation.
  */
 export function crisisAttendees(
   state: GameState,
@@ -193,7 +198,10 @@ export function crisisAttendees(
     if (!attendees.includes(id)) attendees.push(id);
   }
   const leadId = attendees.find((id) => id !== culpritId) ?? attendees[0] ?? null;
-  const owner = present.find((id) => role(id) === 'PRODUCT_OWNER');
+  // Quelqu'un pour prévenir les clients : le Product Owner, sinon un manager.
+  const owner =
+    present.find((id) => role(id) === 'PRODUCT_OWNER') ??
+    present.find((id) => role(id) === 'MANAGER');
   if (owner && !attendees.includes(owner)) attendees.push(owner);
   return { attendees, leadId };
 }

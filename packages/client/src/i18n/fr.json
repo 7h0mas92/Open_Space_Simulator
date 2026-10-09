@@ -119,7 +119,17 @@
     "boo": "Bouh",
     "prodDown": "La prod est down !!",
     "fridayDeploy": "On déploie vendredi 17h ?",
-    "quit": "Je vais démissionner"
+    "quit": "Je vais démissionner",
+    "centerDiv": "Centrer cette div…",
+    "itDepends": "Ça dépend",
+    "bothSides": "Front ? Back ? Les deux ?",
+    "nitpick": "nit: renommer",
+    "yaml": "Une indentation YAML de trop",
+    "cannotReproduce": "Pas reproduit",
+    "storyPoints": "Ça fait combien de points ?",
+    "oneToOne": "On fait un point ?",
+    "reportUp": "Je remonte ça",
+    "synergy": "Synergies !"
   },
   "roles": {
     "SENIOR_BEARD": "Senior Barbu",
@@ -129,7 +139,17 @@
     "DESIGNER": "Designeuse",
     "PRODUCT_OWNER": "Product Owner",
     "AI_AGENT": "IA Agent",
-    "GHOST": "Dev Fantôme"
+    "GHOST": "Dev Fantôme",
+    "FRONTEND": "Dev Front",
+    "BACKEND": "Dev Back",
+    "FULLSTACK": "Dev Fullstack",
+    "TECH_LEAD": "Tech Lead",
+    "DEVOPS": "DevOps",
+    "QA_TESTER": "Testeur·se QA",
+    "SCRUM_MASTER": "Scrum Master",
+    "MANAGER": "Manager",
+    "DEPUTY_DIRECTOR": "Sous-directeur·rice",
+    "DIRECTOR": "Directeur·rice technique"
   },
   "roleDescriptions": {
     "SENIOR_BEARD": "+50 % de qualité, refuse les frameworks de moins de 5 ans.",
@@ -139,7 +159,17 @@
     "DESIGNER": "Bloque les releases si le padding est faux, +qualité perçue aux démos.",
     "PRODUCT_OWNER": "4 réunions par jour : -10 % de productivité pour tous, +hype.",
     "AI_AGENT": "Ultra rapide, 30 % de chance d'halluciner une feature.",
-    "GHOST": "En télétravail, invisible au bureau, mais ses tickets se ferment."
+    "GHOST": "En télétravail, invisible au bureau, mais ses tickets se ferment.",
+    "FRONTEND": "Code l'interface : +15 % de vitesse sur le front, -40 % sur le back. Sa spécialité accélère un type de tâche.",
+    "BACKEND": "Code le serveur : +15 % de vitesse sur le back, -40 % sur le front. Sa spécialité accélère un type de tâche.",
+    "FULLSTACK": "Prend le front comme le back, mais à 85 % et avec une qualité plus limitée.",
+    "TECH_LEAD": "Code lentement, relit tout : -15 % de dette sur chaque feature livrée.",
+    "DEVOPS": "Dev back spécialiste du cloud : infra plus rapide, +stabilité chaque jour.",
+    "QA_TESTER": "Fait la recette (tâches de test) : -10 % de dette par testeur sur les features, -30 % au plus.",
+    "SCRUM_MASTER": "Ne prend pas de tâches. Les réunions du PO pèsent moitié moins, +2 % de productivité.",
+    "MANAGER": "Ne prend pas de tâches. Encadre 6 personnes : jusqu'à +6 % de productivité, +moral, conflits apaisés.",
+    "DEPUTY_DIRECTOR": "Ne prend pas de tâches. +3 % de productivité et +moral pour toute l'équipe.",
+    "DIRECTOR": "Ne prend pas de tâches. +6 % de productivité pour tous et un peu de hype chaque jour."
   },
   "activities": {
     "WORKING": "Travaille",
@@ -184,7 +214,8 @@
   "trades": {
     "DEV": "Code",
     "DESIGN": "Design",
-    "PRODUCT": "Produit"
+    "PRODUCT": "Produit",
+    "QA": "Recette"
   },
   "gauges": {
     "treasury": {
@@ -282,7 +313,8 @@
     },
     "group": "Investir",
     "meetings": "Salle de réunion",
-    "funding": "Lever des fonds"
+    "funding": "Lever des fonds",
+    "pets": "Chats du bureau"
   },
   "kanban": {
     "columns": {
@@ -377,7 +409,9 @@
     "bestFriend": "Meilleur·e allié·e : {{name}}",
     "rival": "Bête noire : {{name}}",
     "leaving": "🚪 A démissionné : part au début du sprint {{sprint}}.",
-    "leavingShort": "🚪 part au sprint {{sprint}}"
+    "leavingShort": "🚪 part au sprint {{sprint}}",
+    "specialty": "Spécialité : {{specialty}} (+20 % sur les {{focus}})",
+    "stack": "Côté de la stack : {{stack}}"
   },
   "teamFilters": {
     "sortLabel": "Trier par",
@@ -429,7 +463,7 @@
     "NO_DESK": "pas de bureau"
   },
   "hiring": {
-    "intro": "3 candidats ce sprint. Fais une offre : trop basse, ils refusent.",
+    "intro": "3 profils habituels et 2 de l'équipe web (front, back, fullstack, encadrement) ce sprint. Fais une offre : trop basse, ils refusent.",
     "asking": "Demande {{salary}} €/mois",
     "offer": "Ton offre : {{salary}} €/mois",
     "hire": "Faire l'offre",
@@ -500,6 +534,8 @@
       "kitchen": "Cuisine",
       "fun": "Détente",
       "decor": "Déco",
+      "pets": "Animaux",
+      "window": "Fenêtres",
       "accessory": "Accessoires"
     },
     "price": "{{price}} €",
@@ -545,6 +581,8 @@
     "placedCount_other": "{{count}} posés",
     "again": "Objet gardé en main : pose-en un autre, ou ✕ pour changer d’objet.",
     "hintAccessory": "Vise un meuble à plateau (bureau, bibliothèque, frigo…).",
+    "hintWall": "La fenêtre se fixe au mur du fond le plus proche ; ⟳ pour changer de mur.",
+    "switchWall": "Changer de mur",
     "onFurniture": "Se pose sur un meuble",
     "stopSoldOut": "{{item}} : maximum atteint, retour au catalogue.",
     "stopMoney": "{{item}} : plus assez de trésorerie, retour au catalogue.",
@@ -582,6 +620,7 @@
     "unknownItem": "Objet inconnu.",
     "noSurface": "Un accessoire se pose sur un meuble à plateau (bureau, bibliothèque, frigo…).",
     "surfaceFull": "Plus de place sur ce meuble.",
+    "noWall": "Une fenêtre se fixe dans un des deux murs du fond.",
     "VENTURE_LIMIT": "Ton groupe a déjà fondé le maximum de filiales.",
     "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
     "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
@@ -625,6 +664,7 @@
   "credits": {
     "title": "Crédits",
     "kenney": "Modèles 3D : Kenney (kenney.nl), packs Furniture Kit et Blocky Characters, licence CC0.",
+    "music": "Musiques : compositions originales de l’équipe du projet (tycoon au menu, tycoon 1 en planification, Détente pendant les sprints, aria math en levée de fonds et à la fin), propriété de leur auteur.",
     "three": "Rendu : Three.js. Interface : React. Traductions : i18next.",
     "missing": "Assets absents des packs, remplacés par des formes Three.js ou du CSS :",
     "missingItems": {
@@ -642,16 +682,29 @@
       "ramen": "Pot de ramen",
       "officeCharacters": "Personnages de bureau en Three.js (barbus, Rustacés, designeuses, robot, fantôme…) et accessoires des personnages Kenney",
       "uiPack": "Pack UI Kenney (interface en CSS)",
-      "soundPacks": "Packs sons Kenney (audio à venir)",
+      "soundPacks": "Packs sons Kenney (effets sonores et ambiance à venir)",
       "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit",
       "meetingRoomProps": "Salle de réunion : tableau blanc, horloge du stand-up, aquarium, écrans de la war room, tableau de la salle du conseil et parois vitrées en formes Three.js, avec les tables et chaises du Furniture Kit",
-      "citySkyline": "Baies vitrées et vue sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve, taxis) en formes Three.js, sans bâtiment réel",
+      "citySkyline": "Vue par les fenêtres sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve, taxis) en formes Three.js, sans bâtiment réel",
       "mug": "Mug de dev",
       "rubberDuck": "Canard en plastique",
       "trophy": "Trophée de hackathon",
       "annexDecor": "Décor des annexes du bureau : bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran de projection en formes Three.js (banc, plante en pot et enceintes du Furniture Kit)",
       "deskHeadset": "Casque antibruit sur son support",
-      "miniCactus": "Mini-cactus de bureau"
+      "miniCactus": "Mini-cactus de bureau",
+      "litterOpen": "Litière ouverte : bac, sable et pelle",
+      "litterCovered": "Litière fermée avec porte battante",
+      "litterRobot": "Litière robot autonome (dôme, écran et voyants)",
+      "catBowl": "Gamelle double eau et croquettes",
+      "catFeeder": "Fontaine à eau et distributeur de croquettes",
+      "catTreeSmall": "Arbre à chat compact (1 case, moquette beige)",
+      "catTreeMedium": "Arbre à chat double (2 cases, moquette grise)",
+      "catTreeLarge": "Arbre à chat géant (3 cases, moquette mauve)",
+      "officeCats": "Chats du bureau : six robes construites en formes Three.js, animées par le code (marche, sieste, repas)",
+      "windowSmall": "Petite fenêtre et son pan de mur",
+      "windowMedium": "Fenêtre de deux cases",
+      "windowLarge": "Grande fenêtre de trois cases",
+      "glassWall": "Baie vitrée pleine hauteur (vitre de building)"
     },
     "back": "Retour"
   },
@@ -737,7 +790,17 @@
       "DESIGNER": "« Mon salaire, c'est comme ton padding : il manque 8 px partout. »",
       "PRODUCT_OWNER": "« J'ai mis une réunion de 1 h dans ton agenda pour en parler. Et une autre pour en reparler. »",
       "AI_AGENT": "« Mes tokens coûtent plus cher que prévu. J'ai calculé ma hausse moi-même : fais-moi confiance. »",
-      "GHOST": "« Tu ne me vois jamais, mais mes tickets se ferment. Mon salaire, lui, ne bouge pas. »"
+      "GHOST": "« Tu ne me vois jamais, mais mes tickets se ferment. Mon salaire, lui, ne bouge pas. »",
+      "FRONTEND": "« Je centre des divs toute la journée. Ça mérite au moins un écran 4K et une augmentation. »",
+      "BACKEND": "« Si mon salaire était une requête SQL, il lui manquerait un index. »",
+      "FULLSTACK": "« Je fais le travail de deux personnes. À moitié, d'accord, mais deux personnes. »",
+      "TECH_LEAD": "« nit: ce salaire mériterait d'être refactoré. »",
+      "DEVOPS": "« Je suis d'astreinte la nuit, le week-end et pendant cet entretien. »",
+      "QA_TESTER": "« J'ai testé ma fiche de paie : le bug est reproductible tous les mois. »",
+      "SCRUM_MASTER": "« J'estime ma demande à 13 points. On peut la mettre dans le sprint ? »",
+      "MANAGER": "« Parlons de ma trajectoire. J'ai préparé 14 slides et un OKR. »",
+      "DEPUTY_DIRECTOR": "« Je remplace le directeur dans toutes ses réunions. Je voudrais aussi remplacer son salaire. »",
+      "DIRECTOR": "« Mon package est en dessous du marché. Et de celui de mes trois anciennes startups. »"
     }
   },
   "end": {
@@ -1512,7 +1575,7 @@
   },
   "meetings": {
     "intro": "Aménage la salle de réunion du bureau. Chaque formule a un bonus et un malus, et l'équipe s'y retrouve chaque matin de semaine à {{hour}}, dès son arrivée, pendant {{minutes}} minutes : une réunion utile rapporte quelque chose, une réunion inutile coûte du moral.",
-    "crisisIntro": "Quand la prod tombe, la salle devient une cellule de crise : le coupable s'il y en a un, les {{count}} devs les plus solides (coupable compris) et le Product Owner s'y réunissent une demi-heure. En sortant, le meilleur prend « Réparer la prod », déjà avancée.",
+    "crisisIntro": "Quand la prod tombe, la salle devient une cellule de crise : le coupable s'il y en a un, les {{count}} devs les plus solides (DevOps et Tech Lead d'abord, coupable compris) et le Product Owner ou un manager s'y réunissent une demi-heure. En sortant, le meilleur prend « Réparer la prod », déjà avancée.",
     "crisis": "Réunions de crise",
     "crisisOne": "Réunion de crise",
     "crisisOdds": "Réunion de crise : réparation avancée de {{percent}} %",
@@ -1585,5 +1648,69 @@
       "TOO_MUCH_DEBT": "Trop de dette technique : le dossier serait refusé.",
       "TOO_BIG": "Ta startup est trop grosse pour une subvention."
     }
+  },
+  "stacks": {
+    "FRONT": "Front",
+    "BACK": "Back",
+    "FULL": "Fullstack"
+  },
+  "specialties": {
+    "REACT": "React",
+    "ACCESSIBILITY": "Accessibilité",
+    "WEB_PERF": "Performance web",
+    "MOBILE": "Mobile",
+    "NODE": "Node.js",
+    "DATABASE": "Bases de données",
+    "SECURITY": "Sécurité",
+    "CLOUD": "Cloud"
+  },
+  "specialtyFocus": {
+    "FEATURE": "features",
+    "REFACTO": "refactos",
+    "BUGFIX": "bugs",
+    "INFRA": "infra"
+  },
+  "leadership": {
+    "title": "Encadrement",
+    "none": "Pas encore d'encadrement : recrute un directeur, des managers ou un scrum master quand l'équipe grandit.",
+    "productivity": "+{{value}} % de productivité pour toute l’équipe",
+    "coverage": "{{value}} % de l’équipe encadrée par un manager",
+    "meetings": "Réunions du PO allégées (scrum master)",
+    "debt": "-{{value}} % de dette sur les features (relecture et recette)",
+    "stability": "+{{value}} de stabilité par jour (DevOps)",
+    "moral": "+{{value}} de moral par jour pour chacun",
+    "openings": "Postes ouverts : {{roles}}",
+    "noOpenings": "Aucun poste d'encadrement ouvert pour la taille actuelle de l'équipe.",
+    "short": "+{{value}} % de productivité"
+  },
+  "pets": {
+    "intro": "Un chat dans l’open space remonte le moral et fait le buzz sur les réseaux, mais il dort sur les claviers. Avant d’en adopter un, pose dans le bureau une litière, une gamelle et un arbre à chat (onglet Animaux du mode construction).",
+    "needsTitle": "Pour adopter",
+    "needs": {
+      "litter": "Une litière",
+      "bowl": "Une gamelle (eau et croquettes)",
+      "tree": "Un arbre à chat"
+    },
+    "placed": "posé",
+    "notPlaced": "à poser",
+    "needsHint": "Les objets rangés dans l’inventaire ne comptent pas : ils doivent être posés dans l’open space.",
+    "adoptTitle": "Adopter un chat ({{count}}/{{max}})",
+    "effects": "Chaque chat heureux : +moral pour toute l’équipe chaque jour, un peu de hype, et −0,4\u00a0% de productivité (il dort sur les claviers).",
+    "coat": "Robe",
+    "adopt": "Adopter ({{price}})",
+    "full": "Le bureau a déjà {{max}} chats, c’est le maximum.",
+    "missing": "Il manque encore de l’équipement : pose une litière, une gamelle et un arbre à chat.",
+    "yours": "Les chats du bureau",
+    "none": "Pas encore de chat.",
+    "happy": "Tout est en place : les chats sont heureux.",
+    "sulking": "Il manque de l’équipement : les chats boudent et le moral baisse.",
+    "adoptedAt": "adopté au sprint {{sprint}}",
+    "rehome": "Confier à une famille",
+    "rehomeWarning": "{{name}} partira pour de bon, sans remboursement, et l’équipe aura un coup de blues (−5 moral).",
+    "rehomeConfirm": "Confier {{name}}",
+    "adoptCard": "Adopter un chat",
+    "adoptCardMissing_one": "Il manque encore {{count}} équipement : litière, gamelle et arbre à chat.",
+    "adoptCardMissing_other": "Il manque encore {{count}} équipements : litière, gamelle et arbre à chat.",
+    "adoptCardReady": "Tout est prêt : choisis sa robe et adopte-le."
   }
 }

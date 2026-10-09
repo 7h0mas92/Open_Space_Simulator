@@ -11,7 +11,7 @@
  * répartit entre eux. Le pack « Base » (actif au départ) garde les looks habituels. Le pack « super-héros » invente ses héros : aucun nom, logo ou costume
  * d'une licence existante.
  */
-import type { CharacterPackId, ThemedPackId } from '@oss/shared';
+import type { CharacterPackId, ClassicRole, ThemedPackId } from '@oss/shared';
 import * as THREE from 'three';
 import type { DevRole } from '../view/types';
 import {
@@ -134,337 +134,338 @@ const C = {
   silver: 0xb7c0cc,
 } as const;
 
-/** Costume de chaque profil, pour chaque pack. */
-export const PACK_COSTUMES: Readonly<Record<ThemedPackId, Readonly<Record<DevRole, Costume>>>> = {
-  CHRISTMAS: {
-    // Le Père Noël, évidemment.
-    SENIOR_BEARD: {
-      head: ['santaHat', 'santaBeard'],
-      suit: { color: C.red, trim: C.white, pattern: 'santa', gloves: true, boots: true },
-    },
-    TEN_X: {
-      head: ['santaHat'],
-      suit: { color: C.darkGreen, trim: C.white, pattern: 'xmas' },
-    },
-    // Le lutin du Père Noël.
-    INTERN: {
-      head: ['elfHat'],
-      suit: { color: C.green, trim: C.red, boots: true },
-    },
-    // Rudolph, qui veut réécrire le traîneau en Rust.
-    RUSTACEAN: {
-      head: ['antlers'],
-      suit: { color: C.brown, trim: C.white, pattern: 'xmas' },
-    },
-    DESIGNER: {
-      head: ['beanie'],
-      suit: { color: C.white, trim: C.red, pattern: 'xmas' },
-      torso: ['scarf'],
-    },
-    PRODUCT_OWNER: {
-      head: ['santaHat'],
-      suit: { color: C.navy, trim: C.white, pattern: 'xmas' },
-    },
-    // Le robot sert de sapin : guirlande lumineuse.
-    AI_AGENT: { head: ['santaHat'], torso: ['lights'] },
-    GHOST: { head: ['santaHat'], torso: ['scarf'] },
-  },
-  HALLOWEEN: {
-    SENIOR_BEARD: {
-      head: ['wizardHat'],
-      suit: { color: C.purple, trim: C.gold },
-      cape: { color: C.purple },
-    },
-    TEN_X: {
-      head: ['fangs'],
-      suit: { color: C.black, trim: C.white, pattern: 'vampire' },
-      cape: { color: C.black, collar: true },
-    },
-    INTERN: {
-      head: ['pumpkinHead'],
-      suit: { color: C.black, trim: C.orange, pattern: 'belt' },
-    },
-    RUSTACEAN: {
-      head: ['skullFace'],
-      suit: { color: C.black, trim: C.bone, pattern: 'bones', gloves: true },
-    },
-    DESIGNER: {
-      head: ['witchHat'],
-      suit: { color: 0x3b2a55, trim: C.orange, boots: true },
-    },
-    PRODUCT_OWNER: {
-      head: ['devilHorns'],
-      suit: { color: C.red, trim: C.black, boots: true },
-    },
-    AI_AGENT: {
-      head: ['mummyWrap'],
-      suit: { color: C.bone, trim: 0xc9c2ae, pattern: 'bandages' },
-    },
-    GHOST: { head: ['pumpkinHead'] },
-  },
-  EASTER: {
-    SENIOR_BEARD: {
-      head: ['bunnyEars'],
-      suit: { color: C.pastelYellow, trim: C.white, pattern: 'dots' },
-    },
-    TEN_X: {
-      head: ['bunnyEars'],
-      suit: { color: C.white, trim: C.pastelPink, pattern: 'egg', gloves: true, boots: true },
-    },
-    INTERN: {
-      head: ['chickHat'],
-      suit: { color: C.pastelYellow, trim: C.orange, boots: true },
-    },
-    RUSTACEAN: {
-      head: ['bunnyEars'],
-      suit: { color: C.pastelGreen, trim: C.white, pattern: 'dots' },
-    },
-    DESIGNER: {
-      head: ['flowerCrown'],
-      suit: { color: C.pastelPink, trim: C.white, pattern: 'dots' },
-    },
-    PRODUCT_OWNER: {
-      head: ['bunnyEars'],
-      suit: { color: C.lavender, trim: C.white, pattern: 'egg' },
-      torso: ['bowTie'],
-    },
-    AI_AGENT: {
-      head: ['bunnyEars'],
-      suit: { color: C.pastelBlue, trim: C.white, pattern: 'dots' },
-    },
-    GHOST: { head: ['bunnyEars'], torso: ['bowTie'] },
-  },
-  SUPERHEROES: {
-    SENIOR_BEARD: {
-      suit: { color: C.darkGreen, trim: C.gold, pattern: 'belt', gloves: true, boots: true },
-      cape: { color: C.gold },
-      emblem: { shape: 'diamond', color: C.darkGreen, background: C.gold },
-    },
-    TEN_X: {
-      suit: { color: 0x2f6fd6, trim: C.gold, pattern: 'belt', gloves: true, boots: true },
-      mask: 0x2f6fd6,
-      emblem: { shape: 'bolt', color: C.gold, background: C.navy },
-    },
-    // L'acolyte.
-    INTERN: {
-      suit: { color: C.green, trim: C.gold, pattern: 'belt', boots: true },
-      mask: C.black,
-      cape: { color: C.gold },
-      emblem: { shape: 'star', color: C.green, background: C.gold },
-    },
-    RUSTACEAN: {
-      suit: { color: C.orange, trim: C.black, pattern: 'belt', gloves: true, boots: true },
-      mask: C.black,
-      emblem: { shape: 'diamond', color: C.orange, background: C.black },
-    },
-    DESIGNER: {
-      suit: { color: C.purple, trim: C.pastelPink, pattern: 'belt', boots: true },
-      mask: C.pastelPink,
-      cape: { color: C.pastelPink },
-      emblem: { shape: 'star', color: C.purple, background: C.pastelPink },
-    },
-    PRODUCT_OWNER: {
-      suit: { color: C.teal, trim: C.white, pattern: 'belt', gloves: true, boots: true },
-      cape: { color: C.red },
-      emblem: { shape: 'star', color: C.red, background: C.white },
-    },
-    AI_AGENT: {
-      suit: { color: C.silver, trim: C.gold, pattern: 'belt', boots: true },
-      emblem: { shape: 'bolt', color: 0x6fe3ff, background: C.navy },
-    },
-    GHOST: {
-      suit: { color: C.black, trim: 0x4a4f63, pattern: 'belt', gloves: true, boots: true },
-      mask: C.black,
-      cape: { color: C.black, collar: true },
-    },
-  },
-  SUMMER: {
-    SENIOR_BEARD: {
-      head: ['strawHat', 'sunglasses'],
-      suit: { color: C.orange, trim: C.white, pattern: 'hawaii', legs: C.beige },
-    },
-    TEN_X: {
-      head: ['sunglasses'],
-      suit: { color: C.teal, trim: C.pastelYellow, pattern: 'hawaii', legs: C.beige },
-    },
-    INTERN: {
-      head: ['sunglasses'],
-      suit: { color: C.white, trim: C.navy, pattern: 'stripes', legs: C.pastelBlue },
-      torso: ['lifebuoy'],
-    },
-    RUSTACEAN: {
-      head: ['strawHat'],
-      suit: { color: C.red, trim: C.white, pattern: 'hawaii', legs: C.beige },
-    },
-    DESIGNER: {
-      head: ['sunHat', 'sunglasses'],
-      suit: { color: C.white, trim: C.pastelPink, pattern: 'stripes', legs: C.white },
-    },
-    PRODUCT_OWNER: {
-      head: ['sunglasses'],
-      suit: { color: C.purple, trim: C.pastelPink, pattern: 'hawaii', legs: C.beige },
-    },
-    AI_AGENT: { head: ['sunglasses'], torso: ['lifebuoy'] },
-    GHOST: { head: ['strawHat', 'sunglasses'] },
-  },
-  SPACE: {
-    SENIOR_BEARD: {
-      head: ['spaceHelmet'],
-      suit: { color: C.white, trim: C.orange, pattern: 'space', gloves: true, boots: true },
-    },
-    TEN_X: {
-      head: ['spaceHelmet'],
-      suit: { color: C.orange, trim: C.white, pattern: 'space', gloves: true, boots: true },
-    },
-    // Le stagiaire vient d'une autre planète.
-    INTERN: {
-      head: ['alienAntennae'],
-      suit: { color: C.alien, trim: C.purple, pattern: 'neon', boots: true },
-    },
-    RUSTACEAN: {
-      head: ['spaceHelmet'],
-      suit: { color: C.white, trim: C.red, pattern: 'space', gloves: true, boots: true },
-    },
-    DESIGNER: {
-      head: ['spaceHelmet'],
-      suit: { color: C.lavender, trim: C.white, pattern: 'space', gloves: true, boots: true },
-    },
-    PRODUCT_OWNER: {
-      head: ['spaceHelmet'],
-      suit: { color: C.navy, trim: C.gold, pattern: 'space', gloves: true, boots: true },
-    },
-    AI_AGENT: {
-      suit: { color: C.silver, trim: C.neonCyan, pattern: 'neon', boots: true },
-    },
-    GHOST: { head: ['alienAntennae'] },
-  },
-  PIRATES: {
-    // Le capitaine et son perroquet.
-    SENIOR_BEARD: {
-      head: ['pirateHat'],
-      suit: { color: C.navy, trim: C.gold, pattern: 'belt', boots: true, legs: C.beige },
-      torso: ['parrot'],
-    },
-    TEN_X: {
-      head: ['bandana', 'eyePatch'],
-      suit: { color: C.white, trim: C.red, pattern: 'stripes', legs: C.black },
-    },
-    INTERN: {
-      head: ['bandana'],
-      suit: { color: C.white, trim: C.navy, pattern: 'stripes', legs: C.beige },
-    },
-    RUSTACEAN: {
-      head: ['pirateHat'],
-      suit: { color: C.brown, trim: C.gold, pattern: 'belt', boots: true, legs: C.black },
-    },
-    DESIGNER: {
-      head: ['pirateHat', 'eyePatch'],
-      suit: { color: C.red, trim: C.black, pattern: 'belt', boots: true, legs: C.black },
-    },
-    PRODUCT_OWNER: {
-      head: ['pirateHat', 'eyePatch'],
-      suit: { color: C.black, trim: C.gold, pattern: 'belt', boots: true, legs: C.beige },
-      torso: ['parrot'],
-    },
-    AI_AGENT: { head: ['bandana', 'eyePatch'] },
-    GHOST: { head: ['pirateHat'] },
-  },
-  MEDIEVAL: {
-    // L'enchanteur.
-    SENIOR_BEARD: {
-      head: ['wizardHat'],
-      suit: { color: 0x2f4fa0, trim: C.gold },
-      cape: { color: 0x2f4fa0 },
-    },
-    TEN_X: {
-      head: ['knightHelmet'],
-      suit: { color: C.steel, trim: C.gold, pattern: 'armor', gloves: true, boots: true },
-    },
-    // Le bouffon du roi.
-    INTERN: {
-      head: ['jesterHat'],
-      suit: { color: C.purple, trim: C.gold, pattern: 'harlequin' },
-    },
-    RUSTACEAN: {
-      head: ['knightHelmet'],
-      suit: { color: C.steel, trim: C.orange, pattern: 'armor', gloves: true, boots: true },
-    },
-    DESIGNER: {
-      head: ['princessHat'],
-      suit: { color: C.pastelPink, trim: C.gold, pattern: 'belt' },
-    },
-    // Le roi, qui fixe les priorités.
-    PRODUCT_OWNER: {
-      head: ['crown'],
-      suit: { color: C.purple, trim: C.gold, pattern: 'belt' },
-      cape: { color: C.red, collar: true },
-    },
-    AI_AGENT: {
-      suit: { color: C.steel, trim: C.gold, pattern: 'armor', boots: true },
-    },
-    GHOST: { head: ['knightHelmet'] },
-  },
-  RETRO_80S: {
-    SENIOR_BEARD: {
-      head: ['headband', 'sunglasses'],
-      suit: { color: C.purple, trim: C.teal, pattern: 'tracksuit' },
-    },
-    TEN_X: {
-      head: ['retroHeadphones'],
-      suit: { color: C.teal, trim: C.neonPink, pattern: 'tracksuit' },
-    },
-    INTERN: {
-      head: ['headband'],
-      suit: { color: C.neonPink, trim: C.pastelYellow, pattern: 'tracksuit' },
-    },
-    RUSTACEAN: {
-      head: ['retroHeadphones'],
-      suit: { color: C.orange, trim: C.navy, pattern: 'tracksuit' },
-    },
-    DESIGNER: {
-      head: ['headband', 'sunglasses'],
-      suit: { color: C.pastelPink, trim: C.teal, pattern: 'tracksuit' },
-    },
-    // Veste blanche manches retroussées, façon série policière à Miami.
-    PRODUCT_OWNER: {
-      head: ['sunglasses'],
-      suit: { color: C.white, trim: C.pastelPink, pattern: 'vampire', legs: C.white },
-    },
-    AI_AGENT: { head: ['retroHeadphones'] },
-    GHOST: { head: ['headband'] },
-  },
-  CYBERPUNK: {
-    SENIOR_BEARD: {
-      head: ['cyberVisor'],
-      suit: { color: C.black, trim: C.neonCyan, pattern: 'neon', boots: true },
-    },
-    TEN_X: {
-      head: ['mohawk', 'cyberVisor'],
-      suit: { color: C.black, trim: C.neonPink, pattern: 'neon', gloves: true, boots: true },
-    },
-    INTERN: {
-      head: ['cyberVisor'],
-      suit: { color: 0x2b1f3d, trim: C.neonYellow, pattern: 'neon', boots: true },
-    },
-    RUSTACEAN: {
-      head: ['mohawk'],
-      suit: { color: C.black, trim: C.orange, pattern: 'neon', gloves: true, boots: true },
-    },
-    DESIGNER: {
-      head: ['mohawk', 'sunglasses'],
-      suit: { color: 0x2b1f3d, trim: C.neonPink, pattern: 'neon', boots: true },
-    },
-    PRODUCT_OWNER: {
-      head: ['cyberVisor'],
-      suit: { color: C.navy, trim: C.neonYellow, pattern: 'neon', boots: true },
-      cape: { color: C.black, collar: true },
-    },
-    AI_AGENT: {
-      suit: { color: C.black, trim: C.neonCyan, pattern: 'neon', boots: true },
-    },
-    GHOST: { head: ['cyberVisor'] },
-  },
-};
+/** Costume de chaque profil historique, pour chaque pack. */
+export const PACK_COSTUMES: Readonly<Record<ThemedPackId, Readonly<Record<ClassicRole, Costume>>>> =
+  {
+    CHRISTMAS: {
+      // Le Père Noël, évidemment.
+      SENIOR_BEARD: {
+        head: ['santaHat', 'santaBeard'],
+        suit: { color: C.red, trim: C.white, pattern: 'santa', gloves: true, boots: true },
+      },
+      TEN_X: {
+        head: ['santaHat'],
+        suit: { color: C.darkGreen, trim: C.white, pattern: 'xmas' },
+      },
+      // Le lutin du Père Noël.
+      INTERN: {
+        head: ['elfHat'],
+        suit: { color: C.green, trim: C.red, boots: true },
+      },
+      // Rudolph, qui veut réécrire le traîneau en Rust.
+      RUSTACEAN: {
+        head: ['antlers'],
+        suit: { color: C.brown, trim: C.white, pattern: 'xmas' },
+      },
+      DESIGNER: {
+        head: ['beanie'],
+        suit: { color: C.white, trim: C.red, pattern: 'xmas' },
+        torso: ['scarf'],
+      },
+      PRODUCT_OWNER: {
+        head: ['santaHat'],
+        suit: { color: C.navy, trim: C.white, pattern: 'xmas' },
+      },
+      // Le robot sert de sapin : guirlande lumineuse.
+      AI_AGENT: { head: ['santaHat'], torso: ['lights'] },
+      GHOST: { head: ['santaHat'], torso: ['scarf'] },
+    },
+    HALLOWEEN: {
+      SENIOR_BEARD: {
+        head: ['wizardHat'],
+        suit: { color: C.purple, trim: C.gold },
+        cape: { color: C.purple },
+      },
+      TEN_X: {
+        head: ['fangs'],
+        suit: { color: C.black, trim: C.white, pattern: 'vampire' },
+        cape: { color: C.black, collar: true },
+      },
+      INTERN: {
+        head: ['pumpkinHead'],
+        suit: { color: C.black, trim: C.orange, pattern: 'belt' },
+      },
+      RUSTACEAN: {
+        head: ['skullFace'],
+        suit: { color: C.black, trim: C.bone, pattern: 'bones', gloves: true },
+      },
+      DESIGNER: {
+        head: ['witchHat'],
+        suit: { color: 0x3b2a55, trim: C.orange, boots: true },
+      },
+      PRODUCT_OWNER: {
+        head: ['devilHorns'],
+        suit: { color: C.red, trim: C.black, boots: true },
+      },
+      AI_AGENT: {
+        head: ['mummyWrap'],
+        suit: { color: C.bone, trim: 0xc9c2ae, pattern: 'bandages' },
+      },
+      GHOST: { head: ['pumpkinHead'] },
+    },
+    EASTER: {
+      SENIOR_BEARD: {
+        head: ['bunnyEars'],
+        suit: { color: C.pastelYellow, trim: C.white, pattern: 'dots' },
+      },
+      TEN_X: {
+        head: ['bunnyEars'],
+        suit: { color: C.white, trim: C.pastelPink, pattern: 'egg', gloves: true, boots: true },
+      },
+      INTERN: {
+        head: ['chickHat'],
+        suit: { color: C.pastelYellow, trim: C.orange, boots: true },
+      },
+      RUSTACEAN: {
+        head: ['bunnyEars'],
+        suit: { color: C.pastelGreen, trim: C.white, pattern: 'dots' },
+      },
+      DESIGNER: {
+        head: ['flowerCrown'],
+        suit: { color: C.pastelPink, trim: C.white, pattern: 'dots' },
+      },
+      PRODUCT_OWNER: {
+        head: ['bunnyEars'],
+        suit: { color: C.lavender, trim: C.white, pattern: 'egg' },
+        torso: ['bowTie'],
+      },
+      AI_AGENT: {
+        head: ['bunnyEars'],
+        suit: { color: C.pastelBlue, trim: C.white, pattern: 'dots' },
+      },
+      GHOST: { head: ['bunnyEars'], torso: ['bowTie'] },
+    },
+    SUPERHEROES: {
+      SENIOR_BEARD: {
+        suit: { color: C.darkGreen, trim: C.gold, pattern: 'belt', gloves: true, boots: true },
+        cape: { color: C.gold },
+        emblem: { shape: 'diamond', color: C.darkGreen, background: C.gold },
+      },
+      TEN_X: {
+        suit: { color: 0x2f6fd6, trim: C.gold, pattern: 'belt', gloves: true, boots: true },
+        mask: 0x2f6fd6,
+        emblem: { shape: 'bolt', color: C.gold, background: C.navy },
+      },
+      // L'acolyte.
+      INTERN: {
+        suit: { color: C.green, trim: C.gold, pattern: 'belt', boots: true },
+        mask: C.black,
+        cape: { color: C.gold },
+        emblem: { shape: 'star', color: C.green, background: C.gold },
+      },
+      RUSTACEAN: {
+        suit: { color: C.orange, trim: C.black, pattern: 'belt', gloves: true, boots: true },
+        mask: C.black,
+        emblem: { shape: 'diamond', color: C.orange, background: C.black },
+      },
+      DESIGNER: {
+        suit: { color: C.purple, trim: C.pastelPink, pattern: 'belt', boots: true },
+        mask: C.pastelPink,
+        cape: { color: C.pastelPink },
+        emblem: { shape: 'star', color: C.purple, background: C.pastelPink },
+      },
+      PRODUCT_OWNER: {
+        suit: { color: C.teal, trim: C.white, pattern: 'belt', gloves: true, boots: true },
+        cape: { color: C.red },
+        emblem: { shape: 'star', color: C.red, background: C.white },
+      },
+      AI_AGENT: {
+        suit: { color: C.silver, trim: C.gold, pattern: 'belt', boots: true },
+        emblem: { shape: 'bolt', color: 0x6fe3ff, background: C.navy },
+      },
+      GHOST: {
+        suit: { color: C.black, trim: 0x4a4f63, pattern: 'belt', gloves: true, boots: true },
+        mask: C.black,
+        cape: { color: C.black, collar: true },
+      },
+    },
+    SUMMER: {
+      SENIOR_BEARD: {
+        head: ['strawHat', 'sunglasses'],
+        suit: { color: C.orange, trim: C.white, pattern: 'hawaii', legs: C.beige },
+      },
+      TEN_X: {
+        head: ['sunglasses'],
+        suit: { color: C.teal, trim: C.pastelYellow, pattern: 'hawaii', legs: C.beige },
+      },
+      INTERN: {
+        head: ['sunglasses'],
+        suit: { color: C.white, trim: C.navy, pattern: 'stripes', legs: C.pastelBlue },
+        torso: ['lifebuoy'],
+      },
+      RUSTACEAN: {
+        head: ['strawHat'],
+        suit: { color: C.red, trim: C.white, pattern: 'hawaii', legs: C.beige },
+      },
+      DESIGNER: {
+        head: ['sunHat', 'sunglasses'],
+        suit: { color: C.white, trim: C.pastelPink, pattern: 'stripes', legs: C.white },
+      },
+      PRODUCT_OWNER: {
+        head: ['sunglasses'],
+        suit: { color: C.purple, trim: C.pastelPink, pattern: 'hawaii', legs: C.beige },
+      },
+      AI_AGENT: { head: ['sunglasses'], torso: ['lifebuoy'] },
+      GHOST: { head: ['strawHat', 'sunglasses'] },
+    },
+    SPACE: {
+      SENIOR_BEARD: {
+        head: ['spaceHelmet'],
+        suit: { color: C.white, trim: C.orange, pattern: 'space', gloves: true, boots: true },
+      },
+      TEN_X: {
+        head: ['spaceHelmet'],
+        suit: { color: C.orange, trim: C.white, pattern: 'space', gloves: true, boots: true },
+      },
+      // Le stagiaire vient d'une autre planète.
+      INTERN: {
+        head: ['alienAntennae'],
+        suit: { color: C.alien, trim: C.purple, pattern: 'neon', boots: true },
+      },
+      RUSTACEAN: {
+        head: ['spaceHelmet'],
+        suit: { color: C.white, trim: C.red, pattern: 'space', gloves: true, boots: true },
+      },
+      DESIGNER: {
+        head: ['spaceHelmet'],
+        suit: { color: C.lavender, trim: C.white, pattern: 'space', gloves: true, boots: true },
+      },
+      PRODUCT_OWNER: {
+        head: ['spaceHelmet'],
+        suit: { color: C.navy, trim: C.gold, pattern: 'space', gloves: true, boots: true },
+      },
+      AI_AGENT: {
+        suit: { color: C.silver, trim: C.neonCyan, pattern: 'neon', boots: true },
+      },
+      GHOST: { head: ['alienAntennae'] },
+    },
+    PIRATES: {
+      // Le capitaine et son perroquet.
+      SENIOR_BEARD: {
+        head: ['pirateHat'],
+        suit: { color: C.navy, trim: C.gold, pattern: 'belt', boots: true, legs: C.beige },
+        torso: ['parrot'],
+      },
+      TEN_X: {
+        head: ['bandana', 'eyePatch'],
+        suit: { color: C.white, trim: C.red, pattern: 'stripes', legs: C.black },
+      },
+      INTERN: {
+        head: ['bandana'],
+        suit: { color: C.white, trim: C.navy, pattern: 'stripes', legs: C.beige },
+      },
+      RUSTACEAN: {
+        head: ['pirateHat'],
+        suit: { color: C.brown, trim: C.gold, pattern: 'belt', boots: true, legs: C.black },
+      },
+      DESIGNER: {
+        head: ['pirateHat', 'eyePatch'],
+        suit: { color: C.red, trim: C.black, pattern: 'belt', boots: true, legs: C.black },
+      },
+      PRODUCT_OWNER: {
+        head: ['pirateHat', 'eyePatch'],
+        suit: { color: C.black, trim: C.gold, pattern: 'belt', boots: true, legs: C.beige },
+        torso: ['parrot'],
+      },
+      AI_AGENT: { head: ['bandana', 'eyePatch'] },
+      GHOST: { head: ['pirateHat'] },
+    },
+    MEDIEVAL: {
+      // L'enchanteur.
+      SENIOR_BEARD: {
+        head: ['wizardHat'],
+        suit: { color: 0x2f4fa0, trim: C.gold },
+        cape: { color: 0x2f4fa0 },
+      },
+      TEN_X: {
+        head: ['knightHelmet'],
+        suit: { color: C.steel, trim: C.gold, pattern: 'armor', gloves: true, boots: true },
+      },
+      // Le bouffon du roi.
+      INTERN: {
+        head: ['jesterHat'],
+        suit: { color: C.purple, trim: C.gold, pattern: 'harlequin' },
+      },
+      RUSTACEAN: {
+        head: ['knightHelmet'],
+        suit: { color: C.steel, trim: C.orange, pattern: 'armor', gloves: true, boots: true },
+      },
+      DESIGNER: {
+        head: ['princessHat'],
+        suit: { color: C.pastelPink, trim: C.gold, pattern: 'belt' },
+      },
+      // Le roi, qui fixe les priorités.
+      PRODUCT_OWNER: {
+        head: ['crown'],
+        suit: { color: C.purple, trim: C.gold, pattern: 'belt' },
+        cape: { color: C.red, collar: true },
+      },
+      AI_AGENT: {
+        suit: { color: C.steel, trim: C.gold, pattern: 'armor', boots: true },
+      },
+      GHOST: { head: ['knightHelmet'] },
+    },
+    RETRO_80S: {
+      SENIOR_BEARD: {
+        head: ['headband', 'sunglasses'],
+        suit: { color: C.purple, trim: C.teal, pattern: 'tracksuit' },
+      },
+      TEN_X: {
+        head: ['retroHeadphones'],
+        suit: { color: C.teal, trim: C.neonPink, pattern: 'tracksuit' },
+      },
+      INTERN: {
+        head: ['headband'],
+        suit: { color: C.neonPink, trim: C.pastelYellow, pattern: 'tracksuit' },
+      },
+      RUSTACEAN: {
+        head: ['retroHeadphones'],
+        suit: { color: C.orange, trim: C.navy, pattern: 'tracksuit' },
+      },
+      DESIGNER: {
+        head: ['headband', 'sunglasses'],
+        suit: { color: C.pastelPink, trim: C.teal, pattern: 'tracksuit' },
+      },
+      // Veste blanche manches retroussées, façon série policière à Miami.
+      PRODUCT_OWNER: {
+        head: ['sunglasses'],
+        suit: { color: C.white, trim: C.pastelPink, pattern: 'vampire', legs: C.white },
+      },
+      AI_AGENT: { head: ['retroHeadphones'] },
+      GHOST: { head: ['headband'] },
+    },
+    CYBERPUNK: {
+      SENIOR_BEARD: {
+        head: ['cyberVisor'],
+        suit: { color: C.black, trim: C.neonCyan, pattern: 'neon', boots: true },
+      },
+      TEN_X: {
+        head: ['mohawk', 'cyberVisor'],
+        suit: { color: C.black, trim: C.neonPink, pattern: 'neon', gloves: true, boots: true },
+      },
+      INTERN: {
+        head: ['cyberVisor'],
+        suit: { color: 0x2b1f3d, trim: C.neonYellow, pattern: 'neon', boots: true },
+      },
+      RUSTACEAN: {
+        head: ['mohawk'],
+        suit: { color: C.black, trim: C.orange, pattern: 'neon', gloves: true, boots: true },
+      },
+      DESIGNER: {
+        head: ['mohawk', 'sunglasses'],
+        suit: { color: 0x2b1f3d, trim: C.neonPink, pattern: 'neon', boots: true },
+      },
+      PRODUCT_OWNER: {
+        head: ['cyberVisor'],
+        suit: { color: C.navy, trim: C.neonYellow, pattern: 'neon', boots: true },
+        cape: { color: C.black, collar: true },
+      },
+      AI_AGENT: {
+        suit: { color: C.black, trim: C.neonCyan, pattern: 'neon', boots: true },
+      },
+      GHOST: { head: ['cyberVisor'] },
+    },
+  };
 
 /** Un look et le costume éventuel qu'il porte. */
 export interface ThemedLook {
@@ -512,6 +513,37 @@ const FACE_ACCESSORIES = new Set<Accessory>([
 const GLASSES = new Set<Accessory>(['glasses', 'roundGlasses', 'visor']);
 /** Pièces portées sur les yeux (on retire les lunettes du look). */
 const EYEWEAR = new Set<HeadPiece>(['sunglasses', 'eyePatch', 'cyberVisor']);
+/**
+ * Les métiers de l'équipe web empruntent le costume d'un profil historique proche : le
+ * directeur et les managers s'habillent comme le Product Owner, le dev back comme le Senior
+ * Barbu, le front comme la designeuse...
+ */
+export const COSTUME_ROLE: Readonly<Record<DevRole, ClassicRole>> = {
+  SENIOR_BEARD: 'SENIOR_BEARD',
+  TEN_X: 'TEN_X',
+  INTERN: 'INTERN',
+  RUSTACEAN: 'RUSTACEAN',
+  DESIGNER: 'DESIGNER',
+  PRODUCT_OWNER: 'PRODUCT_OWNER',
+  AI_AGENT: 'AI_AGENT',
+  GHOST: 'GHOST',
+  FRONTEND: 'DESIGNER',
+  BACKEND: 'SENIOR_BEARD',
+  FULLSTACK: 'TEN_X',
+  TECH_LEAD: 'RUSTACEAN',
+  DEVOPS: 'GHOST',
+  QA_TESTER: 'INTERN',
+  SCRUM_MASTER: 'DESIGNER',
+  MANAGER: 'PRODUCT_OWNER',
+  DEPUTY_DIRECTOR: 'PRODUCT_OWNER',
+  DIRECTOR: 'SENIOR_BEARD',
+};
+
+/** Costume d'un profil dans un pack. */
+export function costumeFor(pack: ThemedPackId, role: DevRole): Costume {
+  return PACK_COSTUMES[pack][COSTUME_ROLE[role]];
+}
+
 /** Ce que la combinaison recouvre (le crabe Ferris, lui, reste sur l'épaule). */
 const SUIT_HIDES = new Set<Accessory>(['hood', 'badge', 'tie', 'blazer']);
 
@@ -529,7 +561,7 @@ export function themedLookFor(
   if (packs.length === 0) return { look: base, costume: null };
   const pack = packs[Math.abs(look) % packs.length] as CharacterPackId;
   if (pack === 'BASE') return { look: base, costume: null };
-  const costume = PACK_COSTUMES[pack][role];
+  const costume = costumeFor(pack, role);
   const head = costume.head ?? [];
   const hidden = (accessory: Accessory) =>
     (head.some((piece) => FULL_HEAD.has(piece)) && FACE_ACCESSORIES.has(accessory)) ||

@@ -119,7 +119,17 @@
     "boo": "Boo",
     "prodDown": "Prod is down!!",
     "fridayDeploy": "Deploy on Friday 5pm?",
-    "quit": "I'm going to quit"
+    "quit": "I'm going to quit",
+    "centerDiv": "Centre this div…",
+    "itDepends": "It depends",
+    "bothSides": "Front? Back? Both?",
+    "nitpick": "nit: rename",
+    "yaml": "One YAML indent too many",
+    "cannotReproduce": "Could not reproduce",
+    "storyPoints": "How many points is that?",
+    "oneToOne": "Quick sync?",
+    "reportUp": "I'll escalate that",
+    "synergy": "Synergies!"
   },
   "roles": {
     "SENIOR_BEARD": "Bearded Senior",
@@ -129,7 +139,17 @@
     "DESIGNER": "Designer",
     "PRODUCT_OWNER": "Product Owner",
     "AI_AGENT": "AI Agent",
-    "GHOST": "Ghost Dev"
+    "GHOST": "Ghost Dev",
+    "FRONTEND": "Front-end Dev",
+    "BACKEND": "Back-end Dev",
+    "FULLSTACK": "Full-stack Dev",
+    "TECH_LEAD": "Tech Lead",
+    "DEVOPS": "DevOps",
+    "QA_TESTER": "QA Tester",
+    "SCRUM_MASTER": "Scrum Master",
+    "MANAGER": "Engineering Manager",
+    "DEPUTY_DIRECTOR": "Deputy CTO",
+    "DIRECTOR": "CTO"
   },
   "roleDescriptions": {
     "SENIOR_BEARD": "+50% quality, refuses frameworks younger than 5 years.",
@@ -139,7 +159,17 @@
     "DESIGNER": "Blocks releases while the padding is wrong, +perceived quality at demos.",
     "PRODUCT_OWNER": "4 meetings a day: -10% productivity for everyone, +hype.",
     "AI_AGENT": "Ultra fast, 30% chance to hallucinate a feature.",
-    "GHOST": "Works remotely, invisible in the office, but tickets get closed."
+    "GHOST": "Works remotely, invisible in the office, but tickets get closed.",
+    "FRONTEND": "Builds the interface: +15% speed on front-end tasks, -40% on back-end. Their specialty speeds up one task type.",
+    "BACKEND": "Builds the server: +15% speed on back-end tasks, -40% on front-end. Their specialty speeds up one task type.",
+    "FULLSTACK": "Takes front-end and back-end tasks, but at 85% and with more limited quality.",
+    "TECH_LEAD": "Codes slowly, reviews everything: -15% debt on every shipped feature.",
+    "DEVOPS": "Back-end dev specialised in the cloud: faster infra, +stability every day.",
+    "QA_TESTER": "Runs QA (testing tasks): -10% feature debt per tester, -30% at most.",
+    "SCRUM_MASTER": "Takes no tasks. The PO's meetings weigh half as much, +2% productivity.",
+    "MANAGER": "Takes no tasks. Manages 6 people: up to +6% productivity, +morale, calmer conflicts.",
+    "DEPUTY_DIRECTOR": "Takes no tasks. +3% productivity and +morale for the whole team.",
+    "DIRECTOR": "Takes no tasks. +6% productivity for everyone and a little hype every day."
   },
   "activities": {
     "WORKING": "Working",
@@ -184,7 +214,8 @@
   "trades": {
     "DEV": "Code",
     "DESIGN": "Design",
-    "PRODUCT": "Product"
+    "PRODUCT": "Product",
+    "QA": "QA"
   },
   "gauges": {
     "treasury": {
@@ -282,7 +313,8 @@
     },
     "group": "Invest",
     "meetings": "Meeting room",
-    "funding": "Raise funds"
+    "funding": "Raise funds",
+    "pets": "Office cats"
   },
   "kanban": {
     "columns": {
@@ -377,7 +409,9 @@
     "bestFriend": "Best ally: {{name}}",
     "rival": "Nemesis: {{name}}",
     "leaving": "🚪 Handed in their notice: leaves at the start of sprint {{sprint}}.",
-    "leavingShort": "🚪 leaves at sprint {{sprint}}"
+    "leavingShort": "🚪 leaves at sprint {{sprint}}",
+    "specialty": "Specialty: {{specialty}} (+20% on {{focus}})",
+    "stack": "Stack side: {{stack}}"
   },
   "teamFilters": {
     "sortLabel": "Sort by",
@@ -429,7 +463,7 @@
     "NO_DESK": "no desk"
   },
   "hiring": {
-    "intro": "3 candidates this sprint. Make an offer: too low and they refuse.",
+    "intro": "3 usual profiles and 2 from the web team (front-end, back-end, full-stack, leadership) this sprint. Make an offer: too low and they say no.",
     "asking": "Asks €{{salary}}/month",
     "offer": "Your offer: €{{salary}}/month",
     "hire": "Make offer",
@@ -500,6 +534,8 @@
       "kitchen": "Kitchen",
       "fun": "Fun",
       "decor": "Decor",
+      "pets": "Pets",
+      "window": "Windows",
       "accessory": "Accessories"
     },
     "price": "€{{price}}",
@@ -545,6 +581,8 @@
     "placedCount_other": "{{count}} placed",
     "again": "Still in hand: place another one, or ✕ to pick another item.",
     "hintAccessory": "Aim at furniture with a top (desk, bookcase, fridge…).",
+    "hintWall": "The window snaps to the nearest back wall; ⟳ to switch walls.",
+    "switchWall": "Switch wall",
     "onFurniture": "Goes on furniture",
     "stopSoldOut": "{{item}}: limit reached, back to the catalog.",
     "stopMoney": "{{item}}: not enough cash left, back to the catalog.",
@@ -582,6 +620,7 @@
     "unknownItem": "Unknown item.",
     "noSurface": "Accessories go on furniture with a top (desk, bookcase, fridge…).",
     "surfaceFull": "No room left on this furniture.",
+    "noWall": "A window goes into one of the two back walls.",
     "VENTURE_LIMIT": "Your group has already founded the maximum number of subsidiaries.",
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
     "NOT_AVAILABLE": "This financing is not available right now.",
@@ -625,6 +664,7 @@
   "credits": {
     "title": "Credits",
     "kenney": "3D models: Kenney (kenney.nl), Furniture Kit and Blocky Characters packs, CC0 license.",
+    "music": "Music: original tracks by the project team (tycoon in the menu, tycoon 1 while planning, Détente during sprints, aria math for fundraising and the ending), owned by their author.",
     "three": "Rendering: Three.js. UI: React. Translations: i18next.",
     "missing": "Assets missing from the packs, replaced by Three.js shapes or CSS:",
     "missingItems": {
@@ -642,16 +682,29 @@
       "ramen": "Instant ramen cup",
       "officeCharacters": "Three.js office characters (bearded seniors, Rustaceans, designers, robot, ghost…) and accessories for the Kenney characters",
       "uiPack": "Kenney UI pack (CSS interface)",
-      "soundPacks": "Kenney sound packs (audio coming later)",
+      "soundPacks": "Kenney sound packs (sound effects and ambience coming soon)",
       "seasonalDecor": "Seasonal decorations (12 themes) and the birthday table: Three.js cake, presents and balloons on the Furniture Kit's tablecloth table",
       "meetingRoomProps": "Meeting room: whiteboard, stand-up clock, fish tank, war room screens, boardroom painting and glass walls as Three.js shapes, with the Furniture Kit's tables and chairs",
-      "citySkyline": "Glass walls and a New York-style city view (towers, water tanks, park, river, taxis) made of Three.js shapes, with no real building",
+      "citySkyline": "New York-style city view, seen through the windows (towers, water tanks, park, river, taxis) made of Three.js shapes, with no real building",
       "mug": "Dev mug",
       "rubberDuck": "Rubber duck",
       "trophy": "Hackathon trophy",
       "annexDecor": "Office annex decor: arcade cabinets, pinball, neon sign, tree, fountain, stage, lectern and projection screen as Three.js shapes (bench, potted plant and speakers from the Furniture Kit)",
       "deskHeadset": "Noise-cancelling headset on its stand",
-      "miniCactus": "Mini desk cactus"
+      "miniCactus": "Mini desk cactus",
+      "litterOpen": "Open litter tray: tray, sand and scoop",
+      "litterCovered": "Covered litter box with a flap door",
+      "litterRobot": "Self-cleaning robot litter (dome, screen and lights)",
+      "catBowl": "Double water and food bowl",
+      "catFeeder": "Water fountain and kibble feeder",
+      "catTreeSmall": "Compact cat tree (1 tile, beige carpet)",
+      "catTreeMedium": "Double cat tree (2 tiles, grey carpet)",
+      "catTreeLarge": "Giant cat tree (3 tiles, mauve carpet)",
+      "officeCats": "Office cats: six coats built from Three.js shapes, animated in code (walking, napping, eating)",
+      "windowSmall": "Small window and its wall section",
+      "windowMedium": "Two-tile window",
+      "windowLarge": "Large three-tile window",
+      "glassWall": "Floor-to-ceiling glass wall (building glass)"
     },
     "back": "Back"
   },
@@ -737,7 +790,17 @@
       "DESIGNER": "\"My salary is like your padding: it's 8px short everywhere.\"",
       "PRODUCT_OWNER": "\"I booked a 1-hour meeting in your calendar to discuss it. And another one to follow up.\"",
       "AI_AGENT": "\"My tokens cost more than expected. I computed my raise myself: trust me.\"",
-      "GHOST": "\"You never see me, but my tickets get closed. My salary, however, never moves.\""
+      "GHOST": "\"You never see me, but my tickets get closed. My salary, however, never moves.\"",
+      "FRONTEND": "\"I centre divs all day long. That deserves a 4K screen and a raise, at least.\"",
+      "BACKEND": "\"If my salary were a SQL query, it would be missing an index.\"",
+      "FULLSTACK": "\"I do the job of two people. Halfway, sure, but two people.\"",
+      "TECH_LEAD": "\"nit: this salary could use a refactor.\"",
+      "DEVOPS": "\"I'm on call at night, at weekends and during this very meeting.\"",
+      "QA_TESTER": "\"I tested my payslip: the bug reproduces every single month.\"",
+      "SCRUM_MASTER": "\"I estimate this request at 13 points. Can we pull it into the sprint?\"",
+      "MANAGER": "\"Let's talk about my career path. I prepared 14 slides and an OKR.\"",
+      "DEPUTY_DIRECTOR": "\"I stand in for the CTO in every meeting. I'd like to stand in for their salary too.\"",
+      "DIRECTOR": "\"My package is below market. And below my three previous startups.\""
     }
   },
   "end": {
@@ -1512,7 +1575,7 @@
   },
   "meetings": {
     "intro": "Fit out the office meeting room. Each format has a perk and a drawback, and the team meets there every weekday morning at {{hour}}, as soon as they arrive, for {{minutes}} minutes: a useful meeting pays off, a useless one costs morale.",
-    "crisisIntro": "When prod goes down, the room becomes a crisis cell: the culprit if there is one, the {{count}} most solid devs (culprit included) and the Product Owner meet there for half an hour. On the way out, the best one takes \"Fix prod\", already under way.",
+    "crisisIntro": "When prod goes down, the room becomes a crisis cell: the culprit if there is one, the {{count}} most solid devs (DevOps and Tech Lead first, culprit included) and the Product Owner or a manager meet there for half an hour. On the way out, the best one takes \"Fix prod\", already under way.",
     "crisis": "Crisis meetings",
     "crisisOne": "Crisis meeting",
     "crisisOdds": "Crisis meeting: fix {{percent}}% done",
@@ -1585,5 +1648,69 @@
       "TOO_MUCH_DEBT": "Too much technical debt: the application would be rejected.",
       "TOO_BIG": "Your startup is too big for a grant."
     }
+  },
+  "stacks": {
+    "FRONT": "Front-end",
+    "BACK": "Back-end",
+    "FULL": "Full-stack"
+  },
+  "specialties": {
+    "REACT": "React",
+    "ACCESSIBILITY": "Accessibility",
+    "WEB_PERF": "Web performance",
+    "MOBILE": "Mobile",
+    "NODE": "Node.js",
+    "DATABASE": "Databases",
+    "SECURITY": "Security",
+    "CLOUD": "Cloud"
+  },
+  "specialtyFocus": {
+    "FEATURE": "features",
+    "REFACTO": "refactors",
+    "BUGFIX": "bugs",
+    "INFRA": "infra"
+  },
+  "leadership": {
+    "title": "Leadership",
+    "none": "No leadership yet: hire a CTO, managers or a scrum master as the team grows.",
+    "productivity": "+{{value}}% productivity for the whole team",
+    "coverage": "{{value}}% of the team has a manager",
+    "meetings": "Lighter PO meetings (scrum master)",
+    "debt": "-{{value}}% debt on features (reviews and QA)",
+    "stability": "+{{value}} stability per day (DevOps)",
+    "moral": "+{{value}} morale per day for everyone",
+    "openings": "Open positions: {{roles}}",
+    "noOpenings": "No leadership position open for the current team size.",
+    "short": "+{{value}}% productivity"
+  },
+  "pets": {
+    "intro": "A cat in the office lifts morale and goes viral on social media, but it sleeps on keyboards. Before adopting one, place a litter box, a bowl and a cat tree in the office (Pets tab of build mode).",
+    "needsTitle": "To adopt",
+    "needs": {
+      "litter": "A litter box",
+      "bowl": "A bowl (water and food)",
+      "tree": "A cat tree"
+    },
+    "placed": "placed",
+    "notPlaced": "to place",
+    "needsHint": "Items stored in the inventory don’t count: they must be placed in the office.",
+    "adoptTitle": "Adopt a cat ({{count}}/{{max}})",
+    "effects": "Each happy cat: +morale for the whole team every day, a bit of hype, and −0.4% productivity (it sleeps on keyboards).",
+    "coat": "Coat",
+    "adopt": "Adopt ({{price}})",
+    "full": "The office already has {{max}} cats, that’s the maximum.",
+    "missing": "Some equipment is still missing: place a litter box, a bowl and a cat tree.",
+    "yours": "Office cats",
+    "none": "No cat yet.",
+    "happy": "Everything is in place: the cats are happy.",
+    "sulking": "Some equipment is missing: the cats are sulking and morale drops.",
+    "adoptedAt": "adopted in sprint {{sprint}}",
+    "rehome": "Rehome",
+    "rehomeWarning": "{{name}} will leave for good, with no refund, and the team will feel blue (−5 morale).",
+    "rehomeConfirm": "Rehome {{name}}",
+    "adoptCard": "Adopt a cat",
+    "adoptCardMissing_one": "{{count}} piece of equipment still missing: litter box, bowl and cat tree.",
+    "adoptCardMissing_other": "{{count}} pieces of equipment still missing: litter box, bowl and cat tree.",
+    "adoptCardReady": "All set: pick a coat and adopt."
   }
 }

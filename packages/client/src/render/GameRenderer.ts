@@ -19,6 +19,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents';
+import { CatWorld, type CatSnapshot } from '../ai/cats';
 import { itemCells } from '../ai/grid';
 import { catalogItem, footprint } from '../view/catalog';
 import { decorKey, planDecor } from '../view/decor';
@@ -32,6 +33,7 @@ import {
   slotPosition,
 } from '../view/placement';
 import type { GameView, Rotation } from '../view/types';
+import { aimWindow, isWallItem, wallOpenings, type WallSide } from '../view/windows';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
 import { DecorationsView } from './decorations';
@@ -41,6 +43,7 @@ import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
 import { interpolateAgent } from './interpolation';
+import { PetsView } from './pets';
 import {
   cameraDirection,
   clampTarget,
@@ -64,6 +67,9 @@ export type PickTarget =
   | { readonly type: 'dev'; readonly id: string }
   | { readonly type: 'item'; readonly id: string }
   | { readonly type: 'cell'; readonly cell: Cell };
+
+/** Hauteur à laquelle on vise un mur pour y poser une fenêtre. */
+const WALL_AIM_HEIGHT = 1.2;
 
 /** Mode construction : `kind` à `null` quand le catalogue est ouvert (rien en main). */
 export interface BuildPreview {
@@ -94,7 +100,8 @@ export interface RendererOptions {
    * L'aperçu change de case : survol de la souris, tap ou glisser du doigt, ou case de départ
    * proposée quand on prend un objet en main.
    */
-  readonly onBuildCell?: (cell: Cell) => void;
+  /** Case visée en mode construction ; `wall` : mur visé pour une fenêtre. */
+  readonly onBuildCell?: (cell: Cell, wall?: WallSide) => void;
   readonly onFps?: (fps: number) => void;
 }
 
@@ -139,6 +146,11 @@ export class GameRenderer {
   private roles = new Map<string, DevRole>();
   private readonly characters = new Map<string, CharacterView>();
   private readonly world: AgentWorld;
+  /** Les chats du bureau : leur IA (déplacements) et leurs modèles. */
+  private readonly cats = new CatWorld(1);
+  private readonly pets = new PetsView();
+  private previousCats = new Map<string, CatSnapshot>();
+  private currentCats: CatSnapshot[] = [];
   private readonly gestures = new GestureRecognizer();
   private readonly raycaster = new THREE.Raycaster();
   private readonly smoke: SmokeEffect;
@@ -214,6 +226,7 @@ export class GameRenderer {
       this.meetingRoom.root,
       this.roomLights.root,
       this.screens.root,
+      this.pets.root,
     );
 
     this.smoke = new SmokeEffect(preset.maxParticles);
@@ -270,9 +283,15 @@ export class GameRenderer {
     );
     void this.office.setItems(view.items);
     this.updateDecor(view);
-    void this.roomLights.setLayout(this.layout, QUALITY_PRESETS[this.quality].roomLights);
+    void this.roomLights.setLayout(
+      this.layout,
+      QUALITY_PRESETS[this.quality].roomLights,
+      wallOpenings(view.items),
+    );
     this.roles = new Map(view.devs.map((dev) => [dev.id, dev.role]));
     this.world.sync(view);
+    this.cats.sync(view, this.decorPlan?.blocked ?? []);
+    this.pets.sync(view.pets.pets);
     if (phaseChanged) this.fitCamera();
 
     const ids = new Set(view.devs.map((dev) => dev.id));
@@ -447,6 +466,8 @@ export class GameRenderer {
     screens: number;
     /** Vraies lampes ponctuelles de la salle. */
     roomLights: number;
+    /** Chats visibles dans la scène. */
+    cats: number;
   } {
     const tile = this.footprintTile;
     let ghost: { x: number; y: number } | null = null;
@@ -469,6 +490,7 @@ export class GameRenderer {
       ghost,
       screens: this.screens.count,
       roomLights: this.roomLights.realLights,
+      cats: this.currentCats.filter((cat) => cat.visible).length,
     };
   }
 
@@ -484,6 +506,7 @@ export class GameRenderer {
     this.roomLights.dispose();
     this.skyline.dispose();
     this.screens.dispose();
+    this.pets.dispose();
     this.composer?.dispose();
     this.renderer.dispose();
   }
@@ -536,6 +559,9 @@ export class GameRenderer {
       this.previous = new Map(this.current.map((agent) => [agent.id, agent]));
       this.world.step();
       this.current = this.world.snapshot();
+      this.previousCats = new Map(this.currentCats.map((cat) => [cat.id, cat]));
+      this.cats.step();
+      this.currentCats = this.cats.snapshot();
       this.accumulator -= AGENT_TICK_SECONDS;
       steps++;
     }
@@ -546,6 +572,9 @@ export class GameRenderer {
       const shown = interpolateAgent(this.previous.get(agent.id), agent, alpha);
       this.characters.get(agent.id)?.update(shown, delta * speed, this.reducedMotion);
     }
+    if (this.currentCats.length === 0 && view && view.pets.pets.length > 0)
+      this.currentCats = this.cats.snapshot();
+    this.pets.update(this.previousCats, this.currentCats, alpha, delta * speed, this.reducedMotion);
 
     if (view) {
       const minute = liveSprintMinutes(view.time, now) % 1440;
@@ -598,7 +627,11 @@ export class GameRenderer {
       if (node instanceof THREE.Mesh) node.material.needsUpdate = true;
     });
 
-    void this.roomLights.setLayout(this.layout, preset.roomLights);
+    void this.roomLights.setLayout(
+      this.layout,
+      preset.roomLights,
+      wallOpenings(this.view?.items ?? []),
+    );
 
     this.composer?.dispose();
     this.composer = null;
@@ -903,6 +936,20 @@ export class GameRenderer {
   }
 
   private aimAt(x: number, y: number): void {
+    const kind = this.build?.kind;
+    if (kind && isWallItem(kind)) {
+      // Une fenêtre vise le mur : la case sous le pointeur à mi-hauteur, au mur le plus proche.
+      const aimed = this.wallAim(x, y);
+      const current = this.build?.cell;
+      if (
+        aimed &&
+        (aimed.cell.x !== current?.x ||
+          aimed.cell.z !== current.z ||
+          aimed.rotation !== this.build?.rotation)
+      )
+        this.options.onBuildCell?.(aimed.cell, aimed.rotation === 1 ? 1 : 0);
+      return;
+    }
     const cell = this.aimCell(x, y);
     const current = this.build?.cell;
     if (cell && (cell.x !== current?.x || cell.z !== current?.z)) this.options.onBuildCell?.(cell);
@@ -984,7 +1031,12 @@ export class GameRenderer {
       this.touchInput = point.touch;
       // Au doigt, glisser depuis l'aperçu le déplace ; ailleurs, le glisser déplace la caméra.
       if (event.isPrimary) {
-        this.draggingGhost = point.touch && this.onGhost(this.aimCell(point.x, point.y));
+        const kind = this.build?.kind;
+        const aimed =
+          kind && isWallItem(kind)
+            ? (this.wallAim(point.x, point.y)?.cell ?? null)
+            : this.aimCell(point.x, point.y);
+        this.draggingGhost = point.touch && this.onGhost(aimed);
         this.gestures.panLocked = this.draggingGhost;
       }
       this.gestures.down(point).forEach((e) => this.handleGesture(e));
@@ -1121,6 +1173,13 @@ export class GameRenderer {
       case 'longPress': {
         if (this.build?.kind) {
           // Souris : le clic pose. Doigt : le tap vise, le bouton « Poser » confirme.
+          if (isWallItem(this.build.kind)) {
+            const aimed = this.wallAim(event.x, event.y);
+            if (!aimed || event.type === 'longPress') break;
+            this.aimAt(event.x, event.y);
+            if (!this.touchInput) this.options.onPlace?.(aimed.cell);
+            break;
+          }
           const cell = this.aimCell(event.x, event.y);
           if (!cell || event.type === 'longPress') break;
           if (this.touchInput) this.aimAt(event.x, event.y);
@@ -1137,6 +1196,19 @@ export class GameRenderer {
   private ndc(x: number, y: number): THREE.Vector2 {
     const canvas = this.options.canvas;
     return new THREE.Vector2((x / canvas.clientWidth) * 2 - 1, -(y / canvas.clientHeight) * 2 + 1);
+  }
+
+  /** Fenêtre visée : le pointeur coupe un plan à mi-hauteur des murs, ramené dans le bureau. */
+  private wallAim(x: number, y: number): ReturnType<typeof aimWindow> | null {
+    const kind = this.build?.kind;
+    if (!kind) return null;
+    this.raycaster.setFromCamera(this.ndc(x, y), this.camera);
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -WALL_AIM_HEIGHT);
+    const hit = this.raycaster.ray.intersectPlane(plane, new THREE.Vector3());
+    if (!hit) return null;
+    const clamp = (value: number, max: number) => Math.max(0, Math.min(max - 1, Math.round(value)));
+    const cell = { x: clamp(hit.x, this.layout.width), z: clamp(hit.z, this.layout.depth) };
+    return aimWindow(this.layout, kind, cell);
   }
 
   private cellAt(x: number, y: number): Cell | null {

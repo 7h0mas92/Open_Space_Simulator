@@ -77,7 +77,9 @@ export function createEmptyState(config: GameConfig): GameState {
     objective: null,
     financing: { lastSprint: {}, loan: null },
     inventory: [],
+    pets: [],
     raises: emptyRaisesState(),
+    recentTaskTitles: [],
     lostSprintsPending: 0,
     tracker: {
       usersAtStart: 0,
@@ -120,6 +122,7 @@ export function createEmptyState(config: GameConfig): GameState {
       weeklyMissed: 0,
       objectivesDone: 0,
       objectivesFailed: 0,
+      petsAdopted: 0,
     },
     achievements: [],
     notifications: [],

@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import type { AssetLibrary } from '../../../src/render/assets';
 import { lightingAt } from '../../../src/render/lighting';
-import { glassTexture, OfficeLights } from '../../../src/render/officeLights';
+import { OfficeLights, wallSlots } from '../../../src/render/officeLights';
+import { windowGlass } from '../../../src/render/primitives';
 import {
   CITY_RADIUS,
   facadeTextures,
@@ -117,35 +118,41 @@ describe('vue sur New York', () => {
   });
 });
 
-describe('baies vitrées', () => {
-  it('remplace les murs du fond par des vitres teintées par le ciel', async () => {
-    const lights = new OfficeLights({ loadFurniture: async () => null } as unknown as AssetLibrary);
+describe('fenêtres et lumière du jour', () => {
+  const noAssets = { loadFurniture: async () => null } as unknown as AssetLibrary;
+  const count = (lights: OfficeLights, name: string) =>
+    (lights.root.getObjectByName(name) as THREE.InstancedMesh).count;
+
+  it('sans fenêtre, aucun soleil n’entre et toutes les appliques sont accrochées', async () => {
+    const lights = new OfficeLights(noAssets);
     const layout = officeLayout('SEED');
     await lights.setLayout(layout, 0);
-    const back = lights.root.getObjectByName('glass-back') as THREE.Mesh;
-    const side = lights.root.getObjectByName('glass-side') as THREE.Mesh;
-    expect(back).toBeDefined();
-    expect(side).toBeDefined();
-    const glass = back.material as THREE.MeshBasicMaterial;
-    expect(glass.transparent).toBe(true);
-    expect(glass.opacity).toBeLessThan(0.5);
-    lights.update(lightingAt(12 * 60), 40);
-    const noon = glass.color.getHex();
-    lights.update(lightingAt(23 * 60), 40);
-    expect(glass.color.getHex()).not.toBe(noon);
-    // Un montant par case sur les deux murs, un poteau par applique.
-    const mullions = lights.root.getObjectByName('glass-mullions') as THREE.InstancedMesh;
-    expect(mullions.count).toBe(layout.width + 1 + layout.depth + 1);
-    expect((lights.root.getObjectByName('glass-pillars') as THREE.InstancedMesh).count).toBe(
-      (lights.root.getObjectByName('lamp-wash') as THREE.InstancedMesh).count,
-    );
+    expect(count(lights, 'sun-patches')).toBe(0);
+    expect(count(lights, 'lamp-wash')).toBe(wallSlots(layout).length);
     lights.dispose();
   });
 
-  it('dessine des reflets en diagonale sur le verre', () => {
-    const glass = glassTexture();
-    const colors = new Set<number>();
-    for (let x = 0; x < 64; x++) colors.add(glass.pixel(x, 0));
-    expect(colors.size).toBe(2);
+  it('fait entrer le soleil devant chaque fenêtre et décroche l’applique qu’elle couvre', async () => {
+    const lights = new OfficeLights(noAssets);
+    const layout = officeLayout('SEED');
+    const lamp = wallSlots(layout).find((slot) => slot.turn === 0)!;
+    await lights.setLayout(layout, 0, [
+      { wall: 0, start: lamp.x, length: 2, full: true },
+      { wall: 1, start: 2, length: 1, full: false },
+    ]);
+    expect(count(lights, 'sun-patches')).toBe(2);
+    expect(count(lights, 'lamp-wash')).toBe(wallSlots(layout).length - 1);
+    lights.dispose();
+  });
+
+  it('teinte le verre des fenêtres selon le ciel', () => {
+    const lights = new OfficeLights(noAssets);
+    expect(windowGlass.transparent).toBe(true);
+    expect(windowGlass.opacity).toBeLessThan(0.5);
+    lights.update(lightingAt(12 * 60), 40);
+    const noon = windowGlass.color.getHex();
+    lights.update(lightingAt(23 * 60), 40);
+    expect(windowGlass.color.getHex()).not.toBe(noon);
+    lights.dispose();
   });
 });

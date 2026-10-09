@@ -5,11 +5,11 @@ import {
   type DevTrait,
   type EntityId,
   type GameState,
-  type TaskTrade,
+  isManagementRole,
 } from '@oss/shared';
 import { clamp, devIds, devsWithRole, type SimContext } from '../helpers';
 import { holdTeamMeeting, isTeamMeetingTime } from '../meetings';
-import { autoAssign, devTrade, hasFreeTask } from '../tasks';
+import { autoAssign, devQueueKey, devTrade, hasFreeTask } from '../tasks';
 import type { SimClock } from '../time';
 
 /** Le dev est-il au bureau (ou connecté, pour le Dev Fantôme) à cette heure ? */
@@ -127,9 +127,9 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
   if (teamMeeting) state.stats.meetings += 1;
   const attendees: EntityId[] = [];
   const { activity: odds } = BALANCE;
-  // Reste-t-il des tâches à prendre, métier par métier ? Calculé seulement si un dev est
-  // sans tâche, pour ne pas parcourir le Kanban à chaque tick.
-  const tasksAvailable = new Map<TaskTrade, boolean>();
+  // Reste-t-il des tâches à prendre, métier par métier (et côté de la stack) ? Calculé
+  // seulement si un dev est sans tâche, pour ne pas parcourir le Kanban à chaque tick.
+  const tasksAvailable = new Map<string, boolean>();
 
   // Pause à heure fixe de chaque dev en ce moment (l'IA Agent n'en prend jamais).
   const pauses = new Map<EntityId, NonNullable<ReturnType<typeof scheduledBreak>>>();
@@ -170,13 +170,23 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
       current.kind !== 'WORKING' && current.kind !== 'IDLE' && current.kind !== 'GONE';
     if (onBreak && current.untilTick > state.tick) continue;
 
-    if (!worker.taskId && BALANCE.work.autoAssign && state.stage === 'EXECUTION') {
-      const trade = devTrade(state, id);
-      if (tasksAvailable.get(trade) ?? hasFreeTask(state, trade))
-        tasksAvailable.set(trade, autoAssign(state, id) !== null);
-      else tasksAvailable.set(trade, false);
+    const trade = devTrade(state, id);
+    const queueKey = devQueueKey(state, id);
+    if (
+      !worker.taskId &&
+      trade &&
+      queueKey &&
+      BALANCE.work.autoAssign &&
+      state.stage === 'EXECUTION'
+    ) {
+      if (tasksAvailable.get(queueKey) ?? hasFreeTask(state, trade))
+        tasksAvailable.set(queueKey, autoAssign(state, id) !== null);
+      else tasksAvailable.set(queueKey, false);
     }
-    const work: Activity = worker.taskId && state.stage === 'EXECUTION' ? 'WORKING' : 'IDLE';
+    // L'encadrement « travaille » sans ticket : il pilote l'équipe depuis son bureau.
+    const managing = isManagementRole(identity.role);
+    const work: Activity =
+      (worker.taskId || managing) && state.stage === 'EXECUTION' ? 'WORKING' : 'IDLE';
 
     // Vraie pause à heure fixe : elle dure jusqu'à la fin du créneau, réunion ou pas.
     const pause = pauses.get(id);

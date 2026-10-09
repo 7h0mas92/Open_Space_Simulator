@@ -286,6 +286,34 @@ describe('Salle de réunion : réunion de crise quand la prod tombe', () => {
     expect(leadId).toBe(senior);
   });
 
+  it('appelle d’abord le DevOps et le Tech Lead, et un manager s’il n’y a pas de PO', () => {
+    const { state, ids } = stateWithTeam([
+      'SENIOR_BEARD',
+      'DEVOPS',
+      'TECH_LEAD',
+      'TEN_X',
+      'MANAGER',
+    ]);
+    state.stage = 'EXECUTION';
+    for (const id of ids) {
+      const activity = state.components.activity[id];
+      if (activity) activity.kind = 'WORKING';
+      const stats = state.components.stats[id];
+      if (stats) stats.quality = 5;
+      const employment = state.components.employment[id];
+      if (employment) employment.level = 1;
+    }
+    const [senior, devops, lead, tenX, manager] = ids;
+    const stats = state.components.stats[senior ?? ''];
+    if (stats) stats.quality = 9;
+    const { attendees, leadId } = crisisAttendees(state, null);
+    expect(attendees.slice(0, 2)).toEqual([devops, lead]);
+    expect(attendees).toContain(senior);
+    expect(attendees).not.toContain(tenX);
+    expect(attendees.at(-1)).toBe(manager);
+    expect(leadId).toBe(devops);
+  });
+
   it('avance la réparation, la confie au meneur et garde l’équipe en salle', () => {
     const { state, ids } = crisisTeam();
     const [intern, senior] = ids;

@@ -2935,6 +2935,62 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
       '{event} Let’s call it an "aspirational" goal.',
     ),
   },
+  // ─── PET_ADOPTED ──────────────────────────────────────────────────────────
+  {
+    trigger: 'PET_ADOPTED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🐈 {event} Merci de ne pas le nourrir avec vos chips. Ni avec vos bugs.',
+      '🐈 {event} Please don’t feed it your chips. Or your bugs.',
+    ),
+  },
+  {
+    trigger: 'PET_ADOPTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Le nouveau chat vient de s’allonger sur mon clavier et de merger une PR. Il a les droits admin ?',
+      'The new cat just lay on my keyboard and merged a PR. Does it have admin rights?',
+    ),
+  },
+  {
+    trigger: 'PET_ADOPTED',
+    channel: 'random',
+    author: dev('DESIGNER'),
+    text: t(
+      'J’ai déjà fait 40 photos du chat. Je propose qu’il devienne le logo.',
+      'I already took 40 photos of the cat. I suggest it becomes the logo.',
+    ),
+  },
+  {
+    trigger: 'PET_ADOPTED',
+    channel: 'random',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      'J’ai ajouté le chat au Kanban. Story : « En tant que chat, je veux dormir sur le serveur ».',
+      'I added the cat to the Kanban. Story: "As a cat, I want to sleep on the server".',
+    ),
+  },
+  // ─── PET_REHOMED ──────────────────────────────────────────────────────────
+  {
+    trigger: 'PET_REHOMED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '😿 {event} Une cellule de soutien psychologique est ouverte en salle de pause.',
+      '😿 {event} A support group is open in the break room.',
+    ),
+  },
+  {
+    trigger: 'PET_REHOMED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Qui va s’asseoir sur mon clavier quand je pars en pause maintenant ?',
+      'Who’s going to sit on my keyboard when I go on break now?',
+    ),
+  },
 ];
 
 /** Index des templates par déclencheur, construit une seule fois. */

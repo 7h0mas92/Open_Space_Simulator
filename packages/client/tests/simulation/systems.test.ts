@@ -426,7 +426,8 @@ describe('Équipe', () => {
     const { state } = stateWithTeam([]);
     const ctx = makeContext(state);
     generateCandidates(state, ctx);
-    expect(state.candidates).toHaveLength(3);
+    // 3 profils historiques et 2 de l'équipe web.
+    expect(state.candidates).toHaveLength(5);
     state.phase = 'GARAGE';
     expect(spawnDev(state, ctx, 'GHOST')).not.toBeNull();
     expect(state.components.remote).not.toEqual({});

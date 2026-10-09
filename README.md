@@ -259,7 +259,7 @@ flowchart LR
 - **Qualité réglable** (bas, moyen, haut) : devicePixelRatio plafonné à 2, ombres coupées en
   bas (défaut sur mobile et quand WebGL tourne sans carte graphique, comme sur la CI), petits
   objets masqués quand on dézoome (LOD).
-- **Vue sur New York** : les deux murs du fond sont de grandes baies vitrées. Le bureau est au
+- **Vue sur New York** : on la voit par les fenêtres achetées. Le bureau est au
   dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
   gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
   Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
@@ -292,6 +292,18 @@ flowchart LR
   `BALANCE.performance`). La fiche montre les 2 derniers sprints côte à côte, l'ancienneté,
   l'XP, la tâche en cours, l'allié et la bête noire ; chaque candidat affiche sa performance
   estimée, le salaire du marché et ses chances d'accepter l'offre.
+- **Équipe web** : 10 métiers s'ajoutent aux 8 profils. Les devs Front et Back vont 15 % plus
+  vite de leur côté de la stack et à 60 % de l'autre ; leur spécialité (React, accessibilité,
+  performance web, mobile, Node.js, bases de données, sécurité, cloud) accélère un type de tâche
+  de 20 %. Le dev Fullstack prend les deux côtés à 85 %, avec une qualité plus faible. Le Tech
+  Lead réduit la dette des features, le DevOps ajoute de la stabilité chaque jour, les testeurs
+  ont leurs tâches de recette (🔍) et réduisent la dette. L'encadrement ne prend pas de tâches :
+  scrum master (réunions du PO allégées), managers (1 pour 6 personnes : productivité, moral,
+  conflits apaisés), sous-directeur et directeur technique (productivité, moral, hype). Les
+  postes s'ouvrent selon la taille de l'équipe et la phase ; le bloc « Encadrement » du panneau
+  Équipe résume les effets et les postes ouverts. Chaque planification propose 2 candidats de
+  l'équipe web en plus des 3 habituels, sur une graine à part (`shared/sim/teamRoles.ts`,
+  `client/src/simulation/leadership.ts`).
 - **Filtres de l'équipe** : la liste se filtre par note de performance, situation (en conflit,
   fatigué·e, moral bas, télétravail, au bureau) et métier, filtres cumulables, et se trie par
   performance, moral, énergie, conflits, salaire, ancienneté ou nom. Chaque ligne indique
@@ -359,6 +371,13 @@ flowchart LR
   formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
   formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
   part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
+- **Variété des tâches** : le Kanban pioche dans plus de 250 tâches en français et en anglais.
+  Le catalogue grandit avec la startup (page de tarifs en Seed, découper le monolithe en Série A,
+  certification SOC 2 en Licorne), et pendant chaque période du calendrier une tâche de code sur
+  trois est de saison (calendrier de l'Avent à Noël, code zombie à Halloween). La designeuse et
+  le Product Owner ont deux fois plus d'idées, et les urgences et tâches de la semaine sont deux
+  fois plus nombreuses. Une tâche n'apparaît jamais deux fois sur le tableau, et les 60 dernières
+  ne reviennent pas tant qu'il en reste de neuves (`client/src/simulation/taskTitles.ts`).
 - **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
   dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
   les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
@@ -382,6 +401,24 @@ flowchart LR
   sur un bureau protège un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
+- **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
+  fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
+  au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
+  (« ⟳ Changer de mur »), percent le mur pour montrer la ville et font entrer le soleil.
+- **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
+  automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
+  réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
+  panneau « 🐈 Chats » permet d'adopter jusqu'à 5 chats (5 000 € chacun, 6 robes au choix). Ils
+  se baladent dans l'open space, mangent, se cachent dans la litière fermée, grimpent dans les
+  arbres à chat et sur les canapés, et dorment surtout la nuit. Un chat bien équipé donne du moral
+  et un peu de hype ; s'il manque de l'équipement, il boude. Le confier à une famille n'est pas
+  remboursé et attriste l'équipe (`shared/sim/pets.ts`, `ai/cats.ts`, `render/pets.ts`).
+- **Musique** : sept morceaux originaux suivent le moment de la partie : « tycoon » au menu,
+  « tycoon 1 » en planification et à la démo, les quatre « Détente » enchaînés pendant le sprint,
+  « aria math » en levée de fonds et à l'écran de fin. Fondu enchaîné entre deux moments, reprise
+  du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
+  lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
+  le jeu reste jouable sans musique.
 - **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
   revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
   les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
@@ -416,7 +453,10 @@ sequenceDiagram
   rejoue en accéléré (les commandes du joueur sont bloquées).
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
-  gardés dans IndexedDB puis synchronisés avec le serveur à la connexion.
+  gardés dans IndexedDB puis synchronisés avec le serveur à la connexion. « Continuer » reprend
+  la sauvegarde la plus récente d'une partie en cours : à la fin d'une partie, sa sauvegarde
+  automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
+  dans « Charger une partie »).
 - **Succès** : 65 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
@@ -540,7 +580,7 @@ Render et Vercel. Toutes les variables sont décrites dans
 ## Ce que l'application fait et ne fait pas
 
 Elle fait : un jeu de gestion solo complet (6 modes, 39 sprints, 100 cartes, 8 profils de
-devs, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
+devs et 10 métiers d'une équipe web, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
 anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
 Daily, par mode), replays vérifiés par le serveur, 65 succès (dont 22 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
@@ -559,13 +599,17 @@ génère que des messages Slack.
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, ville et baies vitrées, tableau blanc, horloge,
+  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
+  gamelles, arbres à chat et chats, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran, clavier et souris, table de cantine et
-  ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Le
-  lecteur audio (Howler.js, trois volumes réglables) est prêt : il suffit de déposer les packs
-  sons Kenney et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans
-  la page Crédits du jeu.
+  ses bancs, bibliothèque garnie de livres…), pour que chacun ait un rendu qui lui est propre. Pour les
+  effets sonores et l'ambiance, le lecteur audio (Howler.js) est prêt : il suffit de déposer les
+  fichiers et de remplir `packages/client/src/audio/manifest.ts`. Liste aussi visible dans la
+  page Crédits du jeu.
+- Musiques : compositions originales de l'équipe du projet (tycoon, Détente, aria math), dans
+  `packages/client/public/assets/music/` (voir le README de ce dossier). Elles appartiennent à leur
+  auteur et ne sont pas sous licence CC0.
 - Personnages : 10 des 18 Blocky Characters sont hors thème (pirate, ninja, zombies, policier…)
   et ne sont jamais tirés. Chaque profil a sa liste de looks (`render/officeCharacters.ts`) :
   les personnages Kenney adaptés, complétés d'accessoires Three.js (barbe, casque, béret, badge,

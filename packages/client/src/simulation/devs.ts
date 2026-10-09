@@ -2,7 +2,11 @@ import {
   BALANCE,
   DEV_TRAITS,
   birthdayFromKey,
+  hasOpening,
   ROLE_PROFILES,
+  ROLE_STACK,
+  SPECIALTIES_BY_STACK,
+  type ClassicRole,
   type Candidate,
   type CommandResult,
   type DevRole,
@@ -28,11 +32,15 @@ import {
   text,
   type SimContext,
 } from './helpers';
+import { teamShape } from './leadership';
 import { emptySprintPerformance } from './performance';
-import type { Rng } from './rng';
+import { Rng } from './rng';
 
-/** Fréquence des profils parmi les candidats (le Dev Fantôme est rare). */
-const ROLE_WEIGHTS: Record<DevRole, number> = {
+/**
+ * Fréquence des profils historiques parmi les 3 candidats habituels (le Dev Fantôme est rare).
+ * Cette liste ne doit pas changer : elle fixe les tirages des replays et du Daily.
+ */
+const ROLE_WEIGHTS: Record<ClassicRole, number> = {
   SENIOR_BEARD: 3,
   TEN_X: 3,
   INTERN: 4,
@@ -43,7 +51,25 @@ const ROLE_WEIGHTS: Record<DevRole, number> = {
   GHOST: 1,
 };
 
-const ROLES = Object.keys(ROLE_WEIGHTS) as DevRole[];
+const ROLES = Object.keys(ROLE_WEIGHTS) as ClassicRole[];
+
+/** Devs de l'équipe web proposés en 4e candidat (front, back et fullstack surtout). */
+const WEB_DEV_WEIGHTS: Partial<Record<DevRole, number>> = {
+  FRONTEND: 4,
+  BACKEND: 4,
+  FULLSTACK: 3,
+  TECH_LEAD: 1,
+  DEVOPS: 1,
+};
+
+/** Postes d'équipe proposés en 5e candidat, quand ils sont ouverts. */
+const WEB_TEAM_WEIGHTS: Partial<Record<DevRole, number>> = {
+  QA_TESTER: 3,
+  SCRUM_MASTER: 2,
+  MANAGER: 3,
+  DEPUTY_DIRECTOR: 1,
+  DIRECTOR: 2,
+};
 
 export interface DevProfile {
   identity: Identity;
@@ -59,6 +85,12 @@ function ageFor(rng: Rng, role: DevRole): number {
       return rng.int(42, 61);
     case 'AI_AGENT':
       return rng.int(2, 9);
+    case 'DIRECTOR':
+    case 'DEPUTY_DIRECTOR':
+      return rng.int(36, 58);
+    case 'TECH_LEAD':
+    case 'MANAGER':
+      return rng.int(30, 50);
     default:
       return rng.int(23, 41);
   }
@@ -81,15 +113,22 @@ export function generateDev(rng: Rng, role: DevRole): DevProfile {
   };
   const talent = (stats.speed + stats.quality + stats.endurance) / 3 - 5;
   const asking = profile.salary * (1 + talent * 0.06) * (1 + (stats.ego - 5) * 0.03);
+  const identity: Identity = {
+    name,
+    age,
+    role,
+    trait: role === 'AI_AGENT' ? 'ZEN' : rng.pick(DEV_TRAITS),
+    bio: text(rng.pick(BIOS[role]), { name, age }),
+    look: rng.int(0, 17),
+  };
+  // Spécialité des devs front et back (tirée en dernier : les profils historiques ne tirent
+  // rien de plus). Le DevOps est toujours spécialiste du cloud.
+  const stack = ROLE_STACK[role];
+  if (role === 'DEVOPS') identity.specialty = 'CLOUD';
+  else if (stack === 'FRONT' || stack === 'BACK')
+    identity.specialty = rng.pick(SPECIALTIES_BY_STACK[stack]);
   return {
-    identity: {
-      name,
-      age,
-      role,
-      trait: role === 'AI_AGENT' ? 'ZEN' : rng.pick(DEV_TRAITS),
-      bio: text(rng.pick(BIOS[role]), { name, age }),
-      look: rng.int(0, 17),
-    },
+    identity,
     stats,
     askingSalary: Math.round(asking / 100) * 100,
   };
@@ -101,17 +140,53 @@ export function pickCandidateRole(state: GameState, rng: Rng): DevRole {
   return rng.weighted(ROLES, (role) => ROLE_WEIGHTS[role]) ?? 'INTERN';
 }
 
-/** Remplace les candidats par 3 nouveaux (au début de chaque sprint). */
+/** Graine à part des candidats de l'équipe web : le RNG de la partie n'est pas touché. */
+function webRng(state: GameState): Rng {
+  return Rng.fromSeed(`${state.seed}#web-roles#${state.sprint}`);
+}
+
+/**
+ * Profils de l'équipe web proposés ce sprint : un dev (front, back, fullstack, tech lead ou
+ * DevOps si le poste est ouvert), puis un poste d'équipe ouvert (testeur, scrum master,
+ * manager, directeur...) ou, s'il n'y en a pas, un deuxième dev.
+ */
+export function pickWebRoles(state: GameState, rng: Rng): DevRole[] {
+  const shape = teamShape(state);
+  const open = (weights: Partial<Record<DevRole, number>>) =>
+    (Object.keys(weights) as DevRole[]).filter((role) => hasOpening(role, shape));
+  const devRoles = open(WEB_DEV_WEIGHTS);
+  const teamRoles = open(WEB_TEAM_WEIGHTS);
+  const roles: DevRole[] = [];
+  for (let i = 0; i < BALANCE.recruitment.webCandidatesPerSprint; i++) {
+    const pool = i > 0 && teamRoles.length > 0 ? teamRoles : devRoles;
+    const weights = pool === teamRoles ? WEB_TEAM_WEIGHTS : WEB_DEV_WEIGHTS;
+    const role = rng.weighted(pool, (r) => weights[r] ?? 0);
+    if (role) roles.push(role);
+  }
+  return roles;
+}
+
+/**
+ * Remplace les candidats au début de chaque sprint : 3 profils historiques (RNG de la partie,
+ * inchangés), puis 2 profils de l'équipe web tirés sur une graine à part. Le mode Stagiaires
+ * Only n'a que ses 3 stagiaires.
+ */
 export function generateCandidates(state: GameState, ctx: SimContext): void {
   state.candidates = [];
-  for (let i = 0; i < BALANCE.recruitment.candidatesPerSprint; i++) {
-    const role = pickCandidateRole(state, ctx.rng);
-    const dev = generateDev(ctx.rng, role);
-    const id = `c${state.sprint}-${i}`;
+  const add = (index: number, dev: DevProfile) => {
+    const id = `c${state.sprint}-${index}`;
     // L'anniversaire vient d'un hachage (pas du RNG) : les graines existantes restent identiques.
     const identity = { ...dev.identity, birthday: birthdayFromKey(`${state.seed}:${id}`) };
     state.candidates.push({ id, status: 'OPEN', ...dev, identity });
+  };
+  const classic = BALANCE.recruitment.candidatesPerSprint;
+  for (let i = 0; i < classic; i++) {
+    const role = pickCandidateRole(state, ctx.rng);
+    add(i, generateDev(ctx.rng, role));
   }
+  if (state.mode === 'INTERNS_ONLY') return;
+  const rng = webRng(state);
+  pickWebRoles(state, rng).forEach((role, i) => add(classic + i, generateDev(rng, role)));
 }
 
 /** Crée l'entité d'un dev avec tous ses composants. */

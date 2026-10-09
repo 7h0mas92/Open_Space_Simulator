@@ -33,7 +33,7 @@ vi.mock('howler', () => ({ Howl: howler.FakeHowl }));
 
 const VOLUMES: Volumes = { music: 0.5, sfx: 1, ambience: 0.3 };
 const FILES = {
-  music: ['music/lofi.ogg'],
+  keyboard: ['ambience/keyboard.ogg'],
   click: ['ui/click.ogg'],
   alarm: ['sfx/alarm.ogg'],
   success: ['sfx/success.ogg'],
@@ -64,11 +64,11 @@ describe('AudioPlayer', () => {
     expect(instances()[0]?.play).toHaveBeenCalledTimes(2);
   });
 
-  it('joue la musique en boucle, sans la relancer si elle tourne déjà', () => {
+  it("joue l'ambiance en boucle, sans la relancer si elle tourne déjà", () => {
     const player = new AudioPlayer(VOLUMES, FILES);
-    player.play('music');
-    player.play('music');
-    expect(instances()[0]?.options).toMatchObject({ loop: true, volume: 0.5 });
+    player.play('keyboard');
+    player.play('keyboard');
+    expect(instances()[0]?.options).toMatchObject({ loop: true, volume: 0.3 });
     expect(instances()[0]?.play).toHaveBeenCalledTimes(1);
   });
 
@@ -103,10 +103,10 @@ describe('AudioPlayer', () => {
 
   it('applique les nouveaux volumes et arrête tout', () => {
     const player = new AudioPlayer(VOLUMES, FILES);
-    player.play('music');
+    player.play('keyboard');
     player.play('click');
-    player.setVolumes({ music: 0.2, sfx: 0.7, ambience: 0 });
-    expect(instances()[0]?.volume).toHaveBeenCalledWith(0.2);
+    player.setVolumes({ music: 0.2, sfx: 0.7, ambience: 0.1 });
+    expect(instances()[0]?.volume).toHaveBeenCalledWith(0.1);
     expect(instances()[1]?.volume).toHaveBeenCalledWith(0.7);
     player.stopAll();
     for (const howl of instances()) expect(howl.stop).toHaveBeenCalled();

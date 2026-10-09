@@ -208,6 +208,35 @@ describe('Aménagement', () => {
     ).toEqual({ ok: false, error: 'NOT_ELIGIBLE' });
   });
 
+  it('fixe les fenêtres dans les murs du fond, sans gêner le mobilier', () => {
+    const simulation = newSimulation('windows');
+    const buy = (itemId: string, x: number, y: number, rotation: number) =>
+      simulation.dispatch({ type: 'BUY_FURNITURE', itemId, x, y, rotation }).result;
+    // Les locaux n'ont aucune fenêtre au départ.
+    const windows = () =>
+      Object.values(simulation.state.components.furniture).filter((f) =>
+        ['window-small', 'window-medium', 'window-large', 'glass-wall'].includes(f.itemId),
+      );
+    expect(windows()).toHaveLength(0);
+    const moral = computeOfficeEffects(simulation.state).moral;
+    expect(buy('window-large', 1, 0, 0).ok).toBe(true);
+    expect(computeOfficeEffects(simulation.state).moral).toBeCloseTo(moral + 0.06);
+    // Même mur, cases déjà prises ; loin du mur ; mur inconnu (rotation 2).
+    expect(buy('window-small', 3, 0, 0)).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    expect(buy('window-small', 4, 2, 0)).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    expect(buy('window-small', 4, 0, 2)).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    // L'autre mur, à l'angle : libre. Une baie vitrée juste à côté de la grande fenêtre aussi.
+    expect(buy('window-small', 0, 0, 1).ok).toBe(true);
+    expect(buy('glass-wall', 4, 0, 0).ok).toBe(true);
+    expect(windows()).toHaveLength(3);
+    // Une plante se pose devant une fenêtre, et une fenêtre derrière la cafetière (7, 0).
+    expect(buy('plant', 2, 0, 0).ok).toBe(true);
+    expect(buy('window-small', 7, 0, 0).ok).toBe(true);
+    // Une fenêtre ne dépasse pas du mur (le garage fait 8 x 6 cases).
+    expect(buy('window-large', 0, 4, 1).ok).toBe(false);
+    expect(buy('window-large', 0, 3, 1).ok).toBe(true);
+  });
+
   it('tient compte de la rotation pour l’emprise au sol', () => {
     const { state } = stateWithTeam([]);
     state.phase = 'GARAGE';

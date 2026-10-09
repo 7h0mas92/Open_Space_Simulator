@@ -23,6 +23,7 @@ import i18n from '../../i18n';
 import type { PickTarget } from '../../render/GameRenderer';
 import { catalogItem } from '../../view/catalog';
 import { layoutOf, type Cell } from '../../view/layout';
+import { isWallItem, snapToWall, type WallSide } from '../../view/windows';
 import { checkPlacement, nearestValidCell, resolveAccessory } from '../../view/placement';
 import { localized } from '../game/format';
 import { DEFAULT_TEAM_FILTERS, type TeamFilters } from '../team/filters';
@@ -44,6 +45,7 @@ export const PANELS = [
   'hiring',
   'group',
   'meetings',
+  'pets',
   'funding',
   'dashboard',
   'slack',
@@ -129,6 +131,8 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   VENTURE_DIVIDENDS: 'info',
   MEETING_ROOM_FITTED: 'success',
   CRISIS_MEETING: 'info',
+  PET_ADOPTED: 'success',
+  PET_REHOMED: 'info',
   URGENT_TASK: 'error',
   URGENT_DONE: 'success',
   URGENT_MISSED: 'error',
@@ -198,7 +202,8 @@ interface GameStore {
   pickStored(kind: string, color: FurnitureColor): void;
   /** Reprend en main un objet déjà posé pour le déplacer. */
   startMove(itemId: string): void;
-  setBuildCell(cell: Cell | null): void;
+  /** Case visée en mode construction ; `wall` : mur choisi pour une fenêtre. */
+  setBuildCell(cell: Cell | null, wall?: WallSide): void;
   rotateBuild(): void;
   /** Change la couleur de l'objet en main. */
   setBuildColor(color: FurnitureColor): void;
@@ -393,16 +398,50 @@ export const useGame = create<GameStore>((set, get) => ({
     });
   },
 
-  setBuildCell(cell) {
-    const { build } = get();
+  setBuildCell(cell, wall) {
+    const { build, view } = get();
     if (!build?.kind) return;
+    // Une fenêtre reste accrochée à un mur du fond : celui demandé, sinon le sien.
+    if (cell && view && isWallItem(build.kind)) {
+      const side = wall ?? (build.rotation === 1 ? 1 : 0);
+      const snapped = snapToWall(layoutOf(view), build.kind, cell, side);
+      if (
+        build.cell?.x === snapped.cell.x &&
+        build.cell.z === snapped.cell.z &&
+        build.rotation === snapped.rotation
+      )
+        return;
+      set({ build: { ...build, ...snapped } });
+      return;
+    }
     if (build.cell?.x === cell?.x && build.cell?.z === cell?.z) return;
     set({ build: { ...build, cell } });
   },
 
   rotateBuild() {
-    const { build } = get();
+    const { build, view } = get();
     if (!build?.kind) return;
+    // « Tourner » une fenêtre la fait passer sur l'autre mur, à la même position.
+    if (view && isWallItem(build.kind)) {
+      const wall = build.rotation === 0 ? 1 : 0;
+      const along = build.cell ? (build.rotation === 0 ? build.cell.x : build.cell.z) : 0;
+      const layout = layoutOf(view);
+      const snapped = snapToWall(
+        layout,
+        build.kind,
+        wall === 0 ? { x: along, z: 0 } : { x: 0, z: along },
+        wall,
+      );
+      // Place prise sur l'autre mur : la fenêtre saute sur la place libre la plus proche.
+      const free = nearestValidCell(
+        layout,
+        view.items,
+        { kind: build.kind, rotation: snapped.rotation, ignoreId: build.movingItemId ?? undefined },
+        snapped.cell,
+      );
+      set({ build: { ...build, rotation: snapped.rotation, cell: free ?? snapped.cell } });
+      return;
+    }
     set({ build: { ...build, rotation: ((build.rotation + 1) % 4) as Rotation } });
   },
 

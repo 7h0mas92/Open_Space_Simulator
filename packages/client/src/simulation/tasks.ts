@@ -1,10 +1,12 @@
 import {
   BALANCE,
+  ROLE_STACK,
   ROLE_TRADE,
   TASK_TRADES,
   TASK_FLOW,
   TASK_TYPES,
   taskTrade,
+  wrongSide,
   type CommandResult,
   type EntityId,
   type GameState,
@@ -17,12 +19,14 @@ import {
   DESIGN_TASKS,
   PRODUCT_TASKS,
   TASK_SIZES,
-  TASK_TITLES,
   TASK_TYPE_WEIGHTS,
+  type TradeTaskTemplate,
 } from './data/tasks';
+import { QA_TASKS } from './data/qaTasks';
 import { addComponent, createEntity, destroyEntity, query } from './ecs';
 import { devIds, text } from './helpers';
 import type { Rng } from './rng';
+import { pickTaskTitle, tradeTitleRoll } from './taskTitles';
 
 /** Identifiants des tâches d'une colonne, triés par priorité. */
 export function tasksInColumn(state: GameState, column: TaskColumn): EntityId[] {
@@ -33,9 +37,17 @@ export function tasksInColumn(state: GameState, column: TaskColumn): EntityId[] 
     );
 }
 
+/** Modèles des tâches hors code : designeuse, Product Owner et testeurs. */
+const TRADE_TASKS: Readonly<Record<Exclude<TaskTrade, 'DEV'>, readonly TradeTaskTemplate[]>> = {
+  DESIGN: DESIGN_TASKS,
+  PRODUCT: PRODUCT_TASKS,
+  QA: QA_TASKS,
+};
+
 /**
- * Crée une tâche dans le backlog. Les tâches de code tirent leur type puis leur titre ;
- * celles de la designeuse et du Product Owner tirent un modèle qui fixe les deux.
+ * Crée une tâche dans le backlog. Les tâches de code tirent leur type ; celles de la
+ * designeuse, du Product Owner et des testeurs tirent un modèle qui fixe le type. Le titre
+ * vient ensuite de `pickTaskTitle` (catalogue selon la phase, saison, pas de répétition).
  */
 export function createTask(
   state: GameState,
@@ -43,14 +55,16 @@ export function createTask(
   type?: TaskType,
   trade: TaskTrade = 'DEV',
 ): EntityId {
-  const template =
-    trade === 'DEV' ? null : rng.pick(trade === 'DESIGN' ? DESIGN_TASKS : PRODUCT_TASKS);
+  const template = trade === 'DEV' ? null : rng.pick(TRADE_TASKS[trade]);
   const taskType =
     template?.type ?? type ?? rng.weighted(TASK_TYPES, (t) => TASK_TYPE_WEIGHTS[t]) ?? 'FEATURE';
   const size = rng.weighted(TASK_SIZES, (s) => s.weight)?.size ?? 3;
+  // Le code garde son ancien tirage de titre ; les autres métiers ont déjà tiré leur modèle.
+  const roll = trade === 'DEV' ? rng.next() : tradeTitleRoll(state);
+  const title = pickTaskTitle(state, trade, taskType, roll);
   const id = createEntity(state);
   const task: Task = {
-    title: text(template?.title ?? rng.pick(TASK_TITLES[taskType])),
+    title: text(title),
     type: taskType,
     trade,
     size,
@@ -72,12 +86,13 @@ export function createTask(
   return id;
 }
 
-/** Nombre de membres de l'équipe par métier. */
+/** Nombre de membres de l'équipe par métier (l'encadrement ne compte dans aucun). */
 export function teamByTrade(state: GameState): Record<TaskTrade, number> {
-  const count: Record<TaskTrade, number> = { DEV: 0, DESIGN: 0, PRODUCT: 0 };
+  const count: Record<TaskTrade, number> = { DEV: 0, DESIGN: 0, PRODUCT: 0, QA: 0 };
   for (const id of devIds(state)) {
     const role = state.components.identity[id]?.role;
-    if (role) count[ROLE_TRADE[role]] += 1;
+    const trade = role ? ROLE_TRADE[role] : null;
+    if (trade) count[trade] += 1;
   }
   return count;
 }
@@ -208,10 +223,25 @@ export function assignTask(
   return { ok: true };
 }
 
-/** Métier d'un membre de l'équipe (`DEV` par défaut). */
-export function devTrade(state: GameState, devId: EntityId): TaskTrade {
+/**
+ * Métier d'un membre de l'équipe (`DEV` par défaut), ou `null` pour l'encadrement, qui ne
+ * prend aucune tâche tout seul.
+ */
+export function devTrade(state: GameState, devId: EntityId): TaskTrade | null {
   const role = state.components.identity[devId]?.role;
   return role ? ROLE_TRADE[role] : 'DEV';
+}
+
+/**
+ * Clé de file d'un dev : son métier, et son côté de la stack pour un dev front ou back
+ * (`null` : il ne prend rien tout seul). Deux devs de même clé voient les mêmes tâches.
+ */
+export function devQueueKey(state: GameState, devId: EntityId): string | null {
+  const role = state.components.identity[devId]?.role;
+  const trade = devTrade(state, devId);
+  if (!trade) return null;
+  const stack = role ? ROLE_STACK[role] : undefined;
+  return stack && stack !== 'FULL' && trade === 'DEV' ? `${trade}:${stack}` : trade;
 }
 
 /** Reste-t-il une tâche libre de ce métier en TODO ou en cours ? (sans trier les colonnes) */
@@ -232,17 +262,26 @@ export function hasFreeTask(state: GameState, trade: TaskTrade): boolean {
 /**
  * Un dev sans tâche prend la suivante de son métier : d'abord une tâche urgente, puis une
  * tâche commencée puis abandonnée, sinon la première de la colonne TODO. Il ne touche jamais
- * aux tâches des autres métiers : seul le joueur peut les lui confier à la main.
+ * aux tâches des autres métiers : seul le joueur peut les lui confier à la main. Un dev front
+ * prend d'abord du front (un dev back, du back) ; s'il n'en reste plus, il dépanne de l'autre
+ * côté, plus lentement. Les urgences passent toujours en premier. L'encadrement ne prend rien.
  */
 export function autoAssign(state: GameState, devId: EntityId): EntityId | null {
   const trade = devTrade(state, devId);
+  const role = state.components.identity[devId]?.role;
+  if (!trade) return null;
   const queue = [...tasksInColumn(state, 'IN_PROGRESS'), ...tasksInColumn(state, 'TODO')];
   const isUrgent = (id: EntityId) => state.components.task[id]?.kind === 'URGENT';
   const candidates = [...queue.filter(isUrgent), ...queue.filter((id) => !isUrgent(id))];
-  const next = candidates.find((id) => {
+  const free = candidates.filter((id) => {
     const task = state.components.task[id];
     return task?.assigneeId === null && taskTrade(task) === trade;
   });
+  const onSide = (id: EntityId) => {
+    const task = state.components.task[id];
+    return !role || !task || task.kind === 'URGENT' || !wrongSide(role, task);
+  };
+  const next = free.find(onSide) ?? free[0];
   if (!next) return null;
   assignTask(state, next, devId);
   return next;

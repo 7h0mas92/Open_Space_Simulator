@@ -2810,6 +2810,47 @@ legend {
   font-size: 0.85rem;
 }
 
+/* --- Encadrement de l'équipe (directeur, managers, scrum master...) ----------------- */
+.leadership {
+  margin: 0 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.leadership summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.leadership summary::-webkit-details-marker {
+  display: none;
+}
+
+.leadership summary::after {
+  content: '▾';
+  margin-left: auto;
+  transition: transform 0.15s;
+}
+
+.leadership[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.leadership ul {
+  margin: 0;
+  padding: 0 12px 0 28px;
+}
+
+.leadership .hint {
+  margin: 6px 12px 10px;
+}
+
 /* --- Nuancier du mode construction -------------------------------------------------- */
 
 .color-picker {
@@ -3423,6 +3464,131 @@ legend {
 }
 
 .meeting-format .hint {
+  margin: 0;
+}
+
+/* --- Chats du bureau ---------------------------------------------------------------------- */
+.pets-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pets-panel section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pet-needs,
+.pet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pet-needs .up,
+.pet-mood.up {
+  color: #7fd18b;
+}
+
+.pet-needs .down,
+.pet-mood.down {
+  color: #ff9b8f;
+}
+
+.pet-effects,
+.pet-mood {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.pet-coats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pet-coats legend {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.pet-coat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--touch);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  cursor: pointer;
+}
+
+.pet-coat.selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.pet-coat input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pet-coat:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.pet-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.pet-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid rgb(255 255 255 / 85%);
+  border-radius: 50%;
+  font-size: 1.3rem;
+}
+
+.pet-card-info {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.pet-card-info h4,
+.pet-card-info p {
+  margin: 0;
+}
+
+.pet-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  gap: 6px;
+}
+
+.pet-card-actions .hint {
+  flex-basis: 100%;
   margin: 0;
 }
 

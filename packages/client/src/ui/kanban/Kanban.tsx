@@ -16,7 +16,19 @@ import { PLAYER_COLUMNS, useDragAndDrop, type DropTarget } from './useDragAndDro
 const IMPACT_KEYS = ['users', 'hype', 'debt', 'stability'] as const;
 
 /** Pictogramme de chaque métier, à côté de son nom sur les cartes. */
-const TRADE_ICONS: Record<TaskTrade, string> = { DEV: '💻', DESIGN: '🎨', PRODUCT: '📋' };
+const TRADE_ICONS: Record<TaskTrade, string> = {
+  DEV: '💻',
+  DESIGN: '🎨',
+  PRODUCT: '📋',
+  QA: '🔍',
+};
+
+/** Un dev front devant une tâche back (ou l'inverse) : proposé après les autres. */
+function offSide(dev: DevView, task: TaskView): boolean {
+  return (
+    dev.stack !== null && dev.stack !== 'FULL' && task.stack !== null && dev.stack !== task.stack
+  );
+}
 
 /** Le joueur range les tâches entre Backlog et À faire ; les devs font le reste. */
 function isMovable(column: KanbanColumn): boolean {
@@ -149,7 +161,9 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
   const dispatch = useGame((s) => s.dispatch);
   const title = localized(task.title, i18n.language);
   const movable = isMovable(task.column);
-  const sameTrade = view.devs.filter((dev) => dev.trade === task.trade);
+  const sameTrade = view.devs
+    .filter((dev) => dev.trade === task.trade)
+    .sort((a, b) => Number(offSide(a, task)) - Number(offSide(b, task)));
   const otherTrades = view.devs.filter((dev) => dev.trade !== task.trade);
   const devOption = (dev: DevView) => (
     <option key={dev.id} value={dev.id}>
@@ -206,6 +220,7 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
           <p className="task-meta">
             <span className={`tag tag-trade trade-${task.trade.toLowerCase()}`}>
               <span aria-hidden="true">{TRADE_ICONS[task.trade]}</span> {t(`trades.${task.trade}`)}
+              {task.stack && <> · {t(`stacks.${task.stack}`)}</>}
             </span>
             <span className="tag">{t(`taskTypes.${task.type}`)}</span>
             <span>{t('kanban.size', { size: task.size })}</span>

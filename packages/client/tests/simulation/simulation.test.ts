@@ -22,7 +22,8 @@ describe('Nouvelle partie', () => {
     expect(state.stage).toBe('PLANNING');
     expect(state.sprint).toBe(1);
     expect(Object.keys(state.components.identity)).toHaveLength(1);
-    expect(state.candidates).toHaveLength(3);
+    // 3 profils historiques et 2 de l'équipe web.
+    expect(state.candidates).toHaveLength(5);
     expect(tasksInColumn(state, 'BACKLOG').length).toBeGreaterThanOrEqual(8);
     expect(state.gauges.treasury).toBe(2_000_000);
     expect(() => GameStateSchema.parse(state)).not.toThrow();

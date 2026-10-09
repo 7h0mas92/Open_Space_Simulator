@@ -145,11 +145,17 @@ export function gradeOf(score: number): PerformanceGrade {
 
 /**
  * Ce que certains profils apportent sans produire de tickets : la hype du Product Owner,
- * la qualité perçue aux démos de la Designeuse.
+ * la qualité perçue aux démos de la Designeuse, la relecture du tech lead, et l'encadrement,
+ * qui fait avancer les autres (`leadership.ts`).
  */
 export const ROLE_PERFORMANCE_BONUS: Partial<Record<DevRole, number>> = {
   PRODUCT_OWNER: 20,
   DESIGNER: 10,
+  TECH_LEAD: 10,
+  SCRUM_MASTER: 25,
+  MANAGER: 30,
+  DEPUTY_DIRECTOR: 30,
+  DIRECTOR: 35,
 };
 
 /** Sprints mesurables : parmi les 2 derniers sprints, ceux où le dev a travaillé. */
