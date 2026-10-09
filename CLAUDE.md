@@ -485,6 +485,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salle rend 50 %. Commandes `FIT_MEETING_ROOM` / `CLEAR_MEETING_ROOM`, état `meetingRoom` (null
   par défaut). Bot « organizer » : environ +33 % de valorisation médiane face à « balanced ».
   À 375 px, les 8 boutons du dock tiennent sans défilement (libellé court « Réunion »).
+- « Continuer » ne propose plus une partie terminée : à la fin, sa sauvegarde automatique est
+  effacée (appareil et serveur) et sa date de fin notée ; ses sauvegardes manuelles restent dans
+  « Charger une partie » (`saves.markFinished`, `saves.latestResumable` dans
+  `client/src/save/saves.ts`). Un Daily rejoué reste proposé.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
