@@ -502,6 +502,17 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `wall` fixés dans le mur du fond (rotation 0, y = 0) ou de gauche (rotation 1, x = 0) ; le mur
   est percé et la ville se voit à travers, soleil devant, applique couverte décrochée
   (`wallSpans` dans `render/office.ts`). Pas de nouvelle commande ni de champ d'état.
+- Chats de bureau (`shared/sim/pets.ts`, `client/src/simulation/pets.ts`, rayon « Animaux » du
+  mode construction, panneau « 🐈 Chats ») : 5 chats au plus, 5 000 € l'adoption, possible
+  seulement avec une litière, une gamelle et un arbre à chat posés (un objet rangé ne compte pas).
+  3 litières (ouverte 60 €, fermée 220 €, robot 1 200 €), 3 arbres à chat de 1, 2 et 3 cases aux
+  coloris différents, 2 gamelles nourriture et eau (simple, distributeur). Chat heureux : +moral,
+  +hype, léger -0,4 % de productivité ; sans équipement complet, il boude (-moral). Confier un chat
+  à une famille : pas de remboursement, -5 moral. 6 robes au choix, nom tiré de
+  `seed#pet#n` sans toucher au RNG. Commandes `ADOPT_PET` / `REHOME_PET`, état `pets` (vide par
+  défaut), stat `petsAdopted`. Chats en Three.js (`render/pets.ts`) qui se baladent en A*, mangent,
+  se cachent dans la litière fermée, grimpent aux perchoirs et dorment surtout la nuit
+  (`ai/cats.ts`, graine à part, rendu seulement).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
