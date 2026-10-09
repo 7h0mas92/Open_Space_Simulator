@@ -232,6 +232,7 @@ describe('Autres financements', () => {
     });
   });
 
+  // Parties complètes et rejouées : plusieurs secondes sur une machine chargée (CI).
   it('une partie avec financements se rejoue à l’identique (replay, anti-triche)', () => {
     const cards = new CardLibrary(EVENT_CARDS);
     const simulation = Simulation.create({ seed: 'financier-replay', mode: 'NORMAL' }, cards);
@@ -244,7 +245,7 @@ describe('Autres financements', () => {
       cards,
     });
     expect(replayed.state).toEqual(simulation.state);
-  });
+  }, 20_000);
 
   it('charge une ancienne sauvegarde sans financements ni nouveaux champs de pitch', () => {
     const state = seriesState(2);

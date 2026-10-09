@@ -264,7 +264,8 @@ flowchart LR
   L'horloge défile minute par minute (environ 5 min réelles par sprint à x1) alors que la
   simulation avance par pas de 30 min : l'affichage interpole entre deux pas.
   Les cartes d'événement gardent les jauges visibles, montrent les effets en pastilles et se
-  choisissent aussi avec les touches 1 à 3.
+  choisissent aussi avec les touches 1 à 3. Tant qu'une carte est ouverte, le sprint est en
+  pause ; la vitesse d'avant reprend après la réponse (sauf en Hardcore, où le temps continue).
 - **Télétravail automatique** : chaque matin de semaine, la simulation envoie en télétravail
   les devs sans bureau libre, épuisés, en conflit avec un collègue ou accros privés de café (le
   Dev Fantôme l'est toujours). Ils disparaissent de l'open space, se fatiguent moins mais
@@ -283,6 +284,10 @@ flowchart LR
   `BALANCE.performance`). La fiche montre les 2 derniers sprints côte à côte, l'ancienneté,
   l'XP, la tâche en cours, l'allié et la bête noire ; chaque candidat affiche sa performance
   estimée, le salaire du marché et ses chances d'accepter l'offre.
+- **Filtres de l'équipe** : la liste se filtre par note de performance, situation (en conflit,
+  fatigué·e, moral bas, télétravail, au bureau) et métier, filtres cumulables, et se trie par
+  performance, moral, énergie, conflits, salaire, ancienneté ou nom. Chaque ligne indique
+  le nombre de collègues en conflit (⚔️).
 - **Interface** : jauges avec infobulles, vitesses, Kanban en glisser-déposer (souris et
   tactile, ou flèches au clavier), fiches des devs, recrutement avec négociation, mode
   construction, dashboard, options d'accessibilité, tutoriel, crédits. Panneaux latéraux
@@ -303,6 +308,12 @@ flowchart LR
   avec son enseigne et deux places dans l'équipe, et six cartes « filiales » peuvent tomber.
   Le hasard des filiales est tiré sur une graine à part (graine + filiale + sprint) : une partie
   sans filiale reste identique au bit près, donc les anciens replays et le Daily restent valides.
+- **Demandes d'augmentation** : tous les 5 à 10 sprints, si l'équipe compte au moins 3 devs, un
+  dev peut demander une augmentation de 10 à 20 % pendant la planification. Une fenêtre annonce
+  les conséquences : accepter relève son salaire, son moral et deux compétences ; refuser le fait
+  démissionner une fois sur deux (il part deux planifications plus tard, badge « 🚪 » dans
+  l'équipe), sinon il reste démotivé et perd deux compétences. Réglages dans `BALANCE.raises` ;
+  le hasard est tiré sur une graine à part, sans toucher au tirage du jeu.
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une

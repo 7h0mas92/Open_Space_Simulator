@@ -102,6 +102,8 @@ function useShortcuts() {
         event.key === ' ' &&
         game.view?.step === 'EXECUTION' &&
         game.view.mode !== 'HARDCORE' &&
+        // Une carte ouverte tient déjà le temps en pause jusqu'à la réponse.
+        !game.view.event &&
         target?.tagName !== 'BUTTON'
       ) {
         event.preventDefault();

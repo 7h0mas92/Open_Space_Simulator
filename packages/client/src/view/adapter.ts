@@ -60,6 +60,7 @@ import {
   ventureOffers,
   venturesUnlocked,
 } from '../simulation/ventures';
+import { leavingAtSprint } from '../simulation/raises';
 import type {
   CandidateView,
   DevActivity,
@@ -77,6 +78,7 @@ import type {
   GaugeName,
   KanbanColumn,
   PlacedItemView,
+  RaiseRequestView,
   RemoteReason,
   Rotation,
   TaskType,
@@ -229,6 +231,23 @@ function devView(state: GameState, id: string): DevView | null {
           currentTask: (taskId && c.task[taskId]?.title) || null,
         }
       : null,
+    leavingAtSprint: leavingAtSprint(state, id),
+  };
+}
+
+function raiseRequestView(state: GameState): RaiseRequestView | null {
+  const request = state.raises.pending;
+  if (!request) return null;
+  const { raises } = BALANCE;
+  return {
+    devId: request.devId,
+    currentSalary: request.currentSalary,
+    requestedSalary: request.requestedSalary,
+    acceptMoral: raises.acceptMoral,
+    skillsGained: raises.skillsGained,
+    resignChance: raises.resignChance,
+    skillsLost: raises.skillsLost,
+    noticeSprints: raises.noticeSprints,
   };
 }
 
@@ -282,6 +301,7 @@ function candidateViews(state: GameState): CandidateView[] {
         birthday: candidate.identity.birthday ?? birthdayFromKey(`${state.seed}:${candidate.id}`),
         performance: performanceView(candidate.identity, candidate.stats, 1),
         career: null,
+        leavingAtSprint: null,
       },
     }));
 }
@@ -518,6 +538,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pitchBlocker: pitchBlocker(state),
     funding: fundingView(state),
     acquisitionOffer: state.acquisitionOffer,
+    raiseRequest: raiseRequestView(state),
     group: groupView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
@@ -628,6 +649,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'END_DEMO' };
     case 'answerAcquisition':
       return { type: 'ANSWER_ACQUISITION', accept: command.accept };
+    case 'answerRaise':
+      return { type: 'ANSWER_RAISE', accept: command.accept };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
     case 'foundVenture':

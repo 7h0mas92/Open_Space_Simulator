@@ -10,6 +10,7 @@ import {
 import { CommandLogSchema } from './commands.js';
 import { FinancingStateSchema } from './funding.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
+import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { VentureSchema } from './ventures.js';
 
 /**
@@ -210,6 +211,12 @@ export const NOTIFICATION_KINDS = [
   'OFFER_REFUSED',
   'DEV_FIRED',
   'DEV_RESIGNED',
+  /** Un dev demande une augmentation (fenêtre de décision pendant la planification). */
+  'RAISE_REQUESTED',
+  'RAISE_GRANTED',
+  'RAISE_REFUSED',
+  /** Démission annoncée : le dev part quelques planifications plus tard. */
+  'DEV_NOTICE',
   'DEV_LEVEL_UP',
   'DEV_BIRTHDAY',
   'DEV_REMOTE',
@@ -290,6 +297,8 @@ export const GameStateSchema = z.object({
   lastVentureSprint: z.number().int().nullable().default(null),
   /** Financements hors tour de table (prêt en cours, cooldowns). */
   financing: FinancingStateSchema.default({ lastSprint: {}, loan: null }),
+  /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */
+  raises: RaisesStateSchema.default(emptyRaisesState),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

@@ -147,7 +147,8 @@ export const LESSONS: readonly Lesson[] = [
       {
         id: 'speed',
         target: 'speed',
-        goal: ({ view, baseline }) => view.time.speed !== baseline.speed,
+        // La pause posée par une carte d'événement ne compte pas.
+        goal: ({ view, baseline }) => !view.event && view.time.speed !== baseline.speed,
       },
       { id: 'camera' },
       { id: 'select', goal: ({ selectedDev }) => selectedDev },

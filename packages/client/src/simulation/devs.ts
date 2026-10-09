@@ -184,6 +184,9 @@ export function removeDev(state: GameState, devId: EntityId): void {
   const taskId = state.components.worker[devId]?.taskId;
   const task = taskId ? state.components.task[taskId] : undefined;
   if (task) task.assigneeId = null;
+  // Sa demande d'augmentation et son préavis disparaissent avec lui.
+  if (state.raises.pending?.devId === devId) state.raises.pending = null;
+  state.raises.departures = state.raises.departures.filter((leave) => leave.devId !== devId);
   for (const otherId of devIds(state)) {
     const relations = state.components.relations[otherId];
     if (relations) Reflect.deleteProperty(relations, devId);
@@ -219,8 +222,16 @@ export function fireDev(state: GameState, ctx: SimContext, devId: EntityId): Com
   return { ok: true };
 }
 
-/** Démission annoncée par un faux post LinkedIn. */
-export function resignDev(state: GameState, ctx: SimContext, devId: EntityId): void {
+/**
+ * Démission annoncée par un faux post LinkedIn. `post` : texte déjà choisi (sinon tiré par le
+ * RNG de la partie), pour les départs qui ne doivent pas toucher à ce générateur.
+ */
+export function resignDev(
+  state: GameState,
+  ctx: SimContext,
+  devId: EntityId,
+  post?: readonly [string, string],
+): void {
   const identity = state.components.identity[devId];
   const mood = state.components.mood[devId];
   if (!identity || !mood) return;
@@ -231,7 +242,7 @@ export function resignDev(state: GameState, ctx: SimContext, devId: EntityId): v
     state,
     ctx,
     'DEV_RESIGNED',
-    text(ctx.rng.pick(LINKEDIN_POSTS), { name: identity.name }),
+    text(post ?? ctx.rng.pick(LINKEDIN_POSTS), { name: identity.name }),
     devId,
   );
 }

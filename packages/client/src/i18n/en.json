@@ -327,7 +327,44 @@
     "noTask": "None",
     "xp": "{{xp}}/{{next}} XP",
     "bestFriend": "Best ally: {{name}}",
-    "rival": "Nemesis: {{name}}"
+    "rival": "Nemesis: {{name}}",
+    "leaving": "🚪 Handed in their notice: leaves at the start of sprint {{sprint}}.",
+    "leavingShort": "🚪 leaves at sprint {{sprint}}"
+  },
+  "teamFilters": {
+    "sortLabel": "Sort by",
+    "toggle": "Filters",
+    "performance": "Performance",
+    "situation": "Status",
+    "role": "Role",
+    "allRoles": "All roles",
+    "hint": "Filters add up: only devs matching every criterion stay listed.",
+    "result_one": "{{count}} of {{total}} devs",
+    "result_other": "{{count}} of {{total}} devs",
+    "reset": "Show all",
+    "empty": "No dev matches these filters.",
+    "conflictsWith_one": "In conflict with {{names}}",
+    "conflictsWith_other": "In conflict with {{count}} colleagues: {{names}}",
+    "conflicts_one": "{{count}} conflict",
+    "conflicts_other": "{{count}} conflicts",
+    "flags": {
+      "CONFLICT": "In conflict",
+      "TIRED": "Tired",
+      "LOW_MORALE": "Low morale",
+      "REMOTE": "Remote",
+      "OFFICE": "At the office"
+    },
+    "sorts": {
+      "PERF_DESC": "Best performance",
+      "PERF_ASC": "Worst performance",
+      "MORALE_ASC": "Lowest morale",
+      "ENERGY_ASC": "Lowest energy",
+      "CONFLICTS_DESC": "Most conflicts",
+      "SALARY_DESC": "Highest salary",
+      "SENIORITY_DESC": "Seniority",
+      "NAME": "Name"
+    },
+    "listLabel": "Team members"
   },
   "remoteReasons": {
     "GHOST": "Always remote, they are a ghost",
@@ -487,7 +524,8 @@
     "surfaceFull": "No room left on this furniture.",
     "VENTURE_LIMIT": "Your group has already founded the maximum number of subsidiaries.",
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
-    "NOT_AVAILABLE": "This financing is not available right now."
+    "NOT_AVAILABLE": "This financing is not available right now.",
+    "RAISE_PENDING": "Answer the raise request first."
   },
   "dashboard": {
     "intro": "Gauge history, one point per day.",
@@ -560,7 +598,9 @@
   "event": {
     "kicker": "Event",
     "worse": "It got worse (level {{level}})",
-    "moral": "Morale"
+    "moral": "Morale",
+    "paused": "The sprint is paused: take your time to choose. Speed resumes afterwards.",
+    "hardcore": "Hardcore: time keeps running. If you don't answer, the problem will choose for you."
   },
   "pitch": {
     "open": "Raise funds",
@@ -606,6 +646,32 @@
     "offer": "{{buyer}} offers to buy your startup for {{amount}}.",
     "accept": "Accept",
     "refuse": "Decline"
+  },
+  "raise": {
+    "kicker": "Raise request",
+    "title": "{{name}} wants a raise",
+    "current": "Current salary",
+    "requested": "Requested salary",
+    "accept": "Grant the raise",
+    "refuse": "Refuse",
+    "cost": "−{{amount}} a month",
+    "moral": "Morale +{{value}}",
+    "skillsUp_one": "{{count}} skill improves",
+    "skillsUp_other": "{{count}} skills improve",
+    "resignRisk_one": "{{percent}}% chance they quit (leaving in {{count}} sprint)",
+    "resignRisk_other": "{{percent}}% chance they quit (leaving in {{count}} sprints)",
+    "skillsDown_one": "Otherwise {{count}} skill drops",
+    "skillsDown_other": "Otherwise {{count}} skills drop",
+    "quotes": {
+      "SENIOR_BEARD": "\"25 years of Perl don't come cheap. And I'm not even counting my Bash scripts.\"",
+      "TEN_X": "\"I do the work of ten people. I'm only asking for the salary of two.\"",
+      "INTERN": "\"Could my stipend cover more than my bus pass?\"",
+      "RUSTACEAN": "\"My salary has a type error: it should be a u64.\"",
+      "DESIGNER": "\"My salary is like your padding: it's 8px short everywhere.\"",
+      "PRODUCT_OWNER": "\"I booked a 1-hour meeting in your calendar to discuss it. And another one to follow up.\"",
+      "AI_AGENT": "\"My tokens cost more than expected. I computed my raise myself: trust me.\"",
+      "GHOST": "\"You never see me, but my tickets get closed. My salary, however, never moves.\""
+    }
   },
   "end": {
     "title": "Game over",
