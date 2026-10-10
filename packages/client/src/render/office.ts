@@ -100,7 +100,7 @@ const DECOR_KINDS = new Set([
   'bonsai',
   'microwave',
   'trashcan',
-  'noise-headsets',
+  'earbuds-dock',
 ]);
 
 /** Clé d'un gabarit : l'objet et sa couleur (`desk#blue`). */

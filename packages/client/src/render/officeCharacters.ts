@@ -4,7 +4,7 @@
  * Le pack Blocky Characters contient 18 personnages, mais la moitié ne colle pas à une startup
  * (pirate, ninja, zombies, policier, mannequin de crash-test…). Chaque profil pioche donc dans
  * sa propre liste de looks :
- * - des personnages Kenney adaptés au thème, complétés d'accessoires Three.js (barbe, casque,
+ * - des personnages Kenney adaptés au thème, complétés d'accessoires Three.js (barbe, écouteurs,
  *   béret, badge, crabe Ferris…) ;
  * - des personnages construits en Three.js avec la même hiérarchie que les modèles Kenney
  *   (`root`, `torso`, `head`, `arm-left`…), ce qui leur permet de jouer les mêmes clips
@@ -33,7 +33,7 @@ export const ACCESSORIES = [
   'greyBeard',
   'glasses',
   'roundGlasses',
-  'headset',
+  'earbuds',
   'hood',
   'beret',
   'capBack',
@@ -155,7 +155,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
     ),
   ],
   TEN_X: [
-    kenney('c', 'headset'),
+    kenney('c', 'earbuds'),
     built(
       {
         skin: SKIN.light,
@@ -167,7 +167,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         shoes: CLOTH.white,
       },
       'hood',
-      'headset',
+      'earbuds',
     ),
     built(
       {
@@ -179,7 +179,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         pants: CLOTH.black,
         shoes: CLOTH.red,
       },
-      'headset',
+      'earbuds',
       'glasses',
     ),
   ],
@@ -330,7 +330,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         ghost: true,
       },
       'hood',
-      'headset',
+      'earbuds',
     ),
   ],
   // Équipe web : des tenues de bureau sobres, les accessoires disent le métier.
@@ -370,7 +370,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         pants: CLOTH.denim,
         shoes: CLOTH.black,
       },
-      'headset',
+      'earbuds',
     ),
   ],
   BACKEND: [
@@ -398,7 +398,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         shoes: CLOTH.black,
       },
       'beard',
-      'headset',
+      'earbuds',
     ),
     built(
       {
@@ -437,7 +437,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         pants: CLOTH.grey,
         shoes: CLOTH.white,
       },
-      'headset',
+      'earbuds',
       'badge',
     ),
     built(
@@ -480,11 +480,11 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         shoes: CLOTH.black,
       },
       'roundGlasses',
-      'headset',
+      'earbuds',
     ),
   ],
   DEVOPS: [
-    kenney('c', 'headset', 'hood'),
+    kenney('c', 'earbuds', 'hood'),
     built(
       {
         skin: SKIN.light,
@@ -495,7 +495,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         pants: CLOTH.black,
         shoes: CLOTH.black,
       },
-      'headset',
+      'earbuds',
       'hood',
     ),
     built(
@@ -508,7 +508,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         pants: CLOTH.denim,
         shoes: CLOTH.orange,
       },
-      'headset',
+      'earbuds',
       'beard',
     ),
   ],
@@ -553,7 +553,7 @@ export const ROLE_LOOKS: Readonly<Record<DevRole, readonly CharacterLook[]>> = {
         shoes: CLOTH.white,
       },
       'badge',
-      'headset',
+      'earbuds',
     ),
     built(
       {
@@ -823,13 +823,12 @@ function headAccessory(parts: Parts, glow: Parts, accessory: Accessory, hairColo
       }
       parts.add(0.1, 0.03, 0.03, 0xc8935b, 0, 0.47, 0.43);
       return;
-    case 'headset':
-      parts.add(0.94, 0.08, 0.14, 0x2f3240, 0, 0.94, 0);
-      for (const x of [-0.46, 0.46]) {
-        parts.add(0.06, 0.5, 0.12, 0x2f3240, x, 0.7, 0);
-        parts.add(0.1, 0.26, 0.26, 0xe0584a, x, 0.4, 0);
+    case 'earbuds':
+      // Écouteurs sans fil blancs : coque dans l'oreille et tige qui descend vers la joue.
+      for (const x of [-0.45, 0.45]) {
+        parts.add(0.08, 0.14, 0.14, 0xfbfbfa, x, 0.42, 0.02);
+        parts.add(0.05, 0.2, 0.06, 0xfbfbfa, x, 0.27, 0.06);
       }
-      parts.add(0.04, 0.04, 0.32, 0x2f3240, -0.48, 0.28, 0.2);
       return;
     case 'beret':
       parts.add(0.92, 0.12, 0.92, 0xc9443a, 0.04, 0.92, 0);
@@ -921,7 +920,7 @@ const HEAD_ACCESSORIES = new Set<Accessory>([
   'greyBeard',
   'glasses',
   'roundGlasses',
-  'headset',
+  'earbuds',
   'beret',
   'capBack',
   'crabOnHead',

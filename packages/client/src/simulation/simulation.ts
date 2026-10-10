@@ -16,6 +16,7 @@ import { computeOfficeEffects, type OfficeEffects } from './furniture';
 import type { SimContext } from './helpers';
 import { Rng } from './rng';
 import { endSprint } from './sprint';
+import { migrateCommand, migrateRenamedItems } from './renamedItems';
 import { createEmptyState, setupNewGame, type GameConfig } from './state';
 import { activitySystem } from './systems/activity';
 import { calendarSystem } from './systems/calendar';
@@ -79,6 +80,7 @@ export class Simulation {
 
   /** Reprend une partie sauvegardée (l'état doit avoir été validé par le schéma Zod). */
   static restore(state: GameState, cards: CardLibrary, commands: LoggedCommand[] = []): Simulation {
+    migrateRenamedItems(state);
     return new Simulation(state, cards, commands);
   }
 
@@ -144,10 +146,11 @@ export class Simulation {
     const parsed = CommandSchema.safeParse(input);
     if (!parsed.success)
       return { result: { ok: false, error: 'INVALID_COMMAND' }, notifications: [] };
+    const command = migrateCommand(parsed.data);
     const ctx = this.context();
-    const result = applyCommand(this.state, ctx, parsed.data);
+    const result = applyCommand(this.state, ctx, command);
     if (result.ok) {
-      this.commands.push({ tick: this.state.tick, command: parsed.data });
+      this.commands.push({ tick: this.state.tick, command });
       checkAchievements(this.state, ctx);
     }
     return { result, notifications: ctx.outbox };
