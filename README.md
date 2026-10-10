@@ -408,6 +408,11 @@ flowchart LR
   fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
   au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
   (« ⟳ Changer de mur »), percent le mur pour montrer la ville et font entrer le soleil.
+- **Peintures et papiers peints** : le rayon Murs propose 8 peintures (400 € le mur) et 9 papiers
+  peints de plus en plus chers, dont certains se débloquent avec les levées (briques de loft,
+  jungle, lambris, tableau noir, art déco, pluie de code). On choisit le mur à couvrir (fond ou
+  gauche de chaque pièce) ou « Tous les murs » ; chaque mur couvert donne un peu de moral, parfois
+  de la qualité ou de la hype. Les fenêtres restent visibles à travers.
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
