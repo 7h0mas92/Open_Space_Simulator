@@ -579,9 +579,10 @@ export class GameRenderer {
 
     if (view) {
       const minute = liveSprintMinutes(view.time, now) % 1440;
-      const light = this.applyLighting(this.smoothMinute(minute, delta));
+      const shownMinute = this.smoothMinute(minute, delta);
+      const light = this.applyLighting(shownMinute);
       this.roomLights.update(light, this.pixelsPerUnit());
-      this.skyline.update(light, delta, this.pixelsPerUnit(), !this.reducedMotion);
+      this.skyline.update(light, shownMinute, delta, this.pixelsPerUnit(), !this.reducedMotion);
       this.screens.update(
         { items: view.items, roles: this.roles, agents: this.current },
         delta,
@@ -614,6 +615,7 @@ export class GameRenderer {
 
   private applyQuality(): void {
     const preset = QUALITY_PRESETS[this.quality];
+    this.skyline.setQuality(this.quality);
     this.renderer.shadowMap.enabled = preset.shadows;
     this.sun.castShadow = preset.shadows;
     if (preset.shadows) {

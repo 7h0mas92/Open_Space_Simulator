@@ -4,14 +4,15 @@ import type { AssetLibrary } from '../../../src/render/assets';
 import { lightingAt } from '../../../src/render/lighting';
 import { OfficeLights, wallSlots } from '../../../src/render/officeLights';
 import { windowGlass } from '../../../src/render/primitives';
+import { litShare } from '../../../src/render/cityLights';
 import {
   CITY_RADIUS,
-  facadeTextures,
   maxTop,
   planSkyline,
   SkylineView,
   STREET_LEVEL,
 } from '../../../src/render/skyline';
+import { FACADE_GRID } from '../../../src/render/skylineShaders';
 import { officeLayout } from '../../../src/view/layout';
 
 const PHASES = ['GARAGE', 'SEED', 'SERIES_A', 'UNICORN'] as const;
@@ -74,37 +75,77 @@ describe('vue sur New York', () => {
     expect(plan.river.x1).toBeGreaterThan(plan.river.x0);
   });
 
-  it('allume des fenêtres sur les façades, environ une sur trois', () => {
-    const { map, lit } = facadeTextures();
-    expect(map.pixel(0, 0)).toBe(0xffffff);
-    let on = 0;
-    for (let row = 0; row < 8; row++)
-      for (let col = 0; col < 8; col++) if (lit.pixel(col * 8 + 3, row * 8 + 4) !== 0) on++;
-    expect(on).toBeGreaterThan(8);
-    expect(on).toBeLessThan(40);
+  it('varie les immeubles : verre, brique, pierre, bandeaux, brownstones', () => {
+    const plan = planSkyline(officeLayout('SERIES_A'));
+    const styles = new Set(plan.towers.map((box) => box.style));
+    expect([...styles].sort()).toEqual(['brick', 'brownstone', 'glass', 'limestone', 'ribbon']);
+    expect(plan.towers.some((box) => box.use === 'office')).toBe(true);
+    expect(plan.towers.some((box) => box.use === 'home')).toBe(true);
+    // Équipements de toit, couronnes illuminées et arbres d'alignement.
+    expect(plan.solids.length).toBeGreaterThan(plan.towers.length);
+    expect(plan.crowns.length).toBeGreaterThan(0);
+    expect(plan.trees.length).toBeGreaterThan(200);
+  });
+
+  it('pose les toits juste au-dessus d’un étage entier', () => {
+    const plan = planSkyline(officeLayout('SEED'));
+    for (const box of plan.towers
+      .slice(1)
+      .filter((tower) => tower.bottom === STREET_LEVEL + 0.25)) {
+      const floor = FACADE_GRID[box.style ?? 'glass'].floor;
+      const floors = (box.top - 0.35 - box.bottom) / floor;
+      expect(Math.abs(floors - Math.round(floors))).toBeLessThan(1e-6);
+    }
+  });
+
+  it('fait rouler les voitures dans la ville, jamais sur le fleuve', () => {
+    const plan = planSkyline(officeLayout('GARAGE'));
+    for (const lane of plan.lanes) {
+      if (lane.axis === 'x') expect(lane.x - lane.length / 2).toBeGreaterThanOrEqual(plan.river.x1);
+      else expect(lane.x < plan.river.x0 || lane.x > plan.river.x1).toBe(true);
+    }
+  });
+
+  it('allume les fenêtres le soir et les éteint peu à peu dans la nuit', () => {
+    // Les logements se remplissent le soir, les bureaux se vident après 18h.
+    expect(litShare(21, 'home')).toBeGreaterThan(0.6);
+    expect(litShare(21, 'office')).toBeLessThan(litShare(18, 'office'));
+    expect(litShare(3.5, 'home')).toBeLessThan(0.12);
+    expect(litShare(3.5, 'office')).toBeLessThan(0.12);
+    // Pas de saut : d'une minute à l'autre, la part bouge à peine (extinction progressive).
+    for (let minute = 0; minute < 1440; minute++)
+      for (const use of ['home', 'office'] as const)
+        expect(
+          Math.abs(litShare((minute + 1) / 60, use) - litShare(minute / 60, use)),
+        ).toBeLessThan(0.01);
+    expect(litShare(24, 'home')).toBeCloseTo(litShare(0, 'home'));
   });
 
   it('dessine toute la ville en une poignée de maillages et l’allume la nuit', () => {
     const skyline = new SkylineView();
     skyline.setLayout(officeLayout('UNICORN'));
     expect(skyline.root.children.length).toBeLessThanOrEqual(12);
+    expect(skyline.root.getObjectByName('skyline-crowns')).toBeDefined();
     const facades = skyline.root.getObjectByName('skyline-facades') as THREE.Mesh;
     const material = facades.material as THREE.ShaderMaterial;
     const glow = () => material.uniforms.glow?.value as number;
-    skyline.update(lightingAt(12 * 60), 0.1, 40, true);
+    const share = () => material.uniforms.homeShare?.value as number;
+    skyline.update(lightingAt(12 * 60), 12 * 60, 0.1, 40, true);
     const day = glow();
-    skyline.update(lightingAt(22 * 60), 0.1, 40, true);
+    const noonShare = share();
+    skyline.update(lightingAt(22 * 60), 22 * 60, 0.1, 40, true);
     expect(glow()).toBeGreaterThan(day + 0.5);
+    expect(share()).toBeGreaterThan(noonShare);
 
-    // Les taxis roulent, sauf si l'on réduit les animations.
-    const taxis = skyline.root.getObjectByName('skyline-taxis') as THREE.InstancedMesh;
+    // Les voitures roulent, sauf si l'on réduit les animations.
+    const taxis = skyline.root.getObjectByName('skyline-cars') as THREE.InstancedMesh;
     const before = new THREE.Matrix4();
     taxis.getMatrixAt(0, before);
-    skyline.update(lightingAt(22 * 60), 0.5, 40, false);
+    skyline.update(lightingAt(22 * 60), 22 * 60, 0.5, 40, false);
     const still = new THREE.Matrix4();
     taxis.getMatrixAt(0, still);
     expect(still.equals(before)).toBe(true);
-    skyline.update(lightingAt(22 * 60), 0.5, 40, true);
+    skyline.update(lightingAt(22 * 60), 22 * 60, 0.5, 40, true);
     const moved = new THREE.Matrix4();
     taxis.getMatrixAt(0, moved);
     expect(moved.equals(before)).toBe(false);
