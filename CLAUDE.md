@@ -570,6 +570,15 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   inchangées. Hauteurs et emplacements d'accessoires inchangés ; couleurs `birch`, `chairFabric`,
   `cabinet`, `cushion`, `rug`, `teddy` ajoutées à la palette. Les plantes passent par
   `new Pieces('all')` (un matériau par couleur). Rendu seulement.
+- Peintures et papiers peints (`shared/sim/walls.ts`, `client/src/simulation/walls.ts`, rayon
+  « 🎨 Murs » du mode construction, `ui/build/WallFinishes.tsx`) : 8 peintures à 400 € le mur et
+  9 papiers peints de 900 à 8 000 € (rayures, pois, chevrons, briques +hype ; jungle, lambris,
+  tableau noir +qualité en Seed ; art déco en Série A ; pluie de code en Licorne), +moral par mur.
+  Pose par zone de mur (`WALL_ZONES` : fond et gauche de l'open space, fond de la cuisine et des
+  ailes, gauche des annexes), sans remboursement de l'ancien revêtement. Motifs dessinés sur
+  canvas (`view/walls.ts`), peau sur la face intérieure des murs (`render/wallFinishes.ts`),
+  percée par les fenêtres. Commande `COVER_WALL`, état `walls` (vide par défaut), aucun tirage.
+  Les onglets du catalogue défilent quand ils ne tiennent pas sur la largeur.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
