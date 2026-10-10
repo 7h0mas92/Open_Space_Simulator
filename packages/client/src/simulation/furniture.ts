@@ -20,6 +20,7 @@ import { addComponent, createEntity, destroyEntity, query } from './ecs';
 import { addMoney, devIds } from './helpers';
 import { meetingFormat } from './meetings';
 import { petEffects } from './pets';
+import { projectionEffects } from './projection';
 import { wallEffects } from './walls';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
@@ -203,6 +204,8 @@ export function buyAccessory(
   if (placed) {
     placed.hostId = hostId;
     placed.slot = slot;
+    // Un projecteur posé s'allume tout de suite : l'écran en face se déroule.
+    if (item.projector) placed.on = true;
   }
   return { ok: true };
 }
@@ -313,6 +316,8 @@ export function placeStoredAccessory(
   if (placed) {
     placed.hostId = hostId;
     placed.slot = slot;
+    // Un projecteur posé s'allume tout de suite : l'écran en face se déroule.
+    if (item.projector) placed.on = true;
   }
   return { ok: true };
 }
@@ -474,6 +479,8 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     const placed = state.components.furniture[id];
     const item = placed ? getFurniture(placed.itemId) : undefined;
     if (!item) continue;
+    // Projecteurs et écrans déroulants : seulement s'ils projettent (voir plus bas).
+    if (item.projector || item.projectionScreen) continue;
     const e = item.effects;
     effects.coffeeRestock += e.coffeeRestock ?? 0;
     effects.moral += e.moral ?? 0;
@@ -497,6 +504,13 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
       if (e.seatEnergySaving) energySeats.push(e.seatEnergySaving);
     }
     if (e.meetingShield) shieldSeats += seats;
+  }
+  // Projecteurs allumés et écrans déroulés en face d'eux.
+  for (const e of projectionEffects(state)) {
+    effects.moral += e.moral ?? 0;
+    effects.teamProductivity += e.teamProductivity ?? 0;
+    effects.quality += e.quality ?? 0;
+    effects.hypePerDay += e.hypePerDay ?? 0;
   }
   // L'aménagement de la salle de réunion s'ajoute au mobilier (bonus et malus).
   const room = meetingFormat(state);

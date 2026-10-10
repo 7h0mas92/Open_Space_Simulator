@@ -1,6 +1,8 @@
+import { PROJECTION_RANGE } from '@oss/shared';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
-import type { GameView } from '../../view/types';
+import type { GameView, PlacedItemView } from '../../view/types';
 import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { moodEmoji } from '../team/StatBars';
@@ -10,8 +12,8 @@ import { ComputerPicker } from './ComputerPicker';
 
 /**
  * Barre contextuelle au-dessus de la barre d'actions (ou du catalogue en construction) :
- * - objet sélectionné : tourner, peindre, choisir l'ordinateur d'un bureau, déplacer, ranger
- *   dans l'inventaire, revendre ;
+ * - objet sélectionné : tourner, peindre, choisir l'ordinateur d'un bureau, allumer ou éteindre
+ *   un projecteur, déplacer, ranger dans l'inventaire, revendre ;
  * - dev sélectionné : aperçu et accès à sa fiche.
  */
 export function SelectionBar({ view }: { view: GameView }) {
@@ -32,6 +34,7 @@ export function SelectionBar({ view }: { view: GameView }) {
     const item = view.items.find((i) => i.id === selected.id);
     const def = item && catalogItem(item.kind);
     if (!item || !def) return null;
+    const projection = projectionStatus(item, view, itemName, t);
     return (
       <div
         className="selection-bar"
@@ -44,7 +47,25 @@ export function SelectionBar({ view }: { view: GameView }) {
             <strong>{itemName(item.kind)}</strong>
           </p>
           <span className="item-description">{localized(def.description, i18n.language)}</span>
+          {projection && (
+            <span className="item-status" data-testid="projection-status">
+              {projection}
+            </span>
+          )}
         </div>
+        {item.kind === 'projector' && (
+          <button
+            type="button"
+            data-testid="switch-projector"
+            aria-pressed={item.on === true}
+            className={item.on ? 'primary' : undefined}
+            onClick={() =>
+              void dispatch({ type: 'switchProjector', itemId: item.id, on: item.on !== true })
+            }
+          >
+            {item.on ? `⏻ ${t('build.projector.switchOff')}` : `⏻ ${t('build.projector.switchOn')}`}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => void dispatch({ type: 'rotateItem', itemId: item.id })}
@@ -133,6 +154,32 @@ export function SelectionBar({ view }: { view: GameView }) {
         </button>
       </div>
     );
+  }
+  return null;
+}
+
+/**
+ * État d'un projecteur ou d'un écran déroulant, en une phrase : ce qu'il projette, ou pourquoi
+ * l'écran reste enroulé. `null` pour les autres objets.
+ */
+function projectionStatus(
+  item: PlacedItemView,
+  view: GameView,
+  itemName: (kind: string) => string,
+  t: TFunction,
+): string | null {
+  if (item.kind === 'projector') {
+    if (!item.on) return t('build.projector.off');
+    const pair = view.projections.find((p) => p.projector === item.id);
+    const screen = pair && view.items.find((i) => i.id === pair.screen);
+    return screen
+      ? t('build.projector.projecting', { screen: itemName(screen.kind) })
+      : t('build.projector.noScreen', { range: PROJECTION_RANGE });
+  }
+  if (catalogItem(item.kind)?.category === 'devices') {
+    return view.projections.some((p) => p.screen === item.id)
+      ? t('build.projector.unrolled')
+      : t('build.projector.rolled');
   }
   return null;
 }

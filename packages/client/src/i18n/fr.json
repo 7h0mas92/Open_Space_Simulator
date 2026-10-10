@@ -548,6 +548,15 @@
     "title": "Construction",
     "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer, le ranger ou le revendre.",
     "catalog": "Catalogue",
+    "projector": {
+      "switchOn": "Allumer",
+      "switchOff": "Éteindre",
+      "off": "Éteint : l'écran en face reste enroulé.",
+      "projecting": "Allumé : projette sur : {{screen}}.",
+      "noScreen": "Allumé, mais aucun écran déroulant en face : tourne-le vers un écran (à {{range}} cases au plus).",
+      "unrolled": "Déroulé : un projecteur allumé l'éclaire.",
+      "rolled": "Enroulé : allume un projecteur tourné vers lui pour le dérouler."
+    },
     "categories": {
       "work": "Travail",
       "comfort": "Confort",
@@ -559,7 +568,8 @@
       "window": "Fenêtres",
       "partition": "Cloisons",
       "walls": "Murs",
-      "accessory": "Accessoires"
+      "accessory": "Accessoires",
+      "devices": "Périphériques"
     },
     "price": "{{price}} €",
     "owned": "{{count}}/{{max}}",
@@ -780,7 +790,11 @@
       "kentiaPalm": "Palmier kentia : palmes arquées couvertes de folioles",
       "oliveTree": "Olivier au tronc noueux, feuillage argenté et olives",
       "planterBox": "Jardinière en lattes de bois : herbes hautes, graminées, buissons et fleurs",
-      "giantMonstera": "Monstera géante aux feuilles découpées, dans un panier tressé"
+      "giantMonstera": "Monstera géante aux feuilles découpées, dans un panier tressé",
+      "videoProjector": "Vidéoprojecteur : boîtier, objectif, grilles d'aération, molette et voyant",
+      "projectionScreenSmall": "Écran de projection déroulant (petit) : caisson alu, pieds, toile, mât et barre animés",
+      "projectionScreenMedium": "Écran de projection déroulant (moyen) : caisson alu, pieds, toile, mât et barre animés",
+      "projectionScreenLarge": "Écran de projection déroulant (grand) : caisson alu, pieds, toile, mât et barre animés"
     },
     "back": "Retour"
   },

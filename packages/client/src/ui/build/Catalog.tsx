@@ -27,6 +27,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   partition: '🧱',
   window: '🪟',
   accessory: '🦆',
+  devices: '📽️',
 };
 
 /**

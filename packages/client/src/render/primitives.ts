@@ -66,6 +66,12 @@ import { qwertyKeyboard } from './keyboard';
 import { partitionPiece } from './partitions';
 import { liquidTower, neonTower, plainTower, proLaptop, titanTower } from './computers';
 import {
+  projectionScreenLarge,
+  projectionScreenMedium,
+  projectionScreenSmall,
+  videoProjector,
+} from './projectionModels';
+import {
   bonsai,
   fiddleLeafFig,
   giantMonstera,
@@ -476,6 +482,10 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   oliveTree,
   planterBox,
   giantMonstera,
+  videoProjector,
+  projectionScreenSmall,
+  projectionScreenMedium,
+  projectionScreenLarge,
   officeCharacters: null,
   officeCats: null,
   seasonalDecor: null,

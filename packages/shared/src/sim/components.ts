@@ -283,6 +283,8 @@ export const FurnitureSchema = z.object({
    */
   hostId: EntityIdSchema.optional(),
   slot: z.number().int().nonnegative().optional(),
+  /** Projecteur allumé (absent = éteint). Voir `projection.ts`. */
+  on: z.boolean().optional(),
   /** Bureau : ordinateur choisi (absent = la tour sobre d'origine, voir `computers.ts`). */
   computer: ComputerIdSchema.optional(),
 });
