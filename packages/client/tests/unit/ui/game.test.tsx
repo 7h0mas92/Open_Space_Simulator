@@ -481,7 +481,7 @@ describe('Options et accessibilité', () => {
     await userEvent.click(screen.getByRole('button', { name: /Options/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Crédits' }));
     expect(screen.getByText(/licence CC0/)).toBeInTheDocument();
-    expect(screen.getByText('Babyfoot')).toBeInTheDocument();
+    expect(screen.getByText(/^Babyfoot :/)).toBeInTheDocument();
   });
 });
 

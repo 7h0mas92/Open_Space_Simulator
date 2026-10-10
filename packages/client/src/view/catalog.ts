@@ -277,7 +277,8 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     use: 'babyfoot',
     paint: ['wood', 'woodDark'],
   },
-  speaker: { category: 'fun', model: kenney('speaker'), height: 1.25 },
+  // Enceinte colonne en noyer : deux boomers, tweeter, évent et pointes.
+  speaker: { category: 'fun', model: primitive('floorSpeaker'), height: 1.25 },
   slide: { category: 'fun', model: primitive('slide'), height: 2, paint: ['red'] },
   // Canapé en tissu : coussins, accoudoirs roulés, pieds en bois, coussins décoratifs, plaid.
   sofa: {
@@ -340,8 +341,10 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 1.75,
     paint: ['wicker', 'sisal'],
   },
-  rug: { category: 'decor', model: kenney('rugRound'), height: 0.02 },
-  trashcan: { category: 'decor', model: kenney('trashcan'), height: 0.85, paint: ['metal'] },
+  // Tapis rond à bordure, médaillon et losanges ; plat, on marche dessus.
+  rug: { category: 'decor', model: primitive('roundRug'), height: 0.02, paint: ['rug'] },
+  // Poubelle à pédale en inox, et la boule de papier qui l'a ratée.
+  trashcan: { category: 'decor', model: primitive('pedalBin'), height: 0.85, paint: ['metal'] },
   // Animaux : de quoi accueillir les chats. Chaque arbre a sa moquette (beige, gris, mauve).
   'litter-open': {
     category: 'pets',
