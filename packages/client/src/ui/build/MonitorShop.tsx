@@ -56,9 +56,13 @@ function effectSummary(choice: MonitorChoice, t: TFunction, language: string): s
   return parts.length > 0 ? parts.join(' · ') : t('monitors.effects.none');
 }
 
-/** Vignette 3D d'un écran (le même gabarit que dans la scène), ou une icône. */
+/**
+ * Vignette 3D d'un écran (le même gabarit que dans la scène), ou une icône. Le cadrage remplit
+ * la vignette quelle que soit la taille : on rend toujours la taille moyenne, et changer de
+ * taille ne redessine pas les 5 vignettes.
+ */
 function MonitorThumbnail({ choice }: { choice: MonitorChoice }) {
-  const image = useThumbnail(monitorKey('desk', choice));
+  const image = useThumbnail(monitorKey('desk', { ...choice, size: 'medium' }));
   return (
     <span className="item-thumb" aria-hidden="true">
       {image ? <img src={image} alt="" draggable={false} /> : '🖥️'}

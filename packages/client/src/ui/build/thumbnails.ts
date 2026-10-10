@@ -16,11 +16,44 @@ interface ThumbnailStore {
 
 const useThumbnails = create<ThumbnailStore>(() => ({ source: null, images: {} }));
 const pending = new Set<string>();
+/** Vignettes demandées, rendues une par une. */
+const queue: string[] = [];
+let drawing = false;
 
 /** Branché par la scène quand le moteur de rendu est prêt (`null` quand il disparaît). */
 export function setThumbnailSource(source: ThumbnailSource | null): void {
   pending.clear();
+  queue.length = 0;
   useThumbnails.setState({ source });
+}
+
+const nextTask = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+/**
+ * Rend les vignettes en attente une à une, en rendant la main au navigateur entre deux : un
+ * rayon entier qui change d'aspect (taille ou fixation d'écran) ne fige pas l'interface, les
+ * clics passent entre deux rendus.
+ */
+async function drain(): Promise<void> {
+  if (drawing) return;
+  drawing = true;
+  try {
+    for (let kind = queue.shift(); kind !== undefined; kind = queue.shift()) {
+      const source = useThumbnails.getState().source;
+      if (!source) break;
+      let url: string | null = null;
+      try {
+        url = await source(kind);
+      } catch {
+        url = null;
+      }
+      pending.delete(kind);
+      useThumbnails.setState((s) => ({ images: { ...s.images, [kind]: url } }));
+      await nextTask();
+    }
+  } finally {
+    drawing = false;
+  }
 }
 
 /** Vignette d'un objet, ou `null` tant qu'elle n'est pas prête. */
@@ -30,11 +63,8 @@ export function useThumbnail(kind: string): string | null {
   useEffect(() => {
     if (!source || image !== undefined || pending.has(kind)) return;
     pending.add(kind);
-    const store = (url: string | null) => {
-      pending.delete(kind);
-      useThumbnails.setState((s) => ({ images: { ...s.images, [kind]: url } }));
-    };
-    source(kind).then(store, () => store(null));
+    queue.push(kind);
+    void drain();
   }, [source, kind, image]);
   return image ?? null;
 }

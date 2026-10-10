@@ -307,6 +307,8 @@ test('inventaire : ranger un objet posé puis le reposer gratuitement', async ({
 });
 
 test('mode construction : choisir l’écran des bureaux', async ({ page }) => {
+  // Vignettes 3D des écrans redessinées en WebGL logiciel : plus lent sur les runners.
+  test.slow();
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();
   // Au garage, il n'y a que des bureaux IKEA (portable) : on pose un bureau de dev.
