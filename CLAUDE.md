@@ -579,6 +579,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   canvas (`view/walls.ts`), peau sur la face intérieure des murs (`render/wallFinishes.ts`),
   percée par les fenêtres. Commande `COVER_WALL`, état `walls` (vide par défaut), aucun tirage.
   Les onglets du catalogue défilent quand ils ne tiennent pas sur la largeur.
+- Mise à jour du jeu installé (`ui/appUpdate.ts`, PWA en `registerType: 'prompt'`) : après un
+  déploiement, la nouvelle version s'applique toute seule au menu, ou au retour au menu si une
+  partie est en cours (rien n'est perdu). Recherche d'une mise à jour toutes les 30 min et au
+  retour sur l'onglet. Dépendance `workbox-window` ajoutée au client.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

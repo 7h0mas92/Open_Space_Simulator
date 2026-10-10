@@ -495,7 +495,9 @@ sequenceDiagram
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le
   jeu retombe sur ses 256 templates. L'IA n'écrit que des messages.
 - **PWA** : `vite-plugin-pwa` met en cache le code, les modèles Kenney et les icônes ; une
-  partie en invité se lance sans réseau (testé par Playwright).
+  partie en invité se lance sans réseau (testé par Playwright). Après un déploiement, la
+  nouvelle version s'applique d'elle-même au menu, ou au retour au menu pendant une partie
+  (`ui/appUpdate.ts`).
 
 ### Back-office
 
