@@ -25,6 +25,7 @@ import type {
   GameResult,
   LocalizedText,
   MeetingFormatId,
+  MonitorChoice,
   PetCoat,
   PetNeed,
   NotificationKind,
@@ -286,6 +287,11 @@ export interface PlacedItemView {
   readonly color: FurnitureColor;
   /** Accessoire : le meuble qui le porte et l'emplacement occupé, sinon `null`. */
   readonly host: ItemHost | null;
+  /**
+   * Poste de travail (bureau de dev, bureau debout) : l'écran posé dessus, celui livré avec le
+   * bureau s'il n'a jamais été changé. Absent pour les autres objets.
+   */
+  readonly monitor?: MonitorChoice;
 }
 
 /**
@@ -669,6 +675,8 @@ export type GameCommand =
       readonly rotation: Rotation;
     }
   | { readonly type: 'paintItem'; readonly itemId: string; readonly color: FurnitureColor }
+  /** Change l'écran d'un poste de travail (modèle, taille, pied ou bras). */
+  | { readonly type: 'setMonitor'; readonly itemId: string; readonly monitor: MonitorChoice }
   | {
       readonly type: 'moveItem';
       readonly itemId: string;

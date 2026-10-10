@@ -11,6 +11,7 @@ export * from './sim/components.js';
 export * from './sim/funding.js';
 export * from './sim/furniture.js';
 export * from './sim/meetings.js';
+export * from './sim/monitors.js';
 export * from './sim/pets.js';
 export * from './sim/pitch.js';
 export * from './sim/raises.js';

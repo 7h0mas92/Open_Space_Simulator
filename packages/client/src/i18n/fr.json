@@ -525,6 +525,34 @@
       "ego": "Ego surdimensionné"
     }
   },
+  "monitors": {
+    "label": "{{name}} {{inches}}″ {{mount}}",
+    "on": {
+      "stand": "sur pied",
+      "arm": "sur bras"
+    },
+    "size": "Taille de l’écran",
+    "sizeLabel": "{{inches}} pouces",
+    "mounts": {
+      "stand": "🦶 Pied",
+      "arm": "🦾 Bras articulé"
+    },
+    "install": "Installer sur ce bureau · {{price}} €",
+    "installed": "✓ Déjà sur ce bureau",
+    "where": "Où installer l’écran",
+    "pickDesk": "Sélectionne un bureau pour changer son écran.",
+    "all_one": "Équiper {{count}} poste · {{price}} €",
+    "all_other": "Équiper {{count}} postes · {{price}} €",
+    "current": "Écran actuel : {{monitor}} (repris à moitié prix)",
+    "effects": {
+      "productivity": "+{{value}} % de productivité",
+      "quality": "+qualité",
+      "moral": "+moral",
+      "debt": "−dette",
+      "energy": "−fatigue",
+      "none": "Aucun bonus"
+    }
+  },
   "walls": {
     "applyTo": "Poser « {{finish}} » sur :",
     "applyLabel": "Poser {{finish}} sur le mur {{zone}} pour {{price}} €",
@@ -558,7 +586,8 @@
       "pets": "Animaux",
       "window": "Fenêtres",
       "walls": "Murs",
-      "accessory": "Accessoires"
+      "accessory": "Accessoires",
+      "monitors": "Écrans"
     },
     "price": "{{price}} €",
     "owned": "{{count}}/{{max}}",
@@ -620,7 +649,8 @@
     "free": "Gratuit",
     "fromInventory": "depuis l’inventaire",
     "sellStored": "Revendre un {{item}} ({{price}} €)",
-    "stopInventory": "{{item}} : plus rien en stock, retour à l’inventaire."
+    "stopInventory": "{{item}} : plus rien en stock, retour à l’inventaire.",
+    "monitor": "Écran"
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -755,6 +785,7 @@
       "sofa": "Canapé en tissu : coussins, accoudoirs roulés, pieds en bois, coussins décoratifs et plaid",
       "bookcase": "Bibliothèque garnie : livres un par un, placard, paniers, plante, cadre et trophée",
       "officeDesk": "Bureau de dev : plateau, piètement acier, caisson à tiroirs, passe-câble et multiprise",
+      "deskMonitors": "Écrans des postes de travail : 5 modèles (bureautique, pivoté vertical, gaming, pro ultra-fin, incurvé), 3 tailles, sur pied ou sur bras articulé",
       "trestleDesk": "Bureau du garage sur tréteaux en bois",
       "officeChair": "Chaise de bureau à roulettes : vérin, assise rembourrée, dossier résille, accoudoirs",
       "ergonomicChair": "Chaise ergonomique avec appui-tête et renfort lombaire",

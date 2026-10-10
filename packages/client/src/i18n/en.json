@@ -525,6 +525,34 @@
       "ego": "Oversized ego"
     }
   },
+  "monitors": {
+    "label": "{{name}} {{inches}}″ {{mount}}",
+    "on": {
+      "stand": "on a stand",
+      "arm": "on an arm"
+    },
+    "size": "Monitor size",
+    "sizeLabel": "{{inches}} inches",
+    "mounts": {
+      "stand": "🦶 Stand",
+      "arm": "🦾 Monitor arm"
+    },
+    "install": "Install on this desk · {{price}} €",
+    "installed": "✓ Already on this desk",
+    "where": "Where to install the monitor",
+    "pickDesk": "Select a desk to change its monitor.",
+    "all_one": "Equip {{count}} desk · {{price}} €",
+    "all_other": "Equip {{count}} desks · {{price}} €",
+    "current": "Current monitor: {{monitor}} (taken back at half price)",
+    "effects": {
+      "productivity": "+{{value}}% productivity",
+      "quality": "+quality",
+      "moral": "+morale",
+      "debt": "−debt",
+      "energy": "−fatigue",
+      "none": "No bonus"
+    }
+  },
   "walls": {
     "applyTo": "Put “{{finish}}” on:",
     "applyLabel": "Put {{finish}} on the {{zone}} wall for €{{price}}",
@@ -558,7 +586,8 @@
       "pets": "Pets",
       "window": "Windows",
       "walls": "Walls",
-      "accessory": "Accessories"
+      "accessory": "Accessories",
+      "monitors": "Monitors"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -620,7 +649,8 @@
     "free": "Free",
     "fromInventory": "from the inventory",
     "sellStored": "Sell one {{item}} ({{price}} €)",
-    "stopInventory": "{{item}}: none left in stock, back to the inventory."
+    "stopInventory": "{{item}}: none left in stock, back to the inventory.",
+    "monitor": "Monitor"
   },
   "results": {
     "INVALID_COMMAND": "That can't be done.",
@@ -755,6 +785,7 @@
       "sofa": "Fabric sofa: cushions, rolled arms, wooden legs, throw pillows and a plaid",
       "bookcase": "Stocked bookcase: individual books, cupboard, baskets, plant, frame and trophy",
       "officeDesk": "Dev desk: worktop, steel frame, drawer unit, cable grommet and power strip",
+      "deskMonitors": "Workstation monitors: 5 models (office, vertical pivot, gaming, ultra-thin pro, curved), 3 sizes, on a stand or an articulated arm",
       "trestleDesk": "Garage desk on wooden trestles",
       "officeChair": "Office chair on casters: gas lift, padded seat, mesh back, armrests",
       "ergonomicChair": "Ergonomic chair with headrest and lumbar support",

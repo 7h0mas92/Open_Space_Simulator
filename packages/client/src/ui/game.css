@@ -1739,6 +1739,16 @@ input[type='range'] {
   font-size: 0.8rem;
 }
 
+/* Rayon Écrans : la taille et la fixation choisies restent allumées. */
+.wall-zone[aria-pressed='true'] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.monitor-hint {
+  margin: 0;
+}
+
 .catalog-card[aria-pressed='true'] {
   border-color: var(--accent);
   background: rgb(255 255 255 / 10%);
@@ -2858,6 +2868,11 @@ legend {
   color: var(--text-muted);
   font-size: 0.85rem;
   font-weight: 400;
+}
+
+/* L'écran d'un poste de travail, sous la description du bureau. */
+.item-monitor {
+  display: block;
 }
 
 .team-office {

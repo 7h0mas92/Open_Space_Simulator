@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { LocalizedTextSchema } from '../i18n.js';
 import { BirthdaySchema } from './calendar.js';
 import { FURNITURE_COLORS } from './furniture.js';
+import { MonitorSetupSchema } from './monitors.js';
 import { TaskKindSchema } from './taskFlow.js';
 
 /**
@@ -282,6 +283,8 @@ export const FurnitureSchema = z.object({
    */
   hostId: EntityIdSchema.optional(),
   slot: z.number().int().nonnegative().optional(),
+  /** Poste de travail : l'écran choisi (absent : l'écran bureautique livré avec le bureau). */
+  monitor: MonitorSetupSchema.optional(),
 });
 export type Furniture = z.infer<typeof FurnitureSchema>;
 

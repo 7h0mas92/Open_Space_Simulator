@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { EntityIdSchema, FurnitureColorSchema } from './components.js';
 import { MeetingFormatIdSchema } from './meetings.js';
+import { MonitorModelSchema, MonitorMountSchema, MonitorSizeSchema } from './monitors.js';
 import { FinancingKindSchema } from './funding.js';
 import { PetCoatSchema } from './pets.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
@@ -65,6 +66,17 @@ export const CommandSchema = z.discriminatedUnion('type', [
     type: z.literal('PAINT_FURNITURE'),
     furnitureId: EntityIdSchema,
     color: FurnitureColorSchema,
+  }),
+  /**
+   * Change l'écran d'un poste de travail (bureau de dev, bureau debout) : modèle, taille, pied
+   * ou bras. Le nouvel écran est payé, l'ancien revendu à moitié prix.
+   */
+  z.object({
+    type: z.literal('SET_MONITOR'),
+    furnitureId: EntityIdSchema,
+    model: MonitorModelSchema,
+    size: MonitorSizeSchema,
+    mount: MonitorMountSchema,
   }),
   z.object({
     type: z.literal('MOVE_FURNITURE'),

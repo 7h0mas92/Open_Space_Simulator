@@ -14,6 +14,7 @@ import {
   placeStoredAccessory,
   sellFurniture,
   sellStored,
+  setMonitor,
   storeFurniture,
 } from './furniture';
 import type { SimContext } from './helpers';
@@ -92,6 +93,10 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')
         : paintFurniture(state, command.furnitureId, command.color);
+    case 'SET_MONITOR':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : setMonitor(state, command.furnitureId, command);
     case 'MOVE_FURNITURE':
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')

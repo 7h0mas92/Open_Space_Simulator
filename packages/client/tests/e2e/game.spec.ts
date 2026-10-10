@@ -306,6 +306,38 @@ test('inventaire : ranger un objet posé puis le reposer gratuitement', async ({
   await expect(page.getByTestId('inventory')).toContainText('L’inventaire est vide');
 });
 
+test('mode construction : choisir l’écran des bureaux', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: /Construction/ }).click();
+  // Au garage, il n'y a que des bureaux IKEA (portable) : on pose un bureau de dev.
+  await page.getByTestId('catalog-desk').click();
+  await page.getByTestId('place').click();
+  await page.getByRole('button', { name: /Annuler/ }).click();
+
+  await page.getByTestId('catalog-tab-monitors').click();
+  await expect(page.getByTestId('monitors')).toBeVisible();
+  await expect(page.getByTestId('monitor-curved')).toContainText('Débloqué en');
+  await page.getByTestId('monitor-gaming').click();
+  await page.getByTestId('monitor-size-large').click();
+  await page.getByTestId('monitor-mount-arm').click();
+  await expect(page.getByTestId('monitor-mount-arm')).toHaveAttribute('aria-pressed', 'true');
+
+  // Cibles tactiles de 44 px, rien ne déborde.
+  const tooSmall = await page.evaluate(() =>
+    [...document.querySelectorAll('.monitors-panel button')]
+      .map((element) => element.getBoundingClientRect())
+      .filter(({ width, height }) => width > 0 && (width < 44 || height < 44)),
+  );
+  expect(tooSmall).toEqual([]);
+
+  const all = page.getByTestId('monitor-install-all');
+  await expect(all).toContainText('Équiper 1 poste');
+  await all.click();
+  // Le bureau a son nouvel écran : plus rien à équiper.
+  await expect(all).toBeDisabled();
+  await expect(all).toContainText('Équiper 0 poste');
+});
+
 test('mode construction : peindre un mur puis le tapisser', async ({ page }) => {
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();

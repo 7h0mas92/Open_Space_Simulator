@@ -291,6 +291,8 @@ export const MISSING_ASSETS = [
   { id: 'sofa', replacement: 'primitive' },
   { id: 'bookcase', replacement: 'primitive' },
   { id: 'officeDesk', replacement: 'primitive' },
+  // Écrans des postes de travail : 5 modèles, 3 tailles, pied ou bras (`render/monitors.ts`).
+  { id: 'deskMonitors', replacement: 'decor' },
   { id: 'trestleDesk', replacement: 'primitive' },
   { id: 'officeChair', replacement: 'primitive' },
   { id: 'ergonomicChair', replacement: 'primitive' },

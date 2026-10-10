@@ -4,8 +4,9 @@ import type { GameView } from '../../view/types';
 import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { moodEmoji } from '../team/StatBars';
-import { ItemThumbnail } from './Catalog';
+import { ItemThumbnail, showCatalogTab } from './Catalog';
 import { ColorPicker } from './ColorPicker';
+import { monitorLabel } from './MonitorShop';
 
 /**
  * Barre contextuelle au-dessus de la barre d'actions (ou du catalogue en construction) :
@@ -20,6 +21,8 @@ export function SelectionBar({ view }: { view: GameView }) {
   const dispatch = useGame((s) => s.dispatch);
   const openPanel = useGame((s) => s.openPanel);
   const notify = useGame((s) => s.notify);
+  const building = useGame((s) => s.build !== null);
+  const enterBuild = useGame((s) => s.enterBuild);
 
   const itemName = (kind: string) => {
     const def = catalogItem(kind);
@@ -42,6 +45,11 @@ export function SelectionBar({ view }: { view: GameView }) {
             <strong>{itemName(item.kind)}</strong>
           </p>
           <span className="item-description">{localized(def.description, i18n.language)}</span>
+          {item.monitor && (
+            <span className="item-description item-monitor" data-testid="selected-monitor">
+              🖥️ {monitorLabel(item.monitor, t, i18n.language)}
+            </span>
+          )}
         </div>
         <button
           type="button"
@@ -55,6 +63,20 @@ export function SelectionBar({ view }: { view: GameView }) {
             label={t('build.paint')}
             onChange={(color) => void dispatch({ type: 'paintItem', itemId: item.id, color })}
           />
+        )}
+        {item.monitor && (
+          <button
+            type="button"
+            onClick={() => {
+              // Hors construction, le bouton ouvre le mode construction sur ce bureau.
+              if (!building) enterBuild();
+              select({ type: 'item', id: item.id });
+              showCatalogTab('monitors');
+            }}
+            data-testid="change-monitor"
+          >
+            🖥️ {t('build.monitor')}
+          </button>
         )}
         <button type="button" onClick={() => startMove(item.id)}>
           ✥ {t('build.move')}

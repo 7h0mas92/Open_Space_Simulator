@@ -16,7 +16,7 @@ import {
   litScreens,
   paintScreen,
   SCREEN_CONTENTS,
-  SCREEN_MOUNTS,
+  screenMountOf,
   screenContentFor,
   screenMatrix,
   ScreenGlow,
@@ -74,7 +74,7 @@ describe('écrans allumés', () => {
 
   it('a un emplacement d’écran pour chaque bureau du catalogue', () => {
     for (const item of CATALOG.filter((entry) => entry.use === 'desk'))
-      expect(SCREEN_MOUNTS[item.kind], item.kind).toBeDefined();
+      expect(screenMountOf({ kind: item.kind }), item.kind).not.toBeNull();
   });
 
   it('n’allume que l’écran des bureaux utilisés par un dev visible', () => {
@@ -119,7 +119,8 @@ describe('écrans allumés', () => {
     const meshes = glow.root.children.filter(
       (c) => c.name.startsWith('screen-') && c.name !== 'screen-spill',
     );
-    expect(meshes).toHaveLength(SCREEN_CONTENTS.length);
+    // Chaque contenu existe sur une dalle plate et sur une dalle courbe (écran incurvé).
+    expect(meshes).toHaveLength(SCREEN_CONTENTS.length * 2);
     glow.update({ items: view.items, roles, agents: [] }, 0.5, 0, false);
     expect(glow.count).toBe(0);
     glow.dispose();

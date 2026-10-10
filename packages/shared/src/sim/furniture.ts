@@ -73,6 +73,11 @@ export interface FurnitureDefinition {
    * mur de gauche (x = 0). Elle ne gêne pas le mobilier posé devant.
    */
   wall?: boolean;
+  /**
+   * Poste de travail à écran : l'écran se choisit à part (modèle, taille, pied ou bras, voir
+   * `monitors.ts`). Sans choix, c'est l'écran bureautique livré avec le bureau.
+   */
+  monitor?: boolean;
 }
 
 /**
@@ -112,6 +117,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 40,
     effects: { seatProductivity: 0.04, seats: 1 },
     surfaceSlots: 3,
+    monitor: true,
   },
   {
     id: 'ikea-desk',
@@ -421,6 +427,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 30,
     effects: { seatProductivity: 0.05, seatEnergySaving: 0.1, seats: 1 },
     surfaceSlots: 2,
+    monitor: true,
   },
   {
     id: 'sofa',

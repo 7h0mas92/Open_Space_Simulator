@@ -17,6 +17,13 @@ import { paintObject, type AssetLibrary } from './assets';
 import { buildFixture } from './annexDecor';
 import { buildWallSkins } from './wallFinishes';
 import {
+  buildMonitor,
+  monitorKey,
+  monitorLayout,
+  monitorOfItem,
+  parseMonitorKey,
+} from './monitors';
+import {
   buildPrimitive,
   material,
   PALETTE,
@@ -172,25 +179,44 @@ export function placedMatrix(
   return host ? accessoryMatrix(host, item.host.slot, item.rotation) : null;
 }
 
-/** Objets ajoutés automatiquement autour de certains meubles (la chaise d'un bureau). */
-function extrasFor(item: PlacedItemView): { kind: string; matrix: THREE.Matrix4 }[] {
+/** Matrice de l'écran d'un poste de travail, dans le repère du meuble. */
+function monitorMatrix(kind: string, monitor: Parameters<typeof monitorLayout>[1]): THREE.Matrix4 {
+  const layout = monitorLayout(kind, monitor);
+  return new THREE.Matrix4().makeTranslation(...(layout?.origin ?? [0, 0, 0]));
+}
+
+/**
+ * Objets ajoutés automatiquement autour de certains meubles : la chaise d'un bureau, à la
+ * couleur du bureau, et l'écran d'un poste de travail, qui garde ses propres couleurs.
+ */
+function extrasFor(
+  item: PlacedItemView,
+): { kind: string; matrix: THREE.Matrix4; color?: FurnitureColor }[] {
   const def = catalogItem(item.kind);
-  if (def?.use !== 'desk' || item.kind === 'standing-desk') return [];
+  if (def?.use !== 'desk') return [];
+  const extras: { kind: string; matrix: THREE.Matrix4; color?: FurnitureColor }[] = [];
+  const monitor = monitorOfItem(item);
+  if (monitor)
+    extras.push({
+      kind: monitorKey(item.kind, monitor),
+      matrix: itemMatrix(item).multiply(monitorMatrix(item.kind, monitor)),
+      color: 'natural',
+    });
+  if (item.kind === 'standing-desk') return extras;
   const chairCell = accessCell(item);
   const facing = new THREE.Quaternion().setFromAxisAngle(
     new THREE.Vector3(0, 1, 0),
     (item.rotation * Math.PI) / 2 + Math.PI,
   );
-  return [
-    {
-      kind: '@chair',
-      matrix: new THREE.Matrix4().compose(
-        new THREE.Vector3(chairCell.x, 0, chairCell.z),
-        facing,
-        new THREE.Vector3(1, 1, 1),
-      ),
-    },
-  ];
+  extras.push({
+    kind: '@chair',
+    matrix: new THREE.Matrix4().compose(
+      new THREE.Vector3(chairCell.x, 0, chairCell.z),
+      facing,
+      new THREE.Vector3(1, 1, 1),
+    ),
+  });
+  return extras;
 }
 
 /** Enseigne d'une aile « incubateur » : l'emoji et le nom de la filiale. */
@@ -348,7 +374,11 @@ export class OfficeView {
   /** Reconstruit le mobilier (instances) si les objets posés ont changé. */
   async setItems(items: readonly PlacedItemView[]): Promise<void> {
     const key = items
-      .map((i) => `${i.id}:${i.kind}:${i.x}:${i.z}:${i.rotation}:${i.color}:${i.host?.slot ?? ''}`)
+      .map(
+        (i) =>
+          `${i.id}:${i.kind}:${i.x}:${i.z}:${i.rotation}:${i.color}:${i.host?.slot ?? ''}` +
+          (i.monitor ? `:${i.monitor.model}:${i.monitor.size}:${i.monitor.mount}` : ''),
+      )
       .join('|');
     if (key === this.itemsKey) return;
     this.itemsKey = key;
@@ -368,7 +398,7 @@ export class OfficeView {
       add(templateKey(item.kind, item.color), matrix, item.id);
       // La chaise d'un bureau prend la couleur du bureau : un poste assorti.
       for (const extra of extrasFor(item))
-        add(templateKey(extra.kind, item.color), extra.matrix, item.id);
+        add(templateKey(extra.kind, extra.color ?? item.color), extra.matrix, item.id);
     }
 
     const built = await Promise.all(
@@ -410,15 +440,35 @@ export class OfficeView {
     for (const mesh of this.decor) mesh.visible = visible;
   }
 
-  /** Construit un objet isolé (non instancié) : aperçu du mode construction, contour. */
-  async single(kind: string, color: FurnitureColor = 'natural'): Promise<THREE.Group> {
-    const parts = await this.template(templateKey(kind, color));
+  /**
+   * Construit un objet isolé (non instancié) : aperçu du mode construction, contour, vignette.
+   * Un poste de travail vient avec son écran (`monitor`, sinon celui livré avec le bureau).
+   */
+  async single(
+    kind: string,
+    color: FurnitureColor = 'natural',
+    monitor?: PlacedItemView['monitor'],
+  ): Promise<THREE.Group> {
     const group = new THREE.Group();
-    for (const part of parts) {
-      const mesh = new THREE.Mesh(part.geometry, part.material);
-      mesh.applyMatrix4(part.matrix);
-      group.add(mesh);
+    const add = (parts: readonly TemplatePart[], offset?: THREE.Matrix4) => {
+      for (const part of parts) {
+        const mesh = new THREE.Mesh(part.geometry, part.material);
+        mesh.applyMatrix4(offset ? offset.clone().multiply(part.matrix) : part.matrix);
+        group.add(mesh);
+      }
+    };
+    // Un écran seul (vignette du rayon Écrans) : `@monitor:…`.
+    if (parseMonitorKey(kind)) {
+      add(await this.template(templateKey(kind, 'natural')));
+      return group;
     }
+    add(await this.template(templateKey(kind, color)));
+    const screen = monitorOfItem({ kind, monitor });
+    if (screen)
+      add(
+        await this.template(templateKey(monitorKey(kind, screen), 'natural')),
+        monitorMatrix(kind, screen),
+      );
     return group;
   }
 
@@ -441,13 +491,16 @@ export class OfficeView {
 
   private async loadTemplate(key: string): Promise<THREE.Object3D> {
     const [kind = key, color = 'natural'] = key.split('#') as [string, FurnitureColor];
-    // L'écran et le clavier font partie du bureau (voir `parts` dans le catalogue) ; seule la
-    // chaise, posée sur la case d'accès, est un gabarit à part.
+    // Le clavier et la souris font partie du bureau (voir `parts` dans le catalogue) ; la chaise,
+    // posée sur la case d'accès, est un gabarit à part.
     if (kind === '@chair') {
       const chair = buildPrimitive(DESK_CHAIR.model);
       paintObject(chair, DESK_CHAIR.paint, color);
       return chair;
     }
+    // L'écran d'un poste de travail, lui aussi un gabarit à part (un par modèle, taille, fixation).
+    const monitor = parseMonitorKey(kind);
+    if (monitor) return buildMonitor(monitor.kind, monitor.choice);
     return this.assets.itemTemplate(kind, color);
   }
 }
