@@ -105,7 +105,7 @@ export interface DeskHit {
 const STALE_SECONDS = 0.25;
 
 /**
- * Rythme d'un dev : rafales de 3 à 14 touches (70 à 180 ms entre deux), petites pauses, parfois
+ * Rythme d'un dev : rafales de 3 à 14 touches (55 à 295 ms entre deux, souvent vite), petites pauses, parfois
  * une relecture de quelques secondes ; un clic de souris toutes les 2 à 8 s, parfois double.
  */
 export class TypingRhythm {
@@ -133,7 +133,7 @@ export class TypingRhythm {
       this.burst--;
       this.nextKey +=
         this.burst > 0
-          ? 0.07 + random() * 0.11
+          ? 0.055 + random() * random() * 0.24 // les doigts vont plus vite sur les mots connus
           : random() < 0.15
             ? 2.5 + random() * 4 // il relit son code
             : 0.35 + random() * 1.6;
@@ -163,35 +163,160 @@ function normalize(samples: Float32Array): Float32Array {
   return samples;
 }
 
+/** Filtre passe-bande (biquad RBJ, gain 0 dB au centre) appliqué à un signal. */
+function bandpass(
+  input: Float32Array,
+  sampleRate: number,
+  frequency: number,
+  q: number,
+): Float32Array {
+  const w = (2 * Math.PI * frequency) / sampleRate;
+  const alpha = Math.sin(w) / (2 * q);
+  const a0 = 1 + alpha;
+  const b0 = alpha / a0;
+  const a1 = (-2 * Math.cos(w)) / a0;
+  const a2 = (1 - alpha) / a0;
+  const out = new Float32Array(input.length);
+  let x1 = 0;
+  let x2 = 0;
+  let y1 = 0;
+  let y2 = 0;
+  for (let i = 0; i < input.length; i++) {
+    const x = input[i] ?? 0;
+    const y = b0 * x - b0 * x2 - a1 * y1 - a2 * y2;
+    out[i] = y;
+    x2 = x1;
+    x1 = x;
+    y2 = y1;
+    y1 = y;
+  }
+  return out;
+}
+
+/** Une résonance qui s'éteint : fréquence (Hz), amplitude, durée de décroissance (s). */
+interface Mode {
+  readonly frequency: number;
+  readonly amplitude: number;
+  readonly decay: number;
+}
+
 /**
- * Frappe de clavier mécanique : claquement aigu (bruit dérivé, donc sans graves), « toc » du
- * boîtier qui s'éteint vite, puis le petit retour de la touche relâchée. Barre d'espace plus grave.
+ * Un choc de touche à l'instant `at` : petit claquement de plastique (bruit filtré très bref) qui
+ * fait sonner le capuchon et la plaque (résonances aiguës), puis le boîtier et le bureau (graves).
+ */
+function strike(
+  out: Float32Array,
+  sampleRate: number,
+  at: number,
+  noise: Float32Array,
+  modes: readonly Mode[],
+  gain: number,
+  random: () => number,
+): void {
+  const start = Math.round(at * sampleRate);
+  for (const mode of modes) {
+    const phase = random() * Math.PI * 2;
+    const omega = (2 * Math.PI * mode.frequency) / sampleRate;
+    const end = Math.min(out.length, start + Math.round(mode.decay * 6 * sampleRate));
+    for (let i = start; i < end; i++) {
+      const t = (i - start) / sampleRate;
+      // Attaque de 0,3 ms : pas de clic numérique au début de la résonance.
+      const attack = Math.min(1, t / 0.0003);
+      out[i] =
+        (out[i] ?? 0) +
+        gain *
+          mode.amplitude *
+          attack *
+          Math.exp(-t / mode.decay) *
+          Math.sin(omega * (i - start) + phase);
+    }
+  }
+  const length = Math.min(noise.length, out.length - start);
+  for (let i = 0; i < length; i++) {
+    const t = i / sampleRate;
+    out[start + i] = (out[start + i] ?? 0) + gain * (noise[i] ?? 0) * Math.exp(-t / 0.0007);
+  }
+}
+
+/** Résonances d'une touche : capuchon et plaque (aigu), boîtier et bureau (grave). */
+function keyModes(random: () => number, scale: number, space: boolean): Mode[] {
+  const cap = [1450, 2300, 3150, 4300, 5900].map((frequency, i) => ({
+    frequency: frequency * scale * (0.95 + random() * 0.1),
+    amplitude: (0.55 - i * 0.08) * (0.7 + random() * 0.6),
+    decay: (space ? 0.009 : 0.005) * (0.7 + random() * 0.6),
+  }));
+  const body = [space ? 160 : 240, space ? 330 : 470, space ? 610 : 820].map((frequency, i) => ({
+    frequency: frequency * (0.92 + random() * 0.16),
+    amplitude: (space ? 0.75 : 0.45) - i * 0.12,
+    decay: (space ? 0.022 : 0.012) * (0.8 + random() * 0.4),
+  }));
+  return [...cap, ...body];
+}
+
+/**
+ * Réverbération de bureau très courte : quelques échos du bureau, des murs et du plafond, de
+ * plus en plus sourds, puis une petite traîne. Le son paraît joué dans une pièce, pas collé à l'oreille.
+ */
+function room(dry: Float32Array, sampleRate: number, random: () => number): Float32Array {
+  const out = Float32Array.from(dry);
+  const reflections = [
+    { delay: 0.0042, gain: 0.32 },
+    { delay: 0.0093, gain: 0.2 },
+    { delay: 0.0151, gain: 0.13 },
+    { delay: 0.0237, gain: 0.08 },
+    { delay: 0.0341, gain: 0.05 },
+  ];
+  for (const { delay, gain } of reflections) {
+    const offset = Math.round(delay * sampleRate);
+    // Chaque rebond perd ses aigus (passe-bas à un pôle).
+    const smooth = Math.exp((-2 * Math.PI * 3500) / sampleRate);
+    let low = 0;
+    for (let i = 0; i + offset < out.length; i++) {
+      low = (1 - smooth) * (dry[i] ?? 0) + smooth * low;
+      out[i + offset] = (out[i + offset] ?? 0) + gain * low;
+    }
+  }
+  // Traîne diffuse : bruit modulé par l'énergie du son, qui s'éteint en 40 ms environ.
+  let energy = 0;
+  const follow = Math.exp(-1 / (0.03 * sampleRate));
+  for (let i = 0; i < out.length; i++) {
+    energy = Math.max(Math.abs(dry[i] ?? 0), energy * follow);
+    out[i] = (out[i] ?? 0) + energy * (random() * 2 - 1) * 0.035;
+  }
+  return out;
+}
+
+/**
+ * Frappe de clavier mécanique, modelée comme un vrai clavier : la touche descend et tape le fond
+ * (claquement du plastique, capuchon et plaque qui sonnent, « toc » du boîtier sur le bureau), puis
+ * remonte 70 à 140 ms plus tard (choc plus léger et plus aigu). La barre d'espace sonne plus grave
+ * et plus longtemps, avec le petit cliquetis de son stabilisateur. Le tout dans un bureau.
  */
 export function synthKeystroke(sampleRate: number, seed: number, space = false): Float32Array {
   const random = lcg(seed);
-  const out = new Float32Array(Math.round(sampleRate * 0.07));
-  const thock = (space ? 110 : 180) + random() * 80;
-  const body = space ? 0.02 : 0.011;
-  const release = 0.03 + random() * 0.015;
-  const tone = 0.35 + random() * 0.25;
-  let previous = 0;
-  for (let i = 0; i < out.length; i++) {
-    const t = i / sampleRate;
-    const noise = random() * 2 - 1;
-    const click = noise - previous;
-    previous = noise;
-    let sample =
-      click * Math.exp(-t / 0.0035) * 0.6 +
-      Math.sin(2 * Math.PI * thock * t) * Math.exp(-t / body) * tone;
-    if (t >= release) {
-      const r = t - release;
-      sample +=
-        click * Math.exp(-r / 0.002) * 0.22 +
-        Math.sin(2 * Math.PI * thock * 1.4 * r) * Math.exp(-r / 0.006) * 0.12;
+  const out = new Float32Array(Math.round(sampleRate * 0.24));
+  const white = (seconds: number) =>
+    Float32Array.from({ length: Math.round(seconds * sampleRate) }, () => random() * 2 - 1);
+  // Chaque touche a sa place sur la plaque : ses résonances bougent un peu d'une touche à l'autre.
+  const scale = (space ? 0.62 : 1) * (0.88 + random() * 0.24);
+  const clack = bandpass(white(0.004), sampleRate, (space ? 1800 : 3200) * scale, 0.9);
+  strike(out, sampleRate, 0, clack, keyModes(random, scale, space), 1, random);
+  if (space) {
+    // Cliquetis du stabilisateur, juste après le choc.
+    for (const delay of [0.0045 + random() * 0.002, 0.009 + random() * 0.003]) {
+      const rattle = bandpass(white(0.002), sampleRate, 4200 + random() * 1500, 2);
+      strike(out, sampleRate, delay, rattle, [], 0.35, random);
     }
-    out[i] = sample;
   }
-  return normalize(out);
+  const release = 0.07 + random() * 0.07;
+  const upstroke = bandpass(white(0.003), sampleRate, 4200 * scale, 1.1);
+  const upModes = keyModes(random, scale * 1.22, space).map((mode) => ({
+    ...mode,
+    amplitude: mode.frequency < 1000 ? mode.amplitude * 0.25 : mode.amplitude,
+    decay: mode.decay * 0.7,
+  }));
+  strike(out, sampleRate, release, upstroke, upModes, space ? 0.45 : 0.32, random);
+  return normalize(room(out, sampleRate, random));
 }
 
 /** Clic de souris : deux petits « tic » secs et aigus, l'appui puis le relâchement. */
@@ -220,7 +345,7 @@ export function synthMouseClick(sampleRate: number, seed: number): Float32Array 
 const LOOKAHEAD_SECONDS = 0.12;
 /** En dessous, un son ne s'entend pas : on ne crée pas ses nœuds audio. */
 const SILENT_GAIN = 0.0005;
-const VARIANTS = { key: 6, space: 2, mouse: 4 } as const;
+const VARIANTS = { key: 10, space: 3, mouse: 4 } as const;
 
 type Buffers = Record<DeskHitKind, AudioBuffer[]>;
 
