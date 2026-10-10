@@ -557,6 +557,19 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Effet réel (moral, et qualité, hype, récupération ou productivité selon la plante), seul le pot
   se repeint, pièces fusionnées par couleur (`Pieces`), graine fixe propre à chaque plante. Pas de
   commande ni de champ d'état ; les petites sont masquées au dézoom comme le cactus.
+- Meubles détaillés comme le canapé (assemblage commun `render/pieces.ts` : couleurs repeignables
+  en matériaux nommés, le reste peint par sommet dans un matériau `trim`, voyants dans `lights`,
+  2 à 4 maillages par meuble). Bureaux et sièges (`render/workFurniture.ts`) : bureau de dev,
+  bureau du garage sur tréteaux, standing desk, chaise à roulettes, chaise ergonomique, meuble
+  télé, baie de serveurs, portant de casques. Cuisine (`render/kitchenFurniture.ts`) : comptoir à
+  café, comptoir du barista, micro-ondes, frigo à boissons, tablée de cantine. Détente
+  (`render/loungeFurniture.ts`) : babyfoot, toboggan, capsule de sieste (dans le bon sens),
+  enceinte, tapis rond repeignable, poubelle à pédale. 12 accessoires de bureau
+  (`render/deskAccessories.ts`, lampe d'architecte au lieu de la lampe carrée). Équipement des
+  chats (`render/petFurniture.ts`) : litières, gamelles et arbres à chat, places de l'IA des chats
+  inchangées. Hauteurs et emplacements d'accessoires inchangés ; couleurs `birch`, `chairFabric`,
+  `cabinet`, `cushion`, `rug`, `teddy` ajoutées à la palette. Les plantes passent par
+  `new Pieces('all')` (un matériau par couleur). Rendu seulement.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
