@@ -91,6 +91,29 @@ describe('Projecteur et écran déroulant', () => {
     const loaded = GameStateSchema.parse(JSON.parse(JSON.stringify(state)));
     expect(loaded.components.furniture[projector]?.on).toBe(true);
   });
+
+  it('un projecteur de plafond passe au-dessus d’un bureau et vise depuis sa case', () => {
+    const { simulation, state } = projectionRoom('ceiling-projector');
+    // Le projecteur de bureau est rangé : seul celui du plafond éclairera l’écran.
+    const desk = idsOf(state, 'desk')[0]!;
+    const onDesk = idsOf(state, 'projector')[0]!;
+    expect(switchProjector(simulation, onDesk, false).ok).toBe(true);
+    const buy = (x: number, y: number, rotation: number) =>
+      simulation.dispatch({ type: 'BUY_FURNITURE', itemId: 'ceiling-projector', x, y, rotation })
+        .result;
+    // Au-dessus du bureau (case 4, 5) : le mobilier ne le gêne pas.
+    expect(buy(4, 5, 2).ok).toBe(true);
+    // Deux objets du plafond ne se chevauchent pas.
+    expect(buy(4, 5, 2)).toEqual({ ok: false, error: 'INVALID_PLACEMENT' });
+    const ceiling = idsOf(state, 'ceiling-projector')[0]!;
+    expect(state.components.furniture[ceiling]?.on).toBe(true);
+    expect(activeProjections(state).map((p) => p.projector)).toEqual([ceiling]);
+    // Un meuble peut toujours se poser sous un objet du plafond.
+    expect(
+      simulation.dispatch({ type: 'MOVE_FURNITURE', furnitureId: desk, x: 4, y: 5, rotation: 2 })
+        .result.ok,
+    ).toBe(true);
+  });
 });
 
 describe('projectionPairs', () => {

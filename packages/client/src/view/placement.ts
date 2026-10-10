@@ -63,7 +63,12 @@ export function checkPlacement(
   }
   // Même règle que la simulation : aucun chevauchement, tapis compris.
   for (const other of items) {
-    if (other.id === request.ignoreId || other.host || catalogItem(other.kind)?.wall) continue;
+    const otherDef = catalogItem(other.kind);
+    if (other.id === request.ignoreId || other.host || otherDef?.wall) continue;
+    // Le plafond et le sol sont deux étages : un objet du plafond ne gêne que ceux du plafond.
+    // Sauf un mur vitré, qui monte jusqu'au plafond.
+    const fullHeight = otherDef?.partition === 'glass' || def.partition === 'glass';
+    if ((otherDef?.ceiling ?? false) !== def.ceiling && !fullHeight) continue;
     const otherCells = itemCells(other);
     if (cells.some((cell) => has(otherCells, cell.x, cell.z))) return 'overlap';
   }

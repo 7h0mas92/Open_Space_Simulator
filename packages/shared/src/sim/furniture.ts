@@ -89,6 +89,11 @@ export interface FurnitureDefinition {
    * 1 le long de z. Il bloque le passage ; le rendu le raccorde aux murs voisins.
    */
   partition?: 'solid' | 'glass';
+  /**
+   * Fixé au plafond : il occupe une case en hauteur et ne gêne ni le mobilier ni les passages.
+   * Seuls les autres objets du plafond l'empêchent d'être posé.
+   */
+  ceiling?: boolean;
 }
 
 /**
@@ -1064,6 +1069,22 @@ export const FURNITURE_CATALOG = [
     minPhase: 'GARAGE',
     maxCount: 3,
     accessory: true,
+    projector: true,
+    effects: { moral: 0.03, teamProductivity: -0.004 },
+  },
+  {
+    id: 'ceiling-projector',
+    name: t('Vidéoprojecteur de plafond', 'Ceiling projector'),
+    description: t(
+      'Accroché au plafond, il ne prend ni bureau ni sol. Allumé, il déroule l’écran en face.',
+      'Hung from the ceiling, it takes no desk or floor space. On, it unrolls the screen it faces.',
+    ),
+    price: 1300,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    ceiling: true,
     projector: true,
     effects: { moral: 0.03, teamProductivity: -0.004 },
   },

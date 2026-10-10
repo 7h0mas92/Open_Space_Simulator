@@ -311,6 +311,7 @@ export const MISSING_ASSETS = [
   { id: 'planterBox', replacement: 'primitive' },
   { id: 'giantMonstera', replacement: 'primitive' },
   { id: 'videoProjector', replacement: 'primitive' },
+  { id: 'ceilingProjector', replacement: 'primitive' },
   { id: 'projectionScreenSmall', replacement: 'primitive' },
   { id: 'projectionScreenMedium', replacement: 'primitive' },
   { id: 'projectionScreenLarge', replacement: 'primitive' },

@@ -9,6 +9,7 @@
  * Le rendu ne décide de rien : quels écrans sont déroulés vient de la simulation
  * (`GameView.projections`, calculé par `projectionPairs` dans `@oss/shared`).
  */
+import { isProjector } from '@oss/shared';
 import * as THREE from 'three';
 import type { PlacedItemView, ProjectionView as Projection } from '../view/types';
 import { itemMatrix, placedMatrix } from './office';
@@ -18,7 +19,7 @@ import {
   CAP,
   CASE_TOP,
   FABRIC_Z,
-  LENS,
+  lensOf,
   POLE_Z,
   SCREEN_SIZES,
   type ScreenSize,
@@ -145,7 +146,7 @@ export class ProjectionView {
 
   /** Met à jour écrans et faisceaux quand les objets posés ou les projections changent. */
   sync(items: readonly PlacedItemView[], projections: readonly Projection[]): void {
-    const relevant = items.filter((item) => SCREEN_SIZES[item.kind] || item.kind === 'projector');
+    const relevant = items.filter((item) => SCREEN_SIZES[item.kind] || isProjector(item.kind));
     const key = [
       relevant.map(
         (i) =>
@@ -192,10 +193,10 @@ export class ProjectionView {
     this.lenses = new Map();
     const screenOf = new Map(projections.map((p) => [p.projector, p.screen]));
     for (const item of items) {
-      if (item.kind !== 'projector' || !item.on) continue;
+      if (!isProjector(item.kind) || !item.on) continue;
       const matrix = placedMatrix(item, items);
       if (!matrix) continue;
-      const lens = new THREE.Vector3(...LENS).applyMatrix4(matrix);
+      const lens = new THREE.Vector3(...lensOf(item.kind)).applyMatrix4(matrix);
       const screenId = screenOf.get(item.id) ?? null;
       const sprite = new THREE.Sprite(
         new THREE.SpriteMaterial({

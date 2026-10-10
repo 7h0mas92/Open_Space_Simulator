@@ -3,7 +3,8 @@ import { getFurniture } from './furniture.js';
 /**
  * Projecteurs et écrans de projection déroulants.
  *
- * Un projecteur est un accessoire posé sur un meuble ; le joueur l'allume ou l'éteint. Allumé,
+ * Un projecteur est un accessoire posé sur un meuble, ou fixé au plafond au-dessus d'une case ;
+ * le joueur l'allume ou l'éteint. Allumé,
  * il projette sur l'écran posé en face de lui, et cet écran se déroule. Éteint, ou sans écran
  * en face, l'écran reste enroulé dans son caisson : ni le projecteur ni l'écran ne donnent leur
  * effet. Le même calcul sert à la simulation (effets) et au rendu (écran déroulé, faisceau),
@@ -88,12 +89,13 @@ export function projectionPairs(items: readonly ProjectionItem[]): ProjectionPai
   const pairs: ProjectionPair[] = [];
   for (const projector of items) {
     if (!projector.on || !isProjector(projector.itemId)) continue;
+    // Un projecteur de plafond vise depuis sa propre case ; un projecteur posé, depuis son meuble.
     const host = projector.hostId ? byId.get(projector.hostId) : undefined;
     // Un projecteur sans meuble (sauvegarde abîmée) ne projette pas.
-    if (!host) continue;
-    const [px, py] = center(host);
+    if (projector.hostId && !host) continue;
+    const [px, py] = center(host ?? projector);
     // L'accessoire tourne avec son meuble, puis de sa propre rotation.
-    const [ax, ay] = facing(host.rotation + projector.rotation);
+    const [ax, ay] = facing((host?.rotation ?? 0) + projector.rotation);
     let best: ProjectionPair | null = null;
     for (const screen of screens) {
       if (taken.has(screen.id)) continue;

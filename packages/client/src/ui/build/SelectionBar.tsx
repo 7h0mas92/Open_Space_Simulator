@@ -1,4 +1,4 @@
-import { PROJECTION_RANGE } from '@oss/shared';
+import { isProjector, PROJECTION_RANGE } from '@oss/shared';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
@@ -53,7 +53,7 @@ export function SelectionBar({ view }: { view: GameView }) {
             </span>
           )}
         </div>
-        {item.kind === 'projector' && (
+        {isProjector(item.kind) && (
           <button
             type="button"
             data-testid="switch-projector"
@@ -168,7 +168,7 @@ function projectionStatus(
   itemName: (kind: string) => string,
   t: TFunction,
 ): string | null {
-  if (item.kind === 'projector') {
+  if (isProjector(item.kind)) {
     if (!item.on) return t('build.projector.off');
     const pair = view.projections.find((p) => p.projector === item.id);
     const screen = pair && view.items.find((i) => i.id === pair.screen);
