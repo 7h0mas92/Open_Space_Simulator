@@ -622,6 +622,17 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `view/catalog.ts`, gabarit `@pc:<bureau>:<ordinateur>` dans `render/office.ts`). Commande
   `SET_COMPUTER`, champ `computer` optionnel (absent = tour sobre), aucun tirage.
 
+- Murs fins (`render/partitions.ts`, rayon « 🧱 Cloisons » du mode construction) : les cloisons du
+  plan ne sont plus des blocs d'une case séparés par une fente, mais des murs fins continus
+  raccordés à leurs voisins (angles, T, croix) et enfoncés dans les murs extérieurs. Deux objets
+  d'une case, posés en série, tournés (0 le long de x, 1 le long de z), repeints : « Mur fin »
+  (`thin-wall`, 150 €, mi-hauteur, +0,05 % de productivité) et « Mur fin vitré »
+  (`glass-partition`, 450 €, verre du sol au plafond, léger +moral), 80 au plus chacun. Champ
+  `partition: 'solid' | 'glass'` du catalogue ; dessinés avec les cloisons, boîte invisible pour
+  la sélection. Ils bloquent le passage ; un mur qui enfermerait une zone est refusé (erreur
+  `blocksPath` dans `view/placement.ts`). Vitres des salles de réunion raccordées pareil. Aucun
+  tirage, ni commande, ni champ d'état.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
