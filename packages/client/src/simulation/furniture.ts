@@ -6,7 +6,10 @@ import {
   annexCount,
   PHASES,
   getFurniture,
+  getComputer,
+  hasComputer,
   type CommandResult,
+  type ComputerId,
   type EntityId,
   type FurnitureColor,
   type FurnitureDefinition,
@@ -242,6 +245,7 @@ export function storeFurniture(state: GameState, furnitureId: EntityId): Command
       itemId: item.itemId,
       purchasePrice: item.purchasePrice,
       ...(item.color ? { color: item.color } : {}),
+      ...(item.computer ? { computer: item.computer } : {}),
     });
     destroyEntity(state, id);
   }
@@ -273,7 +277,9 @@ export function placeStored(
   if (item.accessory || !canPlace(state, item, x, y, rotation))
     return { ok: false, error: 'INVALID_PLACEMENT' };
   state.inventory.splice(index, 1);
-  placeFurniture(state, item.id, x, y, rotation, stored.purchasePrice, stored.color);
+  const id = placeFurniture(state, item.id, x, y, rotation, stored.purchasePrice, stored.color);
+  const placed = state.components.furniture[id];
+  if (placed && stored.computer) placed.computer = stored.computer;
   return { ok: true };
 }
 
@@ -335,6 +341,31 @@ export function paintFurniture(
   if (!placed) return { ok: false, error: 'NOT_FOUND' };
   if (color === 'natural') delete placed.color;
   else placed.color = color;
+  return { ok: true };
+}
+
+/**
+ * Change l'ordinateur d'un bureau : l'ancien est revendu (moitié de son prix), le nouveau payé.
+ * Sa valeur s'ajoute à celle du bureau, qui la rend à la revente ou la garde à l'inventaire.
+ */
+export function setComputer(
+  state: GameState,
+  furnitureId: EntityId,
+  computer: ComputerId,
+): CommandResult {
+  const placed = state.components.furniture[furnitureId];
+  if (!placed) return { ok: false, error: 'NOT_FOUND' };
+  if (!hasComputer(placed.itemId)) return { ok: false, error: 'NOT_ELIGIBLE' };
+  const current = getComputer(placed.computer);
+  const next = getComputer(computer);
+  if (current.id === next.id) return { ok: true };
+  if (phaseIndex(state.phase) < phaseIndex(next.minPhase)) return { ok: false, error: 'LOCKED' };
+  const refund = current.price * RESALE_RATIO;
+  if (state.gauges.treasury + refund < next.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
+  addMoney(state, refund - next.price);
+  placed.purchasePrice = Math.max(0, placed.purchasePrice - current.price) + next.price;
+  if (next.id === 'tower') delete placed.computer;
+  else placed.computer = next.id;
   return { ok: true };
 }
 
@@ -455,8 +486,14 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.babyfoot ||= e.babyfoot ?? false;
     const seats = e.seats ?? 1;
     if (e.seatProductivity) effects.desks += seats;
+    // L'ordinateur du bureau ajoute son bonus au poste, et un peu de moral, qualité ou hype.
+    const pc = hasComputer(item.id) ? getComputer(placed?.computer).effects : {};
+    effects.moral += pc.moral ?? 0;
+    effects.quality += pc.quality ?? 0;
+    effects.hypePerDay += pc.hypePerDay ?? 0;
     for (let i = 0; i < seats; i++) {
-      if (e.seatProductivity) productivitySeats.push(e.seatProductivity);
+      if (e.seatProductivity)
+        productivitySeats.push(e.seatProductivity + (pc.seatProductivity ?? 0));
       if (e.seatEnergySaving) energySeats.push(e.seatEnergySaving);
     }
     if (e.meetingShield) shieldSeats += seats;

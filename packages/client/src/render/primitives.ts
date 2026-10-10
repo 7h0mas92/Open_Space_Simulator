@@ -64,6 +64,7 @@ import {
 } from './workFurniture';
 import { qwertyKeyboard } from './keyboard';
 import { partitionPiece } from './partitions';
+import { liquidTower, neonTower, plainTower, proLaptop, titanTower } from './computers';
 import {
   bonsai,
   fiddleLeafFig,
@@ -441,6 +442,11 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   miniCactus,
   mousePad,
   qwertyKeyboard,
+  plainTower,
+  neonTower,
+  liquidTower,
+  titanTower,
+  proLaptop,
   litterOpen,
   litterCovered,
   litterRobot,
