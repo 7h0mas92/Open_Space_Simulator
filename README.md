@@ -435,6 +435,12 @@ flowchart LR
   lyre, palmier kentia, olivier centenaire) et des grosses (jardinière de séparation sur 3 cases,
   monstera géante sur 2 x 2 cases). Chacune remonte le moral, avec selon la plante un peu de
   qualité, de hype, de récupération ou de productivité ; seul le pot se repeint.
+- **Meubles détaillés** : comme le canapé et la bibliothèque, les meubles sont dessinés pièce par
+  pièce en Three.js : bureaux (plateau, caisson, passe-câble), chaises à roulettes, meuble télé,
+  baie de serveurs, comptoirs de cuisine avec leur machine, frigo vitré, tablée de cantine,
+  babyfoot, toboggan, capsule de sieste, tapis, poubelle, les 12 accessoires de bureau et
+  l'équipement des chats. Les pièces sont fusionnées par matériau (`render/pieces.ts`) : chaque
+  meuble reste dessiné en 2 à 4 appels, et ses couleurs principales se repeignent.
 - **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
   revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
   les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
@@ -616,7 +622,8 @@ génère que des messages Slack.
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
-  gamelles, arbres à chat et chats, canapé et bibliothèque détaillés, huit plantes d'intérieur, tableau blanc, horloge,
+  gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
+  accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran et souris, table de cantine et
   ses bancs…), pour que chacun ait un rendu qui lui est propre. Pour les
