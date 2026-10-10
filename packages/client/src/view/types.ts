@@ -10,6 +10,7 @@
  */
 import type {
   AcquisitionOffer,
+  ComputerId,
   WallFinishId,
   WallZone,
   Birthday,
@@ -286,6 +287,8 @@ export interface PlacedItemView {
   readonly color: FurnitureColor;
   /** Accessoire : le meuble qui le porte et l'emplacement occupé, sinon `null`. */
   readonly host: ItemHost | null;
+  /** Bureau : son ordinateur (tour ou portable), absent pour les autres objets. */
+  readonly computer?: ComputerId;
 }
 
 /**
@@ -669,6 +672,7 @@ export type GameCommand =
       readonly rotation: Rotation;
     }
   | { readonly type: 'paintItem'; readonly itemId: string; readonly color: FurnitureColor }
+  | { readonly type: 'setComputer'; readonly itemId: string; readonly computer: ComputerId }
   | {
       readonly type: 'moveItem';
       readonly itemId: string;
