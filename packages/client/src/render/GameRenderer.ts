@@ -18,6 +18,7 @@ import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import type { DeskActivity } from '../audio/deskSounds';
 import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents';
 import { CatWorld, type CatSnapshot } from '../ai/cats';
 import { itemCells } from '../ai/grid';
@@ -60,7 +61,7 @@ import { lightingAt, type LightingState } from './lighting';
 import { accessoryMatrix, itemMatrix, OfficeView } from './office';
 import { OfficeLights } from './officeLights';
 import { pixelRatioFor, QUALITY_PRESETS, type QualityLevel } from './quality';
-import { ScreenGlow } from './screens';
+import { SCREEN_MOUNTS, ScreenGlow } from './screens';
 import { SkylineView } from './skyline';
 
 export type PickTarget =
@@ -103,6 +104,8 @@ export interface RendererOptions {
   /** Case visée en mode construction ; `wall` : mur visé pour une fenêtre. */
   readonly onBuildCell?: (cell: Cell, wall?: WallSide) => void;
   readonly onFps?: (fps: number) => void;
+  /** À chaque image : devs à leur ordinateur et cadrage de la vue (bruits de clavier et souris). */
+  readonly onDeskActivity?: (activity: DeskActivity) => void;
 }
 
 const MAX_STEPS_PER_FRAME = 8;
@@ -128,6 +131,8 @@ const INVALID_GHOST = new THREE.MeshBasicMaterial({
 export class GameRenderer {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
+  /** Point réutilisé pour placer les devs à l'écran (bruits de bureau). */
+  private readonly deskPoint = new THREE.Vector3();
   // Loin du bureau (l'ortho ne change pas d'échelle) pour embrasser la ville jusqu'à la rue.
   private readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, CAMERA_FAR);
   private readonly sun = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -590,6 +595,7 @@ export class GameRenderer {
         !this.reducedMotion,
       );
     }
+    this.options.onDeskActivity?.(this.deskActivity(speed > 0));
     this.smoke.update(delta);
     this.confetti.update(delta);
     this.decorations.animate(now / 1000, this.reducedMotion);
@@ -784,6 +790,27 @@ export class GameRenderer {
       bubble.hidden = point.z > 1;
       bubble.style.transform = `translate(${((point.x + 1) / 2) * width}px, ${((1 - point.y) / 2) * height}px) translate(-50%, -100%)`;
     }
+  }
+
+  /** Devs qui travaillent à un ordinateur, placés par rapport au centre de l'écran. */
+  private deskActivity(running: boolean): DeskActivity {
+    const halfWidth = this.camera.right;
+    const halfHeight = this.camera.top;
+    const typists: DeskActivity['typists'][number][] = [];
+    const view = this.view;
+    if (running && view) {
+      const kinds = new Map(view.items.map((item) => [item.id, item.kind]));
+      const point = this.deskPoint;
+      for (const agent of this.current) {
+        if (!agent.visible || agent.pose !== 'work' || !agent.using) continue;
+        const kind = kinds.get(agent.using);
+        const character = this.characters.get(agent.id);
+        if (!kind || !SCREEN_MOUNTS[kind] || !character) continue;
+        point.set(character.root.position.x, 1, character.root.position.z).project(this.camera);
+        typists.push({ id: agent.id, x: point.x * halfWidth, y: point.y * halfHeight });
+      }
+    }
+    return { running, halfWidth, halfHeight, typists };
   }
 
   private updateSelectionMarker(): void {
