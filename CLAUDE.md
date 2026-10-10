@@ -545,11 +545,11 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   une graine fixe propre au fichier ; tissu repeignable (`fabric`, `fabricDark`), dessus de la
   bibliothèque à 1,58 et assise à 0,44 inchangés. Les modèles Kenney restent dans les salles de
   réunion.
-- Poste de travail : clavier QWERTY à vraies touches sur le bureau de dev (`render/keyboard.ts`,
-  forme `qwertyKeyboard` des assets manquants) : 61 touches en relief, police maison 3 x 5 dessinée
-  pixel par pixel, touches fusionnées en un seul appel de dessin. Souris Kenney agrandie (x1,35)
-  sur un tapis de souris sombre (forme `mousePad`), au bureau de dev et à côté du portable du
-  garage. Rendu seulement.
+- Poste de travail : clavier QWERTY à vraies touches sur le bureau de dev et le bureau debout
+  (`render/keyboard.ts`, forme `qwertyKeyboard` des assets manquants) : 61 touches en relief,
+  police maison 3 x 5 dessinée pixel par pixel, touches fusionnées en un seul appel de dessin.
+  Souris Kenney à l'échelle du clavier (x0,7, `MOUSE_SCALE`) sur un tapis de souris sombre (forme
+  `mousePad`), aux bureaux de dev et debout et à côté du portable du garage. Rendu seulement.
 - Plantes d'intérieur (rayon « Déco », `render/plants.ts`) : 8 plantes en plus, modélisées en
   Three.js feuille par feuille (le Furniture Kit n'a que 4 petites plantes). Petites : sansevieria,
   pothos sur sellette, bonsaï. Grandes : figuier lyre, palmier kentia (Seed), olivier centenaire
@@ -583,6 +583,8 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   déploiement, la nouvelle version s'applique toute seule au menu, ou au retour au menu si une
   partie est en cours (rien n'est perdu). Recherche d'une mise à jour toutes les 30 min et au
   retour sur l'onglet. Dépendance `workbox-window` ajoutée au client.
+- Version du jeu en bas du menu principal (`src/version.ts`, `__APP_BUILD__` écrit par
+  `vite.config.ts`) : « Version 0.1.0 · commit · date du build », pour savoir quelle version tourne.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
