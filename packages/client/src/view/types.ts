@@ -10,6 +10,7 @@
  */
 import type {
   AcquisitionOffer,
+  ComputerId,
   WallFinishId,
   WallZone,
   Birthday,
@@ -288,6 +289,8 @@ export interface PlacedItemView {
   readonly host: ItemHost | null;
   /** Projecteur allumé (absent : éteint, ou objet sans interrupteur). */
   readonly on?: boolean;
+  /** Bureau : son ordinateur (tour ou portable), absent pour les autres objets. */
+  readonly computer?: ComputerId;
 }
 
 /** Un projecteur allumé et l'écran qu'il a déroulé (voir `@oss/shared`, `projection.ts`). */
@@ -683,6 +686,7 @@ export type GameCommand =
   | { readonly type: 'paintItem'; readonly itemId: string; readonly color: FurnitureColor }
   /** Allume ou éteint un projecteur (il déroule l'écran posé en face de lui). */
   | { readonly type: 'switchProjector'; readonly itemId: string; readonly on: boolean }
+  | { readonly type: 'setComputer'; readonly itemId: string; readonly computer: ComputerId }
   | {
       readonly type: 'moveItem';
       readonly itemId: string;

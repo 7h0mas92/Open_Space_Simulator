@@ -91,11 +91,11 @@ export class Simulation {
    * Toute modification du mobilier ou de l'équipe ajoute une entité (nextEntityId change)
    * ou en retire une (un des deux compteurs change). Les postes vont aux devs présents au
    * bureau : la liste des télétravailleurs fait donc aussi partie de la clé, comme la formule
-   * de la salle de réunion.
+   * de la salle de réunion, et les ordinateurs des bureaux (changés sans nouvelle entité).
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;
@@ -158,4 +158,12 @@ export class Simulation {
     }
     return { result, notifications: ctx.outbox };
   }
+}
+
+/** Ordinateurs choisis (hors tour sobre), pour invalider le cache des effets du bureau. */
+function computersKey(state: GameState): string {
+  let key = '';
+  for (const [id, item] of Object.entries(state.components.furniture))
+    if (item.computer) key += `${id}=${item.computer},`;
+  return key;
 }

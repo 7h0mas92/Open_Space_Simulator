@@ -63,6 +63,7 @@ import {
   trestleDesk,
 } from './workFurniture';
 import { qwertyKeyboard } from './keyboard';
+import { liquidTower, neonTower, plainTower, proLaptop, titanTower } from './computers';
 import {
   projectionScreenLarge,
   projectionScreenMedium,
@@ -445,6 +446,11 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   miniCactus,
   mousePad,
   qwertyKeyboard,
+  plainTower,
+  neonTower,
+  liquidTower,
+  titanTower,
+  proLaptop,
   litterOpen,
   litterCovered,
   litterRobot,
