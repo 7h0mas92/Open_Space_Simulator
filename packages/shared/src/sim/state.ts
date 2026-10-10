@@ -16,6 +16,7 @@ import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
+import { WallFinishesSchema } from './walls.js';
 
 /**
  * État complet d'une partie. Il est 100 % sérialisable en JSON : une sauvegarde est
@@ -360,6 +361,8 @@ export const GameStateSchema = z.object({
   financing: FinancingStateSchema.default({ lastSprint: {}, loan: null }),
   /** Inventaire : objets rangés, du plus ancien au plus récent (absent des vieilles sauvegardes). */
   inventory: z.array(StoredItemSchema).max(INVENTORY_MAX).default([]),
+  /** Peintures et papiers peints des murs, par zone (absents des vieilles sauvegardes). */
+  walls: WallFinishesSchema.default({}),
   /** Chats du bureau (absents des sauvegardes d'avant leur ajout). */
   pets: z.array(PetSchema).max(PETS.max).default([]),
   /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */

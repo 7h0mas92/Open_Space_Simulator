@@ -41,7 +41,11 @@ import {
   type SprintPerformance,
   type Stats,
   type TaskColumn,
+  PHASES,
+  WALL_FINISHES,
+  wallZones,
 } from '@oss/shared';
+import { wallOffice } from '../simulation/walls';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
@@ -93,6 +97,7 @@ import type {
   GameView,
   MeetingRoomView,
   PetsView,
+  WallsView,
   GaugeName,
   KanbanColumn,
   LeadershipView,
@@ -641,6 +646,19 @@ function petsView(state: GameState): PetsView {
   };
 }
 
+function wallsView(state: GameState): WallsView {
+  const phase = PHASES.indexOf(state.phase);
+  return {
+    zones: wallZones(wallOffice(state)).map((zone) => ({
+      zone,
+      finish: state.walls[zone] ?? null,
+    })),
+    locked: WALL_FINISHES.filter((finish) => PHASES.indexOf(finish.minPhase) > phase).map(
+      (finish) => finish.id,
+    ),
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -708,6 +726,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     group: groupView(state),
     meetingRoom: meetingRoomView(state),
     pets: petsView(state),
+    walls: wallsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
       state.phase === 'UNICORN' &&
@@ -853,6 +872,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'FIT_MEETING_ROOM', format: command.format };
     case 'clearMeetingRoom':
       return { type: 'CLEAR_MEETING_ROOM' };
+    case 'coverWall':
+      return { type: 'COVER_WALL', zone: command.zone, finish: command.finish };
     case 'adoptPet':
       return { type: 'ADOPT_PET', coat: command.coat };
     case 'rehomePet':

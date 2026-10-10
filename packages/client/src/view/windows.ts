@@ -13,6 +13,7 @@ export type WallSide = 0 | 1;
 
 /** Une fenêtre vue depuis le mur : où elle commence et sur combien de cases. */
 export interface WallOpening {
+  readonly kind: string;
   readonly wall: WallSide;
   readonly start: number;
   readonly length: number;
@@ -31,6 +32,7 @@ export function wallOpenings(items: readonly PlacedItemView[]): WallOpening[] {
     const def = catalogItem(item.kind);
     if (!def?.wall || (item.rotation !== 0 && item.rotation !== 1)) continue;
     openings.push({
+      kind: item.kind,
       wall: item.rotation,
       start: item.rotation === 0 ? item.x : item.z,
       length: def.size[0],

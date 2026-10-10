@@ -306,6 +306,40 @@ test('inventaire : ranger un objet posé puis le reposer gratuitement', async ({
   await expect(page.getByTestId('inventory')).toContainText('L’inventaire est vide');
 });
 
+test('mode construction : peindre un mur puis le tapisser', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: /Construction/ }).click();
+  await page.getByTestId('catalog-tab-walls').click();
+  await expect(page.getByTestId('walls')).toBeVisible();
+
+  // Une peinture : le mur du fond de l'open space passe en bleu canard.
+  await page.getByTestId('wall-finish-teal').click();
+  await expect(page.getByTestId('wall-finish-teal')).toHaveAttribute('aria-pressed', 'true');
+  const zone = page.getByTestId('wall-zone-back-open');
+  await zone.click();
+  // Le mur est couvert : le même revêtement n'y est plus proposé.
+  await expect(zone).toBeDisabled();
+  await expect(zone).toHaveAccessibleName(/déjà en Bleu canard/);
+
+  // Puis un papier peint sur tous les murs.
+  await page.getByTestId('wall-finish-brick').click();
+  await expect(zone).toBeEnabled();
+  await page.getByTestId('wall-zone-all').click();
+  await expect(page.getByTestId('wall-zone-left-open')).toBeDisabled();
+  await expect(page.getByTestId('wall-zone-all')).toBeDisabled();
+
+  const tooSmall = await page.evaluate(() =>
+    [...document.querySelectorAll('.build-hud button')]
+      .map((element) => element.getBoundingClientRect())
+      .filter(({ width, height }) => width > 0 && (width < 44 || height < 44)),
+  );
+  expect(tooSmall).toEqual([]);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
 test('la caméra zoome à la molette et au clavier', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Molette et clavier : ordinateur uniquement');
   await startAsGuest(page);

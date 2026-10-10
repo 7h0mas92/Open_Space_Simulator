@@ -524,6 +524,25 @@
       "ego": "Oversized ego"
     }
   },
+  "walls": {
+    "applyTo": "Put “{{finish}}” on:",
+    "applyLabel": "Put {{finish}} on the {{zone}} wall for €{{price}}",
+    "alreadyLabel": "The {{zone}} wall already has {{finish}}",
+    "all": "All walls (€{{price}})",
+    "perWall": "€{{price}} per wall",
+    "effects": { "moral": "morale", "quality": "quality", "hype": "hype" },
+    "zones": {
+      "back-open": "Back · open space",
+      "back-kitchen": "Back · kitchen",
+      "back-wing-1": "Back · wing 1",
+      "back-wing-2": "Back · wing 2",
+      "back-wing-3": "Back · wing 3",
+      "left-open": "Left · open space",
+      "left-arcade": "Left · arcade",
+      "left-garden": "Left · garden",
+      "left-auditorium": "Left · auditorium"
+    }
+  },
   "build": {
     "title": "Build mode",
     "intro": "Pick an item to place, or tap a piece of furniture to move, store or sell it.",
@@ -536,6 +555,7 @@
       "decor": "Decor",
       "pets": "Pets",
       "window": "Windows",
+      "walls": "Walls",
       "accessory": "Accessories"
     },
     "price": "€{{price}}",

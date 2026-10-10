@@ -13,6 +13,7 @@ import type { GameView, StoredItemView } from '../../view/types';
 import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { useThumbnail } from './thumbnails';
+import { WallFinishes } from './WallFinishes';
 
 /** Icône de chaque rayon (et de ses objets tant que leur vignette 3D n'est pas prête). */
 export const CATEGORY_ICONS: Record<ItemCategory, string> = {
@@ -26,9 +27,16 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   accessory: '🦆',
 };
 
-/** Onglets du catalogue : les rayons de la boutique, puis l'inventaire (objets rangés). */
-type CatalogTab = ItemCategory | 'inventory';
-const TABS: readonly CatalogTab[] = [...ITEM_CATEGORIES, 'inventory'];
+/**
+ * Onglets du catalogue : les rayons de la boutique, le rayon Murs (peintures et papiers peints,
+ * juste après les fenêtres), puis l'inventaire (objets rangés).
+ */
+type CatalogTab = ItemCategory | 'walls' | 'inventory';
+const TABS: readonly CatalogTab[] = ITEM_CATEGORIES.flatMap((category): CatalogTab[] =>
+  category === 'window' ? [category, 'walls'] : [category],
+).concat('inventory');
+
+const TAB_ICONS: Record<'walls' | 'inventory', string> = { walls: '🎨', inventory: '📦' };
 
 /** Onglet ouvert en dernier : on y revient après chaque pose. */
 let lastCategory: CatalogTab = 'work';
@@ -60,7 +68,9 @@ export function Catalog({ view }: { view: GameView }) {
               setCategory(id);
             }}
           >
-            <span aria-hidden="true">{id === 'inventory' ? '📦' : CATEGORY_ICONS[id]}</span>
+            <span aria-hidden="true">
+              {id === 'inventory' || id === 'walls' ? TAB_ICONS[id] : CATEGORY_ICONS[id]}
+            </span>
             <span className="catalog-tab-label">
               {t(id === 'inventory' ? 'build.inventory' : `build.categories.${id}`)}
             </span>
@@ -74,6 +84,8 @@ export function Catalog({ view }: { view: GameView }) {
       </div>
       {category === 'inventory' ? (
         <Inventory view={view} />
+      ) : category === 'walls' ? (
+        <WallFinishes view={view} />
       ) : (
         <ul className="catalog-items" role="tabpanel" data-testid="catalog">
           {category === 'pets' && (

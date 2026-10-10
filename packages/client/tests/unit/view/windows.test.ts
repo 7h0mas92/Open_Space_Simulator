@@ -27,9 +27,9 @@ describe('fenêtres dans les murs', () => {
       item('window-small', 1, 0, 0),
     ];
     expect(wallOpenings(items)).toEqual([
-      { wall: 0, start: 1, length: 1, full: false },
-      { wall: 0, start: 5, length: 3, full: false },
-      { wall: 1, start: 4, length: 2, full: true },
+      { kind: 'window-small', wall: 0, start: 1, length: 1, full: false },
+      { kind: 'window-large', wall: 0, start: 5, length: 3, full: false },
+      { kind: 'glass-wall', wall: 1, start: 4, length: 2, full: true },
     ]);
   });
 

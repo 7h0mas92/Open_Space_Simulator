@@ -17,6 +17,7 @@ import { addComponent, createEntity, destroyEntity, query } from './ecs';
 import { addMoney, devIds } from './helpers';
 import { meetingFormat } from './meetings';
 import { petEffects } from './pets';
+import { wallEffects } from './walls';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
 export function phaseIndex(phase: Phase): number {
@@ -449,6 +450,11 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.hypePerDay += pets.hypePerDay;
     effects.teamProductivity += pets.teamProductivity;
   }
+  // Peintures et papiers peints : un peu de moral, parfois de la qualité ou de la hype.
+  const walls = wallEffects(state);
+  effects.moral += walls.moral;
+  effects.quality += walls.quality;
+  effects.hypePerDay += walls.hypePerDay;
   const inOffice = devIds(state).filter((id) => !(id in state.components.remote));
   effects.seatProductivity = distribute(productivitySeats, inOffice);
   effects.seatEnergySaving = distribute(energySeats, inOffice);

@@ -524,6 +524,25 @@
       "ego": "Ego surdimensionné"
     }
   },
+  "walls": {
+    "applyTo": "Poser « {{finish}} » sur :",
+    "applyLabel": "Poser {{finish}} sur le mur {{zone}} pour {{price}} €",
+    "alreadyLabel": "Le mur {{zone}} est déjà en {{finish}}",
+    "all": "Tous les murs ({{price}} €)",
+    "perWall": "{{price}} € le mur",
+    "effects": { "moral": "moral", "quality": "qualité", "hype": "hype" },
+    "zones": {
+      "back-open": "Fond · open space",
+      "back-kitchen": "Fond · cuisine",
+      "back-wing-1": "Fond · aile 1",
+      "back-wing-2": "Fond · aile 2",
+      "back-wing-3": "Fond · aile 3",
+      "left-open": "Gauche · open space",
+      "left-arcade": "Gauche · arcade",
+      "left-garden": "Gauche · jardin",
+      "left-auditorium": "Gauche · auditorium"
+    }
+  },
   "build": {
     "title": "Construction",
     "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer, le ranger ou le revendre.",
@@ -536,6 +555,7 @@
       "decor": "Déco",
       "pets": "Animaux",
       "window": "Fenêtres",
+      "walls": "Murs",
       "accessory": "Accessoires"
     },
     "price": "{{price}} €",
