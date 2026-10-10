@@ -15,6 +15,12 @@ import type { PlacedItemView, WallZoneView } from '../view/types';
 import { wallLength, wallOpenings, type WallOpening, type WallSide } from '../view/windows';
 import { paintObject, type AssetLibrary } from './assets';
 import { buildFixture } from './annexDecor';
+import {
+  buildPartitions,
+  partitionCells,
+  partitionShapes,
+  PARTITION_THICKNESS,
+} from './partitions';
 import { buildWallSkins } from './wallFinishes';
 import {
   buildPrimitive,
@@ -83,8 +89,6 @@ export function floorStyle(kind: RoomKind, style = 0): FloorStyle {
   return styles[style] ?? (styles[0] as FloorStyle);
 }
 
-const PARTITION_HEIGHT = 1.3;
-
 /** Partie d'un gabarit : un maillage et sa transformation relative à la racine. */
 export interface TemplatePart {
   readonly geometry: THREE.BufferGeometry;
@@ -101,6 +105,14 @@ const DECOR_KINDS = new Set([
   'trashcan',
   'earbuds-dock',
 ]);
+
+/** Zone de sélection d'un mur fin posé : sa case, sur la hauteur d'un mur. */
+const PARTITION_HIT_BOX = new THREE.BoxGeometry(1, 2.2, PARTITION_THICKNESS * 3).translate(
+  0,
+  1.1,
+  0,
+);
+const PARTITION_HIT_MATERIAL = new THREE.MeshBasicMaterial();
 
 /** Clé d'un gabarit : l'objet et sa couleur (`desk#blue`). */
 function templateKey(kind: string, color: FurnitureColor): string {
@@ -230,6 +242,8 @@ export class OfficeView {
   private layout: OfficeLayout | null = null;
   private wallsKey = '';
   private openings: readonly WallOpening[] = [];
+  /** Murs fins posés par le joueur : dessinés avec les cloisons, pour s'y raccorder. */
+  private partitionItems: readonly PlacedItemView[] = [];
   private finishes: Partial<Record<WallZone, WallFinishId>> = {};
   private readonly furniture = new THREE.Group();
   private readonly signs = new THREE.Group();
@@ -275,14 +289,17 @@ export class OfficeView {
     const layout = this.layout;
     if (!layout) return;
     const openings = this.openings.map((o) => `${o.kind}:${o.wall}:${o.start}`).join(',');
+    const partitions = this.partitionItems
+      .map((i) => `${i.kind}:${i.x}:${i.z}:${i.rotation % 2}:${i.color}`)
+      .join(',');
     const finishes = Object.entries(this.finishes)
       .map(([zone, finish]) => `${zone}=${finish}`)
       .join(',');
-    const key = `${this.layoutKey}|${openings}|${finishes}`;
+    const key = `${this.layoutKey}|${openings}|${finishes}|${partitions}`;
     if (key === this.wallsKey) return;
     this.wallsKey = key;
     disposeChildren(this.walls);
-    this.walls.add(buildWalls(layout, this.openings));
+    this.walls.add(buildWalls(layout, this.openings, this.partitionItems));
     this.walls.add(buildWallSkins(layout, this.openings, this.finishes));
   }
 
@@ -354,6 +371,7 @@ export class OfficeView {
     this.itemsKey = key;
     const buildId = ++this.buildId;
     this.openings = wallOpenings(items);
+    this.partitionItems = items.filter((item) => catalogItem(item.kind)?.partition && !item.host);
     this.refreshWalls();
 
     const groups = new Map<string, { matrix: THREE.Matrix4; itemId: string }[]>();
@@ -362,9 +380,16 @@ export class OfficeView {
       list.push({ matrix, itemId });
       groups.set(kind, list);
     };
+    const partitionHits: { matrix: THREE.Matrix4; itemId: string }[] = [];
     for (const item of items) {
       const matrix = placedMatrix(item, items);
       if (!matrix) continue;
+      // Les murs fins sont dessinés avec les cloisons (raccords compris) : ici, seulement une
+      // boîte invisible pour les sélectionner.
+      if (catalogItem(item.kind)?.partition) {
+        partitionHits.push({ matrix, itemId: item.id });
+        continue;
+      }
       add(templateKey(item.kind, item.color), matrix, item.id);
       // La chaise d'un bureau prend la couleur du bureau : un poste assorti.
       for (const extra of extrasFor(item))
@@ -401,6 +426,21 @@ export class OfficeView {
         const def = catalogItem(itemKind);
         if (DECOR_KINDS.has(itemKind) || (def?.accessory && !def.appliance)) this.decor.push(mesh);
       }
+    }
+    if (partitionHits.length > 0) {
+      const hits = new THREE.InstancedMesh(
+        PARTITION_HIT_BOX,
+        PARTITION_HIT_MATERIAL,
+        partitionHits.length,
+      );
+      partitionHits.forEach(({ matrix }, index) => hits.setMatrixAt(index, matrix));
+      hits.instanceMatrix.needsUpdate = true;
+      // Invisible, mais le lancer de rayons la touche quand même.
+      hits.visible = false;
+      hits.userData.itemIds = partitionHits.map((hit) => hit.itemId);
+      hits.computeBoundingSphere();
+      this.furniture.add(hits);
+      this.pickables.push(hits);
     }
   }
 
@@ -508,7 +548,11 @@ export function wallSpans(
   return spans;
 }
 
-function buildWalls(layout: OfficeLayout, openings: readonly WallOpening[]): THREE.Object3D {
+function buildWalls(
+  layout: OfficeLayout,
+  openings: readonly WallOpening[],
+  partitionItems: readonly PlacedItemView[],
+): THREE.Object3D {
   const group = new THREE.Group();
   const wall = material(WALL_COLOR);
   const trim = material(PALETTE.woodDark);
@@ -533,9 +577,8 @@ function buildWalls(layout: OfficeLayout, openings: readonly WallOpening[]): THR
   // Murs avant, bas (on voit l'intérieur depuis la caméra isométrique).
   add(width + 0.4, 0.25, 0.2, (width - 1) / 2, depth - 0.4, trim);
   add(0.2, 0.25, depth + 0.2, width - 0.4, (depth - 1) / 2, trim);
-  // Cloisons intérieures, à mi-hauteur.
-  for (const cell of layout.partitions)
-    add(0.96, PARTITION_HEIGHT, 0.96, cell.x, cell.z, material(0xd8d2c4));
+  // Cloisons du plan et murs fins posés : des murs fins continus, raccordés entre eux.
+  group.add(buildPartitions(partitionShapes(partitionCells(layout, partitionItems), layout)));
   // Paillasson d'entrée.
   add(0.9, 0.02, 0.9, layout.entrance.x, layout.entrance.z, material(PALETTE.red));
   return group;

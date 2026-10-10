@@ -21,6 +21,7 @@ export const ITEM_CATEGORIES = [
   'fun',
   'decor',
   'pets',
+  'partition',
   'window',
   'accessory',
 ] as const;
@@ -107,6 +108,8 @@ export interface CatalogItem extends ItemLook {
   readonly applianceSlots: number;
   /** Fenêtre : se fixe dans un mur du fond (rotation 0 : mur du fond, 1 : mur de gauche). */
   readonly wall: boolean;
+  /** Mur fin posé au sol (plein ou vitré), raccordé aux murs voisins, sinon `null`. */
+  readonly partition: 'solid' | 'glass' | null;
   readonly paint: readonly string[];
   /** Équipement pour chat (litière, gamelle, arbre à chat), sinon `null`. */
   readonly petNeed: PetNeed | null;
@@ -536,6 +539,20 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 2.2,
     paint: ['dark'],
   },
+  // Murs fins posés case par case (voir `render/partitions.ts`) : le plâtre, ou le cadre du
+  // vitrage, se repeint.
+  'thin-wall': {
+    category: 'partition',
+    model: primitive('thinWall'),
+    height: 1.3,
+    paint: ['plaster'],
+  },
+  'glass-partition': {
+    category: 'partition',
+    model: primitive('glassPartition'),
+    height: 2.2,
+    paint: ['metal'],
+  },
   // Lampe d'architecte : socle lesté, bras à ressorts, abat-jour penché, ampoule allumée.
   'desk-lamp': {
     category: 'accessory',
@@ -613,6 +630,7 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   appliance: 'appliance' in item && item.appliance === true,
   applianceSlots: 'applianceSlots' in item ? item.applianceSlots : 0,
   wall: 'wall' in item && item.wall === true,
+  partition: 'partition' in item ? item.partition : null,
   paint: LOOKS[item.id].paint ?? DEFAULT_PAINT,
   petNeed: 'petNeed' in item ? item.petNeed : null,
 }));

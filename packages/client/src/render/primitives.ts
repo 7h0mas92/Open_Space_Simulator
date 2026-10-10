@@ -63,6 +63,7 @@ import {
   trestleDesk,
 } from './workFurniture';
 import { qwertyKeyboard } from './keyboard';
+import { partitionPiece } from './partitions';
 import {
   bonsai,
   fiddleLeafFig,
@@ -114,6 +115,7 @@ export const PALETTE = {
   ceramic: 0xebe6dc,
   concrete: 0xaba69d,
   wicker: 0xa88a5a,
+  plaster: 0xd8d2c4,
 } as const;
 
 /** Nom de chaque couleur de la palette : il sert à repérer les matériaux à repeindre. */
@@ -451,6 +453,8 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   windowMedium,
   windowLarge,
   glassWall,
+  thinWall: () => partitionPiece('solid'),
+  glassPartition: () => partitionPiece('glass'),
   sofa: detailedSofa,
   bookcase: detailedBookcase,
   officeDesk,
