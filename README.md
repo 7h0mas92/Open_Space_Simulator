@@ -430,10 +430,10 @@ flowchart LR
   du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
   lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
   le jeu reste jouable sans musique.
-- **Poste de travail** : le bureau de dev porte un clavier QWERTY à vraies touches (61 touches
-  en relief avec leurs lettres, Entrée en bleu, un seul appel de dessin : `render/keyboard.ts`)
-  et une souris Kenney agrandie sur un tapis de souris sombre ; le portable du garage a aussi sa
-  souris et son tapis.
+- **Poste de travail** : le bureau de dev et le bureau debout portent un clavier QWERTY à vraies
+  touches (61 touches en relief avec leurs lettres, Entrée en bleu, un seul appel de dessin :
+  `render/keyboard.ts`) et une souris Kenney à l'échelle du clavier sur un tapis de souris sombre ;
+  le portable du garage a aussi sa souris et son tapis.
 - **Plantes d'intérieur** : en plus de la plante verte et du cactus, le rayon Déco propose huit
   plantes dessinées feuille par feuille en Three.js (`render/plants.ts`). Des petites
   (sansevieria, pothos sur sellette avec ses lianes, bonsaï), des grandes jusqu'à 2 m (figuier
@@ -497,7 +497,8 @@ sequenceDiagram
 - **PWA** : `vite-plugin-pwa` met en cache le code, les modèles Kenney et les icônes ; une
   partie en invité se lance sans réseau (testé par Playwright). Après un déploiement, la
   nouvelle version s'applique d'elle-même au menu, ou au retour au menu pendant une partie
-  (`ui/appUpdate.ts`).
+  (`ui/appUpdate.ts`). Le bas du menu principal affiche la version du jeu (numéro, commit
+  et date du build, `src/version.ts`) pour savoir laquelle tourne.
 
 ### Back-office
 
