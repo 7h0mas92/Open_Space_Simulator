@@ -417,6 +417,11 @@ flowchart LR
   au plafond, posés case par case. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
   eux (angles, T, croix), sans jour entre deux murs, et se tournent, se repeignent et se revendent.
   Un mur qui enfermerait une zone est refusé, pour que chacun puisse toujours rejoindre son bureau.
+- **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble et
+  trois écrans de projection déroulants (2, 3 et 4 cases). Allumé et tourné vers un écran, le
+  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. Projecteur et
+  écran ne donnent leur effet (moral, qualité, hype, léger malus de productivité) que pendant la
+  projection.
 - **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
   fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
   au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
@@ -650,7 +655,8 @@ génère que des messages Slack.
   de ramen, mug, canard en plastique, trophée de hackathon, étui d'écouteurs sans fil ouvert,
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, tours de PC sobre et gaming,
   MacBook Pro sans logo, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, murs fins pleins et vitrés, litières,
+  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur et écrans déroulants,
+  litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
