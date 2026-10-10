@@ -8,6 +8,7 @@ import {
   MISSING_ASSETS,
 } from '../../../src/render/assetManifest';
 import { POSE_CLIPS } from '../../../src/render/characters';
+import { WORKSTATION_ASSETS } from '../../../src/render/computers';
 import { GestureRecognizer, LONG_PRESS_MS } from '../../../src/render/gestures';
 import { interpolateAgent, lerpAngle } from '../../../src/render/interpolation';
 import {
@@ -281,8 +282,13 @@ describe('manifeste des assets Kenney', () => {
     );
     expect(new Set(looks).size).toBe(CATALOG.length);
     // Et chaque forme Three.js de remplacement sert au moins une fois.
-    // La chaise des bureaux n'est pas au catalogue : `office.ts` la pose devant chaque bureau.
-    const used = new Set([...looks.join('+').split('+'), `primitive:${DESK_CHAIR.model}`]);
+    // La chaise des bureaux n'est pas au catalogue : `office.ts` la pose devant chaque bureau,
+    // comme l'ordinateur de chaque poste de travail (clavier, tours, portable).
+    const used = new Set([
+      ...looks.join('+').split('+'),
+      `primitive:${DESK_CHAIR.model}`,
+      ...WORKSTATION_ASSETS.map((id) => `primitive:${id}`),
+    ]);
     for (const asset of MISSING_ASSETS) {
       if (asset.replacement === 'primitive')
         expect(used, asset.id).toContain(`primitive:${asset.id}`);

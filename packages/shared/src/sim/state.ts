@@ -9,6 +9,7 @@ import {
   StatsSchema,
 } from './components.js';
 import { CommandLogSchema } from './commands.js';
+import { ComputerIdSchema } from './computers.js';
 import { FinancingStateSchema } from './funding.js';
 import { MeetingRoomSchema } from './meetings.js';
 import { PETS, PetSchema } from './pets.js';
@@ -136,6 +137,8 @@ export const StoredItemSchema = z.object({
   itemId: z.string(),
   purchasePrice: z.number().nonnegative(),
   color: FurnitureColorSchema.optional(),
+  /** Bureau rangé : son ordinateur, qui revient avec lui. */
+  computer: ComputerIdSchema.optional(),
 });
 export type StoredItem = z.infer<typeof StoredItemSchema>;
 

@@ -10,6 +10,8 @@
 import {
   ANNEXES,
   BALANCE,
+  DEFAULT_COMPUTER,
+  hasComputer,
   MEETING_FORMATS,
   PETS,
   FUNDING_TIERS,
@@ -406,6 +408,7 @@ function itemViews(state: GameState): PlacedItemView[] {
     resale: Math.round(item.purchasePrice * RESALE_RATIO),
     color: item.color ?? 'natural',
     host: item.hostId !== undefined ? { id: item.hostId, slot: item.slot ?? 0 } : null,
+    ...(hasComputer(item.itemId) ? { computer: item.computer ?? DEFAULT_COMPUTER } : {}),
   }));
 }
 
@@ -791,6 +794,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       };
     case 'paintItem':
       return { type: 'PAINT_FURNITURE', furnitureId: command.itemId, color: command.color };
+    case 'setComputer':
+      return { type: 'SET_COMPUTER', furnitureId: command.itemId, computer: command.computer };
     case 'moveItem':
     case 'rotateItem': {
       const item = view.items.find((i) => i.id === command.itemId);
