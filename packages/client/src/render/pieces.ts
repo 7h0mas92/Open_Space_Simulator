@@ -50,8 +50,11 @@ function tint(geometry: THREE.BufferGeometry, color: number): void {
 export class Pieces {
   private readonly byMaterial = new Map<THREE.Material, THREE.BufferGeometry[]>();
 
-  /** @param paintable couleurs de la palette que le joueur peut repeindre (matériau nommé). */
-  constructor(private readonly paintable: readonly number[] = []) {}
+  /**
+   * @param paintable couleurs de la palette que le joueur peut repeindre (matériau nommé), ou
+   * `'all'` pour donner son matériau à chaque couleur (les plantes, dont chaque teinte compte).
+   */
+  constructor(private readonly paintable: readonly number[] | 'all' = []) {}
 
   /** Ajoute une géométrie déjà placée (position, rotation) dans le repère du meuble. */
   add(geometry: THREE.BufferGeometry, mat: THREE.Material): void {
@@ -187,7 +190,8 @@ export class Pieces {
   /** Range la pièce : matériau nommé si sa couleur se repeint, sinon couleur par sommet. */
   private paint(geometry: THREE.BufferGeometry, color: number | THREE.Material): void {
     if (typeof color !== 'number') this.add(geometry, color);
-    else if (this.paintable.includes(color)) this.add(geometry, material(color));
+    else if (this.paintable === 'all' || this.paintable.includes(color))
+      this.add(geometry, material(color));
     else {
       tint(geometry, color);
       this.add(geometry, trimMaterial);

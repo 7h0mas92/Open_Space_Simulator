@@ -266,6 +266,8 @@ test('mode construction : au doigt, on fait glisser l’aperçu sans bouger la c
 });
 
 test('inventaire : ranger un objet posé puis le reposer gratuitement', async ({ page }) => {
+  // Long parcours (poser, ranger, reposer) : il frôlait déjà les 30 s par défaut en 1440 px.
+  test.slow();
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();
   await page.getByRole('tab', { name: /Déco/ }).click();
@@ -277,6 +279,8 @@ test('inventaire : ranger un objet posé puis le reposer gratuitement', async ({
   await page.getByTestId('place').click();
   await expect.poll(count).toBe(items + 1);
   await page.getByRole('button', { name: /Annuler/ }).click();
+  // Le rayon Déco, bien garni, cache le bas de l'écran : l'onglet Inventaire, vide, le libère.
+  await page.getByTestId('catalog-tab-inventory').click();
 
   // Toucher l'objet posé le sélectionne : « Ranger » le met dans l'inventaire.
   await page.getByTestId('scene').click({ position: spot });

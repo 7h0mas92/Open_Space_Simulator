@@ -550,6 +550,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   pixel par pixel, touches fusionnées en un seul appel de dessin. Souris Kenney agrandie (x1,35)
   sur un tapis de souris sombre (forme `mousePad`), au bureau de dev et à côté du portable du
   garage. Rendu seulement.
+- Plantes d'intérieur (rayon « Déco », `render/plants.ts`) : 8 plantes en plus, modélisées en
+  Three.js feuille par feuille (le Furniture Kit n'a que 4 petites plantes). Petites : sansevieria,
+  pothos sur sellette, bonsaï. Grandes : figuier lyre, palmier kentia (Seed), olivier centenaire
+  (Série A). Grosses : jardinière de séparation 3 x 1 (Seed), monstera géante 2 x 2 (Série A).
+  Effet réel (moral, et qualité, hype, récupération ou productivité selon la plante), seul le pot
+  se repeint, pièces fusionnées par couleur (`Pieces`), graine fixe propre à chaque plante. Pas de
+  commande ni de champ d'état ; les petites sont masquées au dézoom comme le cactus.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
