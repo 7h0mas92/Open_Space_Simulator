@@ -405,7 +405,11 @@ flowchart LR
   mug, canard en plastique, succulente, livres, nounours, radio, deuxième écran, enceinte,
   trophée, grille-pain, blender, écouteurs sans fil, mini-cactus) se pose sur les meubles à
   plateau (3 emplacements par bureau, bibliothèque, baie de serveurs, frigo, table de cantine),
-  suit son meuble quand on le déplace et part avec lui à la revente. Les écouteurs à réduction de
+  suit son meuble quand on le déplace et part avec lui à la revente. La cuisine se compose en
+  deux temps : on pose l'un des 6 meubles de cuisine (tiroirs, portes, évier, colonne,
+  vaisselier, îlot), puis on choisit dans le rayon Électroménager la cafetière, la machine à
+  expresso, le micro-ondes, la bouilloire, le cuiseur à riz, le grille-pain ou le blender, posés
+  sur son plan de travail. Les écouteurs à réduction de
   bruit posés sur un bureau protègent un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
@@ -447,7 +451,7 @@ flowchart LR
   qualité, de hype, de récupération ou de productivité ; seul le pot se repeint.
 - **Meubles détaillés** : comme le canapé et la bibliothèque, les meubles sont dessinés pièce par
   pièce en Three.js : bureaux (plateau, caisson, passe-câble), chaises à roulettes, meuble télé,
-  baie de serveurs, comptoirs de cuisine avec leur machine, frigo vitré, tablée de cantine,
+  baie de serveurs, meubles de cuisine et électroménager, frigo vitré, tablée de cantine,
   babyfoot, toboggan, capsule de sieste, tapis, poubelle, les 12 accessoires de bureau et
   l'équipement des chats. Les pièces sont fusionnées par matériau (`render/pieces.ts`) : chaque
   meuble reste dessiné en 2 à 4 appels, et ses couleurs principales se repeignent.
@@ -631,7 +635,8 @@ génère que des messages Slack.
   Le manifeste typé `render/assetManifest.ts` liste exactement les fichiers des packs.
 - Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
   sieste-pod, standing desk, station de recharge d'écouteurs, baie de serveurs, cafetière à
-  filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
+  filtre, machine à expresso et moulin, micro-ondes, bouilloire, cuiseur à riz, meubles de
+  cuisine (tiroirs, portes, évier, colonne, vaisselier, îlot), frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, étui d'écouteurs sans fil ouvert,
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
