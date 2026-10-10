@@ -301,6 +301,45 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 0.75,
     paint: ['terracotta'],
   },
+  // Plantes d'intérieur dessinées feuille par feuille (`render/plants.ts`) : seul le pot se repeint.
+  'snake-plant': {
+    category: 'decor',
+    model: primitive('snakePlant'),
+    height: 0.8,
+    paint: ['ceramic'],
+  },
+  pothos: { category: 'decor', model: primitive('pothos'), height: 0.8, paint: ['terracotta'] },
+  bonsai: { category: 'decor', model: primitive('bonsai'), height: 0.9, paint: ['slate'] },
+  'fiddle-leaf-fig': {
+    category: 'decor',
+    model: primitive('fiddleLeafFig'),
+    height: 2.05,
+    paint: ['concrete'],
+  },
+  'kentia-palm': {
+    category: 'decor',
+    model: primitive('kentiaPalm'),
+    height: 2,
+    paint: ['ceramic'],
+  },
+  'olive-tree': {
+    category: 'decor',
+    model: primitive('oliveTree'),
+    height: 1.7,
+    paint: ['terracotta'],
+  },
+  'planter-box': {
+    category: 'decor',
+    model: primitive('planterBox'),
+    height: 1.4,
+    paint: ['wood', 'woodDark'],
+  },
+  'giant-monstera': {
+    category: 'decor',
+    model: primitive('giantMonstera'),
+    height: 1.75,
+    paint: ['wicker', 'sisal'],
+  },
   rug: { category: 'decor', model: kenney('rugRound'), height: 0.02 },
   trashcan: { category: 'decor', model: kenney('trashcan'), height: 0.85, paint: ['metal'] },
   // Animaux : de quoi accueillir les chats. Chaque arbre a sa moquette (beige, gris, mauve).
