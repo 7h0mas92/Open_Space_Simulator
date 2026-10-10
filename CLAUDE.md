@@ -361,7 +361,7 @@ fait, explique comment le tester, puis ATTENDS ma validation avant de continuer.
 Si tu vois une meilleure solution technique que celle demandée, propose-la avant de l'appliquer.
 Ne supprime jamais une fonctionnalité du périmètre sans mon accord.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 9 octobre 2026)
+# ÉTAT D'AVANCEMENT (mis à jour le 10 octobre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
@@ -458,6 +458,16 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
   (`maxTop`) ; brume, fenêtres, lampadaires et balises qui suivent le jour et la nuit.
   Qualité basse par défaut quand WebGL tourne sans carte graphique (SwiftShader, llvmpipe).
+- Vue sur New York réaliste (`render/skylineShaders.ts`, `render/cityLights.ts`) : 5 styles de
+  façades dessinés par shader (verre, brique, pierre, bandeaux, brownstone ; vitrines au
+  rez-de-chaussée, reflets du ciel, éclat du soleil), éclairage ciel + soleil + fond de rue plus
+  sombre, brume à 75 %. Fenêtres allumées une à une selon l'heure du jeu (`litShare` : bureaux qui
+  se vident de 18h à 22h, logements le soir), seuil par fenêtre, lampes qui changent toutes les 6
+  à 20 s, télés qui scintillent. Toits à muret, climatiseurs, édicules, panneaux solaires,
+  couronnes illuminées la nuit ; rues marquées, passages piétons, flaques des lampadaires ;
+  arbres d'alignement, voitures à phares et feux arrière (90 à 220 selon la qualité), fleuve
+  animé, 2 avions au loin. Graine fixe par pâté, hauteurs sur des étages entiers ; `update`
+  reçoit la minute affichée, `setQuality` allège la qualité basse. Rendu seulement.
 - Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
   tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
   `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.
