@@ -443,6 +443,12 @@ flowchart LR
   touches (61 touches en relief avec leurs lettres, Entrée en bleu, un seul appel de dessin :
   `render/keyboard.ts`) et une souris Kenney à l'échelle du clavier sur un tapis de souris sombre ;
   le portable du garage a aussi sa souris et son tapis.
+- **Ordinateurs** : chaque bureau de dev et bureau debout a son ordinateur, choisi avec le bouton
+  « Ordinateur » en mode construction. La tour sobre est incluse et posée sous le plateau ; trois
+  tours gaming (« Néon » à ventilateurs RGB, watercooling dans un boîtier vitré, XXL « Titan »)
+  donnent un peu de productivité au poste et de moral ; le MacBook Pro (sans logo) se pose à la
+  place du clavier et apporte de la qualité et de la hype. L'ancien ordinateur est revendu à
+  moitié prix.
 - **Plantes d'intérieur** : en plus de la plante verte et du cactus, le rayon Déco propose huit
   plantes dessinées feuille par feuille en Three.js (`render/plants.ts`). Des petites
   (sansevieria, pothos sur sellette avec ses lianes, bonsaï), des grandes jusqu'à 2 m (figuier
@@ -638,7 +644,8 @@ génère que des messages Slack.
   filtre, machine à expresso et moulin, micro-ondes, bouilloire, cuiseur à riz, meubles de
   cuisine (tiroirs, portes, évier, colonne, vaisselier, îlot), frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, étui d'écouteurs sans fil ouvert,
-  mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
+  mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, tours de PC sobre et gaming,
+  MacBook Pro sans logo, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,

@@ -83,6 +83,12 @@ export interface FurnitureDefinition {
    * allumé le vise. Enroulé, il ne donne aucun effet.
    */
   projectionScreen?: boolean;
+  /**
+   * Mur fin posé au sol, sur une case, comme les cloisons du plan : plein (`solid`, à
+   * mi-hauteur) ou vitré du sol au plafond (`glass`). La rotation dit son sens : 0 le long de x,
+   * 1 le long de z. Il bloque le passage ; le rendu le raccorde aux murs voisins.
+   */
+  partition?: 'solid' | 'glass';
 }
 
 /**
@@ -814,6 +820,37 @@ export const FURNITURE_CATALOG = [
     maxCount: 16,
     wall: true,
     effects: { moral: 0.06, hypePerDay: 0.005 },
+  },
+  // --- Murs fins : des cloisons à poser soi-même, case par case, raccordées aux murs voisins. ---
+  {
+    id: 'thin-wall',
+    name: t('Mur fin', 'Thin wall'),
+    description: t(
+      'Une cloison à mi-hauteur, posée case par case : moins de bruit, +0,05 % de productivité.',
+      'A half-height partition, placed tile by tile: less noise, +0.05% productivity.',
+    ),
+    price: 150,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 80,
+    partition: 'solid',
+    effects: { teamProductivity: 0.0005 },
+  },
+  {
+    id: 'glass-partition',
+    name: t('Mur fin vitré', 'Glass partition'),
+    description: t(
+      'Du verre du sol au plafond : on s’isole sans se cacher. Léger +moral.',
+      'Floor-to-ceiling glass: you get some quiet without hiding. Slight +morale.',
+    ),
+    price: 450,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 80,
+    partition: 'glass',
+    effects: { moral: 0.01 },
   },
   // --- Électroménager : posé sur un meuble de cuisine (ou le frigo), jamais au sol. ---
   {

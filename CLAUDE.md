@@ -612,6 +612,16 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   combiné devient au chargement un meuble offert + son appareil au même prix, même effet
   (`LEGACY_KITCHEN_ITEMS`, `client/src/simulation/kitchen.ts`). Bot : `findFreeSlot`.
 
+- Ordinateurs des postes (`shared/sim/computers.ts`, `render/computers.ts`, bouton « Ordinateur »
+  de l'objet sélectionné, `ui/build/ComputerPicker.tsx`) : chaque bureau de dev et bureau debout a
+  une tour sobre d'origine (incluse, au sol sous le plateau), ou au choix 3 tours gaming (« Néon »
+  900 €, watercooling 2 200 € en Seed, XXL « Titan » 4 500 € en Série A ; +1 à +3 % de productivité
+  au poste, +moral) ou un MacBook Pro (2 800 €, sans logo) posé à la place du clavier, qui disparaît
+  (+1 % au poste, +qualité, +hype). L'ancien est revendu à moitié prix, la valeur suit le bureau
+  (revente, inventaire). Le clavier QWERTY est posé avec l'ordinateur (`workstation` dans
+  `view/catalog.ts`, gabarit `@pc:<bureau>:<ordinateur>` dans `render/office.ts`). Commande
+  `SET_COMPUTER`, champ `computer` optionnel (absent = tour sobre), aucun tirage.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
