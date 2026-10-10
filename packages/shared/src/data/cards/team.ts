@@ -405,8 +405,8 @@ export const TEAM_CARDS: EventCard[] = [
       },
       {
         label: t(
-          'Acheter des casques antibruit pour les autres',
-          'Buy headphones for everyone else',
+          'Offrir des écouteurs à réduction de bruit aux autres',
+          'Buy noise-cancelling earbuds for everyone else',
         ),
         effects: { treasury: -1200, moral: 3 },
       },

@@ -1,6 +1,6 @@
 /**
  * Accessoires de bureau détaillés, en formes Three.js : lampe d'architecte, mug, canard,
- * pile de livres, nounours, radio, deuxième écran, mini-enceinte, trophée, casque antibruit,
+ * pile de livres, nounours, radio, deuxième écran, mini-enceinte, trophée, écouteurs sans fil,
  * grille-pain et blender.
  *
  * Ils se posent sur les emplacements des meubles (`surface` dans le catalogue) : chacun garde
@@ -11,7 +11,6 @@
 import * as THREE from 'three';
 import { Pieces } from './pieces';
 import { glass, PALETTE } from './primitives';
-import { headset } from './workFurniture';
 
 const COAL = 0x1a1e2b;
 const BLACK = 0x23283a;
@@ -220,17 +219,82 @@ export function trophy(): THREE.Group {
   return p.build('trophy');
 }
 
-/** Casque antibruit de bureau, suspendu à son support, oreillettes vers l'avant et l'arrière. */
-export function deskHeadset(): THREE.Group {
-  const p = new Pieces([PALETTE.blue]);
-  p.post(0.07, 0.08, 0.02, PALETTE.dark, [0, 0, 0], 14);
-  p.post(0.01, 0.014, 0.25, PALETTE.metal, [0, 0.02, 0], 8);
-  p.box(0.07, 0.015, 0.035, PALETTE.metal, [0, 0.262, 0]);
-  p.post(0.012, 0.012, 0.012, PALETTE.dark, [0, 0.277, 0], 8);
-  headset(p, PALETTE.blue, 0, 0.15, 0, Math.PI / 2, 1);
-  // Câble enroulé qui pend.
-  p.bar([0, 0.07, 0.15], [0.03, 0.02, 0.17], 0.005, COAL, 4);
-  return p.build('deskHeadset');
+/** Blanc des écouteurs, distinct de `PALETTE.white` : repeindre l'étui ne les colore pas. */
+const EARBUD = 0xfbfbfa;
+/** Embouts en silicone et grilles des micros. */
+const EARBUD_TIP = 0xdfe2e7;
+
+/**
+ * Écouteur intra-auriculaire sans fil : coque arrondie, embout en silicone et tige courte
+ * terminée par le micro. `turn` oriente l'embout (0 : vers -x), `lean` couche la tige.
+ */
+export function earbud(
+  p: Pieces,
+  at: readonly [number, number, number],
+  turn: number,
+  lean: number,
+  k = 1,
+): void {
+  const [x, y, z] = at;
+  const cos = Math.cos(turn);
+  const sin = Math.sin(turn);
+  blob(p, 0.016 * k, [1, 1.05, 0.9], EARBUD, [x, y, z], { y: turn });
+  blob(p, 0.009 * k, [0.8, 1, 1], EARBUD_TIP, [
+    x - 0.015 * k * cos,
+    y + 0.002 * k,
+    z + 0.015 * k * sin,
+  ]);
+  const foot: [number, number, number] = [
+    x + 0.03 * k * Math.sin(lean) * sin,
+    y - 0.03 * k * Math.cos(lean),
+    z + 0.03 * k * Math.sin(lean) * cos,
+  ];
+  p.bar([x, y - 0.008 * k, z], foot, 0.0055 * k, EARBUD, 6);
+  p.post(0.0055 * k, 0.0055 * k, 0.003 * k, PALETTE.chrome, foot, 6);
+}
+
+/**
+ * Étui de recharge ouvert : boîtier arrondi, couvercle relevé sur sa charnière (à l'arrière),
+ * berceau gris et deux écouteurs rangés, embouts vers l'intérieur, voyant de charge devant.
+ * `k` = 1 : 2,3 fois la taille réelle, pour que l'étui se lise sur un bureau vu de loin.
+ */
+export function earbudsCase(
+  p: Pieces,
+  at: readonly [number, number, number],
+  k = 1,
+  caseColor: number = PALETTE.white,
+): void {
+  const [x, y, z] = at;
+  const w = 0.14 * k;
+  const h = 0.05 * k;
+  const d = 0.1 * k;
+  p.soft(w, h, d, 0.02 * k, caseColor, [x, y, z]);
+  // Berceau intérieur et ligne de jonction du couvercle.
+  p.soft(w * 0.84, 0.004 * k, d * 0.72, 0.002 * k, EARBUD_TIP, [x, y + h - 0.003 * k, z]);
+  // Couvercle ouvert, presque à la verticale, et sa face intérieure plus claire.
+  const back = z - d / 2 + 0.008 * k;
+  p.soft(w, d, 0.016 * k, 0.008 * k, caseColor, [x, y + h - 0.008 * k, back], { x: -0.32 });
+  p.box(w * 0.8, d * 0.75, 0.004 * k, EARBUD_TIP, [x, y + h - 0.002 * k, back + 0.009 * k], {
+    x: -0.32,
+  });
+  // Les deux écouteurs dans leur logement, tiges enfoncées.
+  for (const side of [-1, 1])
+    earbud(
+      p,
+      [x + side * 0.03 * k, y + h + 0.012 * k, z + 0.004 * k],
+      side > 0 ? 0 : Math.PI,
+      0.15,
+      k,
+    );
+  p.light(0.008 * k, 0.005 * k, 0.003 * k, 0x7cf08a, [x, y + h * 0.45, z + d / 2]);
+}
+
+/** Écouteurs sans fil à réduction de bruit : étui ouvert, et un écouteur sorti posé à côté. */
+export function deskEarbuds(): THREE.Group {
+  const p = new Pieces([PALETTE.white]);
+  earbudsCase(p, [-0.03, 0, -0.01]);
+  earbud(p, [0.1, 0.014, 0.05], 0.6, 1.35);
+  return p.build('deskEarbuds');
 }
 
 /** Grille-pain chromé : deux fentes, deux tartines qui dépassent, levier et molette. */

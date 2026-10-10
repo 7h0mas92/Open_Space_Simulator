@@ -19,7 +19,7 @@ export interface FurnitureEffects {
   seatProductivity?: number;
   /** Réduction de la fatigue pour `seats` devs (0.15 = −15 %). */
   seatEnergySaving?: number;
-  /** Nombre de devs couverts par les effets "seat" et par les casques antibruit. */
+  /** Nombre de devs couverts par les effets "seat" et par les écouteurs à réduction de bruit. */
   seats?: number;
   /** Protège `seats` devs du malus des réunions du Product Owner. */
   meetingShield?: boolean;
@@ -326,11 +326,11 @@ export const FURNITURE_CATALOG = [
     effects: { moral: 0.6, teamProductivity: -0.03, babyfoot: true },
   },
   {
-    id: 'noise-headsets',
-    name: t('Portant de casques antibruit', 'Noise-cancelling headset stand'),
+    id: 'earbuds-dock',
+    name: t("Station de recharge d'écouteurs", 'Earbuds charging station'),
     description: t(
-      'Trois casques partagés : annulent le malus des réunions pour 3 devs.',
-      'Three shared headsets: cancel the meeting penalty for 3 devs.',
+      'Trois paires d’écouteurs sans fil partagées : annulent le malus des réunions pour 3 devs.',
+      'Three shared pairs of wireless earbuds: cancel the meeting penalty for 3 devs.',
     ),
     price: 900,
     width: 1,
@@ -852,11 +852,11 @@ export const FURNITURE_CATALOG = [
     effects: { moral: 0.03 },
   },
   {
-    id: 'desk-headset',
-    name: t('Casque antibruit', 'Noise-cancelling headset'),
+    id: 'desk-earbuds',
+    name: t('Écouteurs sans fil à réduction de bruit', 'Noise-cancelling wireless earbuds'),
     description: t(
-      'Posé sur le bureau, prêt pour la prochaine réunion : annule son malus pour 1 dev.',
-      'Sitting on the desk, ready for the next meeting: cancels its penalty for 1 dev.',
+      'Leur étui ouvert sur le bureau, prêts pour la prochaine réunion : annulent son malus pour 1 dev.',
+      'Case open on the desk, ready for the next meeting: they cancel its penalty for 1 dev.',
     ),
     price: 320,
     width: 1,
@@ -904,7 +904,22 @@ const BY_ID = new Map<string, FurnitureDefinition>(
   FURNITURE_CATALOG.map((item) => [item.id, item]),
 );
 
+/**
+ * Objets renommés : les casques antibruit sont devenus des écouteurs sans fil. Les anciennes
+ * sauvegardes et les journaux de commandes (replays, scores) gardent les anciens identifiants ;
+ * la simulation les traduit au chargement et à chaque commande.
+ */
+export const LEGACY_FURNITURE_IDS: Readonly<Record<string, FurnitureId>> = {
+  'noise-headsets': 'earbuds-dock',
+  'desk-headset': 'desk-earbuds',
+};
+
+/** Identifiant actuel d'un objet (celui d'origine s'il n'a jamais été renommé). */
+export function currentFurnitureId(id: string): string {
+  return LEGACY_FURNITURE_IDS[id] ?? id;
+}
+
 /** Définition d'un objet, ou `undefined` si l'identifiant est inconnu. */
 export function getFurniture(id: string): FurnitureDefinition | undefined {
-  return BY_ID.get(id);
+  return BY_ID.get(currentFurnitureId(id));
 }

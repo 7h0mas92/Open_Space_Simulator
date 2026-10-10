@@ -299,7 +299,7 @@ class PlannerBot implements Bot {
       buy('premium-coffee-machine');
     if (team > countFurniture(state, 'desk') + countFurniture(state, 'ikea-desk')) buy('desk');
     if (Object.values(state.components.identity).some((i) => i.role === 'PRODUCT_OWNER'))
-      buy('noise-headsets');
+      buy('earbuds-dock');
     if (state.gauges.debt > 30) buy('trashcan');
     if (teamMoral(state) < 60) buy('plant');
     if (state.gauges.stability < 70) buy('server-rack');

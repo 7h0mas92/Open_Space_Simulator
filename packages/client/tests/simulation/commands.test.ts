@@ -465,45 +465,45 @@ describe('Inventaire', () => {
     const simulation = newSimulation('inventory-sell');
     const [hostId] = find(simulation, 'ikea-desk')!;
     simulation.state.gauges.treasury = 100_000;
-    const buyHeadset = () =>
+    const buyEarbuds = () =>
       simulation.dispatch({
         type: 'BUY_ACCESSORY',
-        itemId: 'desk-headset',
+        itemId: 'desk-earbuds',
         hostId,
         slot: 0,
         rotation: 0,
       }).result;
-    expect(buyHeadset()).toEqual({ ok: true });
-    const [headsetId] = find(simulation, 'desk-headset')!;
+    expect(buyEarbuds()).toEqual({ ok: true });
+    const [earbudsId] = find(simulation, 'desk-earbuds')!;
     // Ranger un accessoire seul libère son emplacement.
-    simulation.dispatch({ type: 'STORE_FURNITURE', furnitureId: headsetId });
-    expect(simulation.state.inventory).toEqual([{ itemId: 'desk-headset', purchasePrice: 320 }]);
+    simulation.dispatch({ type: 'STORE_FURNITURE', furnitureId: earbudsId });
+    expect(simulation.state.inventory).toEqual([{ itemId: 'desk-earbuds', purchasePrice: 320 }]);
     for (let i = 1; i < 30; i++)
-      simulation.state.inventory.push({ itemId: 'desk-headset', purchasePrice: 320 });
-    expect(buyHeadset()).toEqual({ ok: false, error: 'NOT_ELIGIBLE' });
+      simulation.state.inventory.push({ itemId: 'desk-earbuds', purchasePrice: 320 });
+    expect(buyEarbuds()).toEqual({ ok: false, error: 'NOT_ELIGIBLE' });
 
     const cash = simulation.state.gauges.treasury;
-    expect(simulation.dispatch({ type: 'SELL_STORED', itemId: 'desk-headset' }).result).toEqual({
+    expect(simulation.dispatch({ type: 'SELL_STORED', itemId: 'desk-earbuds' }).result).toEqual({
       ok: true,
     });
     expect(simulation.state.gauges.treasury).toBe(cash + 160);
     expect(simulation.state.inventory).toHaveLength(29);
-    expect(buyHeadset()).toEqual({ ok: true });
+    expect(buyEarbuds()).toEqual({ ok: true });
     expect(simulation.dispatch({ type: 'SELL_STORED', itemId: 'sofa' }).result).toEqual({
       ok: false,
       error: 'NOT_FOUND',
     });
   });
 
-  it('le casque antibruit posé sur un bureau protège un dev des réunions', () => {
-    const simulation = newSimulation('desk-headset');
+  it('les écouteurs posés sur un bureau protègent un dev des réunions', () => {
+    const simulation = newSimulation('desk-earbuds');
     const [hostId] = find(simulation, 'ikea-desk')!;
     const shielded = () =>
       Object.values(computeOfficeEffects(simulation.state).meetingShielded).filter(Boolean).length;
     expect(shielded()).toBe(0);
     simulation.dispatch({
       type: 'BUY_ACCESSORY',
-      itemId: 'desk-headset',
+      itemId: 'desk-earbuds',
       hostId,
       slot: 0,
       rotation: 0,
@@ -512,7 +512,7 @@ describe('Inventaire', () => {
     // Rangé dans l'inventaire, il ne protège plus personne.
     simulation.dispatch({
       type: 'STORE_FURNITURE',
-      furnitureId: find(simulation, 'desk-headset')![0],
+      furnitureId: find(simulation, 'desk-earbuds')![0],
     });
     expect(shielded()).toBe(0);
   });

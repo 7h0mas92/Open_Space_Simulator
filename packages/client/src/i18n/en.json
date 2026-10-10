@@ -696,7 +696,7 @@
       "roundRug": "Round rug with border, central medallion and diamonds",
       "pedalBin": "Stainless pedal bin, and a paper ball that missed it",
       "standingDesk": "Motorized standing desk: telescopic legs, control box, cable tray",
-      "headphones": "Noise-cancelling headsets and their stand",
+      "earbudsDock": "Earbuds charging station: base, column and three open cases charging",
       "serverRack": "Server rack: rails, servers with LEDs, patch panel and cables",
       "coffeeCounter": "Coffee counter: cabinet with door, drawer and mug nook, drip coffee maker, tray and sugar jar",
       "espressoCounter": "Barista counter with three drawers: espresso machine, grinder, milk jug and knock box",
@@ -716,7 +716,7 @@
       "rubberDuck": "Rubber duck: wings, tail, beak and eyes",
       "trophy": "Hackathon trophy: two-tier base, plaque, handled cup and star",
       "annexDecor": "Office annex decor: arcade cabinets, pinball, neon sign, tree, fountain, stage, lectern and projection screen as Three.js shapes (bench, potted plant and speakers from the Furniture Kit)",
-      "deskHeadset": "Noise-cancelling headset with padded band, on its stand",
+      "deskEarbuds": "Noise-cancelling wireless earbuds: open case, two buds inside and one lying next to it",
       "deskLamp": "Architect lamp: weighted base, spring arms, shade and bulb",
       "bookStack": "Stack of hardcover books, page edges and bookmark",
       "teddyBear": "Sitting teddy bear with muzzle and bow tie",
@@ -1420,7 +1420,7 @@
           },
           "items": {
             "title": "Useful items",
-            "body": "• Coffee machine: more coffee every morning. The premium one refills twice as much and lifts morale.\n• Plants, rugs, sofa: extra morale.\n• Foosball: lots of morale, a bit less productivity.\n• Noise-cancelling headsets: cancel the Product Owner's meeting penalty.\n• Ergonomic chair and standing desk: devs get tired more slowly.\n• Server rack: stability every day.\n• Dashboard screen: a little hype every day."
+            "body": "• Coffee machine: more coffee every morning. The premium one refills twice as much and lifts morale.\n• Plants, rugs, sofa: extra morale.\n• Foosball: lots of morale, a bit less productivity.\n• Noise-cancelling earbuds: cancel the Product Owner's meeting penalty.\n• Ergonomic chair and standing desk: devs get tired more slowly.\n• Server rack: stability every day.\n• Dashboard screen: a little hype every day."
           }
         }
       },

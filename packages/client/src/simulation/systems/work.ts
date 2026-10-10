@@ -64,7 +64,7 @@ export function productivity(
   rate *= 0.6 + (0.5 * mood.moral) / 100;
   if (mood.energy < 30) rate *= 0.75;
   rate *= 1 - state.gauges.debt / BALANCE.work.debtProductivityDivider;
-  // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf casque antibruit) ;
+  // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf écouteurs à réduction de bruit) ;
   // la salle de réunion rend ce malus plus léger (stand-up) ou plus lourd (brainstorming).
   // Avec un scrum master, ces réunions pèsent moitié moins.
   if (hasProductOwner && !ctx.office.meetingShielded[devId]) {

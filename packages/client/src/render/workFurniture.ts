@@ -1,7 +1,7 @@
 /**
  * Mobilier de travail détaillé, en formes Three.js : bureau de dev, bureau du garage sur
- * tréteaux, bureau debout motorisé, chaises de bureau, portant de casques, meuble télé et baie
- * de serveurs.
+ * tréteaux, bureau debout motorisé, chaises de bureau, station de recharge d'écouteurs, meuble
+ * télé et baie de serveurs.
  *
  * Les modèles Kenney correspondants sont d'un seul bloc ; ces versions gardent leurs dimensions
  * (hauteur des plateaux, emprise) pour que l'écran, le clavier, la souris, les accessoires et les
@@ -10,6 +10,7 @@
  * Chaque meuble est fusionné par matériau (voir `pieces.ts`) et regarde vers +z.
  */
 import type * as THREE from 'three';
+import { earbudsCase } from './deskAccessories';
 import { Pieces } from './pieces';
 import { PALETTE } from './primitives';
 
@@ -186,50 +187,22 @@ export function ergonomicChair(): THREE.Group {
 }
 
 /**
- * Casque audio fermé : arceau rembourré, coques et coussinets. Par défaut à la taille réelle
- * x 1,4 : un casque doit se lire de loin sur le portant.
+ * Station de recharge d'écouteurs : socle lesté, colonne à passe-câbles et plateau qui recharge
+ * trois étuis ouverts, chacun avec son voyant.
  */
-export function headset(
-  p: Pieces,
-  color: number,
-  x: number,
-  y: number,
-  z: number,
-  turn: number,
-  k = 1.4,
-): void {
-  const cos = Math.cos(turn);
-  const sin = Math.sin(turn);
-  const at = (dx: number, dy: number): [number, number, number] => [
-    x + dx * k * cos,
-    y + dy * k,
-    z - dx * k * sin,
-  ];
-  // Arceau : trois segments et un coussin sur le dessus.
-  p.bar(at(-0.13, 0), at(-0.1, 0.11), 0.016 * k, PALETTE.dark, 5);
-  p.bar(at(-0.1, 0.11), at(0.1, 0.11), 0.016 * k, PALETTE.dark, 5);
-  p.bar(at(0.1, 0.11), at(0.13, 0), 0.016 * k, PALETTE.dark, 5);
-  p.soft(0.14 * k, 0.025 * k, 0.05 * k, 0.01, 0x1d2130, at(0, 0.1), { y: turn });
-  // Coques de couleur et coussinets noirs côté oreille.
-  for (const side of [-1, 1]) {
-    p.soft(0.04 * k, 0.12 * k, 0.1 * k, 0.02, color, at(side * 0.15, -0.09), { y: turn });
-    p.soft(0.03 * k, 0.1 * k, 0.085 * k, 0.02, 0x1d2130, at(side * 0.12, -0.08), { y: turn });
-  }
-}
-
-/** Portant de casques antibruit : socle lesté, mât, bras et trois casques. */
-export function headsetRack(): THREE.Group {
+export function earbudsDock(): THREE.Group {
   const p = new Pieces([PALETTE.dark]);
   p.post(0.28, 0.3, 0.04, PALETTE.dark, [0, 0, 0], 12);
   p.post(0.26, 0.26, 0.012, 0x1d2130, [0, 0.04, 0], 12);
-  p.post(0.03, 0.035, 1.0, PALETTE.metal, [0, 0.05, 0], 8);
-  p.box(0.72, 0.035, 0.04, PALETTE.metal, [0, 0.99, 0]);
-  for (const x of [-0.33, 0.33]) p.box(0.035, 0.08, 0.035, PALETTE.metal, [x, 0.95, 0]);
-  p.post(0.04, 0.04, 0.03, PALETTE.dark, [0, 1.05, 0], 8);
-  headset(p, PALETTE.red, -0.33, 0.8, 0, Math.PI / 2);
-  headset(p, PALETTE.blue, 0.33, 0.8, 0, Math.PI / 2);
-  headset(p, PALETTE.yellow, 0, 1.12, 0, 0);
-  return p.build('headsetRack');
+  p.soft(0.16, 0.9, 0.12, 0.03, PALETTE.dark, [0, 0.05, 0]);
+  p.box(0.03, 0.7, 0.004, PALETTE.metal, [0, 0.15, 0.061]);
+  p.soft(0.66, 0.05, 0.3, 0.02, PALETTE.dark, [0, 0.95, 0]);
+  p.box(0.6, 0.006, 0.26, 0x1d2130, [0, 1.0, 0]);
+  for (const x of [-0.21, 0, 0.21]) {
+    earbudsCase(p, [x, 1.004, 0], 1.3);
+    p.light(0.05, 0.008, 0.004, 0x7cf08a, [x, 0.965, 0.151]);
+  }
+  return p.build('earbudsDock');
 }
 
 /** Meuble télé (modèle Kenney `cabinetTelevision`) : 1,6 x 0,5, dessus à 0,62. */
