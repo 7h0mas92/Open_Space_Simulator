@@ -10,6 +10,20 @@
  */
 import * as THREE from 'three';
 import type { MissingAssetId } from './assetManifest';
+import {
+  blender,
+  bookStack,
+  deskHeadset,
+  deskLamp,
+  miniSpeaker,
+  mug,
+  retroRadio,
+  rubberDuck,
+  secondScreen,
+  teddyBear,
+  toaster,
+  trophy,
+} from './deskAccessories';
 import { detailedBookcase, detailedSofa } from './furnitureDetail';
 import {
   canteenTable,
@@ -77,6 +91,7 @@ export const PALETTE = {
   cabinet: 0xe4e8e1,
   cushion: 0xd9734e,
   rug: 0xb5543c,
+  teddy: 0xb07a4a,
   ceramic: 0xebe6dc,
   concrete: 0xaba69d,
   wicker: 0xa88a5a,
@@ -173,39 +188,6 @@ function light(w: number, h: number, d: number, color: number, x: number, y: num
   return mesh;
 }
 
-/** Un casque audio : arceau et deux oreillettes, centré sur l'arceau. */
-function headset(color: number): THREE.Group {
-  const group = new THREE.Group();
-  const band = new THREE.Mesh(
-    new THREE.TorusGeometry(0.13, 0.022, 6, 12, Math.PI),
-    material(PALETTE.dark),
-  );
-  group.add(band);
-  for (const x of [-0.13, 0.13]) {
-    const cup = cylinder(0.065, 0.06, color);
-    cup.rotation.z = Math.PI / 2;
-    cup.position.set(x, -0.03, 0);
-    group.add(cup);
-  }
-  return group;
-}
-
-/** Casques antibruit : un portant de bureau avec trois casques de couleurs différentes. */
-/** Casque antibruit de bureau : un casque posé sur son petit support, à portée de main. */
-function deskHeadset(): THREE.Group {
-  const group = new THREE.Group();
-  group.add(post(0.07, 0.08, 0.02, PALETTE.dark));
-  group.add(post(0.012, 0.012, 0.25, PALETTE.metal, 0, 0.02, 0));
-  group.add(box(0.06, 0.015, 0.03, PALETTE.metal, 0, 0.255, 0));
-  // L'arceau repose sur le haut du support, les oreillettes pendent de chaque côté.
-  // Oreillettes vers l'avant et l'arrière : le casque tient au bout d'un bureau.
-  const one = headset(PALETTE.blue);
-  one.position.set(0, 0.15, 0);
-  one.rotation.y = Math.PI / 2;
-  group.add(one);
-  return group;
-}
-
 /** Mini-cactus dans un godet : de quoi décorer un coin de bureau. */
 function miniCactus(): THREE.Group {
   const group = new THREE.Group();
@@ -300,55 +282,6 @@ function ramen(): THREE.Group {
     stick.rotation.z = 0.5;
     stick.position.set(x + 0.05, 0.2, 0);
     group.add(stick);
-  }
-  return group;
-}
-
-/** Mug de dev : corps, anse et un fond de café froid. */
-function mug(): THREE.Group {
-  const group = new THREE.Group();
-  group.add(post(0.07, 0.065, 0.14, PALETTE.white, 0, 0, 0));
-  group.add(post(0.06, 0.06, 0.005, PALETTE.coffee, 0, 0.125, 0));
-  const handle = new THREE.Mesh(
-    new THREE.TorusGeometry(0.04, 0.012, 6, 10),
-    material(PALETTE.white),
-  );
-  handle.position.set(0.075, 0.07, 0);
-  group.add(handle);
-  // Le logo du mug, une bande colorée.
-  group.add(post(0.071, 0.067, 0.03, PALETTE.blue, 0, 0.05, 0));
-  return group;
-}
-
-/** Canard en plastique jaune, le meilleur outil de débogage. */
-function rubberDuck(): THREE.Group {
-  const group = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), material(PALETTE.yellow));
-  body.scale.set(1.25, 0.8, 1);
-  body.position.set(0, 0.07, 0);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), material(PALETTE.yellow));
-  head.position.set(0.06, 0.17, 0);
-  const beak = box(0.05, 0.025, 0.04, PALETTE.orange, 0.12, 0.155, 0);
-  group.add(body, head, beak);
-  for (const z of [-0.03, 0.03]) group.add(box(0.012, 0.012, 0.012, PALETTE.dark, 0.1, 0.185, z));
-  // Tourné vers le dev assis devant le bureau (l'avant des objets est +z).
-  group.rotation.y = -Math.PI / 2;
-  return group;
-}
-
-/** Coupe de hackathon dorée sur un socle en bois. */
-function trophy(): THREE.Group {
-  const group = new THREE.Group();
-  group.add(box(0.16, 0.06, 0.16, PALETTE.woodDark, 0, 0, 0));
-  group.add(post(0.02, 0.03, 0.1, PALETTE.gold, 0, 0.06, 0));
-  group.add(post(0.08, 0.035, 0.14, PALETTE.gold, 0, 0.16, 0));
-  for (const x of [-0.085, 0.085]) {
-    const handle = new THREE.Mesh(
-      new THREE.TorusGeometry(0.03, 0.008, 5, 8),
-      material(PALETTE.gold),
-    );
-    handle.position.set(x, 0.25, 0);
-    group.add(handle);
   }
   return group;
 }
@@ -683,6 +616,14 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   rubberDuck,
   trophy,
   deskHeadset,
+  deskLamp,
+  bookStack,
+  teddyBear,
+  retroRadio,
+  secondScreen,
+  miniSpeaker,
+  chromeToaster: toaster,
+  smoothieBlender: blender,
   miniCactus,
   mousePad,
   qwertyKeyboard,

@@ -186,10 +186,19 @@ export function ergonomicChair(): THREE.Group {
   return chair({ backTop: 1.08, headrest: true }).build('ergonomicChair');
 }
 
-/** Casque audio fermé : arceau rembourré, coques et coussinets. */
-function headset(p: Pieces, color: number, x: number, y: number, z: number, turn: number): void {
-  // Taille réelle x 1,4 : un casque doit se lire de loin sur le portant.
-  const k = 1.4;
+/**
+ * Casque audio fermé : arceau rembourré, coques et coussinets. Par défaut à la taille réelle
+ * x 1,4 : un casque doit se lire de loin sur le portant.
+ */
+export function headset(
+  p: Pieces,
+  color: number,
+  x: number,
+  y: number,
+  z: number,
+  turn: number,
+  k = 1.4,
+): void {
   const cos = Math.cos(turn);
   const sin = Math.sin(turn);
   const at = (dx: number, dy: number): [number, number, number] => [
