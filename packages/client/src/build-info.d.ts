@@ -1,0 +1,4 @@
+// Constantes injectées au build par `define` dans vite.config.ts (voir `ui/menu/appVersion.ts`).
+declare const __APP_VERSION__: string;
+declare const __APP_COMMIT__: string;
+declare const __APP_COMMIT_DATE__: string;

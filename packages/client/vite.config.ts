@@ -1,4 +1,6 @@
 /// <reference types="vitest/config" />
+import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -6,8 +8,34 @@ import { VitePWA } from 'vite-plugin-pwa';
 // Chemin de publication : '/' par défaut (Vercel), '/Open_Space_Simulator/' sur GitHub Pages.
 const base = process.env.BASE_PATH ?? '/';
 
+/** Lance une commande git ; chaîne vide si git ou le dépôt sont absents (archive, Docker). */
+function git(args: string): string {
+  try {
+    return execSync(`git ${args}`, { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return '';
+  }
+}
+
+// Version affichée au menu : numéro du package, commit et date du commit, figés au build.
+// Elle dit quelle version du jeu est réellement chargée (utile après une mise à jour de la PWA).
+// Sans git, on retombe sur le SHA fourni par la CI (GitHub Actions, Vercel), sinon « dev ».
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
+  version: string;
+};
+const commitSha =
+  git('rev-parse HEAD') || process.env.GITHUB_SHA || process.env.VERCEL_GIT_COMMIT_SHA || 'dev';
+const commitDate = git('log -1 --format=%cI') || new Date().toISOString();
+
 export default defineConfig({
   base,
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_COMMIT__: JSON.stringify(commitSha.slice(0, 7)),
+    __APP_COMMIT_DATE__: JSON.stringify(commitDate),
+  },
   plugins: [
     react(),
     // PWA : installable, et jouable hors ligne en invité. Tout le jeu (code, modèles Kenney,

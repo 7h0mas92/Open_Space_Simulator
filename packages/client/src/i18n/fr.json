@@ -19,6 +19,7 @@
     "account": "Compte",
     "nav": "Menu principal",
     "modesHint": "Chaque mode a son tutoriel. Tu peux le relire à tout moment depuis les options en partie.",
+    "version": "Version {{version}} · {{commit}} du {{date}}",
     "ticker": [
       "#incidents · La prod est tombée. On est vendredi, 17h04.",
       "#general · Le stagiaire a découvert git push --force.",

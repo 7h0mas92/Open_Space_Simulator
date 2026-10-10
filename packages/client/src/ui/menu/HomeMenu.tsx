@@ -8,6 +8,7 @@ import { useGame } from '../store/game';
 import { useSession } from '../store/session';
 import { useSettings } from '../store/settings';
 import { AccountBar } from './AccountBar';
+import { APP_VERSION, formatVersionDate } from './appVersion';
 import { ModePicker } from './ModePicker';
 import { useLatestSave } from './useLatestSave';
 
@@ -140,6 +141,16 @@ export function HomeMenu({
           </section>
         )}
       </main>
+
+      <footer className="home-footer">
+        <p className="home-version">
+          {t('menu.version', {
+            version: APP_VERSION.version,
+            commit: APP_VERSION.commit,
+            date: formatVersionDate(APP_VERSION.date, i18n.language),
+          })}
+        </p>
+      </footer>
     </div>
   );
 }

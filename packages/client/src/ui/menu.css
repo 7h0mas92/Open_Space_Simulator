@@ -51,6 +51,21 @@
   margin: 0 auto;
 }
 
+/* --- Version du jeu, en bas de l'écran ----------------------------------------------- */
+
+.home-footer {
+  display: flex;
+  justify-content: center;
+}
+
+.home-version {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
 /* --- Titre, pitch et bouton principal ------------------------------------------------- */
 
 .home-hero {

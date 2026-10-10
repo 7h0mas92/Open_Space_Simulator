@@ -19,6 +19,7 @@
     "account": "Account",
     "nav": "Main menu",
     "modesHint": "Every mode has its own tutorial. Read it again anytime from the in-game options.",
+    "version": "Version {{version}} · {{commit}} from {{date}}",
     "ticker": [
       "#incidents · Prod is down. It's Friday, 5:04 pm.",
       "#general · The intern just discovered git push --force.",
