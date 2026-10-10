@@ -19,4 +19,9 @@ describe('version du jeu', () => {
   it('ignore une date illisible', () => {
     expect(formatBuild({ version: '0.1.0', commit: 'dev', date: 'n/a' }, 'en')).toBe('0.1.0 · dev');
   });
+
+  it('ne plante pas sur une langue mal formée', () => {
+    const build = { version: '0.1.0', commit: 'a35875d', date: '2026-10-10T12:05:00Z' };
+    expect(formatBuild(build, 'en-US@posix')).toBe('0.1.0 · a35875d · 2026-10-10');
+  });
 });
