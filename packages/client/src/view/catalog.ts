@@ -45,6 +45,15 @@ interface ItemLook {
   /** Pièces ajoutées à une position précise (écran sur le bureau, bancs autour d'une table…). */
   readonly parts?: readonly ItemPart[];
   /**
+   * Poste de travail : où poser l'ordinateur choisi (voir `COMPUTERS` de la simulation).
+   * `keyboard` : le clavier QWERTY, ou le portable qui le remplace [x, plateau, z] ;
+   * `tower` : la tour au sol [x, z de l'avant du bureau], sa façade alignée sur ce bord.
+   */
+  readonly workstation?: {
+    readonly keyboard: readonly [number, number, number];
+    readonly tower: readonly [number, number];
+  };
+  /**
    * Matériaux repeints quand le joueur choisit une couleur (noms des matériaux Kenney, ou
    * couleurs de `PALETTE` pour les formes Three.js). Le premier prend la teinte choisie, les
    * suivants une version plus sombre. Absent : bois et tissu ; vide : objet non repeignable.
@@ -157,21 +166,22 @@ export const DESK_CHAIR: { readonly model: MissingAssetId; readonly paint: reado
 
 /** Habillage de chaque objet de la simulation (le typage oblige à n'en oublier aucun). */
 const LOOKS: Record<SimItemId, ItemLook> = {
-  // Bureau de dev : clavier, souris. L'écran se choisit à part (voir `render/monitors.ts`).
+  // Bureau de dev : souris. L'écran (`render/monitors.ts`) et l'ordinateur se choisissent à part.
   desk: {
     category: 'work',
     model: primitive('officeDesk'),
     height: 0.75,
     use: 'desk',
     parts: [
-      // Clavier QWERTY à vraies touches (celui du kit Kenney est un pavé lisse).
-      part(primitive('qwertyKeyboard'), [-0.35, DESK_TOP, 0.17]),
       // La souris sur un tapis sombre qui la détache du plateau.
       part(primitive('mousePad'), [0.08, DESK_TOP, 0.15]),
       part(kenney('computerMouse'), [0.08, DESK_TOP + MOUSE_PAD, 0.15 + MOUSE_BACK], {
         scale: MOUSE_SCALE,
       }),
     ],
+    // Clavier QWERTY à vraies touches (ou portable), tour sous le plateau entre les genoux et
+    // le caisson : ils dépendent de l'ordinateur choisi, `render/office.ts` les ajoute.
+    workstation: { keyboard: [-0.35, DESK_TOP, 0.17], tower: [0.08, 0.38] },
     surface: [
       [0.3, DESK_TOP, -0.18],
       [0.55, DESK_TOP, 0.12],
@@ -206,9 +216,10 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 1.1,
     use: 'desk',
     paint: ['white'],
-    // Le même poste que le bureau de dev : clavier QWERTY, souris sur son tapis.
+    // Le même poste que le bureau de dev : clavier QWERTY (ou portable), souris sur son tapis,
+    // tour au sol sous le côté gauche du plateau.
+    workstation: { keyboard: [0, STANDING_TOP, 0.12], tower: [-0.5, 0.36] },
     parts: [
-      part(primitive('qwertyKeyboard'), [0, STANDING_TOP, 0.12]),
       part(primitive('mousePad'), [0.43, STANDING_TOP, 0.12]),
       part(kenney('computerMouse'), [0.43, STANDING_TOP + MOUSE_PAD, 0.12 + MOUSE_BACK], {
         scale: MOUSE_SCALE,

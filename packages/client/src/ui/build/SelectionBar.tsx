@@ -7,10 +7,12 @@ import { moodEmoji } from '../team/StatBars';
 import { ItemThumbnail, showCatalogTab } from './Catalog';
 import { ColorPicker } from './ColorPicker';
 import { monitorLabel } from './MonitorShop';
+import { ComputerPicker } from './ComputerPicker';
 
 /**
  * Barre contextuelle au-dessus de la barre d'actions (ou du catalogue en construction) :
- * - objet sélectionné : tourner, peindre, déplacer, ranger dans l'inventaire, revendre ;
+ * - objet sélectionné : tourner, peindre, choisir l'ordinateur d'un bureau, déplacer, ranger
+ *   dans l'inventaire, revendre ;
  * - dev sélectionné : aperçu et accès à sa fiche.
  */
 export function SelectionBar({ view }: { view: GameView }) {
@@ -77,6 +79,16 @@ export function SelectionBar({ view }: { view: GameView }) {
           >
             🖥️ {t('build.monitor')}
           </button>
+        )}
+        {item.computer && (
+          <ComputerPicker
+            value={item.computer}
+            phase={view.phase}
+            treasury={view.gauges.treasury}
+            onChange={(computer) =>
+              void dispatch({ type: 'setComputer', itemId: item.id, computer })
+            }
+          />
         )}
         <button type="button" onClick={() => startMove(item.id)}>
           ✥ {t('build.move')}

@@ -10,6 +10,7 @@
  */
 import type {
   AcquisitionOffer,
+  ComputerId,
   WallFinishId,
   WallZone,
   Birthday,
@@ -292,6 +293,8 @@ export interface PlacedItemView {
    * bureau s'il n'a jamais été changé. Absent pour les autres objets.
    */
   readonly monitor?: MonitorChoice;
+  /** Bureau : son ordinateur (tour ou portable), absent pour les autres objets. */
+  readonly computer?: ComputerId;
 }
 
 /**
@@ -677,6 +680,7 @@ export type GameCommand =
   | { readonly type: 'paintItem'; readonly itemId: string; readonly color: FurnitureColor }
   /** Change l'écran d'un poste de travail (modèle, taille, pied ou bras). */
   | { readonly type: 'setMonitor'; readonly itemId: string; readonly monitor: MonitorChoice }
+  | { readonly type: 'setComputer'; readonly itemId: string; readonly computer: ComputerId }
   | {
       readonly type: 'moveItem';
       readonly itemId: string;

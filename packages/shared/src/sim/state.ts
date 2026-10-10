@@ -9,6 +9,7 @@ import {
   StatsSchema,
 } from './components.js';
 import { CommandLogSchema } from './commands.js';
+import { ComputerIdSchema } from './computers.js';
 import { FinancingStateSchema } from './funding.js';
 import { MeetingRoomSchema } from './meetings.js';
 import { MonitorSetupSchema } from './monitors.js';
@@ -139,6 +140,8 @@ export const StoredItemSchema = z.object({
   color: FurnitureColorSchema.optional(),
   /** Poste de travail rangé avec son écran (absent : l'écran livré avec le bureau). */
   monitor: MonitorSetupSchema.optional(),
+  /** Bureau rangé : son ordinateur, qui revient avec lui. */
+  computer: ComputerIdSchema.optional(),
 });
 export type StoredItem = z.infer<typeof StoredItemSchema>;
 

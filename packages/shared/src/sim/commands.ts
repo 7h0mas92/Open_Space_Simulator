@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EntityIdSchema, FurnitureColorSchema } from './components.js';
+import { ComputerIdSchema } from './computers.js';
 import { MeetingFormatIdSchema } from './meetings.js';
 import { MonitorModelSchema, MonitorMountSchema, MonitorSizeSchema } from './monitors.js';
 import { FinancingKindSchema } from './funding.js';
@@ -140,6 +141,12 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ADOPT_PET'), coat: PetCoatSchema }),
   /** Confie un chat à une famille (sans remboursement, l'équipe est triste). */
   z.object({ type: z.literal('REHOME_PET'), petId: z.string().max(32) }),
+  /** Change l'ordinateur d'un bureau (l'ancien est revendu, le nouveau payé). */
+  z.object({
+    type: z.literal('SET_COMPUTER'),
+    furnitureId: EntityIdSchema,
+    computer: ComputerIdSchema,
+  }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export type CommandType = Command['type'];

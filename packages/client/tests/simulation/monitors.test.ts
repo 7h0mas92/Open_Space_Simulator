@@ -141,6 +141,15 @@ describe('Écrans : effets et compatibilité', () => {
     expect(computeOfficeEffects(state).debtPerDay).toBeCloseTo(-0.02);
   });
 
+  it('l’écran et l’ordinateur du poste s’additionnent', () => {
+    const { state, ids } = stateWithTeam(['SENIOR_BEARD']);
+    const desk = placeFurniture(state, 'desk', 1, 1, 0);
+    const placed = state.components.furniture[desk]!;
+    placed.monitor = { model: 'curved', size: 'large', mount: 'stand', price: 1300 };
+    placed.computer = 'gaming-neon';
+    expect(computeOfficeEffects(state).seatProductivity[ids[0]!]).toBeCloseTo(0.04 + 0.05 + 0.01);
+  });
+
   it('les sauvegardes et la commande restent valides (champ optionnel)', () => {
     const { simulation, id } = richOffice();
     simulation.dispatch({ type: 'SET_MONITOR', furnitureId: id, ...gaming });

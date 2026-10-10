@@ -10,6 +10,8 @@
 import {
   ANNEXES,
   BALANCE,
+  DEFAULT_COMPUTER,
+  hasComputer,
   MEETING_FORMATS,
   PETS,
   FUNDING_TIERS,
@@ -416,6 +418,7 @@ function itemViews(state: GameState): PlacedItemView[] {
     color: item.color ?? 'natural',
     host: item.hostId !== undefined ? { id: item.hostId, slot: item.slot ?? 0 } : null,
     ...(getFurniture(item.itemId)?.monitor ? { monitor: monitorView(item) } : {}),
+    ...(hasComputer(item.itemId) ? { computer: item.computer ?? DEFAULT_COMPUTER } : {}),
   }));
 }
 
@@ -811,6 +814,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
         size: command.monitor.size,
         mount: command.monitor.mount,
       };
+    case 'setComputer':
+      return { type: 'SET_COMPUTER', furnitureId: command.itemId, computer: command.computer };
     case 'moveItem':
     case 'rotateItem': {
       const item = view.items.find((i) => i.id === command.itemId);

@@ -5,7 +5,7 @@
  * dessin par sous-maillage, quel que soit leur nombre (indispensable à 30 personnes en Licorne).
  */
 import * as THREE from 'three';
-import type { WallFinishId, WallZone } from '@oss/shared';
+import { DEFAULT_COMPUTER, type ComputerId, type WallFinishId, type WallZone } from '@oss/shared';
 import { accessCell, type ItemPlacement } from '../ai/grid';
 import { catalogItem, DESK_CHAIR, footprint } from '../view/catalog';
 import type { FurnitureColor } from '../view/colors';
@@ -15,6 +15,7 @@ import type { PlacedItemView, WallZoneView } from '../view/types';
 import { wallLength, wallOpenings, type WallOpening, type WallSide } from '../view/windows';
 import { paintObject, type AssetLibrary } from './assets';
 import { buildFixture } from './annexDecor';
+import { workstation } from './computers';
 import { buildWallSkins } from './wallFinishes';
 import {
   buildMonitor,
@@ -179,6 +180,11 @@ export function placedMatrix(
   return host ? accessoryMatrix(host, item.host.slot, item.rotation) : null;
 }
 
+/** Gabarit de l'ordinateur d'un bureau : `@pc:desk:gaming-neon`. */
+function computerKey(kind: string, computer: ComputerId): string {
+  return `@pc:${kind}:${computer}`;
+}
+
 /** Matrice de l'écran d'un poste de travail, dans le repère du meuble. */
 function monitorMatrix(kind: string, monitor: Parameters<typeof monitorLayout>[1]): THREE.Matrix4 {
   const layout = monitorLayout(kind, monitor);
@@ -186,14 +192,14 @@ function monitorMatrix(kind: string, monitor: Parameters<typeof monitorLayout>[1
 }
 
 /**
- * Objets ajoutés automatiquement autour de certains meubles : la chaise d'un bureau, à la
- * couleur du bureau, et l'écran d'un poste de travail, qui garde ses propres couleurs.
+ * Objets ajoutés automatiquement autour de certains meubles : l'écran et l'ordinateur d'un
+ * poste de travail (tour et clavier, ou portable), qui gardent leurs propres couleurs, et la
+ * chaise d'un bureau, à la couleur du bureau.
  */
 function extrasFor(
   item: PlacedItemView,
 ): { kind: string; matrix: THREE.Matrix4; color?: FurnitureColor }[] {
   const def = catalogItem(item.kind);
-  if (def?.use !== 'desk') return [];
   const extras: { kind: string; matrix: THREE.Matrix4; color?: FurnitureColor }[] = [];
   const monitor = monitorOfItem(item);
   if (monitor)
@@ -202,7 +208,13 @@ function extrasFor(
       matrix: itemMatrix(item).multiply(monitorMatrix(item.kind, monitor)),
       color: 'natural',
     });
-  if (item.kind === 'standing-desk') return extras;
+  if (def?.workstation)
+    extras.push({
+      kind: computerKey(item.kind, item.computer ?? DEFAULT_COMPUTER),
+      matrix: itemMatrix(item),
+      color: 'natural',
+    });
+  if (def?.use !== 'desk' || item.kind === 'standing-desk') return extras;
   const chairCell = accessCell(item);
   const facing = new THREE.Quaternion().setFromAxisAngle(
     new THREE.Vector3(0, 1, 0),
@@ -376,7 +388,7 @@ export class OfficeView {
     const key = items
       .map(
         (i) =>
-          `${i.id}:${i.kind}:${i.x}:${i.z}:${i.rotation}:${i.color}:${i.host?.slot ?? ''}` +
+          `${i.id}:${i.kind}:${i.x}:${i.z}:${i.rotation}:${i.color}:${i.host?.slot ?? ''}:${i.computer ?? ''}` +
           (i.monitor ? `:${i.monitor.model}:${i.monitor.size}:${i.monitor.mount}` : ''),
       )
       .join('|');
@@ -396,7 +408,8 @@ export class OfficeView {
       const matrix = placedMatrix(item, items);
       if (!matrix) continue;
       add(templateKey(item.kind, item.color), matrix, item.id);
-      // La chaise d'un bureau prend la couleur du bureau : un poste assorti.
+      // La chaise d'un bureau prend la couleur du bureau : un poste assorti. L'ordinateur, lui,
+      // garde ses couleurs.
       for (const extra of extrasFor(item))
         add(templateKey(extra.kind, extra.color ?? item.color), extra.matrix, item.id);
     }
@@ -463,6 +476,9 @@ export class OfficeView {
       return group;
     }
     add(await this.template(templateKey(kind, color)));
+    // Un poste de travail se montre avec son ordinateur d'origine (tour sobre et clavier).
+    if (catalogItem(kind)?.workstation)
+      add(await this.template(templateKey(computerKey(kind, DEFAULT_COMPUTER), 'natural')));
     const screen = monitorOfItem({ kind, monitor });
     if (screen)
       add(
@@ -491,8 +507,14 @@ export class OfficeView {
 
   private async loadTemplate(key: string): Promise<THREE.Object3D> {
     const [kind = key, color = 'natural'] = key.split('#') as [string, FurnitureColor];
-    // Le clavier et la souris font partie du bureau (voir `parts` dans le catalogue) ; la chaise,
-    // posée sur la case d'accès, est un gabarit à part.
+    // La souris fait partie du bureau (voir `parts` dans le catalogue) ; l'écran, l'ordinateur
+    // (tour et clavier, ou portable) et la chaise, posée sur la case d'accès, sont des gabarits
+    // à part.
+    if (kind.startsWith('@pc:')) {
+      const [, deskKind = '', computer = DEFAULT_COMPUTER] = kind.split(':');
+      const spot = catalogItem(deskKind)?.workstation;
+      return spot ? workstation(spot, computer as ComputerId) : new THREE.Group();
+    }
     if (kind === '@chair') {
       const chair = buildPrimitive(DESK_CHAIR.model);
       paintObject(chair, DESK_CHAIR.paint, color);
