@@ -226,9 +226,9 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 1.2,
     paint: ['chairFabric'],
   },
-  'noise-headsets': {
+  'earbuds-dock': {
     category: 'work',
-    model: primitive('headphones'),
+    model: primitive('earbudsDock'),
     height: 1.2,
     paint: ['dark'],
   },
@@ -574,11 +574,11 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   },
   'mini-speaker': { category: 'accessory', model: primitive('miniSpeaker'), height: 0.33 },
   trophy: { category: 'accessory', model: primitive('trophy'), height: 0.32, paint: ['gold'] },
-  'desk-headset': {
+  'desk-earbuds': {
     category: 'accessory',
-    model: primitive('deskHeadset'),
-    height: 0.3,
-    paint: ['blue'],
+    model: primitive('deskEarbuds'),
+    height: 0.14,
+    paint: ['white'],
   },
   'mini-cactus': {
     category: 'accessory',

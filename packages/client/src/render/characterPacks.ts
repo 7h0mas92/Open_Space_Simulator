@@ -500,7 +500,7 @@ const HATS = new Set<HeadPiece>([
 ]);
 /** Pièces qui recouvrent tout le visage (on retire aussi lunettes et barbe). */
 const FULL_HEAD = new Set<HeadPiece>(['pumpkinHead', 'skullFace', 'mummyWrap', 'knightHelmet']);
-const HAT_ACCESSORIES = new Set<Accessory>(['beret', 'capBack', 'headset', 'crabOnHead']);
+const HAT_ACCESSORIES = new Set<Accessory>(['beret', 'capBack', 'earbuds', 'crabOnHead']);
 const FACE_ACCESSORIES = new Set<Accessory>([
   ...HAT_ACCESSORIES,
   'antenna',

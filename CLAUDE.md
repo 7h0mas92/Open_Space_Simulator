@@ -361,7 +361,7 @@ fait, explique comment le tester, puis ATTENDS ma validation avant de continuer.
 Si tu vois une meilleure solution technique que celle demandée, propose-la avant de l'appliquer.
 Ne supprime jamais une fonctionnalité du périmètre sans mon accord.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 9 octobre 2026)
+# ÉTAT D'AVANCEMENT (mis à jour le 10 octobre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
@@ -419,9 +419,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   maximum ou si la trésorerie manque) ; 12 accessoires posés sur les meubles (`surfaceSlots`,
   commandes `BUY_ACCESSORY` / `MOVE_ACCESSORY`, revendus et déplacés avec leur meuble) ; 12 couleurs
   au choix à l'achat ou via « Peindre » (`PAINT_FURNITURE`, `client/src/view/colors.ts`).
-- Accessoires de bureau et inventaire : casque antibruit (`desk-headset`, protège 1 dev des
-  réunions) et mini-cactus (`mini-cactus`) posés sur les bureaux, 3 emplacements par bureau ; le
-  portant au sol et le cactus au sol restent (« Portant de casques antibruit », « Cactus en pot »).
+- Accessoires de bureau et inventaire : écouteurs sans fil (`desk-earbuds`, protègent 1 dev des
+  réunions) et mini-cactus (`mini-cactus`) posés sur les bureaux, 3 emplacements par bureau ; la
+  station au sol et le cactus au sol restent (« Station de recharge d'écouteurs », « Cactus en pot »).
   « 📦 Ranger » met un objet et ses accessoires dans l'inventaire (onglet du catalogue) ; on l'en
   ressort gratuitement ou on le revend. Commandes `STORE_FURNITURE`, `PLACE_STORED`,
   `PLACE_STORED_ACCESSORY`, `SELL_STORED` ; état `inventory` (vide par défaut) ; un objet rangé n'a
@@ -458,6 +458,16 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
   (`maxTop`) ; brume, fenêtres, lampadaires et balises qui suivent le jour et la nuit.
   Qualité basse par défaut quand WebGL tourne sans carte graphique (SwiftShader, llvmpipe).
+- Vue sur New York réaliste (`render/skylineShaders.ts`, `render/cityLights.ts`) : 5 styles de
+  façades dessinés par shader (verre, brique, pierre, bandeaux, brownstone ; vitrines au
+  rez-de-chaussée, reflets du ciel, éclat du soleil), éclairage ciel + soleil + fond de rue plus
+  sombre, brume à 75 %. Fenêtres allumées une à une selon l'heure du jeu (`litShare` : bureaux qui
+  se vident de 18h à 22h, logements le soir), seuil par fenêtre, lampes qui changent toutes les 6
+  à 20 s, télés qui scintillent. Toits à muret, climatiseurs, édicules, panneaux solaires,
+  couronnes illuminées la nuit ; rues marquées, passages piétons, flaques des lampadaires ;
+  arbres d'alignement, voitures à phares et feux arrière (90 à 220 selon la qualité), fleuve
+  animé, 2 avions au loin. Graine fixe par pâté, hauteurs sur des étages entiers ; `update`
+  reçoit la minute affichée, `setQuality` allège la qualité basse. Rendu seulement.
 - Pause pendant les cartes d'événement : le temps s'arrête (❚❚ allumé, personnages immobiles)
   tant que la carte est ouverte, puis la vitesse d'avant reprend (`engine/host.ts`,
   `holdForEvent`) ; pas en Hardcore ni en replay. Le focus va sur la carte, pas sur un choix.
@@ -561,7 +571,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   en matériaux nommés, le reste peint par sommet dans un matériau `trim`, voyants dans `lights`,
   2 à 4 maillages par meuble). Bureaux et sièges (`render/workFurniture.ts`) : bureau de dev,
   bureau du garage sur tréteaux, standing desk, chaise à roulettes, chaise ergonomique, meuble
-  télé, baie de serveurs, portant de casques. Cuisine (`render/kitchenFurniture.ts`) : comptoir à
+  télé, baie de serveurs, station d'écouteurs. Cuisine (`render/kitchenFurniture.ts`) : comptoir à
   café, comptoir du barista, micro-ondes, frigo à boissons, tablée de cantine. Détente
   (`render/loungeFurniture.ts`) : babyfoot, toboggan, capsule de sieste (dans le bon sens),
   enceinte, tapis rond repeignable, poubelle à pédale. 12 accessoires de bureau
@@ -585,6 +595,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   retour sur l'onglet. Dépendance `workbox-window` ajoutée au client.
 - Version du jeu en bas du menu principal (`src/version.ts`, `__APP_BUILD__` écrit par
   `vite.config.ts`) : « Version 0.1.0 · commit · date du build », pour savoir quelle version tourne.
+- Écouteurs à la place des casques antibruit : « Écouteurs sans fil à réduction de bruit »
+  (`desk-earbuds`, étui blanc ouvert repeignable, deux écouteurs rangés et un posé à côté) et
+  « Station de recharge d'écouteurs » (`earbuds-dock`, 3 étuis) ; même effet, prix et maximums. Les
+  personnages qui portaient un casque ont des écouteurs blancs (accessoire `earbuds`) ; le casque
+  rétro des Années 80 reste. Nom générique, sans marque. Les anciens identifiants (`desk-headset`,
+  `noise-headsets`) sont traduits au chargement et à chaque commande (`LEGACY_FURNITURE_IDS`,
+  `client/src/simulation/renamedItems.ts`) : sauvegardes, replays et scores restent valides.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

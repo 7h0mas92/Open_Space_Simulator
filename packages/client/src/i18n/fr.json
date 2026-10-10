@@ -699,7 +699,7 @@
       "roundRug": "Tapis rond à bordure, médaillon central et losanges",
       "pedalBin": "Poubelle à pédale en inox, et une boule de papier qui l'a ratée",
       "standingDesk": "Bureau debout motorisé : colonnes télescopiques, boîtier de commande, goulotte",
-      "headphones": "Casques antibruit et leur portant",
+      "earbudsDock": "Station de recharge d'écouteurs : socle, colonne et trois étuis ouverts qui se rechargent",
       "serverRack": "Baie de serveurs : rails, serveurs à voyants, panneau de brassage et câbles",
       "drawerCabinet": "Meuble bas à trois tiroirs, plan de travail en pierre",
       "doorCabinet": "Meuble bas à deux portes et bandeau, plan de travail en pierre",
@@ -727,7 +727,7 @@
       "rubberDuck": "Canard en plastique : ailes, queue, bec et yeux",
       "trophy": "Trophée de hackathon : socle à deux étages, plaque, coupe à anses et étoile",
       "annexDecor": "Décor des annexes du bureau : bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran de projection en formes Three.js (banc, plante en pot et enceintes du Furniture Kit)",
-      "deskHeadset": "Casque antibruit à arceau rembourré, sur son support",
+      "deskEarbuds": "Écouteurs sans fil à réduction de bruit : étui ouvert, deux écouteurs rangés et un posé à côté",
       "deskLamp": "Lampe d'architecte : socle lesté, bras à ressorts, abat-jour et ampoule",
       "bookStack": "Pile de livres reliés, tranches et marque-page",
       "teddyBear": "Nounours assis, museau et nœud papillon",
@@ -1431,7 +1431,7 @@
           },
           "items": {
             "title": "Les objets utiles",
-            "body": "• Machine à café : plus de café chaque matin. La premium en remet deux fois plus et remonte le moral.\n• Plantes, tapis, canapé : du moral en plus.\n• Babyfoot : beaucoup de moral, un peu moins de productivité.\n• Casques antibruit : annulent le malus des réunions du Product Owner.\n• Chaise ergonomique et bureau debout : les devs se fatiguent moins.\n• Baie de serveurs : de la stabilité chaque jour.\n• Écran de dashboard : un peu de hype chaque jour."
+            "body": "• Machine à café : plus de café chaque matin. La premium en remet deux fois plus et remonte le moral.\n• Plantes, tapis, canapé : du moral en plus.\n• Babyfoot : beaucoup de moral, un peu moins de productivité.\n• Écouteurs à réduction de bruit : annulent le malus des réunions du Product Owner.\n• Chaise ergonomique et bureau debout : les devs se fatiguent moins.\n• Baie de serveurs : de la stabilité chaque jour.\n• Écran de dashboard : un peu de hype chaque jour."
           }
         }
       },

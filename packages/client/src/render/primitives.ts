@@ -1,8 +1,8 @@
 /**
  * Formes Three.js qui remplacent les modèles absents des packs Kenney (babyfoot, toboggan,
- * sieste-pod, bureau debout, casques, baie de serveurs, meubles de cuisine et électroménager
- * (voir `kitchenFurniture.ts`), frigo à boissons,
- * cactus, écran de métriques, ramen, casque et mini-cactus de bureau, tapis de souris, clavier
+ * sieste-pod, bureau debout, station d'écouteurs, baie de serveurs, meubles de cuisine et
+ * électroménager (voir `kitchenFurniture.ts`), frigo à boissons, cactus, écran de métriques,
+ * ramen, écouteurs et mini-cactus de bureau, tapis de souris, clavier
  * QWERTY (voir `keyboard.ts`), litières, gamelles, arbres à chat, canapé et bibliothèque
  * détaillés, plantes d'intérieur (voir `plants.ts`)) et servent de secours si un GLB ne se charge pas.
  * Chaque forme assemble des primitives (boîtes, cylindres) dans la palette low-poly du
@@ -14,7 +14,7 @@ import type { MissingAssetId } from './assetManifest';
 import {
   blender,
   bookStack,
-  deskHeadset,
+  deskEarbuds,
   deskLamp,
   miniSpeaker,
   mug,
@@ -54,7 +54,7 @@ import {
 } from './petFurniture';
 import {
   ergonomicChair,
-  headsetRack,
+  earbudsDock,
   mediaConsole,
   officeChair,
   officeDesk,
@@ -406,7 +406,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   roundRug,
   pedalBin,
   standingDesk,
-  headphones: headsetRack,
+  earbudsDock,
   serverRack,
   drawerCabinet,
   doorCabinet,
@@ -427,7 +427,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   mug,
   rubberDuck,
   trophy,
-  deskHeadset,
+  deskEarbuds,
   deskLamp,
   bookStack,
   teddyBear,

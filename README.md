@@ -263,9 +263,14 @@ flowchart LR
   dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
   gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
   Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
-  hasard du jeu) et tient en une dizaine d'appels de dessin. Aucun toit proche ne dépasse le
-  plancher, donc rien ne cache la salle. La brume suit la couleur du ciel, et le soir les
-  fenêtres, les lampadaires et les balises rouges des tours s'allument (`render/skyline.ts`).
+  hasard du jeu) et tient en une quinzaine d'appels de dessin. Aucun toit proche ne dépasse le
+  plancher, donc rien ne cache la salle. Les façades sont dessinées par shader en 5 styles
+  (verre qui reflète le ciel, brique, pierre, bandeaux, brownstone), les toits ont muret,
+  climatiseurs et réservoirs, les rues leurs marquages. Les fenêtres s'allument et s'éteignent
+  une à une selon l'heure du jeu : les bureaux se vident le soir, les logements se remplissent,
+  des télés scintillent ; couronnes des tours, lampadaires, phares des voitures, balises et
+  avions s'allument la nuit (`render/skyline.ts`, `render/skylineShaders.ts`,
+  `render/cityLights.ts`).
 - **Écran de jeu** : en haut ce qu'on lit (phase, équipe, mois de trésorerie restants, six
   jauges avec icône, tendance et couleur, horloge et avancement du sprint) ; en bas ce qu'on
   fait (dock d'actions et commande de l'étape : lancer le sprint, lever des fonds, vitesses).
@@ -398,10 +403,10 @@ flowchart LR
   d'autres (l'aperçu saute sur la place libre la plus proche) jusqu'à « Annuler » ou
   « Terminer », ou jusqu'au maximum ou à la trésorerie épuisée. Le rayon Accessoires (lampe,
   mug, canard en plastique, succulente, livres, nounours, radio, deuxième écran, enceinte,
-  trophée, grille-pain, blender, casque antibruit, mini-cactus) se pose sur les meubles à
+  trophée, grille-pain, blender, écouteurs sans fil, mini-cactus) se pose sur les meubles à
   plateau (3 emplacements par bureau, bibliothèque, baie de serveurs, frigo, table de cantine),
-  suit son meuble quand on le déplace et part avec lui à la revente. Le casque antibruit posé
-  sur un bureau protège un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
+  suit son meuble quand on le déplace et part avec lui à la revente. Les écouteurs à réduction de
+  bruit posés sur un bureau protègent un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
 - **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
@@ -625,9 +630,9 @@ génère que des messages Slack.
   Characters, inclus dans `packages/client/public/assets/kenney/` (voir le README de ce dossier).
   Le manifeste typé `render/assetManifest.ts` liste exactement les fichiers des packs.
 - Assets absents des packs, remplacés par des formes Three.js ou du CSS : babyfoot, toboggan,
-  sieste-pod, standing desk, casques antibruit et leur portant, baie de serveurs, cafetière à
+  sieste-pod, standing desk, station de recharge d'écouteurs, baie de serveurs, cafetière à
   filtre, machine à expresso et moulin, frigo à boissons vitré, cactus, écran de métriques, pot
-  de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
+  de ramen, mug, canard en plastique, trophée de hackathon, étui d'écouteurs sans fil ouvert,
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
@@ -643,7 +648,7 @@ génère que des messages Slack.
   auteur et ne sont pas sous licence CC0.
 - Personnages : 10 des 18 Blocky Characters sont hors thème (pirate, ninja, zombies, policier…)
   et ne sont jamais tirés. Chaque profil a sa liste de looks (`render/officeCharacters.ts`) :
-  les personnages Kenney adaptés, complétés d'accessoires Three.js (barbe, casque, béret, badge,
+  les personnages Kenney adaptés, complétés d'accessoires Three.js (barbe, écouteurs, béret, badge,
   crabe Ferris), et 13 personnages construits en Three.js avec la même hiérarchie que les GLB, ce
   qui leur permet de jouer les clips d'animation Kenney.
 - Rendu : [Three.js](https://threejs.org). Interface : React, Zustand, i18next. Audio :

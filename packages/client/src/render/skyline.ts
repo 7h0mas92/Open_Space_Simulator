@@ -1,24 +1,38 @@
 /**
  * La vue sur New York : le bureau est au dernier étage d'une tour, au milieu d'une ville
- * low-poly inspirée de Manhattan (grille d'avenues et de rues, tours à gradins, réservoirs
- * d'eau en bois sur les toits, un parc, le fleuve et des taxis jaunes). Aucun bâtiment réel
- * n'est reproduit : la ville est générique, faite de boîtes Three.js.
+ * inspirée de Manhattan (grille d'avenues et de rues, tours à gradins, immeubles de brique à
+ * réservoirs d'eau, brownstones, parc, fleuve, taxis). Aucun bâtiment réel n'est reproduit :
+ * la ville est générique, faite de boîtes Three.js et de shaders procéduraux.
  *
  * - `planSkyline` est une fonction pure (layout → liste de volumes), testable sans WebGL.
- *   Son hasard vient d'un générateur à graine fixe : la ville est la même à chaque partie et
- *   ne touche jamais au RNG de la simulation.
- * - `SkylineView` fusionne les volumes en quelques maillages (une dizaine d'appels de dessin
- *   pour toute la ville) et suit le cycle jour/nuit : fenêtres allumées, lampadaires et
- *   balises rouges le soir.
+ *   Son hasard vient d'un générateur à graine fixe (une graine par pâté de maisons) : la ville
+ *   est la même à chaque partie et ne touche jamais au RNG de la simulation.
+ * - `SkylineView` fusionne les volumes en quelques maillages (une quinzaine d'appels de dessin
+ *   pour toute la ville). Les façades sont dessinées par `skylineShaders.ts` : fenêtres selon
+ *   le style de l'immeuble, reflets du ciel, et lumières qui s'allument et s'éteignent une à
+ *   une selon l'heure du jeu (`cityLights.ts`).
  *
  * Contrainte de lisibilité : la caméra isométrique regarde le bureau de haut, depuis l'un des
  * quatre côtés. Un immeuble ne doit jamais cacher la salle : près de la tour, les toits restent
  * sous le plancher ; seules les tours éloignées dépassent (voir `maxTop`).
  */
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { OfficeLayout } from '../view/layout';
+import { litShare, type BuildingUse } from './cityLights';
 import type { LightingState } from './lighting';
-import { PixelCanvas, pseudoRandom, radialGlowTexture } from './pixels';
+import { pseudoRandom, radialGlowTexture } from './pixels';
+import type { QualityLevel } from './quality';
+import {
+  cityUniforms,
+  FACADE_GRID,
+  FACADE_STYLES,
+  facadeMaterial,
+  solidMaterial,
+  streetMaterial,
+  waterMaterial,
+  type FacadeStyle,
+} from './skylineShaders';
 
 /** Niveau de la rue, sous le plancher du bureau (y = 0) : on est en haut d'une tour. */
 export const STREET_LEVEL = -45;
@@ -29,11 +43,14 @@ const AVENUE_SPACING = 16;
 const AVENUE_WIDTH = 3.6;
 const STREET_SPACING = 9;
 const STREET_WIDTH = 2.2;
-/** Largeur d'une fenêtre et hauteur d'un étage sur les façades, en cases. */
-const WINDOW_WIDTH = 1;
-const FLOOR_HEIGHT = 1.5;
-/** Fenêtres par côté de la texture de façade (elle se répète). */
-const TILE_WINDOWS = 8;
+/** Haut du trottoir : le pied des immeubles. */
+const BASE = STREET_LEVEL + 0.25;
+/** Recul des immeubles au bord du pâté : le trottoir reste visible. */
+const SIDEWALK = 0.7;
+/** Muret qui borde chaque toit. */
+const PARAPET = 0.35;
+/** Place gardée au-dessus des toits proches pour les climatiseurs et les édicules. */
+const ROOFTOP_ROOM = 1.5;
 /** Graine de la ville : fixe, indépendante de la partie. */
 const CITY_SEED = 0x6e7963;
 
@@ -46,15 +63,26 @@ export interface CityBox {
   readonly bottom: number;
   readonly top: number;
   readonly color: number;
+  /** Façade à fenêtres (immeubles seulement). */
+  readonly style?: FacadeStyle;
+  /** Rythme d'allumage des fenêtres. */
+  readonly use?: BuildingUse;
+  /** Graine de l'immeuble (0 à 1) : ordre d'allumage, teintes des lampes. */
+  readonly seed?: number;
+  /** Couleur du toit ; sans elle, le volume n'a pas de toit à muret (notre tour). */
+  readonly roof?: number;
 }
 
-/** Une voie de circulation (pour les taxis), d'un bout à l'autre de la ville. */
+/** Une voie de circulation à sens unique, d'un bout à l'autre de la ville. */
 export interface Lane {
   readonly x: number;
   readonly z: number;
   /** Axe de la voie : le long de x (rue) ou de z (avenue). */
   readonly axis: 'x' | 'z';
   readonly length: number;
+  readonly direction: 1 | -1;
+  /** Vitesse des voitures, en cases par seconde. */
+  readonly speed: number;
 }
 
 export interface Point3 {
@@ -63,14 +91,22 @@ export interface Point3 {
   readonly z: number;
 }
 
+export interface Tree extends Point3 {
+  readonly scale: number;
+  readonly color: number;
+}
+
 export interface SkylinePlan {
-  /** Volumes à fenêtres : immeubles, gradins des tours et notre propre tour. */
+  /** Volumes à fenêtres : immeubles, gradins des tours et notre propre tour (en premier). */
   readonly towers: readonly CityBox[];
-  /** Volumes unis : trottoirs, corniche, parc, flèches. */
+  /** Volumes unis : trottoirs, corniche, parc, édicules, climatiseurs, flèches. */
   readonly solids: readonly CityBox[];
+  /** Sommets des tours éclairés la nuit. */
+  readonly crowns: readonly CityBox[];
   /** Réservoirs d'eau en bois sur les toits (centre de la base). */
   readonly tanks: readonly Point3[];
-  readonly trees: readonly Point3[];
+  /** Arbres du parc et des trottoirs. */
+  readonly trees: readonly Tree[];
   /** Feux rouges d'obstacle au sommet des plus hautes tours. */
   readonly beacons: readonly Point3[];
   readonly streetLamps: readonly Point3[];
@@ -81,12 +117,25 @@ export interface SkylinePlan {
   readonly footprint: { x0: number; z0: number; x1: number; z1: number };
 }
 
-const FACADE_COLORS = [0xd8d2c6, 0xc9b9a3, 0xb88a6a, 0xa86f55, 0x9aa6b5, 0x8d97a6, 0xe4ded2];
-const GLASS_TOWER_COLORS = [0x7f9ab8, 0x6f8aa8, 0x8fa7bf, 0x9bb0c4];
-const ROOF_COLORS = [0x8a8d93, 0x7a7d84, 0x9b968c, 0x6f747c];
-const SIDEWALK = 0xa9a59c;
+/** Couleurs de mur par style : verre teinté, briques, pierre calcaire, béton, grès brun. */
+const WALLS: Readonly<Record<FacadeStyle, readonly number[]>> = {
+  glass: [0x33475c, 0x3d5266, 0x2f4450, 0x4a4238, 0x445a6e],
+  brick: [0x8e4a36, 0x9c5a40, 0x7d3f30, 0xa8694c, 0x6e4535, 0xb4815f],
+  limestone: [0xd6cdb8, 0xc9bea6, 0xe0d8c6, 0xbfb39a, 0xcfc4ae],
+  ribbon: [0xd9d9d6, 0xbfc3c7, 0xa9adb2, 0xc8c2b6],
+  brownstone: [0x6d4636, 0x7a5040, 0x5e3b2e, 0x84584a],
+};
+/** Toits : bitume, gravier, membrane blanche ; parfois un toit végétalisé. */
+const ROOFS = [0x4f5257, 0x5f6267, 0x7b7e82, 0x9a9c9c, 0xb7b8b5, 0x55575b];
+const GREEN_ROOF = 0x667f4b;
+const CROWN_LIGHTS = [0xfff1d6, 0xcfe4ff, 0xffd27a, 0xb9d7ff];
+const HVAC = [0xb8bcc0, 0x9ea3a8, 0xc9cbcc];
+const SOLAR = 0x26324a;
+const SPIRE = 0xb9c0c8;
+const SIDEWALK_COLOR = 0xa9a59c;
 const PARK = 0x5f9e57;
 const CORNICE = 0xd9d4c8;
+const TREE_GREENS = [0x3f8a4a, 0x4b9550, 0x357a42, 0x5a9a4c, 0x447f3c];
 
 /** Distance d'un point au rectangle de notre tour (0 dedans). */
 function distanceToRect(
@@ -107,9 +156,36 @@ export function maxTop(distance: number): number {
   return Math.min(30, 0.6 * distance - 8);
 }
 
+/**
+ * Haut d'un immeuble posé au pied de la rue : un nombre entier d'étages, plus le muret du
+ * toit, sans dépasser `limit`. Les fenêtres tombent ainsi juste sous la corniche.
+ */
+export function snapTop(style: FacadeStyle, wanted: number, limit: number): number {
+  const floor = FACADE_GRID[style].floor;
+  const floors = Math.max(1, Math.floor((Math.min(wanted, limit) - BASE - PARAPET) / floor));
+  return BASE + floors * floor + PARAPET;
+}
+
+function lowStyle(roll: number, height: number): FacadeStyle {
+  if (roll < 0.4) return 'brick';
+  if (roll < 0.56) return height < 14 ? 'brownstone' : 'brick';
+  if (roll < 0.82) return 'limestone';
+  return 'ribbon';
+}
+
+function tallStyle(roll: number): FacadeStyle {
+  if (roll < 0.55) return 'glass';
+  if (roll < 0.8) return 'limestone';
+  return 'ribbon';
+}
+
+function buildingUse(style: FacadeStyle, roll: number): BuildingUse {
+  if (style === 'glass' || style === 'ribbon') return 'office';
+  if (style === 'limestone') return roll < 0.5 ? 'office' : 'home';
+  return 'home';
+}
+
 export function planSkyline(layout: OfficeLayout): SkylinePlan {
-  const random = pseudoRandom(CITY_SEED);
-  const pick = <T>(list: readonly T[]): T => list[Math.floor(random() * list.length)] as T;
   const cx = (layout.width - 1) / 2;
   const cz = (layout.depth - 1) / 2;
   // Les murs du bureau vont de -0,7 à largeur - 0,3 : la tour les déborde un peu.
@@ -121,13 +197,14 @@ export function planSkyline(layout: OfficeLayout): SkylinePlan {
   };
   const towers: CityBox[] = [];
   const solids: CityBox[] = [];
+  const crowns: CityBox[] = [];
   const tanks: Point3[] = [];
-  const trees: Point3[] = [];
+  const trees: Tree[] = [];
   const beacons: Point3[] = [];
   const streetLamps: Point3[] = [];
   const lanes: Lane[] = [];
 
-  // Notre tour : une façade de verre jusqu'à la rue, et une corniche sous le plancher.
+  // Notre tour : un mur-rideau de verre jusqu'à la rue, et une corniche sous le plancher.
   const ownWidth = footprint.x1 - footprint.x0;
   const ownDepth = footprint.z1 - footprint.z0;
   const ownX = (footprint.x0 + footprint.x1) / 2;
@@ -139,7 +216,10 @@ export function planSkyline(layout: OfficeLayout): SkylinePlan {
     depth: ownDepth,
     bottom: STREET_LEVEL,
     top: -0.5,
-    color: 0x8fa7c4,
+    color: 0x3d5266,
+    style: 'glass',
+    use: 'office',
+    seed: 0.5,
   });
   solids.push({
     x: ownX,
@@ -161,16 +241,17 @@ export function planSkyline(layout: OfficeLayout): SkylinePlan {
   const halfStreets = Math.ceil(CITY_RADIUS / STREET_SPACING);
   for (let i = -half; i <= half; i++) {
     for (let j = -halfStreets; j <= halfStreets; j++) {
+      // Une graine par pâté : la ville ne dépend ni de la phase ni des pâtés ignorés.
+      const random = pseudoRandom(CITY_SEED + (i + 64) * 7919 + (j + 64) * 104729);
+      const pick = <T>(list: readonly T[]): T => list[Math.floor(random() * list.length)] as T;
       const blockX0 = cx + i * AVENUE_SPACING + AVENUE_WIDTH / 2;
       const blockX1 = cx + (i + 1) * AVENUE_SPACING - AVENUE_WIDTH / 2;
       const blockZ0 = cz + j * STREET_SPACING + STREET_WIDTH / 2;
       const blockZ1 = cz + (j + 1) * STREET_SPACING - STREET_WIDTH / 2;
       const blockCx = (blockX0 + blockX1) / 2;
       const blockCz = (blockZ0 + blockZ1) / 2;
-      // Le hasard est tiré même pour les pâtés ignorés : la ville ne dépend pas de la phase.
-      const lots = 1 + Math.floor(random() * 3);
-      const rolls = Array.from({ length: lots }, () => [random(), random(), random(), random()]);
-      if (Math.hypot(blockCx - cx, blockCz - cz) > CITY_RADIUS) continue;
+      const fromCenter = Math.hypot(blockCx - cx, blockCz - cz);
+      if (fromCenter > CITY_RADIUS) continue;
       if (blockX1 > river.x0 && blockX0 < river.x1) continue;
       const nearOwn =
         blockX1 > footprint.x0 - plaza &&
@@ -184,246 +265,402 @@ export function planSkyline(layout: OfficeLayout): SkylinePlan {
         width: blockX1 - blockX0,
         depth: blockZ1 - blockZ0,
         bottom: STREET_LEVEL,
-        top: STREET_LEVEL + 0.25,
-        color: SIDEWALK,
+        top: BASE,
+        color: SIDEWALK_COLOR,
       };
       if (i >= park.i0 && i <= park.i1 && j >= park.j0 && j <= park.j1) {
         solids.push({ ...sidewalk, color: PARK, top: STREET_LEVEL + 0.35 });
-        for (let t = 0; t < 6; t++)
+        for (let t = 0; t < 12; t++)
           trees.push({
-            x: blockX0 + 1 + random() * (blockX1 - blockX0 - 2),
+            x: blockX0 + 0.8 + random() * (blockX1 - blockX0 - 1.6),
             y: STREET_LEVEL + 0.35,
-            z: blockZ0 + 1 + random() * (blockZ1 - blockZ0 - 2),
+            z: blockZ0 + 0.8 + random() * (blockZ1 - blockZ0 - 1.6),
+            scale: 0.9 + random() * 0.5,
+            color: pick(TREE_GREENS),
           });
         continue;
       }
       solids.push(sidewalk);
 
-      const lotWidth = (blockX1 - blockX0) / lots;
-      rolls.forEach(([a = 0, b = 0, c = 0, d = 0], lot) => {
-        const x0 = blockX0 + lot * lotWidth + 0.35;
-        const x1 = blockX0 + (lot + 1) * lotWidth - 0.35;
-        const z0 = blockZ0 + 0.35;
-        const z1 = blockZ1 - 0.35;
-        const distance = distanceToRect((x0 + x1) / 2, (z0 + z1) / 2, footprint);
-        const ceiling = Math.min(maxTop(distance - Math.max(x1 - x0, z1 - z0)), -2);
-        const tall = distance > 55 && a < 0.16;
-        const limit = tall ? maxTop(distance - 6) : ceiling;
-        const height = tall ? 35 + b * 45 : 4 + Math.pow(b, 1.8) * 30;
-        const top = Math.max(STREET_LEVEL + 4, Math.min(STREET_LEVEL + height, limit));
-        const color = tall ? pick(GLASS_TOWER_COLORS) : pick(FACADE_COLORS);
-        const base = STREET_LEVEL + 0.25;
-        const box = (inset: number, bottom: number, boxTop: number): CityBox => ({
-          x: (x0 + x1) / 2,
-          z: (z0 + z1) / 2,
-          width: Math.max(0.8, x1 - x0 - inset * 2),
-          depth: Math.max(0.8, z1 - z0 - inset * 2),
-          bottom,
-          top: boxTop,
-          color,
-        });
-        if (tall && top - base > 30) {
-          // Tour à gradins (« wedding cake ») : trois volumes de plus en plus étroits.
-          const step1 = base + (top - base) * 0.55;
-          const step2 = base + (top - base) * 0.82;
-          towers.push(box(0, base, step1), box(0.7, step1, step2), box(1.4, step2, top));
-          if (c < 0.5) {
-            solids.push({
-              ...box(Math.max(0, (x1 - x0) / 2 - 0.15), top, top + 5),
-              color: 0xb9c0c8,
-            });
-            beacons.push({ x: (x0 + x1) / 2, y: top + 5.2, z: (z0 + z1) / 2 });
-          } else {
-            beacons.push({ x: (x0 + x1) / 2, y: top + 0.3, z: (z0 + z1) / 2 });
-          }
-          return;
-        }
-        towers.push(box(0, base, top));
-        // Les vieux immeubles new-yorkais portent un réservoir d'eau en bois sur le toit.
-        if (!tall && d < 0.35 && top - base < 30)
-          tanks.push({ x: x0 + 1 + c * Math.max(0, x1 - x0 - 2), y: top, z: (z0 + z1) / 2 });
-      });
+      // Arbres d'alignement le long des rues proches.
+      if (fromCenter < 90)
+        for (let x = blockX0 + 1.2; x < blockX1 - 1; x += 2.6)
+          for (const z of [blockZ0 + 0.35, blockZ1 - 0.35])
+            if (random() < 0.45)
+              trees.push({
+                x,
+                y: BASE,
+                z,
+                scale: 0.5 + random() * 0.25,
+                color: pick(TREE_GREENS),
+              });
+
+      const x0 = blockX0 + SIDEWALK;
+      const x1 = blockX1 - SIDEWALK;
+      const z0 = blockZ0 + SIDEWALK;
+      const z1 = blockZ1 - SIDEWALK;
+      const distance = distanceToRect(blockCx, blockCz, footprint);
+      if (distance > 55 && random() < 0.17) {
+        skyscraper({ x0, x1, z0, z1 }, distance, random);
+        continue;
+      }
+      // Pâté ordinaire : 2 à 5 immeubles mitoyens de largeurs variées.
+      const lots = 2 + Math.floor(random() * 4);
+      const weights = Array.from({ length: lots }, () => 0.6 + random() * 0.8);
+      const total = weights.reduce((sum, weight) => sum + weight, 0);
+      let start = x0;
+      for (const weight of weights) {
+        const end = start + ((x1 - x0) * weight) / total;
+        // Parfois deux immeubles dos à dos, l'un sur chaque rue.
+        if (end - start > 2.6 && random() < 0.3) {
+          const mid = (z0 + z1) / 2;
+          building({ x0: start, x1: end, z0, z1: mid - 0.03 }, random);
+          building({ x0: start, x1: end, z0: mid + 0.03, z1 }, random);
+        } else building({ x0: start, x1: end, z0, z1 }, random);
+        start = end;
+      }
     }
   }
 
-  // Taxis et lampadaires sur les avenues et les rues proches.
+  /** Un immeuble ordinaire sur sa parcelle, avec ses équipements de toit. */
+  function building(lot: { x0: number; x1: number; z0: number; z1: number }, random: () => number) {
+    const x0 = lot.x0 + 0.03;
+    const x1 = lot.x1 - 0.03;
+    const midX = (x0 + x1) / 2;
+    const midZ = (lot.z0 + lot.z1) / 2;
+    const distance = distanceToRect(midX, midZ, footprint);
+    const extent = Math.max(x1 - x0, lot.z1 - lot.z0);
+    const limit = Math.max(BASE + 4, Math.min(maxTop(distance - extent), -2));
+    const wanted = BASE + 4 + Math.pow(random(), 1.8) * 30;
+    const style = lowStyle(random(), wanted - BASE);
+    const top = snapTop(style, wanted, limit - ROOFTOP_ROOM);
+    const box: CityBox = {
+      x: midX,
+      z: midZ,
+      width: x1 - x0,
+      depth: lot.z1 - lot.z0,
+      bottom: BASE,
+      top,
+      color: WALLS[style][Math.floor(random() * WALLS[style].length)] ?? 0x9c5a40,
+      style,
+      use: buildingUse(style, random()),
+      seed: random(),
+      roof: random() < 0.06 ? GREEN_ROOF : (ROOFS[Math.floor(random() * ROOFS.length)] ?? 0x5f6267),
+    };
+    towers.push(box);
+    rooftop(box, limit, random, style !== 'glass' && style !== 'ribbon');
+  }
+
+  /** Une tour : socle de pierre, puis un fût de verre ou des gradins Art déco. */
+  function skyscraper(
+    lot: { x0: number; x1: number; z0: number; z1: number },
+    distance: number,
+    random: () => number,
+  ) {
+    const style = tallStyle(random());
+    const podiumStyle: FacadeStyle =
+      style === 'glass' ? 'ribbon' : random() < 0.5 ? 'limestone' : 'brick';
+    const crowned = random() < 0.45;
+    const spire = !crowned && random() < 0.55;
+    const limit = maxTop(distance - 6.5) - (crowned ? 3 : 0);
+    const top = snapTop(style, BASE + 35 + random() * 45, limit);
+    const podiumTop = snapTop(podiumStyle, BASE + 7 + random() * 8, top - 10);
+    const width = lot.x1 - lot.x0;
+    const depth = lot.z1 - lot.z0;
+    const cx = (lot.x0 + lot.x1) / 2;
+    const czz = (lot.z0 + lot.z1) / 2;
+    const color = WALLS[style][Math.floor(random() * WALLS[style].length)] ?? 0x3d5266;
+    const roof = ROOFS[Math.floor(random() * ROOFS.length)] ?? 0x5f6267;
+    const seed = random();
+    const use = buildingUse(style, random());
+    const tier = (insetX: number, insetZ: number, bottom: number, boxTop: number): CityBox => ({
+      x: cx,
+      z: czz,
+      width: Math.max(1.6, width - insetX * 2),
+      depth: Math.max(1.6, depth - insetZ * 2),
+      bottom,
+      top: boxTop,
+      color,
+      style,
+      use,
+      seed,
+      roof,
+    });
+    towers.push({
+      x: cx,
+      z: czz,
+      width,
+      depth,
+      bottom: BASE,
+      top: podiumTop,
+      color: WALLS[podiumStyle][Math.floor(random() * WALLS[podiumStyle].length)] ?? 0xc9bea6,
+      style: podiumStyle,
+      use: 'office',
+      seed: random(),
+      roof,
+    });
+    const shaftBottom = podiumTop - PARAPET;
+    const steps =
+      style === 'limestone'
+        ? [
+            [1.2, 0.5, 0.62],
+            [2.2, 0.9, 0.85],
+            [3.0, 1.3, 1],
+          ]
+        : random() < 0.4
+          ? [
+              [1.0, 0.5, 0.7],
+              [2.0, 0.9, 1],
+            ]
+          : [[1.2, 0.6, 1]];
+    let bottom = shaftBottom;
+    let last = tier(0, 0, 0, 0);
+    for (const [insetX = 1, insetZ = 0.5, share = 1] of steps) {
+      const boxTop =
+        share >= 1 ? top : snapTop(style, shaftBottom + (top - shaftBottom) * share, top - 3);
+      last = tier(Math.min(insetX, width * 0.3), Math.min(insetZ, depth * 0.2), bottom, boxTop);
+      towers.push(last);
+      bottom = boxTop - PARAPET;
+    }
+    const floor = FACADE_GRID[style].floor;
+    if (crowned) {
+      // Les derniers étages illuminés, comme les couronnes des tours de Manhattan la nuit.
+      crowns.push({
+        ...last,
+        width: last.width * 0.7,
+        depth: last.depth * 0.7,
+        bottom: top - PARAPET,
+        top: top + Math.min(3, floor * 1.2),
+        color: CROWN_LIGHTS[Math.floor(random() * CROWN_LIGHTS.length)] ?? 0xfff1d6,
+      });
+      beacons.push({ x: cx, y: top + 3.3, z: czz });
+    } else if (spire) {
+      solids.push({
+        x: cx,
+        z: czz,
+        width: 0.3,
+        depth: 0.3,
+        bottom: top,
+        top: top + 6,
+        color: SPIRE,
+      });
+      beacons.push({ x: cx, y: top + 6.2, z: czz });
+    } else {
+      rooftop(last, top + ROOFTOP_ROOM, random, false);
+      beacons.push(
+        { x: last.x - last.width / 2 + 0.3, y: top + 0.3, z: last.z - last.depth / 2 + 0.3 },
+        { x: last.x + last.width / 2 - 0.3, y: top + 0.3, z: last.z + last.depth / 2 - 0.3 },
+      );
+    }
+  }
+
+  /** Climatiseurs, édicule d'ascenseur, panneaux solaires et réservoir d'eau sur un toit. */
+  function rooftop(box: CityBox, limit: number, random: () => number, tanksAllowed: boolean) {
+    const room = limit - box.top;
+    const inner = { w: box.width - 1, d: box.depth - 1 };
+    if (room < 0.5 || inner.w < 1.2 || inner.d < 1.2) return;
+    const roofY = box.top - PARAPET;
+    const spot = (w: number, d: number) => ({
+      x: box.x - inner.w / 2 + w / 2 + random() * Math.max(0, inner.w - w),
+      z: box.z - inner.d / 2 + d / 2 + random() * Math.max(0, inner.d - d),
+    });
+    const units = 1 + Math.floor(random() * 3);
+    for (let unit = 0; unit < units; unit++) {
+      const w = 0.6 + random() * 0.8;
+      const d = 0.5 + random() * 0.5;
+      const h = Math.min(room, 0.45 + random() * 0.35);
+      solids.push({
+        ...spot(w, d),
+        width: w,
+        depth: d,
+        bottom: roofY,
+        top: roofY + h,
+        color: HVAC[Math.floor(random() * HVAC.length)] ?? 0xb8bcc0,
+      });
+    }
+    if (random() < 0.45)
+      solids.push({
+        ...spot(1.1, 1.1),
+        width: 1.1,
+        depth: 1.1,
+        bottom: roofY,
+        top: roofY + Math.min(room, 1.3),
+        color: box.color,
+      });
+    if (box.use === 'office' && random() < 0.15)
+      solids.push({
+        ...spot(2, 1.2),
+        width: Math.min(2, inner.w),
+        depth: Math.min(1.2, inner.d),
+        bottom: roofY,
+        top: roofY + 0.12,
+        color: SOLAR,
+      });
+    // Les vieux immeubles new-yorkais portent un réservoir d'eau en bois sur le toit.
+    if (tanksAllowed && random() < 0.4 && box.top + 2.2 - PARAPET <= limit)
+      tanks.push({ ...spot(1.2, 1.2), y: roofY });
+  }
+
+  // Lampadaires sur les avenues ; voies à sens unique, alternées comme à Manhattan.
   for (let i = -half; i <= half; i++) {
     const x = cx + i * AVENUE_SPACING;
     if (x > river.x0 && x < river.x1) continue;
-    lanes.push(
-      { x: x - 0.8, z: cz, axis: 'z', length: CITY_RADIUS * 2 },
-      { x: x + 0.8, z: cz, axis: 'z', length: CITY_RADIUS * 2 },
-    );
+    const direction = i % 2 === 0 ? 1 : -1;
+    const speed = 8 + ((i + half) % 3);
+    for (const offset of [-1.2, -0.4, 0.4, 1.2])
+      lanes.push({ x: x + offset, z: cz, axis: 'z', length: CITY_RADIUS * 2, direction, speed });
     for (let z = cz - CITY_RADIUS; z <= cz + CITY_RADIUS; z += 6)
       if (Math.hypot(x - cx, z - cz) < CITY_RADIUS)
         streetLamps.push({ x: x - AVENUE_WIDTH / 2 + 0.2, y: STREET_LEVEL + 1.2, z });
   }
-  for (let j = -halfStreets; j <= halfStreets; j += 3) {
+  // Les rues s'arrêtent au fleuve.
+  const streetStart = river.x1;
+  const streetEnd = cx + CITY_RADIUS;
+  for (let j = -halfStreets; j <= halfStreets; j++) {
     const z = cz + j * STREET_SPACING;
-    lanes.push({ x: cx, z, axis: 'x', length: CITY_RADIUS * 2 });
+    const direction = j % 2 === 0 ? 1 : -1;
+    for (const offset of [-0.5, 0.5])
+      lanes.push({
+        x: (streetStart + streetEnd) / 2,
+        z: z + offset,
+        axis: 'x',
+        length: streetEnd - streetStart,
+        direction,
+        speed: 5 + ((j + halfStreets) % 3),
+      });
   }
 
-  return { towers, solids, tanks, trees, beacons, streetLamps, lanes, river, footprint };
+  return {
+    towers,
+    solids,
+    crowns,
+    tanks,
+    trees,
+    beacons,
+    streetLamps,
+    lanes,
+    river,
+    footprint,
+  };
 }
 
 // --- Géométrie -------------------------------------------------------------------------------
 
+type Vec3 = readonly [number, number, number];
+
 /**
- * Ombrage « cuit » dans les couleurs : les toits sont les plus clairs, chaque côté a sa teinte.
- * La ville se passe ainsi des lumières de la scène (dont les lampes du bureau), ce qui la rend
- * très peu coûteuse à dessiner, même plein écran sur un mobile.
+ * Accumule des faces dans un seul tampon (une géométrie pour toute la ville). Les façades ont
+ * en plus des UV en travées et étages et l'attribut `facade` (style, graine, usage).
  */
-function faceShade(normal: readonly number[]): number {
-  const [x = 0, y = 0, z = 0] = normal;
-  if (y > 0.5) return 1;
-  if (z > 0.5) return 0.82;
-  if (x > 0.5) return 0.68;
-  if (z < -0.5) return 0.6;
-  return x < -0.5 ? 0.74 : 0.8;
-}
-
-/** Réglages des façades, modifiés à chaque image selon l'heure. */
-interface FacadeUniforms {
-  readonly map: { value: THREE.Texture };
-  readonly lit: { value: THREE.Texture };
-  /** Lumière du jour sur la ville. */
-  readonly tint: { value: THREE.Color };
-  /** Intensité des fenêtres allumées. */
-  readonly glow: { value: number };
-}
-
-/** Façades : texture de fenêtres x couleur de l'immeuble x lumière du jour, + fenêtres allumées. */
-function facadeMaterial(facade: FacadeUniforms): THREE.ShaderMaterial {
-  return new THREE.ShaderMaterial({
-    name: 'skyline-facade',
-    fog: true,
-    uniforms: { ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog), ...facade },
-    vertexShader: /* glsl */ `
-      #include <fog_pars_vertex>
-      attribute vec3 color;
-      varying vec3 vColor;
-      varying vec2 vUv;
-      void main() {
-        vColor = color;
-        vUv = uv / ${TILE_WINDOWS.toFixed(1)};
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_Position = projectionMatrix * mvPosition;
-        #include <fog_vertex>
-      }`,
-    fragmentShader: /* glsl */ `
-      #include <fog_pars_fragment>
-      uniform sampler2D map;
-      uniform sampler2D lit;
-      uniform vec3 tint;
-      uniform float glow;
-      varying vec3 vColor;
-      varying vec2 vUv;
-      void main() {
-        vec3 base = texture2D(map, vUv).rgb * vColor * tint;
-        gl_FragColor = vec4(base + texture2D(lit, vUv).rgb * glow, 1.0);
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-        #include <fog_fragment>
-      }`,
-  });
-}
-
-/** Accumule des faces de boîtes dans un seul tampon (une géométrie pour toute la ville). */
 class BoxBatch {
   private readonly positions: number[] = [];
   private readonly normals: number[] = [];
   private readonly uvs: number[] = [];
   private readonly colors: number[] = [];
+  private readonly facades: number[] = [];
   private readonly color = new THREE.Color();
+  private facade: readonly number[] = [0, 0, 0, 0];
+
+  /** Les quatre côtés d'un immeuble, fenêtres comptées depuis `base` (pied de l'immeuble). */
+  facadeSides(box: CityBox, base: number): void {
+    const style = box.style ?? 'glass';
+    const grid = FACADE_GRID[style];
+    this.color.setHex(box.color);
+    this.facade = [FACADE_STYLES.indexOf(style), box.seed ?? 0, box.use === 'home' ? 1 : 0, 0];
+    this.sides(box, (length) => Math.max(1, Math.round(length / grid.bay)), base, grid.floor);
+  }
+
+  /** Une boîte unie : côtés et dessus. */
+  solid(box: CityBox): void {
+    this.color.setHex(box.color);
+    this.sides(box, () => 1, box.bottom, 1);
+    const [x0, x1, z0, z1] = this.extent(box);
+    this.flat(x0, x1, z0, z1, box.top);
+  }
+
+  /** Toit à muret : dalle en contrebas, faces intérieures et dessus du muret. */
+  roof(box: CityBox): void {
+    const [x0, x1, z0, z1] = this.extent(box);
+    const rim = Math.min(0.2, box.width / 6, box.depth / 6);
+    const y0 = box.top - PARAPET;
+    const y1 = box.top;
+    this.color.setHex(box.roof ?? 0x5f6267);
+    this.flat(x0 + rim, x1 - rim, z0 + rim, z1 - rim, y0);
+    this.color.setHex(box.color).multiplyScalar(0.92);
+    this.flat(x0, x1, z0, z0 + rim, y1);
+    this.flat(x0, x1, z1 - rim, z1, y1);
+    this.flat(x0, x0 + rim, z0 + rim, z1 - rim, y1);
+    this.flat(x1 - rim, x1, z0 + rim, z1 - rim, y1);
+    const a = x0 + rim;
+    const b = x1 - rim;
+    const c = z0 + rim;
+    const d = z1 - rim;
+    // Faces intérieures du muret, tournées vers le toit.
+    this.quad([a, y0, c], [b, y0, c], [b, y1, c], [a, y1, c], [0, 0, 1], 0, 0);
+    this.quad([b, y0, d], [a, y0, d], [a, y1, d], [b, y1, d], [0, 0, -1], 0, 0);
+    this.quad([a, y0, d], [a, y0, c], [a, y1, c], [a, y1, d], [1, 0, 0], 0, 0);
+    this.quad([b, y0, c], [b, y0, d], [b, y1, d], [b, y1, c], [-1, 0, 0], 0, 0);
+  }
+
+  private extent(box: CityBox): [number, number, number, number] {
+    return [
+      box.x - box.width / 2,
+      box.x + box.width / 2,
+      box.z - box.depth / 2,
+      box.z + box.depth / 2,
+    ];
+  }
+
+  private flat(x0: number, x1: number, z0: number, z1: number, y: number): void {
+    this.quad([x0, y, z1], [x1, y, z1], [x1, y, z0], [x0, y, z0], [0, 1, 0], 0, 0);
+  }
 
   /**
-   * Ajoute les faces d'une boîte (sans le dessous, jamais visible). Les UV des côtés sont en
-   * unités de façade (une fenêtre, un étage) décalées de `offset` : la texture se répète.
+   * Les quatre côtés (le dessous n'est jamais visible). `bays` donne le nombre de travées d'une
+   * face selon sa longueur : un nombre entier, pour que les fenêtres tombent juste aux angles.
    */
-  add(box: CityBox, sides: boolean, top: boolean, offset = 0): void {
-    this.color.setHex(box.color);
-    const x0 = box.x - box.width / 2;
-    const x1 = box.x + box.width / 2;
-    const z0 = box.z - box.depth / 2;
-    const z1 = box.z + box.depth / 2;
+  private sides(box: CityBox, bays: (length: number) => number, base: number, floor: number) {
+    const [x0, x1, z0, z1] = this.extent(box);
     const y0 = box.bottom;
     const y1 = box.top;
-    const v0 = 0;
-    const v1 = (y1 - y0) / FLOOR_HEIGHT;
-    const u = (length: number) => length / WINDOW_WIDTH;
-    if (sides) {
-      // Chaque face : 4 coins (bas-gauche, bas-droite, haut-droite, haut-gauche) vus de dehors.
-      this.quad(
-        [x0, y0, z1],
-        [x1, y0, z1],
-        [x1, y1, z1],
-        [x0, y1, z1],
-        [0, 0, 1],
-        u(box.width),
-        v1,
-        offset,
-      );
-      this.quad(
-        [x1, y0, z0],
-        [x0, y0, z0],
-        [x0, y1, z0],
-        [x1, y1, z0],
-        [0, 0, -1],
-        u(box.width),
-        v1,
-        offset + 3,
-      );
-      this.quad(
-        [x1, y0, z1],
-        [x1, y0, z0],
-        [x1, y1, z0],
-        [x1, y1, z1],
-        [1, 0, 0],
-        u(box.depth),
-        v1,
-        offset + 5,
-      );
-      this.quad(
-        [x0, y0, z0],
-        [x0, y0, z1],
-        [x0, y1, z1],
-        [x0, y1, z0],
-        [-1, 0, 0],
-        u(box.depth),
-        v1,
-        offset + 2,
-      );
-    }
-    if (top)
-      this.quad([x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0], [0, 1, 0], 1, 1, 0, v0);
+    const v0 = (y0 - base) / floor;
+    const v1 = (y1 - base) / floor;
+    // Chaque face : 4 coins (bas-gauche, bas-droite, haut-droite, haut-gauche) vus de dehors.
+    const faces: [Vec3, Vec3, Vec3, Vec3, Vec3, number][] = [
+      [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1], box.width],
+      [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [0, 0, -1], box.width],
+      [[x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [1, 0, 0], box.depth],
+      [[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [-1, 0, 0], box.depth],
+    ];
+    for (const [a, b, c, d, normal, length] of faces)
+      this.quad(a, b, c, d, normal, bays(length), v1, v0);
   }
 
   private quad(
-    a: readonly number[],
-    b: readonly number[],
-    c: readonly number[],
-    d: readonly number[],
-    normal: readonly number[],
+    a: Vec3,
+    b: Vec3,
+    c: Vec3,
+    d: Vec3,
+    normal: Vec3,
     uMax: number,
     vMax: number,
-    offset: number,
     vMin = 0,
   ): void {
     const corners = [a, b, c, a, c, d];
     const uv = [
-      [offset, vMin],
-      [offset + uMax, vMin],
-      [offset + uMax, vMax],
-      [offset, vMin],
-      [offset + uMax, vMax],
-      [offset, vMax],
+      [0, vMin],
+      [uMax, vMin],
+      [uMax, vMax],
+      [0, vMin],
+      [uMax, vMax],
+      [0, vMax],
     ];
     corners.forEach((corner, index) => {
       this.positions.push(...corner);
       this.normals.push(...normal);
       this.uvs.push(...(uv[index] ?? [0, 0]));
-      const shade = faceShade(normal);
-      this.colors.push(this.color.r * shade, this.color.g * shade, this.color.b * shade);
+      this.colors.push(this.color.r, this.color.g, this.color.b);
+      this.facades.push(...this.facade);
     });
   }
 
@@ -431,64 +668,45 @@ class BoxBatch {
     return this.positions.length / 3;
   }
 
-  build(): THREE.BufferGeometry {
+  build(withFacade = false): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(this.positions, 3));
     geometry.setAttribute('normal', new THREE.Float32BufferAttribute(this.normals, 3));
     geometry.setAttribute('uv', new THREE.Float32BufferAttribute(this.uvs, 2));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(this.colors, 3));
+    if (withFacade)
+      geometry.setAttribute('facade', new THREE.Float32BufferAttribute(this.facades, 4));
     geometry.computeBoundingSphere();
     return geometry;
   }
 }
 
-/**
- * Textures de façade, en 8 x 8 fenêtres répétées : `map` (mur clair, vitres sombres) et
- * `lit` (fenêtres allumées le soir, environ une sur trois, en blanc chaud ou froid).
- */
-export function facadeTextures(): { map: PixelCanvas; lit: PixelCanvas } {
-  const cell = 8;
-  const size = TILE_WINDOWS * cell;
-  const random = pseudoRandom(CITY_SEED + 1);
-  const map = new PixelCanvas(size, size).fill(0xffffff);
-  const lit = new PixelCanvas(size, size).fill(0x000000);
-  for (let row = 0; row < TILE_WINDOWS; row++) {
-    for (let col = 0; col < TILE_WINDOWS; col++) {
-      const x = col * cell + 1;
-      const y = row * cell + 2;
-      map.rect(x, y, cell - 2, cell - 3, 0x4a5a72);
-      map.rect(x, y, cell - 2, 1, 0x6d7f99); // reflet du ciel en haut de la vitre
-      const roll = random();
-      if (roll < 0.34) lit.rect(x, y, cell - 2, cell - 3, roll < 0.08 ? 0xbfd9ff : 0xffd79a);
-    }
-  }
-  return { map, lit };
-}
-
-function repeating(canvas: PixelCanvas, colorSpace: THREE.ColorSpace): THREE.DataTexture {
-  const texture = canvas.texture();
-  texture.colorSpace = colorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.generateMipmaps = true;
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
-  texture.needsUpdate = true;
-  return texture;
+/** Fusionne des formes simples (indexées ou non) en une seule géométrie. */
+function merged(parts: THREE.BufferGeometry[]): THREE.BufferGeometry {
+  return (
+    mergeGeometries(parts.map((part) => (part.index ? part.toNonIndexed() : part))) ??
+    new THREE.BufferGeometry()
+  );
 }
 
 function instancedAt(
   geometry: THREE.BufferGeometry,
   mat: THREE.Material,
-  points: readonly Point3[],
+  points: readonly (Point3 & { scale?: number; color?: number })[],
   name: string,
 ): THREE.InstancedMesh {
   const mesh = new THREE.InstancedMesh(geometry, mat, Math.max(1, points.length));
   const matrix = new THREE.Matrix4();
+  const color = new THREE.Color();
   points.forEach((point, index) => {
-    mesh.setMatrixAt(index, matrix.makeTranslation(point.x, point.y, point.z));
+    const scale = point.scale ?? 1;
+    matrix.makeScale(scale, scale, scale).setPosition(point.x, point.y, point.z);
+    mesh.setMatrixAt(index, matrix);
+    if (point.color !== undefined) mesh.setColorAt(index, color.setHex(point.color));
   });
   mesh.count = points.length;
   mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   mesh.computeBoundingSphere();
   mesh.name = name;
   return mesh;
@@ -504,57 +722,60 @@ function glowPoints(points: readonly Point3[], mat: THREE.PointsMaterial, name: 
   return object;
 }
 
-const TAXI_COUNT = 48;
-const TAXI_SPEED = 9;
+/** Voitures selon la qualité : la circulation coûte peu, mais chaque voiture a ses phares. */
+const CAR_COUNT: Readonly<Record<QualityLevel, number>> = { low: 90, medium: 160, high: 220 };
+const MAX_CARS = 220;
+/** Taxis jaunes pour près de la moitié, puis noir, blanc, gris, bleu nuit, rouge. */
+const CAR_COLORS = [0xf2c230, 0xf2c230, 0xf2c230, 0x1f2328, 0xe8e8e4, 0x9aa1a8, 0x23324f, 0x9b2d2a];
+/** Deux avions qui croisent au loin, feux de navigation allumés. */
+const PLANES = [
+  { distance: 78, angle: 0.6, altitude: 24, period: 46 },
+  { distance: 92, angle: 2.4, altitude: 27, period: 58 },
+];
 
 export class SkylineView {
   readonly root = new THREE.Group();
-  private readonly facadeMap: THREE.DataTexture;
-  private readonly facadeLit: THREE.DataTexture;
+  private readonly uniforms = cityUniforms();
+  private readonly crownLight = { value: 0 };
   private readonly glow = radialGlowTexture(32, 1.6);
-  private readonly facade: FacadeUniforms;
-  private readonly facadeMaterial: THREE.ShaderMaterial;
-  private readonly plainMaterial = new THREE.MeshBasicMaterial({ vertexColors: true });
-  private readonly groundMaterial = new THREE.MeshBasicMaterial({ color: 0x3d424c });
-  private readonly waterMaterial = new THREE.MeshBasicMaterial({ color: 0x3f6e8f });
-  /** Lumière du jour sur la ville (couleur et intensité), recalculée à chaque image. */
-  private readonly tint = new THREE.Color(1, 1, 1);
-  private readonly sunTint = new THREE.Color();
+  private readonly facadeMaterial = facadeMaterial(this.uniforms);
+  private readonly solidMaterial = solidMaterial(this.uniforms);
+  private readonly crownMaterial = solidMaterial(
+    { ...this.uniforms, selfLit: this.crownLight },
+    'skyline-crown',
+  );
+  private readonly streetMaterial = streetMaterial(this.uniforms, {
+    avenueSpacing: AVENUE_SPACING,
+    avenueWidth: AVENUE_WIDTH,
+    streetSpacing: STREET_SPACING,
+    streetWidth: STREET_WIDTH,
+  });
+  private readonly waterMaterial = waterMaterial(this.uniforms);
+  private readonly sunColor = new THREE.Color();
   private readonly tankMaterial = new THREE.MeshLambertMaterial({
-    color: 0x8a5a36,
+    color: 0x7a5233,
     flatShading: true,
   });
-  private readonly treeMaterial = new THREE.MeshLambertMaterial({
-    color: 0x3f8a4a,
-    flatShading: true,
-  });
-  private readonly taxiMaterial = new THREE.MeshLambertMaterial({
-    color: 0xf2c230,
-    emissive: new THREE.Color(0xffd257),
-    emissiveIntensity: 0,
-  });
+  private readonly treeMaterial = new THREE.MeshLambertMaterial({ flatShading: true });
+  private readonly carMaterial = new THREE.MeshLambertMaterial({ flatShading: true });
   private readonly lampMaterial: THREE.PointsMaterial;
   private readonly beaconMaterial: THREE.PointsMaterial;
-  private taxis: THREE.InstancedMesh | null = null;
+  /** Phares, feux arrière et feux des avions : des points colorés un par un. */
+  private readonly signalMaterial: THREE.PointsMaterial;
+  private cars: THREE.InstancedMesh | null = null;
+  private carLights: THREE.Points | null = null;
+  private planes: THREE.Points | null = null;
   private lanes: readonly Lane[] = [];
+  private carCount = CAR_COUNT.medium;
   private clock = 0;
   private key = '';
 
   constructor() {
-    const { map, lit } = facadeTextures();
-    this.facadeMap = repeating(map, THREE.SRGBColorSpace);
-    this.facadeLit = repeating(lit, THREE.SRGBColorSpace);
-    this.facade = {
-      map: { value: this.facadeMap },
-      lit: { value: this.facadeLit },
-      tint: { value: new THREE.Color(1, 1, 1) },
-      glow: { value: 0 },
-    };
-    this.facadeMaterial = facadeMaterial(this.facade);
-    const points = (color: number) =>
+    const points = (color: number, vertexColors = false) =>
       new THREE.PointsMaterial({
         map: this.glow,
         color,
+        vertexColors,
         size: 12,
         sizeAttenuation: false,
         transparent: true,
@@ -564,7 +785,16 @@ export class SkylineView {
       });
     this.lampMaterial = points(0xffc978);
     this.beaconMaterial = points(0xff3b30);
+    this.signalMaterial = points(0xffffff, true);
     this.root.name = 'skyline';
+  }
+
+  /** Qualité basse : moins de voitures et pas de reflets fins sur les vitres et l'eau. */
+  setQuality(level: QualityLevel): void {
+    this.uniforms.detail.value = level === 'low' ? 0 : 1;
+    this.carCount = CAR_COUNT[level];
+    if (this.cars) this.cars.count = this.carCount;
+    this.carLights?.geometry.setDrawRange(0, this.carCount * 2);
   }
 
   /** Reconstruit la ville quand le bureau change de taille (la tour suit son emprise). */
@@ -574,73 +804,91 @@ export class SkylineView {
     this.key = key;
     this.clear();
     const plan = planSkyline(layout);
+    const cx = (layout.width - 1) / 2;
+    const cz = (layout.depth - 1) / 2;
+    this.uniforms.center.value.set(cx, cz);
 
     const facades = new BoxBatch();
     const plain = new BoxBatch();
+    const crowns = new BoxBatch();
     // Du plus proche au plus loin : les immeubles proches masquent les lointains, que la carte
     // graphique n'a alors pas à colorier (test de profondeur précoce).
-    const cx = (layout.width - 1) / 2;
-    const cz = (layout.depth - 1) / 2;
     const near = (box: CityBox) => Math.hypot(box.x - cx, box.z - cz);
     [...plan.towers]
       .sort((a, b) => near(a) - near(b))
-      .forEach((box, index) => {
-        facades.add(box, true, false, (index * 7) % TILE_WINDOWS);
-        plain.add(
-          { ...box, color: ROOF_COLORS[index % ROOF_COLORS.length] ?? 0x8a8d93 },
-          false,
-          true,
-        );
+      .forEach((box) => {
+        facades.facadeSides(box, box.bottom === STREET_LEVEL ? STREET_LEVEL : BASE);
+        if (box.roof !== undefined) plain.roof(box);
       });
-    for (const box of plan.solids) plain.add(box, true, true);
-    const facadeMesh = new THREE.Mesh(facades.build(), this.facadeMaterial);
+    for (const box of plan.solids) plain.solid(box);
+    for (const box of plan.crowns) crowns.solid(box);
+    const facadeMesh = new THREE.Mesh(facades.build(true), this.facadeMaterial);
     facadeMesh.name = 'skyline-facades';
-    const plainMesh = new THREE.Mesh(plain.build(), this.plainMaterial);
+    const plainMesh = new THREE.Mesh(plain.build(), this.solidMaterial);
     plainMesh.name = 'skyline-roofs';
+    const crownMesh = new THREE.Mesh(crowns.build(), this.crownMaterial);
+    crownMesh.name = 'skyline-crowns';
 
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(CITY_RADIUS * 4, CITY_RADIUS * 4).rotateX(-Math.PI / 2),
-      this.groundMaterial,
+      this.streetMaterial,
     );
-    ground.position.set((layout.width - 1) / 2, STREET_LEVEL, (layout.depth - 1) / 2);
+    ground.position.set(cx, STREET_LEVEL, cz);
     ground.name = 'skyline-street';
     const riverWidth = plan.river.x1 - plan.river.x0;
     const water = new THREE.Mesh(
       new THREE.PlaneGeometry(riverWidth, CITY_RADIUS * 4).rotateX(-Math.PI / 2),
       this.waterMaterial,
     );
-    water.position.set(
-      (plan.river.x0 + plan.river.x1) / 2,
-      STREET_LEVEL + 0.05,
-      (layout.depth - 1) / 2,
-    );
+    water.position.set((plan.river.x0 + plan.river.x1) / 2, STREET_LEVEL + 0.05, cz);
     water.name = 'skyline-river';
 
-    // Réservoir d'eau : une cuve en bois sur quatre pieds, coiffée d'un toit conique.
-    const tank = new THREE.CylinderGeometry(0.55, 0.55, 1, 8).translate(0, 1.2, 0);
-    const legs = new THREE.BoxGeometry(0.9, 0.7, 0.9).translate(0, 0.35, 0);
-    const roof = new THREE.ConeGeometry(0.62, 0.45, 8).translate(0, 1.92, 0);
-    const tree = new THREE.ConeGeometry(0.7, 1.8, 6).translate(0, 0.9, 0);
+    // Réservoir d'eau : une cuve en bois sur ses pieds, coiffée d'un toit conique.
+    const tank = merged([
+      new THREE.CylinderGeometry(0.55, 0.55, 1, 10).translate(0, 1.2, 0),
+      new THREE.BoxGeometry(0.9, 0.7, 0.9).translate(0, 0.35, 0),
+      new THREE.ConeGeometry(0.62, 0.45, 10).translate(0, 1.92, 0),
+    ]);
+    // Arbre : un houppier arrondi sur un tronc court.
+    const tree = merged([
+      new THREE.IcosahedronGeometry(0.75, 0).scale(1, 0.9, 1).translate(0, 1.35, 0),
+      new THREE.CylinderGeometry(0.1, 0.12, 0.8, 5).translate(0, 0.4, 0),
+    ]);
+    // Voiture : caisse et habitacle.
+    const car = merged([
+      new THREE.BoxGeometry(0.95, 0.3, 0.44).translate(0, 0.3, 0),
+      new THREE.BoxGeometry(0.5, 0.22, 0.4).translate(-0.05, 0.56, 0),
+    ]);
     this.lanes = plan.lanes;
-    this.taxis = new THREE.InstancedMesh(
-      new THREE.BoxGeometry(0.9, 0.45, 0.45).translate(0, 0.5, 0),
-      this.taxiMaterial,
-      TAXI_COUNT,
+    this.cars = new THREE.InstancedMesh(car, this.carMaterial, MAX_CARS);
+    const color = new THREE.Color();
+    for (let index = 0; index < MAX_CARS; index++)
+      this.cars.setColorAt(index, color.setHex(CAR_COLORS[(index * 7) % CAR_COLORS.length] ?? 0));
+    this.cars.count = this.carCount;
+    this.cars.name = 'skyline-cars';
+    this.cars.frustumCulled = false;
+    this.carLights = this.signalPoints(MAX_CARS * 2, (index) =>
+      index % 2 === 0 ? [1, 0.95, 0.8] : [1, 0.12, 0.08],
     );
-    this.taxis.name = 'skyline-taxis';
-    this.taxis.frustumCulled = false;
-    this.placeTaxis();
+    this.carLights.name = 'skyline-car-lights';
+    this.carLights.geometry.setDrawRange(0, this.carCount * 2);
+    this.planes = this.signalPoints(PLANES.length * 3, (index) =>
+      index % 3 === 0 ? [1, 0.1, 0.1] : index % 3 === 1 ? [0.1, 1, 0.3] : [1, 1, 1],
+    );
+    this.planes.name = 'skyline-planes';
+    this.placeTraffic();
 
     this.root.add(
       ground,
       water,
       facadeMesh,
       plainMesh,
+      crownMesh,
       instancedAt(tank, this.tankMaterial, plan.tanks, 'skyline-tanks'),
-      instancedAt(legs, this.tankMaterial, plan.tanks, 'skyline-tank-legs'),
-      instancedAt(roof, this.tankMaterial, plan.tanks, 'skyline-tank-roofs'),
       instancedAt(tree, this.treeMaterial, plan.trees, 'skyline-trees'),
-      this.taxis,
+      this.cars,
+      this.carLights,
+      this.planes,
       glowPoints(plan.streetLamps, this.lampMaterial, 'skyline-lamps'),
       glowPoints(plan.beacons, this.beaconMaterial, 'skyline-beacons'),
     );
@@ -652,70 +900,137 @@ export class SkylineView {
   }
 
   /**
-   * Suit l'heure : les fenêtres et lampadaires s'allument à la tombée du jour, les balises
-   * clignotent, les taxis roulent (immobiles si l'option « réduire les animations » est active).
+   * Suit l'heure du jeu (`minute`, 0 à 1439) : lumière du ciel et du soleil sur les façades,
+   * fenêtres qui s'allument et s'éteignent, couronnes des tours et lampadaires la nuit. Les
+   * balises clignotent, les voitures roulent et les avions passent, sauf si l'option « réduire
+   * les animations » est active.
    */
-  update(light: LightingState, delta: number, pixelsPerUnit: number, animate: boolean): void {
+  update(
+    light: LightingState,
+    minute: number,
+    delta: number,
+    pixelsPerUnit: number,
+    animate: boolean,
+  ): void {
     const night = 1 - light.daylight;
-    this.facade.glow.value = 0.05 + 1.2 * night;
-    // Lumière du ciel et du soleil, comme celle que reçoit le bureau (sans ses lampes).
-    this.tint
-      .setHex(light.skyColor)
-      .multiplyScalar(0.55 * light.ambient)
-      .add(this.sunTint.setHex(light.sunColor).multiplyScalar(0.28 * light.sun));
-    this.facade.tint.value.copy(this.tint);
-    this.plainMaterial.color.copy(this.tint);
-    this.groundMaterial.color.setHex(0x3d424c).multiply(this.tint);
-    this.waterMaterial.color.setHex(0x3f6e8f).multiply(this.tint);
-    this.taxiMaterial.emissiveIntensity = 0.5 * night;
-    this.lampMaterial.opacity = Math.max(0, night - 0.15);
-    this.lampMaterial.size = 0.9 * pixelsPerUnit;
+    const hour = minute / 60;
+    const u = this.uniforms;
+    u.skyLight.value.setHex(light.skyColor).multiplyScalar(0.62 * light.ambient);
+    u.sunLight.value.copy(this.sunColor.setHex(light.sunColor)).multiplyScalar(0.34 * light.sun);
+    // Même course du soleil que la lumière du bureau (GameRenderer.applyLighting).
+    u.sunDir.value
+      .set(Math.cos(light.sunAzimuth), 1.2, Math.sin(light.sunAzimuth) * 0.6 + 0.5)
+      .normalize();
+    u.horizon.value.setHex(light.background);
+    u.night.value = night;
+    u.officeShare.value = litShare(hour, 'office');
+    u.homeShare.value = litShare(hour, 'home');
+    u.glow.value = 0.06 + 1.0 * night;
     if (animate) this.clock += delta;
-    const blink = animate ? (Math.sin(this.clock * 3) > 0.2 ? 1 : 0.15) : 1;
-    this.beaconMaterial.opacity = (0.25 + 0.75 * night) * blink;
-    this.beaconMaterial.size = 1.4 * pixelsPerUnit;
-    if (animate) this.placeTaxis();
+    u.clock.value = this.clock;
+    this.crownLight.value = 0.85 * Math.max(0, night - 0.2);
+    this.lampMaterial.opacity = Math.max(0, night - 0.15);
+    this.lampMaterial.size = 0.7 * pixelsPerUnit;
+    // Les feux d'obstacle s'allument ensemble, une seconde sur deux.
+    const pulse = animate ? Math.pow(Math.max(0, Math.sin(this.clock * Math.PI)), 0.5) : 1;
+    this.beaconMaterial.opacity = (0.2 + 0.8 * night) * (0.12 + 0.88 * pulse);
+    this.beaconMaterial.size = 1.3 * pixelsPerUnit;
+    this.signalMaterial.opacity = Math.min(1, Math.max(0, 1.25 * night - 0.1));
+    this.signalMaterial.size = 0.45 * pixelsPerUnit;
+    if (animate) this.placeTraffic();
   }
 
   dispose(): void {
     this.clear();
-    for (const texture of [this.facadeMap, this.facadeLit, this.glow]) texture.dispose();
+    this.glow.dispose();
     for (const mat of [
       this.facadeMaterial,
-      this.plainMaterial,
-      this.groundMaterial,
+      this.solidMaterial,
+      this.crownMaterial,
+      this.streetMaterial,
       this.waterMaterial,
       this.tankMaterial,
       this.treeMaterial,
-      this.taxiMaterial,
+      this.carMaterial,
       this.lampMaterial,
       this.beaconMaterial,
+      this.signalMaterial,
     ])
       mat.dispose();
   }
 
-  /** Chaque taxi suit une voie, à sa vitesse ; il réapparaît à l'autre bout. */
-  private placeTaxis(): void {
-    const taxis = this.taxis;
-    if (!taxis || this.lanes.length === 0) return;
+  private signalPoints(count: number, colorOf: (index: number) => number[]): THREE.Points {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(count * 3, 3));
+    geometry.setAttribute(
+      'color',
+      new THREE.Float32BufferAttribute(
+        Array.from({ length: count }, (_, index) => colorOf(index)).flat(),
+        3,
+      ),
+    );
+    const points = new THREE.Points(geometry, this.signalMaterial);
+    points.frustumCulled = false;
+    return points;
+  }
+
+  /**
+   * Chaque voiture suit sa voie à la vitesse de la voie (pas de dépassement), et réapparaît à
+   * l'autre bout ; phares blancs devant, feux rouges derrière. Les avions décrivent une corde
+   * loin du bureau, sous la ligne `maxTop` : ils ne passent jamais devant la salle.
+   */
+  private placeTraffic(): void {
+    const cars = this.cars;
+    const lights = this.carLights?.geometry.getAttribute('position');
+    if (!cars || !lights || this.lanes.length === 0) return;
     const matrix = new THREE.Matrix4();
-    const turn = new THREE.Matrix4().makeRotationY(Math.PI / 2);
-    for (let index = 0; index < TAXI_COUNT; index++) {
-      const lane = this.lanes[(index * 5) % this.lanes.length];
+    for (let index = 0; index < MAX_CARS; index++) {
+      const lane = this.lanes[(index * 37) % this.lanes.length];
       if (!lane) continue;
-      const direction = index % 2 === 0 ? 1 : -1;
-      const speed = TAXI_SPEED * (0.7 + ((index * 37) % 10) / 20);
-      const travelled = ((index * 53.7 + this.clock * speed) % lane.length) - lane.length / 2;
-      const along = travelled * direction;
-      matrix.makeTranslation(
-        lane.axis === 'x' ? lane.x + along : lane.x,
-        STREET_LEVEL,
-        lane.axis === 'z' ? lane.z + along : lane.z + (direction > 0 ? 0.6 : -0.6),
-      );
-      if (lane.axis === 'z') matrix.multiply(turn);
-      taxis.setMatrixAt(index, matrix);
+      const offset = ((index * 0.618034) % 1) * lane.length;
+      const travelled = ((offset + this.clock * lane.speed) % lane.length) - lane.length / 2;
+      const along = travelled * lane.direction;
+      const x = lane.axis === 'x' ? lane.x + along : lane.x;
+      const z = lane.axis === 'z' ? lane.z + along : lane.z;
+      // La voiture regarde dans son sens de marche (son avant est vers +x).
+      const angle =
+        lane.axis === 'x'
+          ? lane.direction > 0
+            ? 0
+            : Math.PI
+          : lane.direction > 0
+            ? -Math.PI / 2
+            : Math.PI / 2;
+      cars.setMatrixAt(index, matrix.makeRotationY(angle).setPosition(x, STREET_LEVEL, z));
+      const dx = lane.axis === 'x' ? 0.5 * lane.direction : 0;
+      const dz = lane.axis === 'z' ? 0.5 * lane.direction : 0;
+      lights.setXYZ(index * 2, x + dx, STREET_LEVEL + 0.32, z + dz);
+      lights.setXYZ(index * 2 + 1, x - dx, STREET_LEVEL + 0.32, z - dz);
     }
-    taxis.instanceMatrix.needsUpdate = true;
+    cars.instanceMatrix.needsUpdate = true;
+    lights.needsUpdate = true;
+
+    const planes = this.planes?.geometry.getAttribute('position');
+    const colors = this.planes?.geometry.getAttribute('color');
+    if (!planes || !colors) return;
+    const [cx, cz] = [this.uniforms.center.value.x, this.uniforms.center.value.y];
+    PLANES.forEach((plane, index) => {
+      const t = ((this.clock / plane.period + index * 0.37) % 1) * 2 - 1;
+      const half = Math.sqrt(140 * 140 - plane.distance * plane.distance);
+      const normal = { x: Math.cos(plane.angle), z: Math.sin(plane.angle) };
+      const dir = { x: -normal.z, z: normal.x };
+      const x = cx + normal.x * plane.distance + dir.x * t * half;
+      const z = cz + normal.z * plane.distance + dir.z * t * half;
+      const wing = 0.7;
+      planes.setXYZ(index * 3, x + normal.x * wing, plane.altitude, z + normal.z * wing);
+      planes.setXYZ(index * 3 + 1, x - normal.x * wing, plane.altitude, z - normal.z * wing);
+      planes.setXYZ(index * 3 + 2, x - dir.x * 0.8, plane.altitude, z - dir.z * 0.8);
+      // Flash blanc bref, une fois par seconde environ.
+      const strobe = (this.clock * 1.1 + index * 0.4) % 1 < 0.12 ? 1 : 0;
+      colors.setXYZ(index * 3 + 2, strobe, strobe, strobe);
+    });
+    planes.needsUpdate = true;
+    colors.needsUpdate = true;
   }
 
   private clear(): void {
@@ -724,6 +1039,8 @@ export class SkylineView {
       if (child instanceof THREE.InstancedMesh) child.dispose();
       if (child instanceof THREE.Mesh || child instanceof THREE.Points) child.geometry.dispose();
     }
-    this.taxis = null;
+    this.cars = null;
+    this.carLights = null;
+    this.planes = null;
   }
 }
