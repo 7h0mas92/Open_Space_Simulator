@@ -121,9 +121,14 @@ const TRESTLE_TOP = 0.69;
 const TV_CABINET_TOP = 0.62;
 const STANDING_TOP = 1.1;
 const BOOKCASE_TOP = 1.58;
-/** Épaisseur du tapis de souris (`mousePad`) et agrandissement de la souris Kenney posée dessus. */
+/**
+ * Épaisseur du tapis de souris (`mousePad`) et taille de la souris Kenney posée dessus : réduite
+ * pour rester à l'échelle du clavier QWERTY (environ 7 x 12 cm). Le modèle Kenney part de son
+ * origine vers l'arrière : `MOUSE_BACK` le recentre sur le tapis.
+ */
 const MOUSE_PAD = 0.012;
-const MOUSE_SCALE: readonly [number, number, number] = [1.35, 1.35, 1.35];
+const MOUSE_SCALE: readonly [number, number, number] = [0.7, 0.7, 0.7];
+const MOUSE_BACK = 0.06;
 
 type SimItemId = (typeof FURNITURE_CATALOG)[number]['id'];
 
@@ -148,9 +153,11 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       part(kenney('computerScreen'), [-0.35, DESK_TOP, -0.15]),
       // Clavier QWERTY à vraies touches (celui du kit Kenney est un pavé lisse).
       part(primitive('qwertyKeyboard'), [-0.35, DESK_TOP, 0.17]),
-      // La souris, un peu agrandie, sur un tapis sombre qui la détache du plateau.
+      // La souris sur un tapis sombre qui la détache du plateau.
       part(primitive('mousePad'), [0.08, DESK_TOP, 0.15]),
-      part(kenney('computerMouse'), [0.08, DESK_TOP + MOUSE_PAD, 0.15], { scale: MOUSE_SCALE }),
+      part(kenney('computerMouse'), [0.08, DESK_TOP + MOUSE_PAD, 0.15 + MOUSE_BACK], {
+        scale: MOUSE_SCALE,
+      }),
     ],
     surface: [
       [0.3, DESK_TOP, -0.18],
@@ -168,7 +175,9 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     parts: [
       part(kenney('laptop'), [-0.3, TRESTLE_TOP, 0], { turn: 0 }),
       part(primitive('mousePad'), [0.14, TRESTLE_TOP, 0.12]),
-      part(kenney('computerMouse'), [0.14, TRESTLE_TOP + MOUSE_PAD, 0.12], { scale: MOUSE_SCALE }),
+      part(kenney('computerMouse'), [0.14, TRESTLE_TOP + MOUSE_PAD, 0.12 + MOUSE_BACK], {
+        scale: MOUSE_SCALE,
+      }),
       part(primitive('ramen'), [0.45, TRESTLE_TOP, 0.05]),
     ],
     surface: [
@@ -187,7 +196,7 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     parts: [
       part(primitive('qwertyKeyboard'), [0, STANDING_TOP, 0.12]),
       part(primitive('mousePad'), [0.43, STANDING_TOP, 0.12]),
-      part(kenney('computerMouse'), [0.43, STANDING_TOP + MOUSE_PAD, 0.12], {
+      part(kenney('computerMouse'), [0.43, STANDING_TOP + MOUSE_PAD, 0.12 + MOUSE_BACK], {
         scale: MOUSE_SCALE,
       }),
     ],
