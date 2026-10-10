@@ -5,15 +5,17 @@
  * dessin par sous-maillage, quel que soit leur nombre (indispensable à 30 personnes en Licorne).
  */
 import * as THREE from 'three';
+import type { WallFinishId, WallZone } from '@oss/shared';
 import { accessCell, type ItemPlacement } from '../ai/grid';
 import { catalogItem, DESK_CHAIR, footprint } from '../view/catalog';
 import type { FurnitureColor } from '../view/colors';
 import { slotPosition } from '../view/placement';
 import type { OfficeLayout, RoomKind } from '../view/layout';
-import type { PlacedItemView } from '../view/types';
+import type { PlacedItemView, WallZoneView } from '../view/types';
 import { wallLength, wallOpenings, type WallOpening, type WallSide } from '../view/windows';
 import { paintObject, type AssetLibrary } from './assets';
 import { buildFixture } from './annexDecor';
+import { buildWallSkins } from './wallFinishes';
 import {
   buildPrimitive,
   material,
@@ -229,6 +231,7 @@ export class OfficeView {
   private layout: OfficeLayout | null = null;
   private wallsKey = '';
   private openings: readonly WallOpening[] = [];
+  private finishes: Partial<Record<WallZone, WallFinishId>> = {};
   private readonly furniture = new THREE.Group();
   private readonly signs = new THREE.Group();
   private signsKey = '';
@@ -257,15 +260,31 @@ export class OfficeView {
     void this.buildFixtures(layout);
   }
 
-  /** Reconstruit les murs si le plan ou les fenêtres posées ont changé (les murs sont percés). */
+  /** Peintures et papiers peints des zones de mur. */
+  setWallFinishes(zones: readonly WallZoneView[]): void {
+    const finishes: Partial<Record<WallZone, WallFinishId>> = {};
+    for (const { zone, finish } of zones) if (finish) finishes[zone] = finish;
+    this.finishes = finishes;
+    this.refreshWalls();
+  }
+
+  /**
+   * Reconstruit les murs si le plan, les fenêtres posées (les murs sont percés) ou les
+   * revêtements ont changé.
+   */
   private refreshWalls(): void {
     const layout = this.layout;
     if (!layout) return;
-    const key = `${this.layoutKey}|${this.openings.map((o) => `${o.wall}:${o.start}:${o.length}`).join(',')}`;
+    const openings = this.openings.map((o) => `${o.kind}:${o.wall}:${o.start}`).join(',');
+    const finishes = Object.entries(this.finishes)
+      .map(([zone, finish]) => `${zone}=${finish}`)
+      .join(',');
+    const key = `${this.layoutKey}|${openings}|${finishes}`;
     if (key === this.wallsKey) return;
     this.wallsKey = key;
     disposeChildren(this.walls);
     this.walls.add(buildWalls(layout, this.openings));
+    this.walls.add(buildWallSkins(layout, this.openings, this.finishes));
   }
 
   /** Décor fixe des annexes (arcade, jardin, auditorium), chargé en arrière-plan. */

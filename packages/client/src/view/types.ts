@@ -10,6 +10,8 @@
  */
 import type {
   AcquisitionOffer,
+  WallFinishId,
+  WallZone,
   Birthday,
   CalendarDate,
   DecorTheme,
@@ -535,6 +537,21 @@ export interface PetsView {
   readonly blocker: 'LOCKED' | 'NOT_ELIGIBLE' | 'NOT_ENOUGH_MONEY' | 'WRONG_STAGE' | null;
 }
 
+/** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
+export interface WallZoneView {
+  readonly zone: WallZone;
+  /** Peinture ou papier peint posé, `null` pour le mur crème d'origine. */
+  readonly finish: WallFinishId | null;
+}
+
+/** Peintures et papiers peints des murs. */
+export interface WallsView {
+  /** Zones de mur du bureau actuel, dans l'ordre d'affichage. */
+  readonly zones: readonly WallZoneView[];
+  /** Revêtements pas encore débloqués à cette phase. */
+  readonly locked: readonly WallFinishId[];
+}
+
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
 export interface GameNotification {
   readonly tick: number;
@@ -604,6 +621,8 @@ export interface GameView {
   readonly meetingRoom: MeetingRoomView;
   /** Chats du bureau. */
   readonly pets: PetsView;
+  /** Peintures et papiers peints des murs. */
+  readonly walls: WallsView;
   readonly canIpo: boolean;
   readonly result: GameResult | null;
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */
@@ -690,6 +709,7 @@ export type GameCommand =
   | { readonly type: 'sellVenture'; readonly ventureId: string }
   | { readonly type: 'fitMeetingRoom'; readonly format: MeetingFormatId }
   | { readonly type: 'clearMeetingRoom' }
+  | { readonly type: 'coverWall'; readonly zone: WallZone; readonly finish: WallFinishId }
   | { readonly type: 'adoptPet'; readonly coat: PetCoat }
   | { readonly type: 'rehomePet'; readonly petId: string };
 

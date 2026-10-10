@@ -137,8 +137,8 @@ describe('fenêtres et lumière du jour', () => {
     const layout = officeLayout('SEED');
     const lamp = wallSlots(layout).find((slot) => slot.turn === 0)!;
     await lights.setLayout(layout, 0, [
-      { wall: 0, start: lamp.x, length: 2, full: true },
-      { wall: 1, start: 2, length: 1, full: false },
+      { kind: 'glass-wall', wall: 0, start: lamp.x, length: 2, full: true },
+      { kind: 'window-small', wall: 1, start: 2, length: 1, full: false },
     ]);
     expect(count(lights, 'sun-patches')).toBe(2);
     expect(count(lights, 'lamp-wash')).toBe(wallSlots(layout).length - 1);

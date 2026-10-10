@@ -23,6 +23,7 @@ import { answerRaise } from './raises';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
+import { coverWall } from './walls';
 
 const fail = (error: Extract<CommandResult, { ok: false }>['error']): CommandResult => ({
   ok: false,
@@ -122,6 +123,8 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')
         : sellStored(state, command.itemId, command.color);
+    case 'COVER_WALL':
+      return coverWall(state, command.zone, command.finish);
     case 'START_PITCH':
       return startPitch(state, ctx);
     case 'PITCH_ARGUMENT':

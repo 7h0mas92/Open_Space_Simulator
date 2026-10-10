@@ -3,6 +3,7 @@ import { EntityIdSchema, FurnitureColorSchema } from './components.js';
 import { MeetingFormatIdSchema } from './meetings.js';
 import { FinancingKindSchema } from './funding.js';
 import { PetCoatSchema } from './pets.js';
+import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
 
 /**
  * Commandes typées envoyées par l'interface à la simulation. C'est le SEUL moyen de
@@ -102,6 +103,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
     itemId: z.string(),
     color: FurnitureColorSchema.optional(),
   }),
+  /** Peint ou tapisse une zone de mur (l'ancien revêtement n'est pas remboursé). */
+  z.object({ type: z.literal('COVER_WALL'), zone: WallZoneSchema, finish: WallFinishIdSchema }),
   z.object({ type: z.literal('START_PITCH') }),
   z.object({ type: z.literal('PITCH_ARGUMENT'), argumentId: z.string() }),
   z.object({ type: z.literal('CLOSE_PITCH') }),

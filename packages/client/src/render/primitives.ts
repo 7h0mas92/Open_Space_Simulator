@@ -318,7 +318,7 @@ export const windowGlass = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
 
-interface WindowShape {
+export interface WindowShape {
   /** Largeur en cases. */
   readonly cells: number;
   /** Bas et haut de la vitre. */
@@ -364,12 +364,21 @@ function wallWindow({ cells, bottom, top, inset, solid }: WindowShape): THREE.Gr
   return group;
 }
 
-const windowSmall = () =>
-  wallWindow({ cells: 1, bottom: 0.95, top: 1.65, inset: 0.12, solid: WALL_COLOR });
-const windowMedium = () =>
-  wallWindow({ cells: 2, bottom: 0.85, top: 1.75, inset: 0.12, solid: WALL_COLOR });
-const windowLarge = () =>
-  wallWindow({ cells: 3, bottom: 0.75, top: 1.85, inset: 0.12, solid: WALL_COLOR });
+/**
+ * Hauteurs des fenêtres classiques : bas et haut de la vitre, mur plein gardé de chaque côté.
+ * Les revêtements des murs (render/office.ts) recouvrent aussi ces morceaux de mur.
+ */
+export const WINDOW_SHAPES: Record<string, Omit<WindowShape, 'solid'>> = {
+  'window-small': { cells: 1, bottom: 0.95, top: 1.65, inset: 0.12 },
+  'window-medium': { cells: 2, bottom: 0.85, top: 1.75, inset: 0.12 },
+  'window-large': { cells: 3, bottom: 0.75, top: 1.85, inset: 0.12 },
+};
+
+const classicWindow = (kind: string) => () =>
+  wallWindow({ ...(WINDOW_SHAPES[kind] as Omit<WindowShape, 'solid'>), solid: WALL_COLOR });
+const windowSmall = classicWindow('window-small');
+const windowMedium = classicWindow('window-medium');
+const windowLarge = classicWindow('window-large');
 /** Vitre de building : du sol au plafond, tenue par une allège et un linteau métalliques. */
 const glassWall = () =>
   wallWindow({

@@ -281,6 +281,7 @@ export class GameRenderer {
         closed: venture.status !== 'ACTIVE',
       })),
     );
+    this.office.setWallFinishes(view.walls.zones);
     void this.office.setItems(view.items);
     this.updateDecor(view);
     void this.roomLights.setLayout(
