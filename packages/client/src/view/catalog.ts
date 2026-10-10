@@ -224,22 +224,23 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     paint: [],
     surface: [[0, 1.875, 0]],
   },
-  // Cafetière à filtre sur un comptoir étroit.
+  // Comptoir à café : porte, tiroir, niche à mugs ; cafetière à filtre, plateau, sucrier.
   'coffee-machine': {
     category: 'kitchen',
-    model: kenney('kitchenBar'),
-    height: 1.25,
-    use: 'coffee',
-    onTop: [primitive('dripCoffeeMaker')],
-  },
-  // Machine de barista et son moulin, sur un meuble à tiroirs.
-  'premium-coffee-machine': {
-    category: 'kitchen',
-    model: kenney('kitchenCabinetDrawer'),
+    model: primitive('coffeeCounter'),
     height: 1.35,
     use: 'coffee',
-    onTop: [primitive('espressoMachine')],
+    paint: ['cabinet'],
   },
+  // Comptoir du barista à tiroirs : machine à expresso, moulin, pot à lait, bac à marc.
+  'premium-coffee-machine': {
+    category: 'kitchen',
+    model: primitive('espressoCounter'),
+    height: 1.35,
+    use: 'coffee',
+    paint: ['cabinet'],
+  },
+  // Frigo à boissons vitré : bandeau lumineux, clayettes de canettes et de bouteilles.
   fridge: {
     category: 'kitchen',
     model: primitive('drinksFridge'),
@@ -248,24 +249,20 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     paint: ['red'],
     surface: [[0, 1.82, -0.04]],
   },
+  // Meuble bas à tiroir et portes, micro-ondes et dérouleur d'essuie-tout.
   microwave: {
     category: 'kitchen',
-    model: kenney('kitchenCabinet'),
+    model: primitive('microwaveCounter'),
     height: 1.25,
-    onTop: [kenney('kitchenMicrowave')],
+    paint: ['cabinet'],
   },
-  // Grande tablée avec deux bancs, pour les déjeuners d'équipe.
+  // Grande tablée en planches, piètement acier et deux bancs capitonnés repeignables.
   'canteen-table': {
     category: 'kitchen',
-    model: kenney('tableCrossCloth'),
+    model: primitive('canteenTable'),
     height: 0.7,
     use: 'meeting',
-    scale: [1.6, 1, 1.25],
-    parts: [
-      part(kenney('benchCushionLow'), [0, 0, -0.8], { scale: [3, 1, 1] }),
-      part(kenney('benchCushionLow'), [0, 0, 0.8], { scale: [3, 1, 1] }),
-    ],
-    paint: ['carpet'],
+    paint: ['cushion'],
     surface: [
       [-0.9, TRESTLE_TOP, -0.2],
       [0.9, TRESTLE_TOP, -0.2],
