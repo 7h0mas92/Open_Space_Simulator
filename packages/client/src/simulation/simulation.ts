@@ -14,6 +14,7 @@ import { applyCommand } from './commands';
 import { endGame } from './endings';
 import { computeOfficeEffects, type OfficeEffects } from './furniture';
 import type { SimContext } from './helpers';
+import { migrateLegacyKitchen } from './kitchen';
 import { Rng } from './rng';
 import { endSprint } from './sprint';
 import { migrateCommand, migrateRenamedItems } from './renamedItems';
@@ -81,6 +82,8 @@ export class Simulation {
   /** Reprend une partie sauvegardée (l'état doit avoir été validé par le schéma Zod). */
   static restore(state: GameState, cards: CardLibrary, commands: LoggedCommand[] = []): Simulation {
     migrateRenamedItems(state);
+    // Vieilles sauvegardes : les combinés meuble + appareil de cuisine deviennent deux objets.
+    migrateLegacyKitchen(state);
     return new Simulation(state, cards, commands);
   }
 

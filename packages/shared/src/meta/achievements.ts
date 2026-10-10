@@ -393,8 +393,8 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     icon: '🥐',
     difficulty: 'EASY',
     title: t('Barista', 'Barista'),
-    description: t('Acheter une machine à café premium.', 'Buy a premium coffee machine.'),
-    check: (state) => owns(state, 'premium-coffee-machine'),
+    description: t('Acheter une machine à expresso premium.', 'Buy a premium espresso machine.'),
+    check: (state) => owns(state, 'espresso-machine'),
   },
   {
     id: 'bug-squasher',

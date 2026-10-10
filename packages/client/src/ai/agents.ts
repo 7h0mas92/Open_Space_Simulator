@@ -632,7 +632,11 @@ export class AgentWorld {
     for (const item of sorted) {
       const use = catalogItem(item.kind)?.use;
       if (!use) continue;
-      const poi = { item, access: accessCell(item), center: itemCenter(item) };
+      // Un appareil posé sur un meuble (la cafetière) : on se sert devant le meuble.
+      const hostId = item.host?.id;
+      const spot = hostId ? items.find((other) => other.id === hostId) : item;
+      if (!spot) continue;
+      const poi = { item: spot, access: accessCell(spot), center: itemCenter(spot) };
       const list = this.pois.get(use) ?? [];
       list.push(poi);
       this.pois.set(use, list);

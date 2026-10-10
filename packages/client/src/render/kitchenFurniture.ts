@@ -1,32 +1,50 @@
 /**
- * Cuisine détaillée, en formes Three.js : comptoir à café, comptoir du barista, comptoir du
- * micro-ondes, frigo à boissons et grande tablée de la cantine.
+ * Cuisine détaillée, en formes Three.js : six meubles de cuisine (bas à tiroirs, bas à portes,
+ * évier, colonne à niche, buffet vaisselier, îlot), l'électroménager qu'on pose dessus
+ * (cafetière, machine à expresso, micro-ondes, bouilloire, cuiseur à riz), le frigo à boissons
+ * et la grande tablée de la cantine.
  *
- * Les meubles bas et la table Kenney d'avant étaient d'un seul bloc, avec la machine posée
- * dessus. Ici, le meuble et ce qu'il porte forment un seul objet : caisson, socle en retrait,
- * façades séparées par un jour, poignées, plan de travail en pierre, puis la machine et ses
- * petits accessoires (tasses, sucrier, pot à lait…). Les hauteurs sont celles des modèles Kenney
- * (plan de travail à 0,9, dessus du frigo à 1,82, plateau de la table à 0,69, assise à 0,44).
- * Chaque meuble est fusionné par matériau (voir `pieces.ts`) et regarde vers +z.
+ * Meubles et appareils sont des objets séparés : le meuble a un plan de travail vide où les
+ * emplacements d'accessoires (`surface` dans `view/catalog.ts`) reçoivent les appareils. Caisson,
+ * socle en retrait, façades séparées par un jour, poignées, plan de travail en pierre ; un
+ * appareil tient dans la moitié d'un plan de travail (0,42 de large au plus). Les hauteurs sont
+ * celles des modèles Kenney (plan de travail à 0,9, dessus du frigo à 1,82, plateau de la table à
+ * 0,69, assise à 0,44). Chaque objet est fusionné par matériau (voir `pieces.ts`), posé au sol
+ * (y = 0) et regarde vers +z.
  */
 import type * as THREE from 'three';
 import { Pieces, seeded } from './pieces';
 import { glass, PALETTE } from './primitives';
 
-/** Plan de travail des meubles bas, à la hauteur des meubles de cuisine Kenney. */
-const COUNTER = { width: 0.86, depth: 0.6, top: 0.9, plinth: 0.08, worktop: 0.04 } as const;
+/**
+ * Plan de travail des meubles bas, à la hauteur des meubles de cuisine Kenney. `width` est la
+ * largeur d'un meuble d'une case ; celle d'un meuble de deux cases est `wide`.
+ */
+const COUNTER = {
+  width: 0.86,
+  wide: 1.86,
+  depth: 0.6,
+  top: 0.9,
+  plinth: 0.08,
+  worktop: 0.04,
+} as const;
 /** Avant des façades (le caisson s'arrête à 0,27, les façades dépassent un peu). */
 const FRONT_Z = 0.285;
+/** Niche de la colonne : hauteur du fond, où l'appareil encastré est posé. */
+const NICHE_FLOOR = 1.02;
+/** Plan de l'îlot central, un peu plus haut et plus profond que les meubles bas. */
+const ISLAND = { width: 1.86, depth: 0.86, top: 0.92 } as const;
 
 const STONE = 0x5d6272;
 const PLINTH = 0x2f3443;
 const STEEL = 0xc3c9d3;
 const BLACK = 0x23283a;
 const COAL = 0x1a1e2b;
+const TILE = 0xdfe7ea;
 
-/** Caisson d'un meuble bas : côtés, dos, fond, socle en retrait et plan de travail en pierre. */
-function counterBody(p: Pieces): void {
-  const { width, depth, top, plinth, worktop } = COUNTER;
+/** Caisson d'un meuble bas de `width` : côtés, dos, fond, socle en retrait, plan en pierre. */
+function counterBody(p: Pieces, width: number = COUNTER.width): void {
+  const { depth, top, plinth, worktop } = COUNTER;
   const h = top - worktop - plinth;
   p.box(width - 0.06, plinth, depth - 0.1, PLINTH, [0, 0, -0.04]);
   for (const side of [-1, 1])
@@ -56,6 +74,244 @@ function handle(p: Pieces, x: number, y: number, length: number, vertical: boole
   }
 }
 
+/** Hauteur disponible pour les façades d'un meuble bas, et leur base. */
+const FRONTS = {
+  y0: COUNTER.plinth + 0.02,
+  height: COUNTER.top - COUNTER.worktop - COUNTER.plinth - 0.02 - 0.008,
+} as const;
+
+/** Trois tiroirs de plus en plus hauts sur une largeur `w`, centrés en `x`. */
+function drawerStack(p: Pieces, x: number, w: number): void {
+  let y = FRONTS.y0;
+  for (const share of [0.42, 0.32, 0.26]) {
+    const h = FRONTS.height * share;
+    front(p, x, y, w - 0.01, h - 0.01);
+    handle(p, x, y + h - 0.07, Math.min(0.3, w * 0.4), false);
+    y += h;
+  }
+}
+
+/** Deux portes sur une largeur `w`, centrées en `x`, poignées vers le milieu. */
+function doorPair(p: Pieces, x: number, w: number, y: number, h: number): void {
+  for (const side of [-1, 1]) {
+    front(p, x + (side * w) / 4, y, w / 2 - 0.01, h);
+    handle(p, x + side * 0.035, y + h - 0.22, 0.16, true);
+  }
+}
+
+/** Meuble bas à tiroirs : trois tiroirs, plan de travail libre pour deux appareils. */
+export function drawerCabinet(): THREE.Group {
+  const p = new Pieces([PALETTE.cabinet]);
+  counterBody(p);
+  drawerStack(p, 0, COUNTER.width - 0.01);
+  return p.build('drawerCabinet');
+}
+
+/** Meuble bas à portes : deux portes sous un bandeau, plan de travail libre. */
+export function doorCabinet(): THREE.Group {
+  const p = new Pieces([PALETTE.cabinet]);
+  counterBody(p);
+  const { y0, height } = FRONTS;
+  doorPair(p, 0, COUNTER.width, y0, height - 0.13);
+  // Bandeau fixe en haut, avec une petite poignée creuse.
+  front(p, 0, y0 + height - 0.12, COUNTER.width - 0.01, 0.12);
+  p.box(0.12, 0.012, 0.01, COAL, [0, y0 + height - 0.04, FRONT_Z + 0.012]);
+  return p.build('doorCabinet');
+}
+
+/** Bac en inox : rebord, fond plus sombre, bonde, vu comme encastré dans le plan. */
+function sinkBasin(p: Pieces, x: number, w: number, d: number): void {
+  const y = COUNTER.top;
+  p.box(w, 0.004, d, 0x5b6170, [x, y, -0.02]);
+  for (const side of [-1, 1]) {
+    p.box(0.03, 0.012, d, STEEL, [x + side * (w / 2 - 0.015), y, -0.02]);
+    p.box(w, 0.012, 0.03, STEEL, [x, y, -0.02 + side * (d / 2 - 0.015)]);
+  }
+  p.post(0.02, 0.02, 0.006, STEEL, [x, y + 0.004, -0.02], 10);
+}
+
+/** Robinet col de cygne : pied, col, bec qui revient au-dessus du bac, manette. */
+function faucet(p: Pieces, x: number, z: number): void {
+  const y = COUNTER.top;
+  p.post(0.025, 0.03, 0.04, PALETTE.chrome, [x, y, z], 10);
+  p.bar([x, y + 0.03, z], [x, y + 0.3, z + 0.02], 0.012, PALETTE.chrome);
+  p.bar([x, y + 0.3, z + 0.02], [x, y + 0.31, z + 0.14], 0.012, PALETTE.chrome);
+  p.bar([x, y + 0.31, z + 0.14], [x, y + 0.24, z + 0.19], 0.012, PALETTE.chrome);
+  p.box(0.012, 0.012, 0.08, PALETTE.chrome, [x + 0.04, y + 0.06, z], { x: 0.4 });
+}
+
+/** Meuble évier sur deux cases : bac et robinet à gauche, tiroirs à droite sous les appareils. */
+export function sinkUnit(): THREE.Group {
+  const p = new Pieces([PALETTE.cabinet]);
+  const width = COUNTER.wide;
+  counterBody(p, width);
+  const { y0, height } = FRONTS;
+  // Sous l'évier : deux portes et un faux tiroir ; à droite, une colonne de tiroirs.
+  const left = -width / 4;
+  doorPair(p, left, width / 2, y0, height - 0.13);
+  front(p, left, y0 + height - 0.12, width / 2 - 0.01, 0.12);
+  p.box(0.02, height, COUNTER.depth - 0.05, PALETTE.cabinet, [0, y0, -0.02]);
+  drawerStack(p, width / 4, width / 2 - 0.01);
+  sinkBasin(p, -0.5, 0.58, 0.4);
+  faucet(p, -0.5, -0.24);
+  // Liquide vaisselle et éponge entre le bac et le premier emplacement.
+  p.post(0.025, 0.03, 0.12, PALETTE.green, [-0.12, COUNTER.top, -0.2], 8);
+  p.post(0.01, 0.012, 0.03, PALETTE.white, [-0.12, COUNTER.top + 0.12, -0.2], 6);
+  p.box(0.08, 0.025, 0.05, PALETTE.yellow, [-0.13, COUNTER.top, -0.08]);
+  p.box(0.08, 0.008, 0.05, PALETTE.green, [-0.13, COUNTER.top + 0.025, -0.08]);
+  return p.build('sinkUnit');
+}
+
+/**
+ * Colonne à niche : deux portes en bas, une niche ouverte à hauteur des yeux (éclairée, faite
+ * pour encastrer un appareil) et une grande porte en haut. Hauteur 2,1.
+ */
+export function tallCabinet(): THREE.Group {
+  const p = new Pieces([PALETTE.cabinet]);
+  const { width, depth, plinth } = COUNTER;
+  const height = 2.1;
+  const nicheTop = NICHE_FLOOR + 0.5;
+  p.box(width - 0.06, plinth, depth - 0.1, PLINTH, [0, 0, -0.04]);
+  for (const side of [-1, 1])
+    p.box(0.03, height - plinth, depth, PALETTE.cabinet, [side * (width / 2 - 0.015), plinth, 0]);
+  p.box(width, height - plinth, 0.02, PALETTE.cabinet, [0, plinth, -depth / 2 + 0.01]);
+  p.box(width, 0.03, depth, PALETTE.cabinet, [0, height - 0.03, 0]);
+  // Fond de niche en pierre (comme les plans de travail), plafond avec une réglette allumée.
+  p.box(width - 0.06, 0.04, depth - 0.02, STONE, [0, NICHE_FLOOR - 0.04, 0.0]);
+  p.box(width - 0.06, 0.03, depth - 0.02, PALETTE.cabinet, [0, nicheTop, 0]);
+  p.light(width - 0.16, 0.01, 0.02, 0xfff1cf, [0, nicheTop - 0.01, 0.2]);
+  p.box(width - 0.06, nicheTop - NICHE_FLOOR, 0.01, 0xd4d9d1, [0, NICHE_FLOOR, -depth / 2 + 0.025]);
+  // Portes du bas et porte du haut.
+  const lower = NICHE_FLOOR - 0.04 - (plinth + 0.02) - 0.01;
+  doorPair(p, 0, width, plinth + 0.02, lower);
+  const upperY = nicheTop + 0.04;
+  front(p, 0, upperY, width - 0.01, height - 0.04 - upperY);
+  handle(p, 0.36, upperY + 0.04, 0.2, true);
+  return p.build('tallCabinet');
+}
+
+/** Tasse et soucoupe vues à travers une vitrine. */
+function displayCup(p: Pieces, color: number, x: number, y: number, z: number): void {
+  p.post(0.03, 0.03, 0.005, color, [x, y, z], 8);
+  p.post(0.024, 0.018, 0.04, color, [x, y + 0.005, z], 8);
+}
+
+/**
+ * Buffet vaisselier : meuble bas (tiroir et deux portes), crédence carrelée, vitrine haute à
+ * deux portes vitrées avec tasses, assiettes et bocaux.
+ */
+export function hutchCabinet(): THREE.Group {
+  const p = new Pieces([PALETTE.cabinet]);
+  const random = seeded(0x4a7c4);
+  const { width, depth, top } = COUNTER;
+  counterBody(p);
+  const { y0, height } = FRONTS;
+  doorPair(p, 0, width, y0, height - 0.17);
+  front(p, 0, y0 + height - 0.16, width - 0.01, 0.16);
+  handle(p, 0, y0 + height - 0.07, 0.3, false);
+  // Crédence en carreaux de métro, joints dessinés.
+  const backZ = -depth / 2 + 0.02;
+  const splash = 0.55;
+  p.box(width, splash, 0.015, TILE, [0, top, backZ]);
+  for (let row = 1; row < 7; row += 1)
+    p.box(width, 0.004, 0.004, 0xb9c4c8, [0, top + (row * splash) / 7, backZ + 0.009]);
+  // Vitrine haute, moins profonde que le meuble bas.
+  const vy = top + splash;
+  const vh = 0.62;
+  const vd = 0.32;
+  const vz = -depth / 2 + vd / 2;
+  for (const side of [-1, 1])
+    p.box(0.03, vh, vd, PALETTE.cabinet, [side * (width / 2 - 0.015), vy, vz]);
+  p.box(width, 0.03, vd, PALETTE.cabinet, [0, vy, vz]);
+  p.box(width + 0.03, 0.04, vd + 0.03, PALETTE.cabinet, [0, vy + vh - 0.04, vz + 0.01]);
+  p.box(width, vh, 0.015, 0xd4d9d1, [0, vy, -depth / 2 + 0.01]);
+  const shelf = vy + 0.3;
+  p.box(width - 0.06, 0.015, vd - 0.04, PALETTE.white, [0, shelf, vz]);
+  // Assiettes debout en bas, tasses dépareillées en haut, deux bocaux.
+  for (let i = 0; i < 6; i += 1)
+    p.post(0.1, 0.1, 0.012, PALETTE.white, [-0.3 + i * 0.024, vy + 0.13, vz - 0.02], 12);
+  p.post(0.05, 0.05, 0.16, glass, [0.15, vy + 0.03, vz], 10);
+  p.post(0.045, 0.045, 0.1, PALETTE.coffee, [0.15, vy + 0.035, vz], 10);
+  p.post(0.04, 0.04, 0.12, glass, [0.3, vy + 0.03, vz], 10);
+  p.post(0.035, 0.035, 0.07, PALETTE.sand, [0.3, vy + 0.035, vz], 10);
+  const cups = [PALETTE.white, PALETTE.blue, PALETTE.yellow, PALETTE.red, PALETTE.mint];
+  for (let i = 0; i < 5; i += 1)
+    displayCup(
+      p,
+      cups[Math.floor(random() * cups.length)] ?? PALETTE.white,
+      -0.3 + i * 0.15,
+      shelf + 0.015,
+      vz,
+    );
+  // Deux portes vitrées : cadre, verre, petits boutons.
+  const fz = vz + vd / 2 + 0.01;
+  for (const side of [-1, 1]) {
+    const cx = (side * width) / 4;
+    p.box(width / 2 - 0.02, vh - 0.08, 0.01, glass, [cx, vy + 0.035, fz]);
+    for (const dx of [-1, 1])
+      p.box(0.03, vh - 0.07, 0.02, PALETTE.cabinet, [cx + dx * (width / 4 - 0.025), vy + 0.03, fz]);
+    for (const y of [vy + 0.03, vy + vh - 0.07])
+      p.box(width / 2 - 0.02, 0.03, 0.02, PALETTE.cabinet, [cx, y, fz]);
+    p.post(0.012, 0.012, 0.02, STEEL, [side * 0.05, vy + 0.25, fz + 0.015], 6);
+  }
+  return p.build('hutchCabinet');
+}
+
+/**
+ * Îlot central sur deux cases : caisson laqué, plan en chêne massif qui déborde, tiroirs côté
+ * cuisine et étagères ouvertes de l'autre côté (livres de cuisine, saladiers, paniers).
+ */
+export function kitchenIsland(): THREE.Group {
+  const p = new Pieces([PALETTE.cabinet]);
+  const { width, depth, top } = ISLAND;
+  const board = 0.06;
+  const bodyD = depth - 0.16;
+  const h = top - board - COUNTER.plinth;
+  p.box(width - 0.12, COUNTER.plinth, bodyD - 0.08, PLINTH, [0, 0, 0]);
+  for (const side of [-1, 1])
+    p.box(0.03, h, bodyD, PALETTE.cabinet, [side * (width / 2 - 0.09), COUNTER.plinth, 0]);
+  p.box(width - 0.18, 0.02, bodyD, PALETTE.cabinet, [0, COUNTER.plinth, 0]);
+  p.box(width - 0.18, h, 0.02, PALETTE.cabinet, [0, COUNTER.plinth, 0]);
+  // Plan en chêne : lames collées, de teintes un peu différentes.
+  const random = seeded(0x15a1d);
+  const strips = 9;
+  for (let i = 0; i < strips; i += 1) {
+    const shade = random() < 0.5 ? PALETTE.wood : 0xbf8a52;
+    p.box(width / strips - 0.002, board, depth, shade, [
+      -width / 2 + (width / strips) * (i + 0.5),
+      top - board,
+      0,
+    ]);
+  }
+  // Côté cuisine (+z) : quatre tiroirs.
+  const fz = bodyD / 2 + 0.01;
+  const inner = width - 0.2;
+  for (const col of [-1, 1])
+    for (const row of [0, 1]) {
+      const fh = (h - 0.04) / 2;
+      const y = COUNTER.plinth + 0.02 + row * fh;
+      const x = (col * inner) / 4;
+      p.box(inner / 2 - 0.01, fh - 0.01, 0.018, PALETTE.cabinet, [x, y, fz]);
+      p.box(0.24, 0.014, 0.014, STEEL, [x, y + fh - 0.08, fz + 0.025]);
+    }
+  // Côté salle (-z) : étagère ouverte au milieu de la hauteur.
+  const sz = -bodyD / 4;
+  const shelf = COUNTER.plinth + h / 2;
+  p.box(width - 0.2, 0.02, bodyD / 2 - 0.02, PALETTE.cabinet, [0, shelf, sz]);
+  const books = [PALETTE.red, PALETTE.blue, PALETTE.yellow, PALETTE.green, PALETTE.purple];
+  for (let i = 0; i < 7; i += 1)
+    p.book(0.035, 0.2 + random() * 0.06, 0.16, books[i % books.length] ?? PALETTE.red, [
+      -0.7 + i * 0.04,
+      shelf + 0.02,
+      sz - 0.04,
+    ]);
+  p.post(0.12, 0.07, 0.08, PALETTE.white, [0.05, shelf + 0.02, sz - 0.04], 12);
+  p.post(0.1, 0.06, 0.07, PALETTE.white, [0.05, shelf + 0.1, sz - 0.04], 12);
+  for (const x of [0.4, 0.66])
+    p.box(0.22, 0.14, 0.18, PALETTE.wicker, [x, COUNTER.plinth + 0.02, sz - 0.04]);
+  return p.build('kitchenIsland');
+}
+
 /** Mug avec son anse, posé sur `y`. */
 function mug(p: Pieces, color: number, x: number, y: number, z: number, turn = 0): void {
   p.post(0.034, 0.03, 0.07, color, [x, y, z], 8);
@@ -73,168 +329,123 @@ function cup(p: Pieces, x: number, y: number, z: number): void {
   p.post(0.022, 0.018, 0.035, PALETTE.white, [x, y + 0.006, z], 8);
 }
 
-/** Cafetière à filtre noire : réservoir, tête, plaque chauffante et verseuse en verre. */
-function dripCoffeeMaker(p: Pieces, x: number, y: number, z: number): void {
-  p.box(0.3, 0.03, 0.3, BLACK, [x, y, z]);
-  p.box(0.3, 0.42, 0.11, BLACK, [x, y, z - 0.095]);
-  p.soft(0.3, 0.1, 0.27, 0.02, BLACK, [x, y + 0.36, z - 0.015]);
+/**
+ * Cafetière à filtre : réservoir, tête, plaque chauffante, verseuse en verre et un mug à côté.
+ * Coque repeignable (`dark`).
+ */
+export function dripCoffeeMaker(): THREE.Group {
+  const p = new Pieces([PALETTE.dark]);
+  const shell = PALETTE.dark;
+  p.box(0.3, 0.03, 0.3, shell, [0, 0, 0]);
+  p.box(0.3, 0.42, 0.11, shell, [0, 0, -0.095]);
+  p.soft(0.3, 0.1, 0.27, 0.02, shell, [0, 0.36, -0.015]);
   // Niveau d'eau sur le côté du réservoir.
-  p.box(0.004, 0.22, 0.05, 0x7fb6d9, [x - 0.151, y + 0.1, z - 0.095]);
+  p.box(0.004, 0.22, 0.05, 0x7fb6d9, [-0.151, 0.1, -0.095]);
   // Plaque chauffante, verseuse à moitié pleine, couvercle et poignée.
-  p.post(0.085, 0.085, 0.012, COAL, [x, y + 0.03, z + 0.04], 10);
-  p.post(0.07, 0.085, 0.075, PALETTE.coffee, [x, y + 0.045, z + 0.04], 10);
-  p.post(0.08, 0.092, 0.17, glass, [x, y + 0.042, z + 0.04], 10);
-  p.post(0.055, 0.08, 0.025, BLACK, [x, y + 0.212, z + 0.04], 10);
-  p.box(0.02, 0.13, 0.025, BLACK, [x + 0.105, y + 0.07, z + 0.04]);
-  p.box(0.03, 0.02, 0.025, BLACK, [x + 0.09, y + 0.18, z + 0.04]);
+  p.post(0.085, 0.085, 0.012, COAL, [0, 0.03, 0.04], 10);
+  p.post(0.07, 0.085, 0.075, PALETTE.coffee, [0, 0.045, 0.04], 10);
+  p.post(0.08, 0.092, 0.17, glass, [0, 0.042, 0.04], 10);
+  p.post(0.055, 0.08, 0.025, BLACK, [0, 0.212, 0.04], 10);
+  p.box(0.02, 0.13, 0.025, BLACK, [0.105, 0.07, 0.04]);
+  p.box(0.03, 0.02, 0.025, BLACK, [0.09, 0.18, 0.04]);
   // Bouton et voyant allumé sur la tête.
-  p.box(0.04, 0.02, 0.01, COAL, [x - 0.08, y + 0.39, z + 0.122]);
-  p.light(0.02, 0.02, 0.006, PALETTE.red, [x + 0.1, y + 0.39, z + 0.122]);
+  p.box(0.04, 0.02, 0.01, COAL, [-0.08, 0.39, 0.122]);
+  p.light(0.02, 0.02, 0.006, PALETTE.red, [0.1, 0.39, 0.122]);
+  mug(p, PALETTE.white, -0.17, 0, 0.14);
+  return p.build('dripCoffeeMaker');
 }
 
-/** Comptoir à café : une porte, un tiroir, une niche à mugs ; cafetière et plateau dessus. */
-export function coffeeCounter(): THREE.Group {
-  const p = new Pieces([PALETTE.cabinet]);
-  const { top, plinth } = COUNTER;
-  counterBody(p);
-  const y0 = plinth + 0.02;
-  const h = top - COUNTER.worktop - y0 - 0.008;
-  // Porte à gauche, séparation, tiroir et niche ouverte à droite.
-  front(p, -0.215, y0, 0.41, h);
-  handle(p, -0.04, y0 + h - 0.22, 0.16, true);
-  p.box(0.02, h, COUNTER.depth - 0.05, PALETTE.cabinet, [0, y0, -0.02]);
-  front(p, 0.215, y0 + h - 0.16, 0.41, 0.16);
-  handle(p, 0.215, y0 + h - 0.06, 0.18, false);
-  const shelf = y0 + 0.3;
-  p.box(0.39, 0.02, COUNTER.depth - 0.06, PALETTE.cabinet, [0.215, shelf, -0.02]);
-  // Dans la niche : sachets de café en bas, mugs rangés sur l'étagère.
-  p.box(0.12, 0.2, 0.08, PALETTE.coffee, [0.12, y0, 0.06], { y: 0.2 });
-  p.box(0.12, 0.18, 0.08, 0xc2643f, [0.29, y0, 0.08], { y: -0.15 });
-  p.box(0.04, 0.03, 0.05, PALETTE.gold, [0.29, y0 + 0.18, 0.08], { y: -0.15 });
-  const colors = [PALETTE.white, PALETTE.blue, PALETTE.yellow, PALETTE.red];
-  colors.forEach((color, i) => mug(p, color, 0.07 + i * 0.095, shelf + 0.02, 0.05, -Math.PI / 2));
-  // Sur le plan : cafetière, plateau de mugs, sucrier et boîte de filtres.
-  dripCoffeeMaker(p, -0.2, top, -0.06);
-  p.box(0.26, 0.012, 0.18, PALETTE.woodDark, [0.24, top, 0.13]);
-  [PALETTE.white, PALETTE.green, PALETTE.white].forEach((color, i) =>
-    mug(p, color, 0.16 + i * 0.08, top + 0.012, 0.13),
-  );
-  p.post(0.04, 0.045, 0.08, glass, [0.3, top, -0.12], 10);
-  p.box(0.05, 0.03, 0.05, PALETTE.white, [0.3, top + 0.005, -0.12]);
-  p.post(0.046, 0.046, 0.015, PALETTE.chrome, [0.3, top + 0.08, -0.12], 10);
-  p.box(0.12, 0.1, 0.07, PALETTE.white, [0.14, top, -0.18], { y: 0.3 });
-  return p.build('coffeeCounter');
+/**
+ * Machine à expresso compacte à broyeur intégré : caisson chromé à flancs repeignables (`red`),
+ * trémie de grains, un groupe et son porte-filtre, buse vapeur, tasses qui chauffent dessus.
+ */
+export function espressoMachine(): THREE.Group {
+  const p = new Pieces([PALETTE.red]);
+  for (const dx of [-0.17, 0.17])
+    for (const dz of [-0.13, 0.1]) p.post(0.016, 0.016, 0.025, COAL, [dx, 0, dz], 6);
+  p.box(0.4, 0.29, 0.3, PALETTE.chrome, [0, 0.025, -0.03]);
+  for (const side of [-1, 1]) p.box(0.01, 0.25, 0.27, PALETTE.red, [side * 0.205, 0.045, -0.03]);
+  // Grille d'égouttage.
+  p.box(0.36, 0.025, 0.1, PALETTE.metal, [0, 0.025, 0.16]);
+  for (let i = 0; i < 4; i += 1) p.box(0.32, 0.004, 0.008, COAL, [0, 0.05, 0.125 + i * 0.022]);
+  p.box(0.42, 0.02, 0.32, PALETTE.metal, [0, 0.315, -0.03]);
+  // Manomètre, interrupteur lumineux.
+  p.post(0.035, 0.035, 0.012, PALETTE.white, [0.11, 0.22, 0.125], 12);
+  p.box(0.004, 0.025, 0.004, PALETTE.red, [0.115, 0.22, 0.135], { z: -0.6 });
+  p.light(0.025, 0.015, 0.006, PALETTE.orange, [0.15, 0.27, 0.122]);
+  // Groupe, porte-filtre à manche noir et tasse dessous.
+  p.post(0.04, 0.045, 0.05, PALETTE.metal, [-0.04, 0.14, 0.14], 10);
+  p.post(0.035, 0.03, 0.028, STEEL, [-0.04, 0.115, 0.15], 10);
+  p.box(0.022, 0.022, 0.11, COAL, [-0.04, 0.12, 0.23], { x: -0.15 });
+  cup(p, -0.04, 0.05, 0.15);
+  // Buse vapeur.
+  p.bar([0.17, 0.2, 0.12], [0.19, 0.07, 0.16], 0.007, PALETTE.metal);
+  // Broyeur intégré : trémie en verre pleine de grains, couvercle noir.
+  p.post(0.05, 0.035, 0.05, PALETTE.coffee, [-0.11, 0.335, -0.08], 10);
+  p.post(0.06, 0.035, 0.12, glass, [-0.11, 0.335, -0.08], 10);
+  p.post(0.062, 0.062, 0.018, BLACK, [-0.11, 0.455, -0.08], 10);
+  // Deux tasses qui chauffent sur le dessus.
+  cup(p, 0.06, 0.335, -0.06);
+  cup(p, 0.13, 0.335, -0.1);
+  return p.build('espressoMachine');
 }
 
-/** Machine à expresso chromée à deux groupes, moulin, pot à lait et bac à marc. */
-function espressoMachine(p: Pieces, x: number, y: number, z: number): void {
-  // Pieds, caisson chromé à flancs rouges, grille d'égouttage et chauffe-tasses.
-  for (const dx of [-0.24, 0.24]) p.post(0.02, 0.02, 0.03, COAL, [x + dx, y, z + 0.1], 6);
-  for (const dx of [-0.24, 0.24]) p.post(0.02, 0.02, 0.03, COAL, [x + dx, y, z - 0.14], 6);
-  p.box(0.56, 0.36, 0.4, PALETTE.chrome, [x, y + 0.03, z - 0.02]);
-  for (const side of [-1, 1])
-    p.box(0.012, 0.3, 0.36, PALETTE.red, [x + side * 0.286, y + 0.06, z - 0.02]);
-  p.box(0.5, 0.03, 0.12, PALETTE.metal, [x, y + 0.03, z + 0.22]);
-  for (let i = 0; i < 6; i += 1)
-    p.box(0.46, 0.004, 0.008, COAL, [x, y + 0.06, z + 0.17 + i * 0.019]);
-  p.box(0.58, 0.03, 0.42, PALETTE.metal, [x, y + 0.39, z - 0.02]);
-  for (const dx of [-0.26, 0.26]) p.box(0.012, 0.05, 0.42, STEEL, [x + dx, y + 0.42, z - 0.02]);
-  // Manomètre à aiguille et interrupteur lumineux.
-  p.post(0.05, 0.05, 0.015, PALETTE.white, [x, y + 0.28, z + 0.185], 12);
-  p.box(0.004, 0.035, 0.004, PALETTE.red, [x + 0.01, y + 0.28, z + 0.2], { z: -0.6 });
-  p.light(0.03, 0.02, 0.006, PALETTE.orange, [x + 0.2, y + 0.3, z + 0.18]);
-  // Deux groupes, porte-filtres à manche noir et une tasse sous chacun.
-  for (const dx of [-0.15, 0.15]) {
-    p.post(0.045, 0.05, 0.05, PALETTE.metal, [x + dx, y + 0.14, z + 0.2], 10);
-    p.post(0.04, 0.035, 0.03, STEEL, [x + dx, y + 0.11, z + 0.21], 10);
-    p.box(0.025, 0.025, 0.13, COAL, [x + dx, y + 0.115, z + 0.3], { x: -0.15 });
-    cup(p, x + dx, y + 0.06, z + 0.21);
-  }
-  // Buse vapeur et sa molette.
-  p.bar([x + 0.26, y + 0.24, z + 0.2], [x + 0.3, y + 0.08, z + 0.24], 0.008, PALETTE.metal);
-  p.post(0.018, 0.018, 0.02, COAL, [x + 0.25, y + 0.25, z + 0.19], 8);
-  // Tasses qui chauffent sur le dessus.
-  for (const [dx, dz] of [
-    [-0.18, -0.12],
-    [-0.09, -0.12],
-    [0, -0.12],
-    [-0.14, -0.02],
-    [-0.05, -0.02],
-  ] as const)
-    cup(p, x + dx, y + 0.42, z + dz);
-}
-
-/** Comptoir du barista : trois tiroirs, machine à expresso, moulin, pot à lait, bac à marc. */
-export function espressoCounter(): THREE.Group {
-  const p = new Pieces([PALETTE.cabinet]);
-  const { top, plinth } = COUNTER;
-  counterBody(p);
-  // Trois tiroirs de plus en plus hauts.
-  let y = plinth + 0.02;
-  for (const h of [0.32, 0.24, 0.18]) {
-    front(p, 0, y, 0.85, h - 0.01);
-    handle(p, 0, y + h - 0.07, 0.3, false);
-    y += h;
-  }
-  espressoMachine(p, -0.12, top, -0.05);
-  // Moulin : socle noir, corps, trémie en verre pleine de grains et couvercle.
-  const gx = 0.31;
-  p.box(0.15, 0.04, 0.2, COAL, [gx, top, -0.04]);
-  p.box(0.13, 0.22, 0.14, BLACK, [gx, top + 0.04, -0.07]);
-  p.box(0.05, 0.03, 0.05, PALETTE.metal, [gx, top + 0.12, 0.02]);
-  p.post(0.06, 0.04, 0.05, PALETTE.coffee, [gx, top + 0.26, -0.07], 10);
-  p.post(0.075, 0.045, 0.14, glass, [gx, top + 0.26, -0.07], 10);
-  p.post(0.077, 0.077, 0.02, BLACK, [gx, top + 0.4, -0.07], 10);
-  // Pot à lait en inox et bac à marc devant le moulin.
-  p.post(0.035, 0.042, 0.09, STEEL, [0.3, top, 0.2], 10);
-  p.box(0.012, 0.05, 0.012, STEEL, [0.345, top + 0.025, 0.2]);
-  p.box(0.12, 0.08, 0.1, COAL, [0.17, top, 0.24]);
-  p.box(0.13, 0.012, 0.012, PALETTE.metal, [0.17, top + 0.08, 0.24]);
-  return p.build('espressoCounter');
-}
-
-/** Four à micro-ondes : hublot sombre, poignée, pavé de touches et horloge allumée. */
-function microwave(p: Pieces, x: number, y: number, z: number): void {
-  for (const dx of [-0.26, 0.26])
-    for (const dz of [-0.16, 0.16]) p.post(0.015, 0.015, 0.015, COAL, [x + dx, y, z + dz], 6);
-  p.soft(0.58, 0.32, 0.42, 0.015, PALETTE.white, [x, y + 0.015, z]);
+/**
+ * Four à micro-ondes compact : coque repeignable (`white`), hublot sombre, poignée, pavé de
+ * touches et horloge allumée.
+ */
+export function microwaveOven(): THREE.Group {
+  const p = new Pieces([PALETTE.white]);
+  for (const dx of [-0.19, 0.19])
+    for (const dz of [-0.12, 0.12]) p.post(0.012, 0.012, 0.012, COAL, [dx, 0, dz], 6);
+  p.soft(0.44, 0.25, 0.32, 0.012, PALETTE.white, [0, 0.012, 0]);
   // Porte : cadre noir, hublot teinté avec un reflet, poignée.
-  p.box(0.4, 0.28, 0.012, COAL, [x - 0.08, y + 0.035, z + 0.212]);
-  p.box(0.32, 0.2, 0.004, 0x3a4560, [x - 0.09, y + 0.075, z + 0.219]);
-  p.box(0.08, 0.2, 0.002, 0x6c7a99, [x - 0.17, y + 0.075, z + 0.222], { z: 0.25 });
-  p.box(0.02, 0.22, 0.03, STEEL, [x + 0.095, y + 0.065, z + 0.23]);
+  p.box(0.3, 0.21, 0.01, COAL, [-0.06, 0.03, 0.161]);
+  p.box(0.24, 0.15, 0.004, 0x3a4560, [-0.065, 0.06, 0.167]);
+  p.box(0.06, 0.15, 0.002, 0x6c7a99, [-0.13, 0.06, 0.17], { z: 0.25 });
+  p.box(0.016, 0.17, 0.024, STEEL, [0.075, 0.05, 0.176]);
   // Panneau de commande : horloge, pavé de touches, bouton rond.
-  p.box(0.15, 0.28, 0.008, 0x2a2f3c, [x + 0.205, y + 0.035, z + 0.212]);
-  p.light(0.11, 0.04, 0.004, 0x7cf0b4, [x + 0.205, y + 0.25, z + 0.217]);
+  p.box(0.11, 0.21, 0.006, 0x2a2f3c, [0.155, 0.03, 0.161]);
+  p.light(0.08, 0.03, 0.004, 0x7cf0b4, [0.155, 0.19, 0.165]);
   for (let row = 0; row < 3; row += 1)
     for (let col = 0; col < 3; col += 1)
-      p.box(0.028, 0.022, 0.006, PALETTE.slate, [
-        x + 0.17 + col * 0.035,
-        y + 0.16 - row * 0.032,
-        z + 0.218,
-      ]);
-  p.post(0.025, 0.025, 0.012, STEEL, [x + 0.205, y + 0.06, z + 0.215], 10);
+      p.box(0.02, 0.016, 0.005, PALETTE.slate, [0.13 + col * 0.026, 0.12 - row * 0.024, 0.166]);
+  p.post(0.018, 0.018, 0.01, STEEL, [0.155, 0.05, 0.166], 10);
+  return p.build('microwaveOven');
 }
 
-/** Meuble bas du micro-ondes : tiroir et deux portes ; micro-ondes et rouleau d'essuie-tout. */
-export function microwaveCounter(): THREE.Group {
-  const p = new Pieces([PALETTE.cabinet]);
-  const { top, plinth } = COUNTER;
-  counterBody(p);
-  const y0 = plinth + 0.02;
-  const doors = top - COUNTER.worktop - y0 - 0.18;
-  for (const side of [-1, 1]) {
-    front(p, side * 0.2175, y0, 0.415, doors);
-    handle(p, side * 0.035, y0 + doors - 0.22, 0.16, true);
-  }
-  front(p, 0, y0 + doors + 0.01, 0.85, 0.16);
-  handle(p, 0, y0 + doors + 0.1, 0.3, false);
-  microwave(p, -0.12, top, -0.06);
-  // Dérouleur d'essuie-tout : socle, tige et rouleau blanc.
-  p.post(0.06, 0.06, 0.012, PALETTE.metal, [0.33, top, 0.05], 10);
-  p.post(0.045, 0.045, 0.24, PALETTE.white, [0.33, top + 0.012, 0.05], 10);
-  p.post(0.006, 0.006, 0.27, PALETTE.metal, [0.33, top + 0.012, 0.05], 6);
-  return p.build('microwaveCounter');
+/** Bouilloire électrique : socle, corps conique repeignable (`mint`), bec, anse, voyant bleu. */
+export function electricKettle(): THREE.Group {
+  const p = new Pieces([PALETTE.mint]);
+  p.post(0.085, 0.09, 0.02, BLACK, [0, 0, 0], 14);
+  p.post(0.065, 0.085, 0.18, PALETTE.mint, [0, 0.02, 0], 14);
+  p.post(0.05, 0.065, 0.025, PALETTE.mint, [0, 0.2, 0], 14);
+  p.post(0.03, 0.03, 0.015, BLACK, [0, 0.225, 0], 10);
+  // Bec verseur vers l'avant, anse noire à l'arrière.
+  p.box(0.04, 0.035, 0.07, PALETTE.mint, [0, 0.17, 0.09], { x: -0.5 });
+  p.box(0.025, 0.16, 0.025, BLACK, [0, 0.05, -0.11]);
+  for (const y of [0.05, 0.19]) p.box(0.025, 0.025, 0.05, BLACK, [0, y, -0.085]);
+  // Fenêtre de niveau d'eau et voyant allumé.
+  p.box(0.025, 0.1, 0.004, 0x7fb6d9, [0.05, 0.05, 0.072], { y: 0.6 });
+  p.light(0.02, 0.012, 0.006, 0x5ab4ff, [0, 0.03, 0.086]);
+  return p.build('electricKettle');
+}
+
+/** Cuiseur à riz : cuve arrondie repeignable (`ceramic`), couvercle bombé, écran et spatule. */
+export function riceCooker(): THREE.Group {
+  const p = new Pieces([PALETTE.ceramic]);
+  p.soft(0.3, 0.17, 0.26, 0.05, PALETTE.ceramic, [0, 0, 0]);
+  p.soft(0.28, 0.06, 0.24, 0.05, PALETTE.ceramic, [0, 0.165, -0.005]);
+  p.post(0.04, 0.05, 0.03, PALETTE.slate, [0, 0.22, -0.01], 10);
+  p.box(0.18, 0.02, 0.03, PALETTE.slate, [0, 0.13, -0.12]);
+  // Panneau avant : écran allumé, deux boutons.
+  p.box(0.15, 0.08, 0.01, 0x2a2f3c, [0, 0.05, 0.13]);
+  p.light(0.06, 0.025, 0.004, 0xffb35a, [-0.025, 0.08, 0.136]);
+  for (const x of [0.035, 0.06]) p.post(0.01, 0.01, 0.006, PALETTE.white, [x, 0.07, 0.138], 8);
+  // Spatule dans son support, sur le côté.
+  p.box(0.03, 0.08, 0.03, PALETTE.white, [0.17, 0.06, 0.02]);
+  p.box(0.012, 0.13, 0.03, PALETTE.white, [0.17, 0.1, 0.02], { z: 0.15 });
+  return p.build('riceCooker');
 }
 
 /** Frigo à boissons vitré : socle à grille, bandeau lumineux, canettes et bouteilles. */

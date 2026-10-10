@@ -98,7 +98,6 @@ const DECOR_KINDS = new Set([
   'snake-plant',
   'pothos',
   'bonsai',
-  'microwave',
   'trashcan',
   'earbuds-dock',
 ]);
@@ -398,7 +397,9 @@ export class OfficeView {
         this.furniture.add(mesh);
         this.pickables.push(mesh);
         const itemKind = kind.split('#')[0] ?? kind;
-        if (DECOR_KINDS.has(itemKind) || catalogItem(itemKind)?.accessory) this.decor.push(mesh);
+        // Les petits accessoires disparaissent au dézoom, pas l'électroménager.
+        const def = catalogItem(itemKind);
+        if (DECOR_KINDS.has(itemKind) || (def?.accessory && !def.appliance)) this.decor.push(mesh);
       }
     }
   }

@@ -17,6 +17,7 @@ export const ITEM_CATEGORIES = [
   'work',
   'comfort',
   'kitchen',
+  'appliance',
   'fun',
   'decor',
   'pets',
@@ -100,6 +101,10 @@ export interface CatalogItem extends ItemLook {
   readonly maxCount: number;
   /** Accessoire : se pose sur un meuble à plateau, jamais au sol. */
   readonly accessory: boolean;
+  /** Appareil électroménager : seulement sur les premiers emplacements prévus pour lui. */
+  readonly appliance: boolean;
+  /** Meuble à plateau : nombre de ses premiers emplacements qui acceptent un appareil. */
+  readonly applianceSlots: number;
   /** Fenêtre : se fixe dans un mur du fond (rotation 0 : mur du fond, 1 : mur de gauche). */
   readonly wall: boolean;
   readonly paint: readonly string[];
@@ -121,6 +126,15 @@ const TRESTLE_TOP = 0.69;
 const TV_CABINET_TOP = 0.62;
 const STANDING_TOP = 1.1;
 const BOOKCASE_TOP = 1.58;
+/** Plan de travail des meubles de cuisine (voir `render/kitchenFurniture.ts`). */
+const COUNTER_TOP = 0.9;
+const ISLAND_TOP = 0.92;
+const NICHE_FLOOR = 1.02;
+/** Deux places côte à côte sur un meuble bas d'une case, chacune assez large pour un appareil. */
+const COUNTER_SLOTS = [
+  [-0.2, COUNTER_TOP, -0.03],
+  [0.21, COUNTER_TOP, -0.03],
+] as const;
 /**
  * Épaisseur du tapis de souris (`mousePad`) et taille de la souris Kenney posée dessus : réduite
  * pour rester à l'échelle du clavier QWERTY (environ 7 x 12 cm). Le modèle Kenney part de son
@@ -180,10 +194,11 @@ const LOOKS: Record<SimItemId, ItemLook> = {
       }),
       part(primitive('ramen'), [0.45, TRESTLE_TOP, 0.05]),
     ],
+    // La première place, au bout du plateau, peut recevoir un appareil (la cafetière du garage).
     surface: [
-      [0.12, TRESTLE_TOP, -0.22],
+      [0.76, TRESTLE_TOP, -0.15],
       [-0.68, TRESTLE_TOP, -0.2],
-      [0.8, TRESTLE_TOP, -0.15],
+      [0.12, TRESTLE_TOP, -0.22],
     ],
   },
   'standing-desk': {
@@ -241,22 +256,6 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     paint: [],
     surface: [[0, 1.875, 0]],
   },
-  // Comptoir à café : porte, tiroir, niche à mugs ; cafetière à filtre, plateau, sucrier.
-  'coffee-machine': {
-    category: 'kitchen',
-    model: primitive('coffeeCounter'),
-    height: 1.35,
-    use: 'coffee',
-    paint: ['cabinet'],
-  },
-  // Comptoir du barista à tiroirs : machine à expresso, moulin, pot à lait, bac à marc.
-  'premium-coffee-machine': {
-    category: 'kitchen',
-    model: primitive('espressoCounter'),
-    height: 1.35,
-    use: 'coffee',
-    paint: ['cabinet'],
-  },
   // Frigo à boissons vitré : bandeau lumineux, clayettes de canettes et de bouteilles.
   fridge: {
     category: 'kitchen',
@@ -266,12 +265,94 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     paint: ['red'],
     surface: [[0, 1.82, -0.04]],
   },
-  // Meuble bas à tiroir et portes, micro-ondes et dérouleur d'essuie-tout.
-  microwave: {
+  // Meubles de cuisine : plans de travail vides, les appareils se posent dessus.
+  'kitchen-drawers': {
     category: 'kitchen',
-    model: primitive('microwaveCounter'),
-    height: 1.25,
+    model: primitive('drawerCabinet'),
+    height: 0.9,
     paint: ['cabinet'],
+    surface: COUNTER_SLOTS,
+  },
+  'kitchen-doors': {
+    category: 'kitchen',
+    model: primitive('doorCabinet'),
+    height: 0.9,
+    paint: ['cabinet'],
+    surface: COUNTER_SLOTS,
+  },
+  // Évier sur deux cases : bac et robinet à gauche, deux places à droite.
+  'kitchen-sink': {
+    category: 'kitchen',
+    model: primitive('sinkUnit'),
+    height: 1.2,
+    paint: ['cabinet'],
+    surface: [
+      [0.22, COUNTER_TOP, -0.03],
+      [0.68, COUNTER_TOP, -0.03],
+    ],
+  },
+  // Colonne : l'appareil s'encastre dans la niche, à hauteur des yeux.
+  'kitchen-tall': {
+    category: 'kitchen',
+    model: primitive('tallCabinet'),
+    height: 2.1,
+    paint: ['cabinet'],
+    surface: [[0, NICHE_FLOOR, 0.02]],
+  },
+  // Buffet : vitrine haute en retrait, deux places devant la crédence.
+  'kitchen-hutch': {
+    category: 'kitchen',
+    model: primitive('hutchCabinet'),
+    height: 2.07,
+    paint: ['cabinet'],
+    surface: [
+      [-0.2, COUNTER_TOP, 0.05],
+      [0.21, COUNTER_TOP, 0.05],
+    ],
+  },
+  'kitchen-island': {
+    category: 'kitchen',
+    model: primitive('kitchenIsland'),
+    height: 0.92,
+    paint: ['cabinet'],
+    surface: [
+      [-0.6, ISLAND_TOP, 0],
+      [0, ISLAND_TOP, 0],
+      [0.6, ISLAND_TOP, 0],
+    ],
+  },
+  // Électroménager : chaque appareil tient dans la moitié d'un plan de travail.
+  'drip-coffee-maker': {
+    category: 'appliance',
+    model: primitive('dripCoffeeMaker'),
+    height: 0.46,
+    use: 'coffee',
+    paint: ['dark'],
+  },
+  'espresso-machine': {
+    category: 'appliance',
+    model: primitive('espressoMachine'),
+    height: 0.47,
+    use: 'coffee',
+    paint: ['red'],
+  },
+  'microwave-oven': {
+    category: 'appliance',
+    model: primitive('microwaveOven'),
+    height: 0.26,
+    paint: ['white'],
+  },
+  kettle: {
+    category: 'appliance',
+    model: primitive('electricKettle'),
+    height: 0.24,
+    paint: ['mint'],
+  },
+  'rice-cooker': {
+    category: 'appliance',
+    model: primitive('riceCooker'),
+    height: 0.24,
+    paint: ['ceramic'],
   },
   // Grande tablée en planches, piètement acier et deux bancs capitonnés repeignables.
   'canteen-table': {
@@ -506,13 +587,13 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     paint: ['terracotta'],
   },
   toaster: {
-    category: 'accessory',
+    category: 'appliance',
     model: primitive('chromeToaster'),
     height: 0.2,
     paint: ['chrome'],
   },
   blender: {
-    category: 'accessory',
+    category: 'appliance',
     model: primitive('smoothieBlender'),
     height: 0.35,
     paint: ['red'],
@@ -529,6 +610,8 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   minPhase: item.minPhase,
   maxCount: item.maxCount,
   accessory: 'accessory' in item && item.accessory === true,
+  appliance: 'appliance' in item && item.appliance === true,
+  applianceSlots: 'applianceSlots' in item ? item.applianceSlots : 0,
   wall: 'wall' in item && item.wall === true,
   paint: LOOKS[item.id].paint ?? DEFAULT_PAINT,
   petNeed: 'petNeed' in item ? item.petNeed : null,

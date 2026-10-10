@@ -1,4 +1,4 @@
-import type { DevRole, GameMode, Phase } from '@oss/shared';
+import { getFurniture, type DevRole, type GameMode, type Phase } from '@oss/shared';
 import { createGameEngine, InlineWorker } from '../../../src/engine';
 import { DEFAULT_CARDS, defaultCardLibrary } from '../../../src/events/defaultCards';
 import { generateDev, hireDev } from '../../../src/simulation/devs';
@@ -15,7 +15,10 @@ export interface OfficeOptions {
   readonly phase?: Phase;
   /** Devs ajoutés à l'équipe de départ (un premier dev au garage). */
   readonly extraRoles?: readonly DevRole[];
-  /** Mobilier ajouté au mobilier de départ. */
+  /**
+   * Mobilier ajouté au mobilier de départ. Un accessoire (l'électroménager…) se pose sur l'objet
+   * listé juste avant lui, au premier emplacement libre.
+   */
   readonly furniture?: readonly { kind: string; x: number; z: number; rotation?: number }[];
 }
 
@@ -40,8 +43,17 @@ export function officeSimulation(options: OfficeOptions = {}): Simulation {
     const profile = generateDev(ctx.rng, role);
     hireDev(state, ctx, profile, profile.askingSalary);
   }
-  for (const item of options.furniture ?? [])
-    placeFurniture(state, item.kind, item.x, item.z, item.rotation ?? 0);
+  let previous: string | undefined;
+  for (const item of options.furniture ?? []) {
+    const id = placeFurniture(state, item.kind, item.x, item.z, item.rotation ?? 0);
+    const placed = state.components.furniture[id];
+    if (getFurniture(item.kind)?.accessory && previous && placed) {
+      placed.hostId = previous;
+      placed.slot = Object.values(state.components.furniture).filter(
+        (other) => other.hostId === previous && other !== placed,
+      ).length;
+    } else previous = id;
+  }
   return simulation;
 }
 
@@ -53,7 +65,8 @@ export const SEED_OFFICE: OfficeOptions = {
     { kind: 'desk', x: 4, z: 1 },
     { kind: 'desk', x: 4, z: 3 },
     { kind: 'desk', x: 1, z: 6 },
-    { kind: 'premium-coffee-machine', x: 12, z: 1 },
+    { kind: 'kitchen-drawers', x: 12, z: 1 },
+    { kind: 'espresso-machine', x: 12, z: 1 },
   ],
 };
 

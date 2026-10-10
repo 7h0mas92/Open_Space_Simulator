@@ -52,8 +52,19 @@ export interface FurnitureDefinition {
    * Les emplacements eux-mêmes (position sur le plateau) sont une affaire de rendu.
    */
   surfaceSlots?: number;
+  /**
+   * Meuble à plateau : combien de ses emplacements, en commençant par le premier, sont assez
+   * grands pour un appareil électroménager (micro-ondes, cafetière…). Tous ceux d'un meuble de
+   * cuisine, aucun par défaut.
+   */
+  applianceSlots?: number;
   /** Accessoire : il se pose sur un meuble à plateau, jamais au sol. */
   accessory?: boolean;
+  /**
+   * Appareil électroménager : un accessoire encombrant, posé seulement sur un emplacement prévu
+   * pour lui (voir `applianceSlots`), surtout sur les meubles de cuisine.
+   */
+  appliance?: boolean;
   /** Équipement pour chat : il en faut un de chaque sorte posé pour adopter (voir `pets.ts`). */
   petNeed?: PetNeed;
   /**
@@ -116,6 +127,8 @@ export const FURNITURE_CATALOG = [
     maxCount: 40,
     effects: { seatProductivity: 0.02, seats: 1 },
     surfaceSlots: 3,
+    // Au garage, la cafetière trône sur le bureau, entre le portable et les ramen.
+    applianceSlots: 1,
   },
   {
     id: 'ergonomic-chair',
@@ -130,34 +143,6 @@ export const FURNITURE_CATALOG = [
     minPhase: 'GARAGE',
     maxCount: 40,
     effects: { seatEnergySaving: 0.2, seats: 1 },
-  },
-  {
-    id: 'coffee-machine',
-    name: t('Cafetière', 'Coffee maker'),
-    description: t(
-      'Le carburant de base : +25 café chaque matin.',
-      'Basic fuel: +25 coffee every morning.',
-    ),
-    price: 150,
-    width: 1,
-    depth: 1,
-    minPhase: 'GARAGE',
-    maxCount: 3,
-    effects: { coffeeRestock: 25 },
-  },
-  {
-    id: 'premium-coffee-machine',
-    name: t('Machine à café premium', 'Premium coffee machine'),
-    description: t(
-      'Grains torréfiés par un barista de Brooklyn : +50 café, +moral.',
-      'Beans roasted by a Brooklyn barista: +50 coffee, +morale.',
-    ),
-    price: 2500,
-    width: 1,
-    depth: 1,
-    minPhase: 'GARAGE',
-    maxCount: 3,
-    effects: { coffeeRestock: 50, moral: 0.15 },
   },
   {
     id: 'plant',
@@ -297,19 +282,102 @@ export const FURNITURE_CATALOG = [
     maxCount: 4,
     effects: { moral: 0.3, hypePerDay: 0.02 },
   },
+  // --- Meubles de cuisine : des plans de travail où poser l'électroménager (voir plus bas). ---
   {
-    id: 'microwave',
-    name: t('Micro-ondes', 'Microwave'),
+    id: 'kitchen-drawers',
+    name: t('Meuble bas à tiroirs', 'Drawer base cabinet'),
     description: t(
-      'Pour les ramen de 22h. +moral, +récupération.',
-      'For 10pm ramen. +morale, +rest.',
+      'Trois tiroirs : couverts, sachets de ketchup et câbles USB orphelins. Léger +moral.',
+      'Three drawers: cutlery, ketchup packets and orphan USB cables. Slight +morale.',
     ),
-    price: 120,
+    price: 160,
     width: 1,
     depth: 1,
     minPhase: 'GARAGE',
-    maxCount: 2,
-    effects: { moral: 0.1, restBonus: 0.5 },
+    maxCount: 12,
+    effects: { moral: 0.02 },
+    surfaceSlots: 2,
+    applianceSlots: 2,
+  },
+  {
+    id: 'kitchen-doors',
+    name: t('Meuble bas à portes', 'Door base cabinet'),
+    description: t(
+      'Deux portes, une étagère, quarante mugs dépareillés. Léger +moral.',
+      'Two doors, one shelf, forty mismatched mugs. Slight +morale.',
+    ),
+    price: 140,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 12,
+    effects: { moral: 0.02 },
+    surfaceSlots: 2,
+    applianceSlots: 2,
+  },
+  {
+    id: 'kitchen-sink',
+    name: t('Meuble évier', 'Sink unit'),
+    description: t(
+      'Un évier, un égouttoir, et enfin des mugs propres : +moral, +récupération.',
+      'A sink, a drying rack, and clean mugs at last: +morale, +rest.',
+    ),
+    price: 650,
+    width: 2,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 4,
+    effects: { moral: 0.06, restBonus: 0.1 },
+    surfaceSlots: 2,
+    applianceSlots: 2,
+  },
+  {
+    id: 'kitchen-tall',
+    name: t('Colonne à niche', 'Tall cabinet with niche'),
+    description: t(
+      'Du sol au plafond, avec une niche pour encastrer un appareil. +moral.',
+      'Floor to ceiling, with a niche to build an appliance into. +morale.',
+    ),
+    price: 480,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 6,
+    effects: { moral: 0.04 },
+    surfaceSlots: 1,
+    applianceSlots: 1,
+  },
+  {
+    id: 'kitchen-hutch',
+    name: t('Buffet vaisselier', 'Kitchen hutch'),
+    description: t(
+      'Vitrines de tasses assorties au-dessus du plan de travail : +moral, +hype.',
+      'Glass cabinets of matching cups above the worktop: +morale, +hype.',
+    ),
+    price: 900,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 6,
+    effects: { moral: 0.05, hypePerDay: 0.005 },
+    surfaceSlots: 2,
+    applianceSlots: 2,
+  },
+  {
+    id: 'kitchen-island',
+    name: t('Îlot central', 'Kitchen island'),
+    description: t(
+      'Plan en chêne massif : les meilleures idées naissent autour du café. +moral, +qualité.',
+      'Solid oak top: the best ideas happen around the coffee. +morale, +quality.',
+    ),
+    price: 2200,
+    width: 2,
+    depth: 1,
+    minPhase: 'SERIES_A',
+    maxCount: 4,
+    effects: { moral: 0.12, quality: 0.005 },
+    surfaceSlots: 3,
+    applianceSlots: 3,
   },
   {
     id: 'babyfoot',
@@ -465,6 +533,8 @@ export const FURNITURE_CATALOG = [
     maxCount: 2,
     effects: { coffeeRestock: 15, moral: 0.1 },
     surfaceSlots: 1,
+    // Le micro-ondes sur le frigo, grand classique des cuisines de bureau.
+    applianceSlots: 1,
   },
   {
     id: 'nap-pod',
@@ -505,6 +575,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 4,
     effects: { moral: 0.2, coffeeRestock: 10 },
     surfaceSlots: 4,
+    applianceSlots: 2,
   },
   // --- Animaux : l'équipement à poser avant d'adopter un chat (voir `pets.ts`). ---
   {
@@ -687,6 +758,87 @@ export const FURNITURE_CATALOG = [
     maxCount: 16,
     wall: true,
     effects: { moral: 0.06, hypePerDay: 0.005 },
+  },
+  // --- Électroménager : posé sur un meuble de cuisine (ou le frigo), jamais au sol. ---
+  {
+    id: 'drip-coffee-maker',
+    name: t('Cafetière à filtre', 'Drip coffee maker'),
+    description: t(
+      'Le carburant de base : +25 café chaque matin. Se pose sur un meuble de cuisine.',
+      'Basic fuel: +25 coffee every morning. Goes on a kitchen cabinet.',
+    ),
+    price: 150,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    accessory: true,
+    appliance: true,
+    effects: { coffeeRestock: 25 },
+  },
+  {
+    id: 'espresso-machine',
+    name: t('Machine à expresso premium', 'Premium espresso machine'),
+    description: t(
+      'Grains torréfiés par un barista de Brooklyn, moulus devant toi : +50 café, +moral.',
+      'Beans roasted by a Brooklyn barista, ground on the spot: +50 coffee, +morale.',
+    ),
+    price: 2500,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    accessory: true,
+    appliance: true,
+    effects: { coffeeRestock: 50, moral: 0.15 },
+  },
+  {
+    id: 'microwave-oven',
+    name: t('Micro-ondes', 'Microwave'),
+    description: t(
+      'Pour les ramen de 22h. +moral, +récupération.',
+      'For 10pm ramen. +morale, +rest.',
+    ),
+    price: 120,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 2,
+    accessory: true,
+    appliance: true,
+    effects: { moral: 0.1, restBonus: 0.5 },
+  },
+  {
+    id: 'kettle',
+    name: t('Bouilloire', 'Kettle'),
+    description: t(
+      'Thé vert pour ceux qui ne boivent pas de café (si, ça compte) : +6 café, léger +moral.',
+      'Green tea for the non-coffee people (yes, it counts): +6 coffee, slight +morale.',
+    ),
+    price: 45,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    accessory: true,
+    appliance: true,
+    effects: { coffeeRestock: 6, moral: 0.02 },
+  },
+  {
+    id: 'rice-cooker',
+    name: t('Cuiseur à riz', 'Rice cooker'),
+    description: t(
+      'Riz chaud à toute heure, compagnon officiel des mises en prod tardives : +récupération.',
+      'Hot rice at any hour, official sidekick of late deploys: +rest.',
+    ),
+    price: 90,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 2,
+    accessory: true,
+    appliance: true,
+    effects: { moral: 0.03, restBonus: 0.3 },
   },
   // --- Accessoires : posés sur les meubles à plateau (bureaux, bibliothèque, frigo…). ---
   {
@@ -899,6 +1051,19 @@ export const FURNITURE_CATALOG = [
 ] as const satisfies readonly FurnitureDefinition[];
 
 export type FurnitureId = (typeof FURNITURE_CATALOG)[number]['id'];
+
+/**
+ * Anciens combinés « meuble + appareil » (avant la cuisine séparée) : chacun devient un meuble
+ * de cuisine avec l'appareil posé dessus, au même endroit et avec le même effet de jeu.
+ * Sert uniquement à charger les vieilles sauvegardes.
+ */
+export const LEGACY_KITCHEN_ITEMS: Readonly<
+  Record<string, { readonly cabinet: FurnitureId; readonly appliance: FurnitureId }>
+> = {
+  'coffee-machine': { cabinet: 'kitchen-doors', appliance: 'drip-coffee-maker' },
+  'premium-coffee-machine': { cabinet: 'kitchen-drawers', appliance: 'espresso-machine' },
+  microwave: { cabinet: 'kitchen-doors', appliance: 'microwave-oven' },
+};
 
 const BY_ID = new Map<string, FurnitureDefinition>(
   FURNITURE_CATALOG.map((item) => [item.id, item]),

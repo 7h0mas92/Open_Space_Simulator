@@ -138,15 +138,44 @@ function accessoriesOf(state: GameState, hostId: EntityId): EntityId[] {
   );
 }
 
-/** L'emplacement `slot` du meuble `hostId` existe-t-il et est-il libre ? */
-function canHost(state: GameState, hostId: EntityId, slot: number, ignoreId?: EntityId): boolean {
+/**
+ * L'emplacement `slot` du meuble `hostId` existe-t-il, est-il libre et assez grand pour `item` ?
+ * Un appareil électroménager ne prend que les emplacements prévus pour lui (`applianceSlots`).
+ */
+function canHost(
+  state: GameState,
+  item: FurnitureDefinition,
+  hostId: EntityId,
+  slot: number,
+  ignoreId?: EntityId,
+): boolean {
   const host = state.components.furniture[hostId];
   if (!host || host.hostId !== undefined) return false;
-  const slots = getFurniture(host.itemId)?.surfaceSlots ?? 0;
-  if (slot >= slots) return false;
+  const definition = getFurniture(host.itemId);
+  if (slot >= (definition?.surfaceSlots ?? 0)) return false;
+  if (item.appliance && slot >= (definition?.applianceSlots ?? 0)) return false;
   return accessoriesOf(state, hostId).every(
     (id) => id === ignoreId || state.components.furniture[id]?.slot !== slot,
   );
+}
+
+/**
+ * Premier emplacement libre où poser `itemId` (accessoire ou appareil), meubles parcourus dans
+ * l'ordre de création. `null` s'il n'y en a aucun. Sert aux joueurs automatiques.
+ */
+export function findFreeSlot(
+  state: GameState,
+  itemId: string,
+): { hostId: EntityId; slot: number } | null {
+  const item = getFurniture(itemId);
+  if (!item?.accessory) return null;
+  for (const hostId of query(state, 'furniture')) {
+    const host = state.components.furniture[hostId];
+    const slots = host ? (getFurniture(host.itemId)?.surfaceSlots ?? 0) : 0;
+    for (let slot = 0; slot < slots; slot++)
+      if (canHost(state, item, hostId, slot)) return { hostId, slot };
+  }
+  return null;
 }
 
 /** Achète un accessoire et le pose sur un meuble à plateau. */
@@ -163,7 +192,7 @@ export function buyAccessory(
   if (!check.ok || !item) return check;
   const host = state.components.furniture[hostId];
   if (!host) return { ok: false, error: 'NOT_FOUND' };
-  if (!item.accessory || !canHost(state, hostId, slot))
+  if (!item.accessory || !canHost(state, item, hostId, slot))
     return { ok: false, error: 'INVALID_PLACEMENT' };
   addMoney(state, -item.price);
   const id = placeFurniture(state, itemId, host.x, host.y, rotation, item.price, color);
@@ -184,8 +213,9 @@ export function moveAccessory(
 ): CommandResult {
   const placed = state.components.furniture[furnitureId];
   const host = state.components.furniture[hostId];
-  if (!placed || !host) return { ok: false, error: 'NOT_FOUND' };
-  if (placed.hostId === undefined || !canHost(state, hostId, slot, furnitureId))
+  const item = placed ? getFurniture(placed.itemId) : undefined;
+  if (!placed || !host || !item) return { ok: false, error: 'NOT_FOUND' };
+  if (placed.hostId === undefined || !canHost(state, item, hostId, slot, furnitureId))
     return { ok: false, error: 'INVALID_PLACEMENT' };
   placed.hostId = hostId;
   placed.slot = slot;
@@ -261,7 +291,7 @@ export function placeStoredAccessory(
   const item = stored ? getFurniture(stored.itemId) : undefined;
   const host = state.components.furniture[hostId];
   if (!stored || !item || !host) return { ok: false, error: 'NOT_FOUND' };
-  if (!item.accessory || !canHost(state, hostId, slot))
+  if (!item.accessory || !canHost(state, item, hostId, slot))
     return { ok: false, error: 'INVALID_PLACEMENT' };
   state.inventory.splice(index, 1);
   const id = placeFurniture(
