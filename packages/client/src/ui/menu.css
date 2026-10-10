@@ -341,3 +341,12 @@ button.cta small {
     padding: 1.75rem;
   }
 }
+
+/* --- Version du jeu, en bas de l'accueil ---------------------------------------------- */
+
+.home-version {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}

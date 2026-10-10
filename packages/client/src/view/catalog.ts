@@ -183,6 +183,14 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 1.1,
     use: 'desk',
     paint: ['white'],
+    // Le même poste que le bureau de dev : clavier QWERTY, souris sur son tapis.
+    parts: [
+      part(primitive('qwertyKeyboard'), [0, STANDING_TOP, 0.12]),
+      part(primitive('mousePad'), [0.43, STANDING_TOP, 0.12]),
+      part(kenney('computerMouse'), [0.43, STANDING_TOP + MOUSE_PAD, 0.12], {
+        scale: MOUSE_SCALE,
+      }),
+    ],
     surface: [
       [-0.65, STANDING_TOP, -0.12],
       [0.65, STANDING_TOP, -0.12],

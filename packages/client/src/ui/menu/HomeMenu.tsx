@@ -2,6 +2,7 @@ import type { GameMode } from '@oss/shared';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { saves } from '../../save/saves';
+import { APP_BUILD, formatBuild } from '../../version';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { formatGauge } from '../game/format';
 import { useGame } from '../store/game';
@@ -140,6 +141,10 @@ export function HomeMenu({
           </section>
         )}
       </main>
+
+      <footer className="home-version">
+        {t('menu.version', { build: formatBuild(APP_BUILD, i18n.language) })}
+      </footer>
     </div>
   );
 }
