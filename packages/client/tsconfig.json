@@ -7,7 +7,7 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "declaration": false,
-    "types": ["vite/client", "@testing-library/jest-dom/vitest"]
+    "types": ["vite/client", "vite-plugin-pwa/vanillajs", "@testing-library/jest-dom/vitest"]
   },
   "include": ["src", "tests", "vite.config.ts", "playwright.config.ts"]
 }
