@@ -263,9 +263,14 @@ flowchart LR
   dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
   gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
   Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
-  hasard du jeu) et tient en une dizaine d'appels de dessin. Aucun toit proche ne dépasse le
-  plancher, donc rien ne cache la salle. La brume suit la couleur du ciel, et le soir les
-  fenêtres, les lampadaires et les balises rouges des tours s'allument (`render/skyline.ts`).
+  hasard du jeu) et tient en une quinzaine d'appels de dessin. Aucun toit proche ne dépasse le
+  plancher, donc rien ne cache la salle. Les façades sont dessinées par shader en 5 styles
+  (verre qui reflète le ciel, brique, pierre, bandeaux, brownstone), les toits ont muret,
+  climatiseurs et réservoirs, les rues leurs marquages. Les fenêtres s'allument et s'éteignent
+  une à une selon l'heure du jeu : les bureaux se vident le soir, les logements se remplissent,
+  des télés scintillent ; couronnes des tours, lampadaires, phares des voitures, balises et
+  avions s'allument la nuit (`render/skyline.ts`, `render/skylineShaders.ts`,
+  `render/cityLights.ts`).
 - **Écran de jeu** : en haut ce qu'on lit (phase, équipe, mois de trésorerie restants, six
   jauges avec icône, tendance et couleur, horloge et avancement du sprint) ; en bas ce qu'on
   fait (dock d'actions et commande de l'étape : lancer le sprint, lever des fonds, vitesses).
