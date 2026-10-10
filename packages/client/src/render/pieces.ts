@@ -116,6 +116,26 @@ export class Pieces {
     this.add(geometry, lightMaterial);
   }
 
+  /**
+   * Pièce lumineuse de forme quelconque (anneau de ventilateur RGB, tube de watercooling) :
+   * centrée sur son origine, posée en (x, y, z) puis tournée, éclairée comme un voyant.
+   */
+  glow(
+    geometry: THREE.BufferGeometry,
+    color: number,
+    [x, y, z]: readonly [number, number, number],
+    tilt: { readonly x?: number; readonly y?: number; readonly z?: number } = {},
+  ): void {
+    const plain = geometry.index ? geometry.toNonIndexed() : geometry;
+    if (plain !== geometry) geometry.dispose();
+    if (tilt.x) plain.rotateX(tilt.x);
+    if (tilt.z) plain.rotateZ(tilt.z);
+    if (tilt.y) plain.rotateY(tilt.y);
+    plain.translate(x, y, z);
+    tint(plain, color);
+    this.add(plain, lightMaterial);
+  }
+
   /** Livre : une simple boîte, teintée comme toutes les pièces non repeignables. */
   book(
     w: number,

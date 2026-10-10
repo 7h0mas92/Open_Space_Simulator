@@ -62,8 +62,10 @@ describe('décor', () => {
       (mesh) => mesh.count === desks.length && mesh.userData.itemIds[0] === desks[0]!.id,
     );
     expect(deskMesh).toBeDefined();
-    // Moins d'objets dessinés que d'objets posés : c'est tout l'intérêt de l'instanciation.
-    expect(meshes.length).toBeLessThan(view.items.length);
+    // Moins de maillages que de pièces dessinées (meubles, chaises, ordinateurs) : c'est tout
+    // l'intérêt de l'instanciation.
+    const drawn = meshes.reduce((sum, mesh) => sum + mesh.count, 0);
+    expect(meshes.length).toBeLessThan(drawn);
     office.setDetail(0.1, 0.5);
     office.dispose();
   });
