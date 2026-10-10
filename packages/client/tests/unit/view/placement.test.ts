@@ -115,7 +115,9 @@ describe('accessoires', () => {
         expect(catalogItem(item.id)?.category).toBe(
           'appliance' in item || item.id === 'toaster' || item.id === 'blender'
             ? 'appliance'
-            : 'accessory',
+            : 'projector' in item
+              ? 'devices'
+              : 'accessory',
         );
       }
     }

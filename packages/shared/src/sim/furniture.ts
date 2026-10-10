@@ -73,6 +73,16 @@ export interface FurnitureDefinition {
    * mur de gauche (x = 0). Elle ne gêne pas le mobilier posé devant.
    */
   wall?: boolean;
+  /**
+   * Projecteur : un accessoire que le joueur allume ou éteint. Ses effets ne comptent que s'il
+   * est allumé et projette sur un écran déroulé (voir `projection.ts`).
+   */
+  projector?: boolean;
+  /**
+   * Écran de projection déroulant : posé au sol, la toile sort de son caisson quand un projecteur
+   * allumé le vise. Enroulé, il ne donne aucun effet.
+   */
+  projectionScreen?: boolean;
 }
 
 /**
@@ -464,6 +474,52 @@ export const FURNITURE_CATALOG = [
     minPhase: 'SEED',
     maxCount: 2,
     effects: { hypePerDay: 0.08, teamProductivity: -0.01 },
+  },
+  // Écrans de projection : la toile sort du caisson posé au sol quand un projecteur l'éclaire.
+  {
+    id: 'projection-screen-small',
+    name: t('Écran de projection déroulant (petit)', 'Pull-up projection screen (small)'),
+    description: t(
+      'Toile de 1,5 m qui sort de son caisson quand le projecteur s’allume : +qualité, +hype.',
+      '1.5 m screen that rises from its case when the projector is on: +quality, +hype.',
+    ),
+    price: 450,
+    width: 2,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    projectionScreen: true,
+    effects: { quality: 0.006, hypePerDay: 0.02 },
+  },
+  {
+    id: 'projection-screen-medium',
+    name: t('Écran de projection déroulant (moyen)', 'Pull-up projection screen (medium)'),
+    description: t(
+      'Toile de 2,4 m pour les revues de code en grand : +qualité, +hype une fois déroulée.',
+      '2.4 m screen for big-screen code reviews: +quality, +hype once unrolled.',
+    ),
+    price: 1100,
+    width: 3,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 3,
+    projectionScreen: true,
+    effects: { quality: 0.01, hypePerDay: 0.04, moral: 0.02 },
+  },
+  {
+    id: 'projection-screen-large',
+    name: t('Écran de projection déroulant (grand)', 'Pull-up projection screen (large)'),
+    description: t(
+      'Toile de 3,2 m, digne d’une keynote : beaucoup de hype une fois déroulée.',
+      '3.2 m screen worthy of a keynote: lots of hype once unrolled.',
+    ),
+    price: 2400,
+    width: 4,
+    depth: 1,
+    minPhase: 'SERIES_A',
+    maxCount: 2,
+    projectionScreen: true,
+    effects: { quality: 0.015, hypePerDay: 0.07, moral: 0.05 },
   },
   {
     id: 'speaker',
@@ -957,6 +1013,22 @@ export const FURNITURE_CATALOG = [
     maxCount: 10,
     accessory: true,
     effects: { teamProductivity: 0.004 },
+  },
+  {
+    id: 'projector',
+    name: t('Vidéoprojecteur', 'Video projector'),
+    description: t(
+      'Allumé, il déroule l’écran posé en face : +moral, léger -productivité.',
+      'Switched on, it unrolls the screen it faces: +morale, slight -productivity.',
+    ),
+    price: 700,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    accessory: true,
+    projector: true,
+    effects: { moral: 0.03, teamProductivity: -0.004 },
   },
   {
     id: 'mini-speaker',

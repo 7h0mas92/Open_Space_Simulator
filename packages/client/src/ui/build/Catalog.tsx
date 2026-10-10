@@ -26,6 +26,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   pets: '🐈',
   window: '🪟',
   accessory: '🦆',
+  devices: '📽️',
 };
 
 /**

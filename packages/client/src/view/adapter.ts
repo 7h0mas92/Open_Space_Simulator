@@ -52,6 +52,7 @@ import { financingOffers } from '../simulation/financing';
 import { currentTier } from '../simulation/fundraising';
 import { softSigmoid } from '../simulation/math';
 import { countDesks, RESALE_RATIO } from '../simulation/furniture';
+import { activeProjections } from '../simulation/projection';
 import { leadershipEffects, teamShape } from '../simulation/leadership';
 import { devIds, teamMax } from '../simulation/helpers';
 import {
@@ -406,6 +407,7 @@ function itemViews(state: GameState): PlacedItemView[] {
     resale: Math.round(item.purchasePrice * RESALE_RATIO),
     color: item.color ?? 'natural',
     host: item.hostId !== undefined ? { id: item.hostId, slot: item.slot ?? 0 } : null,
+    ...(item.on ? { on: true } : {}),
   }));
 }
 
@@ -705,6 +707,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     tasks: taskViews(state),
     candidates: candidateViews(state),
     items: itemViews(state),
+    projections: activeProjections(state).map(({ projector, screen }) => ({ projector, screen })),
     inventory: inventoryView(state),
     incident:
       state.stage === 'EXECUTION' &&
@@ -789,6 +792,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
         slot: command.host.slot,
         rotation: command.rotation,
       };
+    case 'switchProjector':
+      return { type: 'SWITCH_PROJECTOR', furnitureId: command.itemId, on: command.on };
     case 'paintItem':
       return { type: 'PAINT_FURNITURE', furnitureId: command.itemId, color: command.color };
     case 'moveItem':

@@ -23,6 +23,7 @@ export const ITEM_CATEGORIES = [
   'pets',
   'window',
   'accessory',
+  'devices',
 ] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
@@ -248,6 +249,25 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     model: primitive('mediaConsole'),
     height: 1.5,
     parts: [part(primitive('metricsScreen'), [0, TV_CABINET_TOP, -0.05])],
+  },
+  // Écrans de projection : seul le caisson est un gabarit, la toile est animée à part.
+  'projection-screen-small': {
+    category: 'devices',
+    model: primitive('projectionScreenSmall'),
+    height: 0.13,
+    paint: ['dark'],
+  },
+  'projection-screen-medium': {
+    category: 'devices',
+    model: primitive('projectionScreenMedium'),
+    height: 0.13,
+    paint: ['dark'],
+  },
+  'projection-screen-large': {
+    category: 'devices',
+    model: primitive('projectionScreenLarge'),
+    height: 0.13,
+    paint: ['dark'],
   },
   'server-rack': {
     category: 'work',
@@ -571,6 +591,13 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     model: primitive('secondScreen'),
     height: 0.4,
     paint: ['dark'],
+  },
+  // Vidéoprojecteur : posé sur un meuble, tourné vers un écran déroulant.
+  projector: {
+    category: 'devices',
+    model: primitive('videoProjector'),
+    height: 0.1,
+    paint: ['white'],
   },
   'mini-speaker': { category: 'accessory', model: primitive('miniSpeaker'), height: 0.33 },
   trophy: { category: 'accessory', model: primitive('trophy'), height: 0.32, paint: ['gold'] },

@@ -2860,6 +2860,14 @@ legend {
   font-weight: 400;
 }
 
+/* État d'un projecteur ou d'un écran déroulant, sous sa description. */
+.item-status {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .team-office {
   margin: 0 0 4px;
   color: var(--text-muted);

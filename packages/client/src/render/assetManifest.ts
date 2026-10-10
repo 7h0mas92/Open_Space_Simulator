@@ -303,6 +303,10 @@ export const MISSING_ASSETS = [
   { id: 'oliveTree', replacement: 'primitive' },
   { id: 'planterBox', replacement: 'primitive' },
   { id: 'giantMonstera', replacement: 'primitive' },
+  { id: 'videoProjector', replacement: 'primitive' },
+  { id: 'projectionScreenSmall', replacement: 'primitive' },
+  { id: 'projectionScreenMedium', replacement: 'primitive' },
+  { id: 'projectionScreenLarge', replacement: 'primitive' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;

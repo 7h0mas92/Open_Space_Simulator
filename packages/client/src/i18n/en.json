@@ -548,6 +548,15 @@
     "title": "Build mode",
     "intro": "Pick an item to place, or tap a piece of furniture to move, store or sell it.",
     "catalog": "Catalog",
+    "projector": {
+      "switchOn": "Switch on",
+      "switchOff": "Switch off",
+      "off": "Off: the screen in front stays rolled up.",
+      "projecting": "On: projecting onto: {{screen}}.",
+      "noScreen": "On, but no pull-up screen in front: turn it towards a screen (at most {{range}} tiles away).",
+      "unrolled": "Unrolled: a projector that is on lights it up.",
+      "rolled": "Rolled up: switch on a projector facing it to unroll it."
+    },
     "categories": {
       "work": "Work",
       "comfort": "Comfort",
@@ -558,7 +567,8 @@
       "pets": "Pets",
       "window": "Windows",
       "walls": "Walls",
-      "accessory": "Accessories"
+      "accessory": "Accessories",
+      "devices": "Devices"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -766,7 +776,11 @@
       "kentiaPalm": "Kentia palm: arching fronds covered in leaflets",
       "oliveTree": "Olive tree with a gnarled trunk, silver foliage and olives",
       "planterBox": "Wooden slat planter: tall grass, plumes, bushes and flowers",
-      "giantMonstera": "Giant monstera with split leaves, in a woven basket"
+      "giantMonstera": "Giant monstera with split leaves, in a woven basket",
+      "videoProjector": "Video projector: casing, lens, vents, focus ring and power light",
+      "projectionScreenSmall": "Pull-up projection screen (small): aluminium case, feet, animated fabric, pole and bar",
+      "projectionScreenMedium": "Pull-up projection screen (medium): aluminium case, feet, animated fabric, pole and bar",
+      "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar"
     },
     "back": "Back"
   },
