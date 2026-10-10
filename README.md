@@ -429,6 +429,12 @@ flowchart LR
   en relief avec leurs lettres, Entrée en bleu, un seul appel de dessin : `render/keyboard.ts`)
   et une souris Kenney agrandie sur un tapis de souris sombre ; le portable du garage a aussi sa
   souris et son tapis.
+- **Plantes d'intérieur** : en plus de la plante verte et du cactus, le rayon Déco propose huit
+  plantes dessinées feuille par feuille en Three.js (`render/plants.ts`). Des petites
+  (sansevieria, pothos sur sellette avec ses lianes, bonsaï), des grandes jusqu'à 2 m (figuier
+  lyre, palmier kentia, olivier centenaire) et des grosses (jardinière de séparation sur 3 cases,
+  monstera géante sur 2 x 2 cases). Chacune remonte le moral, avec selon la plante un peu de
+  qualité, de hype, de récupération ou de productivité ; seul le pot se repeint.
 - **Inventaire** : « 📦 Ranger » met un objet posé (et ses accessoires) de côté sans le
   revendre. L'onglet Inventaire du catalogue liste les objets rangés par type et couleur : on
   les repose gratuitement, en série, ou on les revend. Un objet rangé n'a plus d'effet mais
@@ -610,7 +616,7 @@ génère que des messages Slack.
   de ramen, mug, canard en plastique, trophée de hackathon, casque antibruit sur son support,
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
-  gamelles, arbres à chat et chats, canapé et bibliothèque détaillés, tableau blanc, horloge,
+  gamelles, arbres à chat et chats, canapé et bibliothèque détaillés, huit plantes d'intérieur, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction
   combinent plusieurs modèles Kenney (bureau avec écran et souris, table de cantine et
   ses bancs…), pour que chacun ait un rendu qui lui est propre. Pour les

@@ -3,7 +3,7 @@
  * sieste-pod, bureau debout, casques, baie de serveurs, machines à café, frigo à boissons,
  * cactus, écran de métriques, ramen, casque et mini-cactus de bureau, tapis de souris, clavier
  * QWERTY (voir `keyboard.ts`), litières, gamelles, arbres à chat, canapé et bibliothèque
- * détaillés) et servent de secours si un GLB ne se charge pas.
+ * détaillés, plantes d'intérieur (voir `plants.ts`)) et servent de secours si un GLB ne se charge pas.
  * Chaque forme assemble des primitives (boîtes, cylindres) dans la palette low-poly du
  * Furniture Kit, en unités de grille : une case mesure 1 x 1, l'objet est posé au sol (y = 0)
  * et regarde vers +z, comme les modèles Kenney.
@@ -30,6 +30,16 @@ import {
   trestleDesk,
 } from './workFurniture';
 import { qwertyKeyboard } from './keyboard';
+import {
+  bonsai,
+  fiddleLeafFig,
+  giantMonstera,
+  kentiaPalm,
+  oliveTree,
+  planterBox,
+  pothos,
+  snakePlant,
+} from './plants';
 
 export const PALETTE = {
   wood: 0xc8935b,
@@ -67,6 +77,9 @@ export const PALETTE = {
   cabinet: 0xe4e8e1,
   cushion: 0xd9734e,
   rug: 0xb5543c,
+  ceramic: 0xebe6dc,
+  concrete: 0xaba69d,
+  wicker: 0xa88a5a,
 } as const;
 
 /** Nom de chaque couleur de la palette : il sert à repérer les matériaux à repeindre. */
@@ -692,6 +705,14 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   officeChair,
   ergonomicChair,
   mediaConsole,
+  snakePlant,
+  pothos,
+  bonsai,
+  fiddleLeafFig,
+  kentiaPalm,
+  oliveTree,
+  planterBox,
+  giantMonstera,
   officeCharacters: null,
   officeCats: null,
   seasonalDecor: null,
