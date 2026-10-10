@@ -726,7 +726,15 @@
       "trestleDesk": "Garage desk on wooden trestles",
       "officeChair": "Office chair on casters: gas lift, padded seat, mesh back, armrests",
       "ergonomicChair": "Ergonomic chair with headrest and lumbar support",
-      "mediaConsole": "TV console with slatted doors, game console, router and soundbar"
+      "mediaConsole": "TV console with slatted doors, game console, router and soundbar",
+      "snakePlant": "Snake plant in a ceramic pot, yellow-edged blades",
+      "pothos": "Pothos on a wooden stand, with trailing vines",
+      "bonsai": "S-shaped bonsai in a flat dish, on a small stand",
+      "fiddleLeafFig": "Fiddle-leaf fig: thin trunk and large violin-shaped leaves",
+      "kentiaPalm": "Kentia palm: arching fronds covered in leaflets",
+      "oliveTree": "Olive tree with a gnarled trunk, silver foliage and olives",
+      "planterBox": "Wooden slat planter: tall grass, plumes, bushes and flowers",
+      "giantMonstera": "Giant monstera with split leaves, in a woven basket"
     },
     "back": "Back"
   },
