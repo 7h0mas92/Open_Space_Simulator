@@ -18,7 +18,7 @@ import type { CardLibrary } from '../events/library';
 import { runwayMonths } from './economy';
 import { financingOffers } from './financing';
 import { expectedAnswer } from './fundraising';
-import { canPlace, phaseIndex } from './furniture';
+import { canPlace, findFreeSlot, phaseIndex } from './furniture';
 import { devIds, teamMax, teamMoral, teamSize } from './helpers';
 import { meetingFormatBlocker } from './meetings';
 import { Rng } from './rng';
@@ -294,9 +294,22 @@ class PlannerBot implements Bot {
       budget -= item.price;
       commands.push({ type: 'BUY_FURNITURE', itemId, x: spot.x, y: spot.y, rotation: 0 });
     };
+    // Un appareil se pose sur un meuble de cuisine : le bot achète d'abord le meuble, puis
+    // l'appareil à la décision suivante.
+    const buyAppliance = (itemId: string) => {
+      const item = FURNITURE_CATALOG.find((i) => i.id === itemId);
+      if (!item || item.price > budget || countFurniture(state, itemId) >= item.maxCount) return;
+      const spot = findFreeSlot(state as GameState, itemId);
+      if (!spot) {
+        buy('kitchen-doors');
+        return;
+      }
+      budget -= item.price;
+      commands.push({ type: 'BUY_ACCESSORY', itemId, ...spot, rotation: 0 });
+    };
     const team = teamSize(state);
-    if (team >= 3 && countFurniture(state, 'premium-coffee-machine') < Math.ceil(team / 6))
-      buy('premium-coffee-machine');
+    if (team >= 3 && countFurniture(state, 'espresso-machine') < Math.ceil(team / 6))
+      buyAppliance('espresso-machine');
     if (team > countFurniture(state, 'desk') + countFurniture(state, 'ikea-desk')) buy('desk');
     if (Object.values(state.components.identity).some((i) => i.role === 'PRODUCT_OWNER'))
       buy('noise-headsets');

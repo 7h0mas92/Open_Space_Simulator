@@ -80,7 +80,7 @@ describe('écrans allumés', () => {
   it('n’allume que l’écran des bureaux utilisés par un dev visible', () => {
     const view = viewOf(officeSimulation(SEED_OFFICE));
     const desks = view.items.filter((item) => item.kind === 'desk');
-    const coffee = view.items.find((item) => item.kind === 'premium-coffee-machine')!;
+    const coffee = view.items.find((item) => item.kind === 'espresso-machine')!;
     const [first, second, third] = view.devs;
     const roles = new Map(view.devs.map((dev) => [dev.id, dev.role]));
     const lit = litScreens({

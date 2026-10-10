@@ -106,12 +106,42 @@ describe('accessoires', () => {
     for (const item of FURNITURE_CATALOG) {
       const slots = 'surfaceSlots' in item ? item.surfaceSlots : 0;
       expect(catalogItem(item.id)?.surface?.length ?? 0, item.id).toBe(slots);
+      // Les places pour l'électroménager sont prises parmi celles du plateau.
+      const appliances = 'applianceSlots' in item ? item.applianceSlots : 0;
+      expect(appliances, item.id).toBeLessThanOrEqual(slots);
       // Un accessoire n'a pas de plateau, et il est rangé dans son rayon.
       if ('accessory' in item) {
         expect(slots).toBe(0);
-        expect(catalogItem(item.id)?.category).toBe('accessory');
+        expect(catalogItem(item.id)?.category).toBe(
+          'appliance' in item || item.id === 'toaster' || item.id === 'blender'
+            ? 'appliance'
+            : 'accessory',
+        );
       }
     }
+  });
+
+  it('pose l’électroménager sur un meuble de cuisine, pas sur un bureau', () => {
+    const counter: PlacedItemView = { ...desk, id: 'k', kind: 'kitchen-doors', x: 6, z: 2 };
+    const oven = (slot: number): PlacedItemView => ({
+      ...desk,
+      id: `oven${slot}`,
+      kind: 'microwave-oven',
+      host: { id: 'k', slot },
+    });
+    const request = { kind: 'kettle', rotation: 0 as const };
+    expect(checkPlacement(layout, [desk], { ...request, x: 2, z: 2 })).toBe('noCounter');
+    expect(checkPlacement(layout, [desk], { ...request, x: 9, z: 9 })).toBe('noCounter');
+    expect(resolveAccessory([counter], { ...request, x: 6, z: 2 })).toMatchObject({
+      host: { id: 'k' },
+    });
+    expect(checkPlacement(layout, [counter, oven(0), oven(1)], { ...request, x: 6, z: 2 })).toBe(
+      'surfaceFull',
+    );
+    // Un petit accessoire va aussi sur le plan de travail.
+    expect(resolveAccessory([counter, oven(0)], { x: 6, z: 2 })).toEqual({
+      host: { id: 'k', slot: 1 },
+    });
   });
 
   it('se pose sur un meuble à plateau, jamais au sol', () => {

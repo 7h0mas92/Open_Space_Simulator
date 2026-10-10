@@ -138,8 +138,14 @@ export function setupNewGame(state: GameState, ctx: SimContext): void {
   const first = generateDev(ctx.rng, ctx.rng.pick(firstRoles));
   hireDev(state, ctx, first, first.askingSalary);
   placeFurniture(state, 'ikea-desk', 1, 1, 0);
-  placeFurniture(state, 'ikea-desk', 1, 3, 0);
-  placeFurniture(state, 'coffee-machine', 7, 0, 0);
+  const desk = placeFurniture(state, 'ikea-desk', 1, 3, 0);
+  // Pas encore de cuisine au garage : la cafetière est posée sur le second bureau.
+  const coffee = placeFurniture(state, 'drip-coffee-maker', 1, 3, 0);
+  const coffeeMaker = state.components.furniture[coffee];
+  if (coffeeMaker) {
+    coffeeMaker.hostId = desk;
+    coffeeMaker.slot = 0;
+  }
   placeFurniture(state, 'small-plant', 7, 5, 0);
   state.valuation = computeValuation(state);
   state.stats.maxValuation = state.valuation;

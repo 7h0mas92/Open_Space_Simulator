@@ -548,8 +548,10 @@ export class CatWorld {
     const options = this.freeSpots('play', cat).filter(
       (spot) => spot.item === current.item && spot.key !== current.key,
     );
+    // Toutes les autres places de l'arbre sont prises : il reste où il est.
+    if (options.length === 0) return;
     const next = cat.random.pick(options);
-    if (!next?.seat) return;
+    if (!next.seat) return;
     cat.spot = next;
     cat.x = next.seat.x;
     cat.y = next.seat.y;

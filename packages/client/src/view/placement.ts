@@ -18,6 +18,7 @@ export type PlacementError =
   | 'entrance'
   | 'noSurface'
   | 'surfaceFull'
+  | 'noCounter'
   | 'noWall';
 
 export interface PlacementRequest {
@@ -112,13 +113,18 @@ export function slotPosition(
   return [host.x + (w - 1) / 2 + x * cos + z * sin, y, host.z + (d - 1) / 2 - x * sin + z * cos];
 }
 
-/** Emplacements libres d'un meuble (celui de l'accessoire déplacé compte comme libre). */
+/**
+ * Emplacements libres d'un meuble (celui de l'accessoire déplacé compte comme libre). Pour un
+ * appareil électroménager, seulement les premiers, prévus pour lui (`applianceSlots`).
+ */
 export function freeSlots(
   items: readonly PlacedItemView[],
   host: PlacedItemView,
   ignoreId?: string,
+  appliance = false,
 ): number[] {
-  const count = catalogItem(host.kind)?.surface?.length ?? 0;
+  const def = catalogItem(host.kind);
+  const count = appliance ? (def?.applianceSlots ?? 0) : (def?.surface?.length ?? 0);
   const used = new Set(
     items
       .filter((item) => item.host?.id === host.id && item.id !== ignoreId)
@@ -129,20 +135,24 @@ export function freeSlots(
 
 /**
  * Où poser un accessoire visé sur la case (x, z) : le meuble à plateau qui couvre la case, et
- * son emplacement libre le plus proche du centre de la case.
+ * son emplacement libre le plus proche du centre de la case. Un appareil électroménager (`kind`)
+ * demande un meuble de cuisine (ou un autre plateau prévu pour lui).
  */
 export function resolveAccessory(
   items: readonly PlacedItemView[],
-  request: Pick<PlacementRequest, 'x' | 'z' | 'ignoreId'>,
-): { readonly host: ItemHost } | { readonly error: 'noSurface' | 'surfaceFull' } {
+  request: Pick<PlacementRequest, 'x' | 'z' | 'ignoreId'> & { readonly kind?: string },
+): { readonly host: ItemHost } | { readonly error: 'noSurface' | 'surfaceFull' | 'noCounter' } {
+  const appliance = request.kind ? (catalogItem(request.kind)?.appliance ?? false) : false;
   const host = items.find(
     (item) =>
       !item.host && itemCells(item).some((cell) => cell.x === request.x && cell.z === request.z),
   );
-  if (!host || !catalogItem(host.kind)?.surface?.length) return { error: 'noSurface' };
+  const hostDef = host ? catalogItem(host.kind) : undefined;
+  if (!host || !hostDef?.surface?.length) return { error: appliance ? 'noCounter' : 'noSurface' };
+  if (appliance && hostDef.applianceSlots === 0) return { error: 'noCounter' };
   let best: ItemHost | null = null;
   let bestDistance = Infinity;
-  for (const slot of freeSlots(items, host, request.ignoreId)) {
+  for (const slot of freeSlots(items, host, request.ignoreId, appliance)) {
     const position = slotPosition(host, slot);
     if (!position) continue;
     const distance = (position[0] - request.x) ** 2 + (position[2] - request.z) ** 2;

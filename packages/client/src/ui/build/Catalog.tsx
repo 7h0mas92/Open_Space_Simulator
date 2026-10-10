@@ -19,7 +19,8 @@ import { WallFinishes } from './WallFinishes';
 export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   work: '💻',
   comfort: '🛋️',
-  kitchen: '☕',
+  kitchen: '🍽️',
+  appliance: '☕',
   fun: '🎮',
   decor: '🪴',
   pets: '🐈',

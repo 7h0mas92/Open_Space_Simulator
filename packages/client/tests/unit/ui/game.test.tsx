@@ -386,17 +386,17 @@ describe('Construction', () => {
   it('déplace un objet posé depuis le mode construction', async () => {
     await startGame();
     act(() => useGame.getState().enterBuild());
-    const item = useGame.getState().view!.items.find((i) => i.kind === 'premium-coffee-machine')!;
+    const item = useGame.getState().view!.items.find((i) => i.kind === 'kitchen-drawers')!;
     act(() => useGame.getState().select({ type: 'item', id: item.id }));
     await userEvent.click(screen.getByRole('button', { name: /Déplacer/ }));
     expect(useGame.getState().build).toMatchObject({
-      kind: 'premium-coffee-machine',
+      kind: 'kitchen-drawers',
       movingItemId: item.id,
       cell: { x: item.x, z: item.z },
     });
     expect(screen.queryByTestId('catalog')).toBeNull();
 
-    const cell = freeCell('premium-coffee-machine');
+    const cell = freeCell('kitchen-drawers');
     act(() => useGame.getState().setBuildCell(cell));
     await userEvent.click(screen.getByRole('button', { name: /Déplacer ici/ }));
     expect(useGame.getState().view!.items.find((i) => i.id === item.id)).toMatchObject(cell);

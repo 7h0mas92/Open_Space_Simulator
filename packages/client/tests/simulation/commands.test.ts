@@ -185,14 +185,14 @@ describe('Aménagement', () => {
     simulation.state.gauges.treasury = 1_000_000;
     simulation.dispatch({
       type: 'BUY_FURNITURE',
-      itemId: 'coffee-machine',
+      itemId: 'speaker',
       x: 6,
       y: 0,
       rotation: 0,
     });
     simulation.dispatch({
       type: 'BUY_FURNITURE',
-      itemId: 'coffee-machine',
+      itemId: 'speaker',
       x: 5,
       y: 0,
       rotation: 0,
@@ -200,7 +200,7 @@ describe('Aménagement', () => {
     expect(
       simulation.dispatch({
         type: 'BUY_FURNITURE',
-        itemId: 'coffee-machine',
+        itemId: 'speaker',
         x: 4,
         y: 0,
         rotation: 0,

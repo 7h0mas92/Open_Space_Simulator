@@ -104,7 +104,7 @@ function PlacementBar({ view, build }: { view: GameView; build: BuildState }) {
     ? view.inventory.find((s) => s.kind === build.kind && s.color === build.color)
     : undefined;
   const status = !cell
-    ? t(def.accessory ? 'build.hintAccessory' : 'build.aim')
+    ? t(def.appliance ? 'build.hintAppliance' : def.accessory ? 'build.hintAccessory' : 'build.aim')
     : error
       ? t(`results.${error}`)
       : build.placed > 0

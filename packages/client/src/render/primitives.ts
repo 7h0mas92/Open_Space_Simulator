@@ -1,6 +1,7 @@
 /**
  * Formes Three.js qui remplacent les modèles absents des packs Kenney (babyfoot, toboggan,
- * sieste-pod, bureau debout, casques, baie de serveurs, machines à café, frigo à boissons,
+ * sieste-pod, bureau debout, casques, baie de serveurs, meubles de cuisine et électroménager
+ * (voir `kitchenFurniture.ts`), frigo à boissons,
  * cactus, écran de métriques, ramen, casque et mini-cactus de bureau, tapis de souris, clavier
  * QWERTY (voir `keyboard.ts`), litières, gamelles, arbres à chat, canapé et bibliothèque
  * détaillés, plantes d'intérieur (voir `plants.ts`)) et servent de secours si un GLB ne se charge pas.
@@ -27,10 +28,18 @@ import {
 import { detailedBookcase, detailedSofa } from './furnitureDetail';
 import {
   canteenTable,
-  coffeeCounter,
+  doorCabinet,
+  drawerCabinet,
   drinksFridge,
-  espressoCounter,
-  microwaveCounter,
+  dripCoffeeMaker,
+  electricKettle,
+  espressoMachine,
+  hutchCabinet,
+  kitchenIsland,
+  microwaveOven,
+  riceCooker,
+  sinkUnit,
+  tallCabinet,
 } from './kitchenFurniture';
 import { babyfoot, floorSpeaker, napPod, pedalBin, roundRug, slide } from './loungeFurniture';
 import {
@@ -399,9 +408,17 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   standingDesk,
   headphones: headsetRack,
   serverRack,
-  coffeeCounter,
-  espressoCounter,
-  microwaveCounter,
+  drawerCabinet,
+  doorCabinet,
+  sinkUnit,
+  tallCabinet,
+  hutchCabinet,
+  kitchenIsland,
+  dripCoffeeMaker,
+  espressoMachine,
+  microwaveOven,
+  electricKettle,
+  riceCooker,
   drinksFridge,
   canteenTable,
   cactus,
