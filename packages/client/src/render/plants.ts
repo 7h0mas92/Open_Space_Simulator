@@ -12,7 +12,7 @@
  * elle est identique à chaque partie et le RNG du jeu n'est jamais touché.
  */
 import * as THREE from 'three';
-import { Pieces, seeded } from './furnitureDetail';
+import { Pieces, seeded } from './pieces';
 import { material, PALETTE } from './primitives';
 
 type Vec3 = readonly [number, number, number];
@@ -160,7 +160,7 @@ const GOLDEN = 2.399963;
 
 /** Sansevieria : des lames dressées, vert sombre bordé de jaune, dans un pot en céramique. */
 export function snakePlant(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces('all');
   const random = seeded(0x5a45);
   const soil = roundPot(p, PALETTE.ceramic, 0.15, 0.12, 0.3);
   const colors = [0x2f5f3a, 0x3f7444, 0x4c8248] as const;
@@ -184,7 +184,7 @@ export function snakePlant(): THREE.Group {
 
 /** Pothos sur sellette : un pot sur un guéridon en bois, et des lianes qui tombent jusqu'au sol. */
 export function pothos(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces('all');
   const random = seeded(0x9070);
   const wood = PALETTE.woodDark;
   // Sellette : plateau rond, quatre pieds écartés, entretoise.
@@ -238,7 +238,7 @@ export function pothos(): THREE.Group {
 
 /** Bonsaï : un pin tordu dans une coupe plate, sur une petite sellette en bois. */
 export function bonsai(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces('all');
   // Sellette basse.
   for (const x of [-0.19, 0.19])
     for (const z of [-0.19, 0.19]) p.box(0.04, 0.3, 0.04, PALETTE.woodDark, [x, 0, z]);
@@ -278,7 +278,7 @@ export function bonsai(): THREE.Group {
 
 /** Figuier lyre : un tronc fin et de grandes feuilles en violon, dans un pot en béton. */
 export function fiddleLeafFig(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces('all');
   const random = seeded(0xf16);
   const soil = roundPot(p, PALETTE.concrete, 0.21, 0.17, 0.38);
   const trunk: Vec3[] = [
@@ -310,7 +310,7 @@ export function fiddleLeafFig(): THREE.Group {
 
 /** Palmier kentia : des palmes arquées couvertes de folioles, dans un grand cache-pot blanc. */
 export function kentiaPalm(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces('all');
   const random = seeded(0xc3a);
   const soil = roundPot(p, PALETTE.ceramic, 0.2, 0.16, 0.42);
   const greens = [0x3b7d3a, 0x4f9444, 0x2f6a32] as const;
@@ -355,7 +355,7 @@ export function kentiaPalm(): THREE.Group {
 
 /** Olivier centenaire : un tronc noueux, un feuillage argenté et quelques olives. */
 export function oliveTree(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces('all');
   const random = seeded(0x011e);
   const soil = roundPot(p, PALETTE.terracotta, 0.24, 0.19, 0.42);
   // Deux troncs tordus qui s'enlacent.
@@ -418,7 +418,7 @@ export function oliveTree(): THREE.Group {
 
 /** Jardinière de séparation (3 x 1 cases) : un bac en lattes de bois, herbes hautes et buissons. */
 export function planterBox(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces('all');
   const random = seeded(0x9a4d);
   const W = 2.8;
   const D = 0.6;
@@ -480,7 +480,7 @@ export function planterBox(): THREE.Group {
 
 /** Monstera géante (2 x 2 cases) : de grandes feuilles découpées sur de longues tiges. */
 export function giantMonstera(): THREE.Group {
-  const p = new Pieces();
+  const p = new Pieces('all');
   const random = seeded(0x3057);
   // Grand panier tressé, rayé de bandes plus foncées.
   p.post(0.4, 0.33, 0.44, PALETTE.wicker, [0, 0, 0], 12);
