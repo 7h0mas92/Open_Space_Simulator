@@ -15,6 +15,7 @@ import { paintObject, type AssetLibrary } from './assets';
 import type { FurnitureColor } from '../view/colors';
 import type { MeetingPlan } from '../view/decor';
 import type { OfficeLayout } from '../view/layout';
+import { buildGlassTops, partitionCells, partitionShapes } from './partitions';
 import { material, PALETTE } from './primitives';
 
 type Builder = (assets: AssetLibrary) => Promise<THREE.Object3D>;
@@ -325,19 +326,17 @@ async function buildSeats(plan: MeetingPlan, look: SeatLook, assets: AssetLibrar
   return group;
 }
 
-/** Vitres posées sur les cloisons qui entourent la salle. */
+/** Vitres posées sur les cloisons qui entourent la salle, raccordées comme les murs fins. */
 function glassWalls(plan: MeetingPlan, layout: OfficeLayout): THREE.Group {
-  const group = new THREE.Group();
   const { room } = plan;
-  for (const cell of layout.partitions) {
+  const around = partitionShapes(partitionCells(layout, []), layout).filter(({ cell }) => {
     const besideX = cell.x === room.x - 1 || cell.x === room.x + room.width;
     const besideZ = cell.z === room.z - 1 || cell.z === room.z + room.depth;
     const alongX = cell.x >= room.x - 1 && cell.x <= room.x + room.width;
     const alongZ = cell.z >= room.z - 1 && cell.z <= room.z + room.depth;
-    if ((besideX && alongZ) || (besideZ && alongX))
-      group.add(box(0.96, 0.85, 0.96, glass, cell.x, 1.3, cell.z));
-  }
-  return group;
+    return (besideX && alongZ) || (besideZ && alongX);
+  });
+  return buildGlassTops(around);
 }
 
 export async function buildMeetingRoom(

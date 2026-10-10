@@ -224,3 +224,43 @@ describe('fenêtres', () => {
     ).toBeNull();
   });
 });
+
+describe('murs fins', () => {
+  const garage = officeLayout('GARAGE');
+  const wall = (id: string, x: number, z: number, rotation: 0 | 1): PlacedItemView => ({
+    id,
+    kind: 'thin-wall',
+    x,
+    z,
+    rotation,
+    resale: 0,
+    color: 'natural',
+    host: null,
+  });
+
+  it('se posent sur une case libre, dans les deux sens', () => {
+    expect(checkPlacement(garage, [], { kind: 'thin-wall', x: 3, z: 2, rotation: 0 })).toBeNull();
+    expect(
+      checkPlacement(garage, [], { kind: 'glass-partition', x: 3, z: 2, rotation: 1 }),
+    ).toBeNull();
+  });
+
+  it('refusent de fermer un coin du bureau : il faut laisser une porte', () => {
+    // Le coin du fond à droite (x 6-7, z 0-1) : deux murs le ferment presque.
+    const items = [wall('a', 5, 0, 1), wall('b', 5, 1, 1), wall('c', 6, 2, 0)];
+    expect(checkPlacement(garage, items, { kind: 'thin-wall', x: 7, z: 2, rotation: 0 })).toBe(
+      'blocksPath',
+    );
+    // Déplacer un des murs ailleurs rouvre le passage.
+    expect(
+      checkPlacement(garage, items, { kind: 'thin-wall', x: 7, z: 2, rotation: 0, ignoreId: 'c' }),
+    ).toBeNull();
+  });
+
+  it('un mur au bout d’une rangée ne gêne pas tant qu’on peut en faire le tour', () => {
+    const items = [wall('a', 2, 0, 1), wall('b', 2, 1, 1)];
+    expect(
+      checkPlacement(garage, items, { kind: 'thin-wall', x: 2, z: 2, rotation: 1 }),
+    ).toBeNull();
+  });
+});
