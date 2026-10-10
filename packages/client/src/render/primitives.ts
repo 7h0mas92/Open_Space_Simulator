@@ -220,8 +220,8 @@ function miniCactus(): THREE.Group {
  */
 function mousePad(): THREE.Group {
   const group = new THREE.Group();
-  group.add(box(0.26, 0.008, 0.24, PALETTE.blue, 0, 0, 0));
-  group.add(box(0.24, 0.012, 0.22, PALETTE.dark, 0, 0, 0));
+  group.add(box(0.19, 0.008, 0.17, PALETTE.blue, 0, 0, 0));
+  group.add(box(0.17, 0.012, 0.15, PALETTE.dark, 0, 0, 0));
   return group;
 }
 

@@ -4,6 +4,7 @@
     "pitch": "Your startup just raised 2 million. You have 18 months before everything blows up. Good luck."
   },
   "menu": {
+    "version": "Version {{build}}",
     "welcome": "Welcome, {{pseudo}}!",
     "admin": "Administrator",
     "logout": "Log out",

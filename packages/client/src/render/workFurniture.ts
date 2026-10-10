@@ -119,8 +119,7 @@ export function standingDesk(): THREE.Group {
   p.box(0.05, 0.16, 0.03, PALETTE.dark, [0, top, -0.245]);
   p.box(0.7, 0.42, 0.04, PALETTE.dark, [0, top + 0.05, -0.2]);
   p.box(0.25, 0.18, 0.02, 0x23283a, [0, top + 0.15, -0.23]);
-  // Clavier (inchangé) devant l'écran.
-  p.box(0.5, 0.02, 0.15, PALETTE.dark, [0, top, 0.12]);
+  // Clavier QWERTY et souris : posés par le catalogue (`view/catalog.ts`), comme au bureau de dev.
   return p.build('standingDesk');
 }
 
