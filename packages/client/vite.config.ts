@@ -13,8 +13,11 @@ export default defineConfig({
     // PWA : installable, et jouable hors ligne en invité. Tout le jeu (code, modèles Kenney,
     // icônes) est mis en cache à l'installation ; les cartes d'événements suivent le réseau
     // en priorité et retombent sur le cache (puis sur les 100 cartes intégrées au jeu).
+    // Mise à jour : la nouvelle version attend que le joueur soit au menu pour s'appliquer
+    // (`ui/appUpdate.ts`), au lieu de rester invisible jusqu'au rechargement suivant.
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Open Space Simulator 2026',
