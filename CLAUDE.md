@@ -571,8 +571,8 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   en matériaux nommés, le reste peint par sommet dans un matériau `trim`, voyants dans `lights`,
   2 à 4 maillages par meuble). Bureaux et sièges (`render/workFurniture.ts`) : bureau de dev,
   bureau du garage sur tréteaux, standing desk, chaise à roulettes, chaise ergonomique, meuble
-  télé, baie de serveurs, station d'écouteurs. Cuisine (`render/kitchenFurniture.ts`) : comptoir à
-  café, comptoir du barista, micro-ondes, frigo à boissons, tablée de cantine. Détente
+  télé, baie de serveurs, station d'écouteurs. Cuisine (`render/kitchenFurniture.ts`) : 6 meubles
+  de cuisine, 5 appareils, frigo à boissons, tablée de cantine. Détente
   (`render/loungeFurniture.ts`) : babyfoot, toboggan, capsule de sieste (dans le bon sens),
   enceinte, tapis rond repeignable, poubelle à pédale. 12 accessoires de bureau
   (`render/deskAccessories.ts`, lampe d'architecte au lieu de la lampe carrée). Équipement des
@@ -602,6 +602,15 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   rétro des Années 80 reste. Nom générique, sans marque. Les anciens identifiants (`desk-headset`,
   `noise-headsets`) sont traduits au chargement et à chaque commande (`LEGACY_FURNITURE_IDS`,
   `client/src/simulation/renamedItems.ts`) : sauvegardes, replays et scores restent valides.
+- Cuisine séparée (`shared/sim/furniture.ts`, rayons « Cuisine » et « Électroménager ») : les
+  combinés meuble + appareil disparaissent. 6 meubles de cuisine (tiroirs 160 €, portes 140 €, évier
+  2 x 1, colonne et vaisselier en Seed, îlot 2 x 1 en Série A, léger +moral) et 5 appareils posés
+  dessus comme des accessoires (`appliance`, places `applianceSlots`) : cafetière à filtre (+25 café),
+  machine à expresso (+50 café, +moral, succès Barista), micro-ondes, bouilloire, cuiseur à riz
+  (Seed). Grille-pain et blender rejoignent l'électroménager. Au garage, la cafetière est posée sur
+  le second bureau IKEA (mêmes entités, Daily et replays inchangés). Vieilles sauvegardes : chaque
+  combiné devient au chargement un meuble offert + son appareil au même prix, même effet
+  (`LEGACY_KITCHEN_ITEMS`, `client/src/simulation/kitchen.ts`). Bot : `findFreeSlot`.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
