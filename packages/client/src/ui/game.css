@@ -1772,6 +1772,28 @@ input[type='range'] {
   background-size: auto 300%;
 }
 
+/* Rayon Sols : le motif d'une case, répété comme sur le sol. */
+.floor-swatch {
+  background-position: center;
+  background-repeat: repeat;
+  background-size: 2.25rem 2.25rem;
+}
+
+.floor-swatch.small {
+  display: inline-block;
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 4px;
+  background-size: 1.4rem 1.4rem;
+}
+
+/* Sol d'origine de la pièce (damier tiré de la graine). */
+.floor-swatch.small.original {
+  background: repeating-conic-gradient(#d9cbb4 0 25%, #c9b9a0 0 50%) 0 0 / 0.7rem 0.7rem;
+}
+
 .item-thumb {
   display: grid;
   flex: none;

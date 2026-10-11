@@ -46,7 +46,9 @@ import {
   type Stats,
   type TaskColumn,
   PHASES,
+  FLOOR_MATERIALS,
   WALL_FINISHES,
+  floorZones,
   wallZones,
   FIBRE_PLANS,
   HOSTING_SAVING_MAX,
@@ -54,7 +56,7 @@ import {
   hasFibreBox,
 } from '@oss/shared';
 import { wallOffice } from '../simulation/walls';
-import { officeLayout } from './layout';
+import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
@@ -115,6 +117,7 @@ import type {
   PetsView,
   ServersView,
   WallsView,
+  FloorsView,
   GaugeName,
   KanbanColumn,
   LeadershipView,
@@ -424,9 +427,10 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
  * là où le joueur les a déplacés. Sans valeur de revente : ils se déplacent et se tournent
  * seulement (identifiant `annex:<clé>`, jamais celui d'une entité).
  */
-function annexDecorViews(state: GameState): PlacedItemView[] {
+function annexDecorViews(state: GameState, furniture: readonly PlacedItemView[]): PlacedItemView[] {
   const { phase, annexes, wings } = wallOffice(state);
-  return (officeLayout(phase, wings, annexes, state.seed).fixtures ?? []).map((fixture) => {
+  const layout = officeLayout(phase, wings, annexes, state.seed);
+  const view = (fixture: Fixture): PlacedItemView => {
     const moved = state.annexDecor[fixture.key];
     return {
       id: `annex:${fixture.key}`,
@@ -439,11 +443,23 @@ function annexDecorViews(state: GameState): PlacedItemView[] {
       host: null,
       annexDecor: fixture.key,
     };
+  };
+  const fixtures = layout.fixtures ?? [];
+  // Le décor déplacé par le joueur reste où il l'a mis ; le reste évite le mobilier déjà posé.
+  const pinned = fixtures.filter((fixture) => state.annexDecor[fixture.key]).map(view);
+  const settled = new Map(
+    settleFixtures(layout, [...furniture, ...pinned]).map((fixture) => [fixture.key, fixture]),
+  );
+  return fixtures.flatMap((fixture) => {
+    if (state.annexDecor[fixture.key]) return [view(fixture)];
+    const spot = settled.get(fixture.key);
+    return spot ? [view(spot)] : [];
   });
 }
 
 function itemViews(state: GameState): PlacedItemView[] {
-  return [...furnitureViews(state), ...annexDecorViews(state)];
+  const furniture = furnitureViews(state);
+  return [...furniture, ...annexDecorViews(state, furniture)];
 }
 
 function furnitureViews(state: GameState): PlacedItemView[] {
@@ -763,6 +779,19 @@ function wallsView(state: GameState): WallsView {
   };
 }
 
+function floorsView(state: GameState): FloorsView {
+  const phase = PHASES.indexOf(state.phase);
+  return {
+    zones: floorZones(wallOffice(state)).map((zone) => ({
+      zone,
+      finish: state.floors[zone] ?? null,
+    })),
+    locked: FLOOR_MATERIALS.filter((material) => PHASES.indexOf(material.minPhase) > phase).map(
+      (material) => material.id,
+    ),
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -833,6 +862,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    floors: floorsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
       state.phase === 'UNICORN' &&
@@ -1004,6 +1034,13 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'CLEAR_MEETING_ROOM' };
     case 'coverWall':
       return { type: 'COVER_WALL', zone: command.zone, finish: command.finish };
+    case 'coverFloor':
+      return {
+        type: 'COVER_FLOOR',
+        zone: command.zone,
+        material: command.finish.material,
+        tint: command.finish.tint,
+      };
     case 'adoptPet':
       return { type: 'ADOPT_PET', coat: command.coat };
     case 'rehomePet':

@@ -291,6 +291,7 @@ export class GameRenderer {
       })),
     );
     this.office.setWallFinishes(view.walls.zones);
+    this.office.setFloorFinishes(view.floors.zones);
     void this.office.setItems(view.items);
     this.projection.sync(view.items, view.projections);
     this.updateDecor(view);

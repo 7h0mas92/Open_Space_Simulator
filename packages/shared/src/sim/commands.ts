@@ -5,6 +5,7 @@ import { MeetingFormatIdSchema } from './meetings.js';
 import { MonitorModelSchema, MonitorMountSchema, MonitorSizeSchema } from './monitors.js';
 import { FinancingKindSchema } from './funding.js';
 import { PetCoatSchema } from './pets.js';
+import { FloorMaterialIdSchema, FloorTintSchema, FloorZoneSchema } from './floors.js';
 import { FibrePlanIdSchema } from './serverRoom.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
 
@@ -129,6 +130,13 @@ export const CommandSchema = z.discriminatedUnion('type', [
   }),
   /** Peint ou tapisse une zone de mur (l'ancien revêtement n'est pas remboursé). */
   z.object({ type: z.literal('COVER_WALL'), zone: WallZoneSchema, finish: WallFinishIdSchema }),
+  /** Pose un sol (matière et teinte) dans une pièce (l'ancien sol n'est pas remboursé). */
+  z.object({
+    type: z.literal('COVER_FLOOR'),
+    zone: FloorZoneSchema,
+    material: FloorMaterialIdSchema,
+    tint: FloorTintSchema,
+  }),
   z.object({ type: z.literal('START_PITCH') }),
   z.object({ type: z.literal('PITCH_ARGUMENT'), argumentId: z.string() }),
   z.object({ type: z.literal('CLOSE_PITCH') }),
