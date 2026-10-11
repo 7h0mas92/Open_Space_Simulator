@@ -1,27 +1,15 @@
 /**
- * Décor fixe des annexes ouvertes par les tours de table (Série B, C, D) : salle d'arcade,
- * jardin intérieur et auditorium. Banc, plante en pot et enceintes viennent du Furniture Kit
- * de Kenney ; bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et
- * écran de projection sont des formes Three.js (le kit n'en a pas, voir les crédits).
+ * Formes Three.js du décor des annexes (salle d'arcade, jardin intérieur, auditorium) : bornes
+ * d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran d'auditorium (le
+ * Furniture Kit de Kenney n'en a pas, voir les crédits). Banc, plante en pot et enceinte sont
+ * les objets habituels du catalogue.
  *
- * Comme les modèles Kenney, chaque objet tient dans une case, posé au sol (y = 0), et
- * regarde vers +z (vers la caméra).
+ * Ce sont des objets du catalogue comme les autres (`view/catalog.ts`) : offerts à l'ouverture
+ * d'une annexe, et en vente dans la boutique. Chacun est posé au sol (y = 0), centré sur son
+ * emprise, et regarde vers +z (vers la caméra).
  */
 import * as THREE from 'three';
-import type { FurnitureModel } from './assetManifest';
-import type { AssetLibrary } from './assets';
 import { material, PALETTE } from './primitives';
-import type { FixtureKind } from '../view/layout';
-
-/** Objets du décor pris dans le Furniture Kit de Kenney. */
-const KENNEY_FIXTURES = {
-  bench: 'bench',
-  planter: 'pottedPlant',
-  speaker: 'speaker',
-} as const satisfies Partial<Record<FixtureKind, FurnitureModel>>;
-type KenneyFixture = keyof typeof KENNEY_FIXTURES;
-
-const isKenney = (kind: FixtureKind): kind is KenneyFixture => kind in KENNEY_FIXTURES;
 
 const glowing = new Map<number, THREE.MeshStandardMaterial>();
 
@@ -160,29 +148,14 @@ function projectionScreen(): THREE.Group {
   return g;
 }
 
-const BUILDERS: Record<Exclude<FixtureKind, KenneyFixture>, () => THREE.Group> = {
-  'arcade-cabinet': arcadeCabinet,
-  pinball,
-  'neon-sign': neonSign,
-  tree,
-  fountain,
-  stage,
+/** Toutes les formes du décor des annexes (tests : chacune doit être distincte). */
+export const ANNEX_DECOR_PRIMITIVES = {
+  arcadeCabinet,
+  pinballMachine: pinball,
+  neonSign,
+  indoorTree: tree,
+  zenFountain: fountain,
+  smallStage: stage,
   lectern,
-  'projection-screen': projectionScreen,
-};
-
-/** Un objet du décor des annexes : modèle Kenney, ou forme Three.js (et en secours). */
-export async function buildFixture(
-  kind: FixtureKind,
-  assets: AssetLibrary,
-): Promise<THREE.Object3D> {
-  if (isKenney(kind)) {
-    const loaded = await assets.loadFurniture(KENNEY_FIXTURES[kind]);
-    // Modèle introuvable : un arbre en pot fait l'affaire dans toutes les annexes.
-    return loaded ? loaded.clone() : tree();
-  }
-  return BUILDERS[kind]();
-}
-
-/** Toutes les formes Three.js du décor des annexes (tests : chacune doit être distincte). */
-export const FIXTURE_PRIMITIVES = BUILDERS;
+  auditoriumScreen: projectionScreen,
+} as const;

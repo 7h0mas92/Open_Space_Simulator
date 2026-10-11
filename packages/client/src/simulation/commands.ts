@@ -8,6 +8,7 @@ import {
   buyAccessory,
   buyFurniture,
   moveAccessory,
+  moveAnnexDecor,
   moveFurniture,
   paintFurniture,
   setComputer,
@@ -112,6 +113,10 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')
         : moveFurniture(state, command.furnitureId, command.x, command.y, command.rotation);
+    case 'MOVE_ANNEX_DECOR':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : moveAnnexDecor(state, command.key, command.x, command.y, command.rotation);
     case 'SELL_FURNITURE':
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')

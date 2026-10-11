@@ -20,6 +20,7 @@ import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
 import { FloorFinishesSchema } from './floors.js';
 import { WallFinishesSchema } from './walls.js';
+import { AnnexDecorSchema } from './annexDecor.js';
 
 /**
  * État complet d'une partie. Il est 100 % sérialisable en JSON : une sauvegarde est
@@ -372,6 +373,8 @@ export const GameStateSchema = z.object({
   walls: WallFinishesSchema.default({}),
   /** Sols posés, par pièce (absents des vieilles sauvegardes). */
   floors: FloorFinishesSchema.default({}),
+  /** Décor des annexes déplacé par le joueur, par clé (absent des vieilles sauvegardes). */
+  annexDecor: AnnexDecorSchema.default({}),
   /** Chats du bureau (absents des sauvegardes d'avant leur ajout). */
   pets: z.array(PetSchema).max(PETS.max).default([]),
   /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */

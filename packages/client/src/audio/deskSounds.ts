@@ -42,7 +42,7 @@ export const DESK_SOUND = {
   /** …et où on les entend pleinement. */
   spanNear: 5.5,
   /** Clic de souris lointain : à peine audible. */
-  faintMouse: 0.06,
+  faintMouse: 0.1,
   /** Clic de souris tout près, au centre de la vue zoomée. */
   nearMouse: 0.22,
   /** Frappe au clavier tout près (l'enregistrement est fort : on le joue bas). */
@@ -52,7 +52,7 @@ export const DESK_SOUND = {
   /** Claviers entendus en même temps quand on zoome. */
   maxNear: 6,
   /** Rayon d'écoute, en fraction du plus petit côté de la vue. */
-  hearRadius: 1.2,
+  hearRadius: 1.6,
   /** Écart gauche-droite le plus fort (1 = tout d'un côté). */
   maxPan: 0.7,
 } as const;
@@ -87,7 +87,7 @@ export function deskMix(activity: DeskActivity, volume: number): DeskVoice[] {
     .slice(0, DESK_SOUND.maxFaint);
   return onScreen.map(({ typist, distance }, rank) => {
     const weight =
-      near > 0 && rank < DESK_SOUND.maxNear ? near * clamp01(1 - distance / radius) ** 2 : 0;
+      near > 0 && rank < DESK_SOUND.maxNear ? near * clamp01(1 - distance / radius) : 0;
     const pan = Math.max(-1, Math.min(1, typist.x / halfWidth)) * DESK_SOUND.maxPan;
     return {
       id: typist.id,

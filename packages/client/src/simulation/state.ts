@@ -79,6 +79,7 @@ export function createEmptyState(config: GameConfig): GameState {
     inventory: [],
     walls: {},
     floors: {},
+    annexDecor: {},
     pets: [],
     raises: emptyRaisesState(),
     recentTaskTitles: [],
