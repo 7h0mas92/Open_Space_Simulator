@@ -703,6 +703,23 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `annexDecorViews` dans `view/adapter.ts`). Plus de banc dans un mur vitré. Aucun tirage, ni
   commande, ni champ d'état.
 
+- Salle des serveurs et fibre (`shared/sim/serverRoom.ts`, `client/src/simulation/serverRoom.ts`,
+  rayon « 🗄️ Serveurs » du mode construction, panneau « 🗄️ Serveurs », `ui/servers/ServerRoom.tsx`) :
+  local serveur 2 x 2 (4 000 €, Seed, 4 emplacements) et salle des serveurs vitrée 4 x 3
+  (12 000 €, Série A, 8 emplacements), 1 de chaque au plus. 10 équipements au choix posés dedans
+  comme des accessoires (`serverGear`, erreur `noServerRoom` ailleurs ; une salle n'accueille que
+  ça) : serveurs rack, lames (Série A) et GPU (Série A), switch, box fibre, climatisation de
+  précision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz (Série A). Une salle tourne
+  seulement avec un serveur, du réseau et du froid (sinon elle surchauffe, sans effet) : -6 à -12 %
+  d'hébergement par serveur (`hostingSaving`, 40 % au plus, `hostingCost` dans `economy.ts`),
+  +stabilité, et selon le matériel +productivité, +hype ou -dette. Abonnement fibre payé chaque
+  semaine (`FIBRE_PLANS` : Essentielle 400 €, Pro 900 €, Dédiée 2 500 € en Série A ; +1 à +3 % de
+  productivité, +stabilité par jour), première semaine payée à la souscription, box fibre posée
+  dans une salle obligatoire ; trésorerie insuffisante à l'échéance : ligne coupée (`FIBRE_CUT`).
+  Changement d'offre et résiliation sans remboursement, coût compté dans la trésorerie en mois.
+  Commandes `SUBSCRIBE_FIBRE` / `CANCEL_FIBRE`, état `fibre` (null par défaut), `fibreSystem` en
+  dernier système, rendu `render/serverRoom.ts` (12 formes des assets manquants). Aucun tirage.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
