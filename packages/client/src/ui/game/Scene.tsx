@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DeskSounds } from '../../audio/deskSounds';
 import { GameRenderer } from '../../render/GameRenderer';
 import { useDecorThemes } from '../../save/decor';
 import { useCharacterPacks } from '../../save/packs';
@@ -26,6 +27,8 @@ export function Scene() {
     const overlay = overlayRef.current;
     if (!canvas || !overlay) return;
     let renderer: GameRenderer;
+    // Clics de souris et frappes au clavier des devs, réglés par le volume « Ambiance ».
+    const deskSounds = new DeskSounds(useSettings.getState().ambienceVolume);
     try {
       const settings = useSettings.getState();
       renderer = new GameRenderer({
@@ -43,8 +46,10 @@ export function Scene() {
         onPlace: (cell) => void useGame.getState().placeAt(cell),
         onBuildCell: (cell, wall) => useGame.getState().setBuildCell(cell, wall),
         onFps: (fps) => useGame.getState().setFps(fps),
+        onDeskActivity: (activity) => deskSounds.update(activity),
       });
     } catch {
+      deskSounds.dispose();
       // WebGL indisponible : l'interface reste utilisable sans la scène.
       return;
     }
@@ -84,6 +89,7 @@ export function Scene() {
       renderer.setReducedMotion(state.reducedMotion);
       renderer.setEdgePan(state.edgePan);
       renderer.setZoomSpeed(state.zoomSpeed);
+      deskSounds.setVolume(state.ambienceVolume);
     });
     // Costumes des packs de personnages activés au back-office (Noël, Halloween…).
     renderer.setCharacterPacks(useCharacterPacks.getState().enabled);
@@ -108,6 +114,7 @@ export function Scene() {
       unsubscribeDecor();
       setThumbnailSource(null);
       renderer.dispose();
+      deskSounds.dispose();
       rendererRef.current = null;
     };
   }, []);
