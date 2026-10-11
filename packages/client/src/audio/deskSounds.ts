@@ -1,9 +1,11 @@
 /**
  * Bruits des postes de travail : clics de souris et frappes au clavier des devs à leur bureau.
  *
- * Aucun fichier : les sons sont synthétisés en Web Audio (petit bruit filtré et résonance du
- * boîtier), comme le cahier des charges interdit d'inventer un nom de fichier. Deux couches,
- * réglées par le volume « Ambiance » des options :
+ * Les frappes viennent d'un vrai enregistrement de clavier fourni par l'équipe
+ * (`public/assets/sounds/clavier-1-mrboubou13al.mp3`), découpé en touches séparées au chargement
+ * (`sliceKeystrokes`). Les clics de souris sont synthétisés en Web Audio, comme les frappes tant
+ * que l'enregistrement n'est pas chargé (ou s'il manque). Deux couches, réglées par le volume
+ * « Ambiance » des options :
  * - des clics de souris très faibles pour les devs à leur ordinateur, à tous les zooms ;
  * - quand on zoome assez sur une zone, le clavier et la souris des devs proches du centre de la
  *   vue, plus forts au centre, placés à gauche ou à droite selon leur place à l'écran.
@@ -11,6 +13,9 @@
  * Le rendu fournit l'activité (`DeskActivity`) ; ce module ne lit jamais l'état du jeu. Le hasard
  * vient de `Math.random` : c'est du son, pas la partie, le RNG du jeu n'est jamais touché.
  */
+
+/** Enregistrement de frappe au clavier (relatif à la racine du site). */
+export const KEYBOARD_RECORDING = `${import.meta.env.BASE_URL}assets/sounds/clavier-1-mrboubou13al.mp3`;
 
 /** Un dev qui travaille à son ordinateur, vu depuis le centre de l'écran (en unités monde). */
 export interface DeskTypist {
@@ -40,8 +45,8 @@ export const DESK_SOUND = {
   faintMouse: 0.06,
   /** Clic de souris tout près, au centre de la vue zoomée. */
   nearMouse: 0.22,
-  /** Frappe au clavier tout près. */
-  nearKeys: 0.26,
+  /** Frappe au clavier tout près (l'enregistrement est fort : on le joue bas). */
+  nearKeys: 0.14,
   /** Devs entendus de loin (les plus proches du centre de l'écran). */
   maxFaint: 8,
   /** Claviers entendus en même temps quand on zoome. */
@@ -368,6 +373,48 @@ export function synthMouseClick(sampleRate: number, seed: number): Float32Array 
   return normalize(out);
 }
 
+/**
+ * Découpe un enregistrement de frappe en touches séparées : on repère chaque attaque (enveloppe
+ * qui dépasse 15 % du maximum, au moins 60 ms après la précédente), puis on garde le son jusqu'à
+ * l'attaque suivante (140 ms au plus, 50 ms au moins), avec un fondu en sortie. Chaque frappe est
+ * ramenée à un pic de 1 ; le volume se règle au mixage.
+ */
+export function sliceKeystrokes(samples: Float32Array, sampleRate: number): Float32Array[] {
+  const step = Math.max(1, Math.round(sampleRate * 0.002));
+  const envelope: number[] = [];
+  for (let i = 0; i < samples.length; i += step) {
+    let peak = 0;
+    for (let j = i; j < Math.min(samples.length, i + step); j++)
+      peak = Math.max(peak, Math.abs(samples[j] ?? 0));
+    envelope.push(peak);
+  }
+  const threshold = Math.max(...envelope, 0) * 0.15;
+  if (threshold <= 0) return [];
+  const onsets: number[] = [];
+  const minGap = Math.round(sampleRate * 0.06);
+  envelope.forEach((peak, index) => {
+    const at = index * step;
+    const previous = onsets[onsets.length - 1];
+    if (peak > threshold && (previous === undefined || at - previous >= minGap)) onsets.push(at);
+  });
+  const preRoll = Math.round(sampleRate * 0.002);
+  const fade = Math.round(sampleRate * 0.012);
+  const slices: Float32Array[] = [];
+  onsets.forEach((onset, index) => {
+    const start = Math.max(0, onset - preRoll);
+    const next = onsets[index + 1] ?? samples.length;
+    const end = Math.min(next - preRoll, start + Math.round(sampleRate * 0.14), samples.length);
+    if (end - start < sampleRate * 0.05) return;
+    const slice = samples.slice(start, end);
+    for (let i = 0; i < fade; i++) {
+      const k = slice.length - 1 - i;
+      slice[k] = (slice[k] ?? 0) * (i / fade);
+    }
+    slices.push(normalize(slice));
+  });
+  return slices;
+}
+
 /** Avance de programmation des sons sur l'horloge audio : pas de trou entre deux images. */
 const LOOKAHEAD_SECONDS = 0.12;
 /** En dessous, un son ne s'entend pas : on ne crée pas ses nœuds audio. */
@@ -439,9 +486,29 @@ export class DeskSounds {
       const context = new AudioContext();
       this.context = context;
       this.buffers = makeBuffers(context);
+      void this.loadRecording(context);
       if (context.state === 'suspended') void context.resume().catch(() => undefined);
     } catch {
       this.context = null; // Web Audio refusé : on reste muet
+    }
+  }
+
+  /** Remplace les frappes synthétisées par celles du vrai enregistrement, une fois chargé. */
+  private async loadRecording(context: AudioContext): Promise<void> {
+    try {
+      const response = await fetch(KEYBOARD_RECORDING);
+      if (!response.ok) return;
+      const decoded = await context.decodeAudioData(await response.arrayBuffer());
+      const slices = sliceKeystrokes(decoded.getChannelData(0), decoded.sampleRate);
+      if (slices.length === 0 || this.context !== context || !this.buffers) return;
+      const keys = slices.map((samples) => {
+        const buffer = context.createBuffer(1, samples.length, decoded.sampleRate);
+        buffer.getChannelData(0).set(samples);
+        return buffer;
+      });
+      this.buffers = { ...this.buffers, key: keys, space: keys };
+    } catch {
+      // Fichier absent ou illisible (hors ligne sans cache) : on garde les frappes synthétisées.
     }
   }
 

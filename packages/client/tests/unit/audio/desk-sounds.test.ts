@@ -4,6 +4,7 @@ import {
   DESK_SOUND,
   deskMix,
   synthKeystroke,
+  sliceKeystrokes,
   synthMouseClick,
   TypingRhythm,
   type DeskActivity,
@@ -117,5 +118,27 @@ describe('bruits de bureau : synthèse', () => {
     // Le son s'éteint : la fin est bien plus faible que le début.
     const tail = Math.max(...Array.from(key.slice(-200), Math.abs));
     expect(tail).toBeLessThan(0.05);
+  });
+});
+
+describe('bruits de bureau : enregistrement découpé', () => {
+  it('une frappe par attaque, avec un fondu en sortie', () => {
+    const rate = 8000;
+    const recording = new Float32Array(rate); // 1 s
+    for (const at of [0.1, 0.3, 0.65]) {
+      const start = Math.round(at * rate);
+      for (let i = 0; i < 200; i++) recording[start + i] = Math.sin(i) * Math.exp(-i / 40);
+    }
+    const slices = sliceKeystrokes(recording, rate);
+    expect(slices).toHaveLength(3);
+    for (const slice of slices) {
+      expect(slice.length).toBeLessThanOrEqual(Math.round(rate * 0.14));
+      expect(Math.max(...Array.from(slice, Math.abs))).toBeCloseTo(1);
+      expect(slice[slice.length - 1]).toBe(0);
+    }
+  });
+
+  it('rien à découper dans le silence', () => {
+    expect(sliceKeystrokes(new Float32Array(4000), 8000)).toEqual([]);
   });
 });
