@@ -161,8 +161,9 @@ describe('Le plan cède la place aux meubles posés', () => {
     expect(after.partitions).toContainEqual({ x: bench.x, z: bench.z - 1 });
     for (const fixture of after.fixtures ?? [])
       expect({ x: fixture.x, z: fixture.z }).not.toEqual({ x: wall.x, z: wall.z });
-    // Sa nouvelle case est bloquée comme avant.
-    expect(checkPlacement(after, [wall], glass(bench.x, bench.z))).toBe('wall');
+    // Sa nouvelle case est bloquée comme avant : le décor est un objet posé (voir l'adaptateur).
+    const placed = { ...glass(bench.x, bench.z), id: `annex:${bench.key}`, kind: bench.kind };
+    expect(checkPlacement(after, [wall, placed], glass(bench.x, bench.z))).toBe('overlap');
   });
 
   it('une nouvelle phase ne fait pas passer une cloison à travers un meuble', () => {
