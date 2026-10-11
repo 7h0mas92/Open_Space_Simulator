@@ -420,6 +420,9 @@ flowchart LR
   au plafond, posés case par case. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
   eux (angles, T, croix), sans jour entre deux murs, et se tournent, se repeignent et se revendent.
   Un mur qui enfermerait une zone est refusé, pour que chacun puisse toujours rejoindre son bureau.
+  Quand le bureau s'agrandit, le plan cède la place aux meubles déjà posés : une cloison qui
+  tomberait sur un meuble s'efface, et le décor des annexes se décale à côté au lieu de finir
+  dans un mur.
 - **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble, un
   projecteur fixé au plafond (sans prendre de place au sol ni sur un bureau) et
   trois écrans de projection déroulants (2, 3 et 4 cases). Allumé et tourné vers un écran, le

@@ -685,6 +685,14 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   arbre d'intérieur, fontaine zen (Déco), banc (Confort) ; le décor offert ne compte pas dans le
   maximum.
 
+- Le plan cède la place aux meubles posés : quand le bureau grandit (nouvelle phase, aile de
+  filiale), une cloison du plan qui tomberait sur un meuble s'efface (`yieldToItems` dans
+  `view/layout.ts`, appliqué par `layoutOf`), et le décor offert des annexes que le joueur n'a
+  pas déplacé évite le mobilier : il se décale vers la case libre la plus proche contre la
+  cloison du fond, ou disparaît s'il n'y en a aucune (`settleFixtures`, appelé par
+  `annexDecorViews` dans `view/adapter.ts`). Plus de banc dans un mur vitré. Aucun tirage, ni
+  commande, ni champ d'état.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
