@@ -468,9 +468,9 @@ flowchart LR
   du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
   lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
   le jeu reste jouable sans musique.
-- **Bruits de bureau** : quand un dev travaille à son ordinateur, on entend parfois un clic de
-  souris très faible ; en zoomant sur une zone, on entend aussi le clavier et la souris des devs
-  proches du centre de l'écran, placés à gauche ou à droite selon leur place. Les frappes viennent
+- **Bruits de bureau** : en zoomant sur une zone, on entend le clavier et la souris des devs qui
+  travaillent près du centre de l'écran, à la même distance, placés à gauche ou à droite selon
+  leur place ; en vue d'ensemble, le bureau reste silencieux. Les frappes viennent
   d'un vrai enregistrement de clavier, découpé en frappes séparées au chargement ; le clic de
   souris est synthétisé en Web Audio. Volume « Ambiance » des options, silence en pause et la nuit
   (`audio/deskSounds.ts`).
