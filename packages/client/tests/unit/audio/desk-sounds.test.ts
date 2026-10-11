@@ -105,7 +105,7 @@ describe('bruits de bureau : synthèse', () => {
     const key = synthKeystroke(48_000, 1);
     const space = synthKeystroke(48_000, 1, true);
     const mouse = synthMouseClick(48_000, 1);
-    expect(key.length).toBe(Math.round(48_000 * 0.2));
+    expect(key.length).toBe(Math.round(48_000 * 0.24));
     expect(mouse.length).toBe(Math.round(48_000 * 0.12));
     for (const samples of [key, space, mouse]) {
       const peak = Math.max(...Array.from(samples, Math.abs));

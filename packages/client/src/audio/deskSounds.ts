@@ -193,71 +193,6 @@ function bandpass(
   return out;
 }
 
-/** Une résonance qui s'éteint : fréquence (Hz), amplitude, durée de décroissance (s). */
-interface Mode {
-  readonly frequency: number;
-  readonly amplitude: number;
-  readonly decay: number;
-}
-
-/**
- * Un choc de touche à l'instant `at` : petit claquement de plastique (bruit filtré très bref) qui
- * fait sonner le capuchon et la plaque (résonances aiguës), puis le boîtier et le bureau (graves).
- */
-function strike(
-  out: Float32Array,
-  sampleRate: number,
-  at: number,
-  noise: Float32Array,
-  modes: readonly Mode[],
-  gain: number,
-  random: () => number,
-  noiseDecay = 0.0007,
-): void {
-  const start = Math.round(at * sampleRate);
-  for (const mode of modes) {
-    const phase = random() * Math.PI * 2;
-    const omega = (2 * Math.PI * mode.frequency) / sampleRate;
-    const end = Math.min(out.length, start + Math.round(mode.decay * 6 * sampleRate));
-    for (let i = start; i < end; i++) {
-      const t = (i - start) / sampleRate;
-      // Attaque de 0,3 ms : pas de clic numérique au début de la résonance.
-      const attack = Math.min(1, t / 0.0003);
-      out[i] =
-        (out[i] ?? 0) +
-        gain *
-          mode.amplitude *
-          attack *
-          Math.exp(-t / mode.decay) *
-          Math.sin(omega * (i - start) + phase);
-    }
-  }
-  const length = Math.min(noise.length, out.length - start);
-  for (let i = 0; i < length; i++) {
-    const t = i / sampleRate;
-    out[start + i] = (out[start + i] ?? 0) + gain * (noise[i] ?? 0) * Math.exp(-t / noiseDecay);
-  }
-}
-
-/**
- * Résonances d'une touche plate de clavier bureautique (touches à ciseaux sur dôme en caoutchouc,
- * plaque en métal) : capuchon fin et plaque (médium, vite étouffés par le dôme), puis le petit
- * « tock » mat du châssis. Rien qui ne sonne longtemps : c'est un son feutré.
- */
-function keyModes(random: () => number, scale: number, space: boolean): Mode[] {
-  const cap = [950, 1650, 2450, 3400].map((frequency, i) => ({
-    frequency: frequency * scale * (0.94 + random() * 0.12),
-    amplitude: (0.6 - i * 0.12) * (0.75 + random() * 0.5),
-    decay: (space ? 0.0045 : 0.003) * (0.75 + random() * 0.5),
-  }));
-  const chassis = [space ? 260 : 380, space ? 470 : 650].map((frequency, i) => ({
-    frequency: frequency * (0.92 + random() * 0.16),
-    amplitude: (space ? 0.6 : 0.4) - i * 0.12,
-    decay: (space ? 0.011 : 0.007) * (0.8 + random() * 0.4),
-  }));
-  return [...cap, ...chassis];
-}
-
 /**
  * Réverbération de bureau très courte : quelques échos du bureau, des murs et du plafond, de
  * plus en plus sourds, puis une petite traîne. Le son paraît joué dans une pièce, pas collé à l'oreille.
@@ -306,38 +241,103 @@ function lowpass(input: Float32Array, sampleRate: number, frequency: number): Fl
   return out;
 }
 
+/** Passe-haut à un pôle : garde le claquement, enlève le souffle grave. */
+function highpass(input: Float32Array, sampleRate: number, frequency: number): Float32Array {
+  const low = lowpass(input, sampleRate, frequency);
+  return input.map((sample, i) => sample - (low[i] ?? 0));
+}
+
+/** Additionne `source × gain` à `out` à partir de l'échantillon `start`. */
+function mixInto(out: Float32Array, source: Float32Array, start: number, gain: number): void {
+  for (let i = 0; i < source.length && start + i < out.length; i++)
+    out[start + i] = (out[start + i] ?? 0) + (source[i] ?? 0) * gain;
+}
+
+/** Résonateur : bruit d'impact filtré en bande étroite, ramené à un pic de 1. */
+function resonance(
+  impact: Float32Array,
+  sampleRate: number,
+  frequency: number,
+  q: number,
+): Float32Array {
+  return normalize(bandpass(impact, sampleRate, frequency, q));
+}
+
+/** Où sonne une touche : boîtier, plaque, capuchon, ressort, bureau (Hz). */
+interface KeyVoice {
+  readonly thud: number;
+  readonly hollow: number;
+  readonly plate: number;
+  readonly cap: number;
+  readonly spring: number;
+}
+
 /**
- * Frappe sur un clavier bureautique sans fil à touches plates, comme ceux des open spaces : un
- * « tap » feutré et court (le dôme en caoutchouc amortit le choc), le minuscule clic des ciseaux,
- * le « tock » mat du châssis, puis une remontée presque muette 60 à 110 ms plus tard. La barre
- * d'espace est un peu plus grave et plus creuse, avec le léger frottement de sa tige métallique.
- * Le tout dans un bureau.
+ * Un choc (la touche qui tape le fond ou qui remonte). Comme sur un vrai clavier, ce n'est pas une
+ * note mais du bruit : deux ou trois micro-impacts à 1 ou 2 ms d'écart (la tige dans le boîtier,
+ * le capuchon sur la plaque) font résonner le boîtier creux, la plaque, le capuchon, un peu le
+ * bureau, et le ressort qui « chante » à peine.
+ */
+function impactSound(
+  sampleRate: number,
+  random: () => number,
+  voice: KeyVoice,
+  hollowness: number,
+): Float32Array {
+  const impact = new Float32Array(Math.round(sampleRate * 0.12));
+  const hits = 2 + Math.floor(random() * 2);
+  let at = 0;
+  for (let h = 0; h < hits; h++) {
+    const length = Math.round(sampleRate * (0.0003 + random() * 0.0005));
+    const strength = h === 0 ? 1 : 0.35 + random() * 0.5;
+    const start = Math.round(at * sampleRate);
+    for (let i = 0; i < length && start + i < impact.length; i++)
+      impact[start + i] =
+        (impact[start + i] ?? 0) + strength * (random() * 2 - 1) * (1 - i / length);
+    at += 0.0008 + random() * 0.0016;
+  }
+  const out = new Float32Array(impact.length);
+  mixInto(out, normalize(highpass(impact, sampleRate, 2500)), 0, 0.28); // claquement sec
+  mixInto(out, resonance(impact, sampleRate, voice.cap, 10), 0, 0.45);
+  mixInto(out, resonance(impact, sampleRate, voice.plate, 16), 0, 0.55);
+  mixInto(out, resonance(impact, sampleRate, voice.hollow, 14), 0, 0.85 * hollowness);
+  mixInto(out, resonance(impact, sampleRate, voice.thud, 3), 0, 0.45 * hollowness);
+  mixInto(out, resonance(impact, sampleRate, voice.spring, 90), 0, 0.06);
+  return out;
+}
+
+/**
+ * Frappe d'un clavier mécanique de bureau : la touche descend et tape le fond (claquement bruité,
+ * boîtier creux, plaque et capuchon qui résonnent), puis remonte 45 à 120 ms plus tard (choc plus
+ * clair et un peu plus faible). Chaque touche a sa place sur la plaque, donc ses résonances. La
+ * barre d'espace sonne plus grave et plus creuse, avec le cliquetis de son stabilisateur. Le tout
+ * capté dans un bureau.
  */
 export function synthKeystroke(sampleRate: number, seed: number, space = false): Float32Array {
   const random = lcg(seed);
-  const out = new Float32Array(Math.round(sampleRate * 0.2));
-  const white = (seconds: number) =>
-    Float32Array.from({ length: Math.round(seconds * sampleRate) }, () => random() * 2 - 1);
-  // Chaque touche a sa place sur la plaque : ses résonances bougent un peu d'une touche à l'autre.
-  const scale = (space ? 0.72 : 1) * (0.9 + random() * 0.2);
-  const tap = bandpass(white(0.006), sampleRate, (space ? 900 : 1300) * scale, 0.7);
-  strike(out, sampleRate, 0, tap, keyModes(random, scale, space), 1, random, 0.0013);
-  // Clic des ciseaux, à peine audible, juste avant que la touche touche le fond.
-  const scissor = bandpass(white(0.0015), sampleRate, 3800 + random() * 800, 2.5);
-  strike(out, sampleRate, 0.0008, scissor, [], 0.14, random, 0.0004);
+  const out = new Float32Array(Math.round(sampleRate * 0.24));
+  const spread = () => 0.9 + random() * 0.2;
+  const low = space ? 0.62 : 1;
+  const voice: KeyVoice = {
+    thud: 170 * low * spread(),
+    hollow: 640 * low * spread(),
+    plate: 2150 * spread(),
+    cap: 3900 * (space ? 0.8 : 1) * spread(),
+    spring: 6800 * spread(),
+  };
+  mixInto(out, impactSound(sampleRate, random, voice, space ? 1.3 : 1), 0, 1);
   if (space) {
-    // Tige du stabilisateur qui frotte.
-    const wire = bandpass(white(0.006), sampleRate, 2600 + random() * 600, 3);
-    strike(out, sampleRate, 0.004 + random() * 0.002, wire, [], 0.12, random, 0.002);
+    for (const delay of [0.005 + random() * 0.003, 0.011 + random() * 0.004]) {
+      const rattle = impactSound(sampleRate, random, { ...voice, cap: 5200, plate: 3100 }, 0.2);
+      mixInto(out, rattle, Math.round(delay * sampleRate), 0.18);
+    }
   }
-  const release = 0.06 + random() * 0.05;
-  const upstroke = bandpass(white(0.003), sampleRate, 2200 * scale, 1);
-  const upModes = keyModes(random, scale * 1.15, space)
-    .filter((mode) => mode.frequency > 800)
-    .map((mode) => ({ ...mode, decay: mode.decay * 0.6 }));
-  strike(out, sampleRate, release, upstroke, upModes, space ? 0.16 : 0.1, random, 0.0008);
-  // Touches basses sous les doigts, rien de métallique : on garde le son rond.
-  return normalize(lowpass(room(out, sampleRate, random), sampleRate, 6000));
+  // Remontée : la tige revient en butée en haut, un choc plus clair, sans le creux du fond.
+  const upVoice = { ...voice, plate: voice.plate * 1.12, cap: voice.cap * 1.08 };
+  const release = Math.round((0.045 + random() * 0.075) * sampleRate);
+  mixInto(out, impactSound(sampleRate, random, upVoice, 0.35), release, 0.7 + random() * 0.2);
+  // Micro capté à un mètre : léger écho de la pièce, aigus extrêmes adoucis.
+  return normalize(lowpass(room(out, sampleRate, random), sampleRate, 7000));
 }
 
 /** Clic de souris : deux petits « tic » secs et aigus, l'appui puis le relâchement. */
