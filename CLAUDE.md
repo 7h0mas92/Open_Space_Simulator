@@ -361,7 +361,7 @@ fait, explique comment le tester, puis ATTENDS ma validation avant de continuer.
 Si tu vois une meilleure solution technique que celle demandée, propose-la avant de l'appliquer.
 Ne supprime jamais une fonctionnalité du périmètre sans mon accord.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 10 octobre 2026)
+# ÉTAT D'AVANCEMENT (mis à jour le 11 octobre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
@@ -649,12 +649,23 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   les objets du plafond ne se chevauchent qu'entre eux, jamais au-dessus d'un mur vitré, et ne
   bloquent pas le pathfinding (`ai/grid.ts`). Modèle `ceilingProjector` (`lensOf` pour le faisceau).
 
+- Bruits de bureau (`client/src/audio/deskSounds.ts`, option `onDeskActivity` de `GameRenderer`,
+  branché dans `ui/game/Scene.tsx`) : un dev en pose « travail » à un bureau à écran fait des clics
+  de souris très faibles à tous les zooms (8 devs au plus, les plus proches du centre) ; en zoomant
+  (plus petit côté de la vue de 8,5 à 5,5 unités, `closeness`), clavier et souris des devs proches
+  du centre, plus forts au centre et placés à gauche ou à droite (6 claviers au plus, `deskMix`).
+  Frappes tirées de l'enregistrement fourni par Melvin (`public/assets/sounds/clavier-1-mrboubou13al.mp3`,
+  précaché), découpé au chargement en 54 frappes (`sliceKeystrokes`) et joué bien plus bas que
+  l'original ; frappes synthétisées en secours. Clic de souris synthétisé en Web Audio. Rythme
+  `TypingRhythm` (rafales, relectures), `Math.random` seulement : le RNG du jeu n'est pas touché.
+  Muet en pause, pendant une carte d'événement, la nuit ; volume « Ambiance » des options.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
   https://7h0mas92.github.io/Open_Space_Simulator/ et se redéploie à chaque fusion.
 - Effets sonores et ambiance : le lecteur Howler est prêt (`audio/manifest.ts`), les fichiers
-  restent à déposer.
+  restent à déposer (les bruits de clavier et de souris sont faits).
 
 Développement local : `pnpm db:up`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm dev` (jeu sur
 localhost:5173, API et Swagger sur localhost:3000/docs). Base : `pnpm --filter @oss/server

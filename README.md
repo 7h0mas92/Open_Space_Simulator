@@ -449,6 +449,12 @@ flowchart LR
   du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
   lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
   le jeu reste jouable sans musique.
+- **Bruits de bureau** : quand un dev travaille à son ordinateur, on entend parfois un clic de
+  souris très faible ; en zoomant sur une zone, on entend aussi le clavier et la souris des devs
+  proches du centre de l'écran, placés à gauche ou à droite selon leur place. Les frappes viennent
+  d'un vrai enregistrement de clavier, découpé en frappes séparées au chargement ; le clic de
+  souris est synthétisé en Web Audio. Volume « Ambiance » des options, silence en pause et la nuit
+  (`audio/deskSounds.ts`).
 - **Poste de travail** : le bureau de dev et le bureau debout portent un clavier QWERTY à vraies
   touches (61 touches en relief avec leurs lettres, Entrée en bleu, un seul appel de dessin :
   `render/keyboard.ts`) et une souris Kenney à l'échelle du clavier sur un tapis de souris sombre ;
@@ -669,6 +675,9 @@ génère que des messages Slack.
 - Musiques : compositions originales de l'équipe du projet (tycoon, Détente, aria math), dans
   `packages/client/public/assets/music/` (voir le README de ce dossier). Elles appartiennent à leur
   auteur et ne sont pas sous licence CC0.
+- Bruits de bureau : frappes au clavier tirées d'un enregistrement fourni par l'équipe du projet
+  (`packages/client/public/assets/sounds/`, voir le README de ce dossier), clics de souris
+  synthétisés en Web Audio.
 - Personnages : 10 des 18 Blocky Characters sont hors thème (pirate, ninja, zombies, policier…)
   et ne sont jamais tirés. Chaque profil a sa liste de looks (`render/officeCharacters.ts`) :
   les personnages Kenney adaptés, complétés d'accessoires Three.js (barbe, écouteurs, béret, badge,
