@@ -374,6 +374,43 @@ test('mode construction : peindre un mur puis le tapisser', async ({ page }) => 
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
+test('mode construction : changer la matière et la couleur du sol', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: /Construction/ }).click();
+  await page.getByTestId('catalog-tab-floors').click();
+  await expect(page.getByTestId('floors')).toBeVisible();
+
+  // Une moquette bleu ardoise dans l'open space du garage.
+  await page.getByTestId('floor-material-carpet').click();
+  await expect(page.getByTestId('floor-material-carpet')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('floor-tint-slate').click();
+  const zone = page.getByTestId('floor-zone-open');
+  await zone.click();
+  await expect(zone).toBeDisabled();
+  await expect(zone).toHaveAccessibleName(/déjà en Moquette en dalles bleu ardoise/);
+
+  // Une autre teinte de la même matière se pose à nouveau ; le parquet ne propose que du bois.
+  await page.getByTestId('floor-tint-charcoal').click();
+  await expect(zone).toBeEnabled();
+  await page.getByTestId('floor-material-planks').click();
+  await expect(page.getByTestId('floor-tint-charcoal')).toHaveCount(0);
+  await expect(page.getByTestId('floor-tint-oak')).toBeVisible();
+  // Matière pas encore débloquée au garage.
+  await page.getByTestId('floor-material-marble').click();
+  await expect(zone).toBeDisabled();
+
+  const tooSmall = await page.evaluate(() =>
+    [...document.querySelectorAll('.build-hud button')]
+      .map((element) => element.getBoundingClientRect())
+      .filter(({ width, height }) => width > 0 && (width < 44 || height < 44)),
+  );
+  expect(tooSmall).toEqual([]);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
 test('la caméra zoome à la molette et au clavier', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Molette et clavier : ordinateur uniquement');
   await startAsGuest(page);

@@ -14,6 +14,7 @@ import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { useThumbnail } from './thumbnails';
 import { MonitorShop } from './MonitorShop';
+import { FloorShop } from './FloorShop';
 import { WallFinishes } from './WallFinishes';
 
 /** Icône de chaque rayon (et de ses objets tant que leur vignette 3D n'est pas prête). */
@@ -33,19 +34,25 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
 
 /**
  * Onglets du catalogue : les rayons de la boutique, le rayon Écrans (juste après le travail),
- * le rayon Murs (peintures et papiers peints, juste après les fenêtres), puis l'inventaire.
+ * le rayon Murs (peintures et papiers peints, juste après les fenêtres), le rayon Sols, puis
+ * l'inventaire.
  */
-type CatalogTab = ItemCategory | 'monitors' | 'walls' | 'inventory';
+type CatalogTab = ItemCategory | 'monitors' | 'walls' | 'floors' | 'inventory';
 const TABS: readonly CatalogTab[] = ITEM_CATEGORIES.flatMap((category): CatalogTab[] =>
   category === 'window'
-    ? [category, 'walls']
+    ? [category, 'walls', 'floors']
     : category === 'work'
       ? [category, 'monitors']
       : [category],
 ).concat('inventory');
 
-type SpecialTab = 'monitors' | 'walls' | 'inventory';
-const TAB_ICONS: Record<SpecialTab, string> = { monitors: '🖥️', walls: '🎨', inventory: '📦' };
+type SpecialTab = 'monitors' | 'walls' | 'floors' | 'inventory';
+const TAB_ICONS: Record<SpecialTab, string> = {
+  monitors: '🖥️',
+  walls: '🎨',
+  floors: '🟫',
+  inventory: '📦',
+};
 const isSpecial = (tab: CatalogTab): tab is SpecialTab => tab in TAB_ICONS;
 
 /**
@@ -98,6 +105,8 @@ export function Catalog({ view }: { view: GameView }) {
         <Inventory view={view} />
       ) : category === 'walls' ? (
         <WallFinishes view={view} />
+      ) : category === 'floors' ? (
+        <FloorShop view={view} />
       ) : category === 'monitors' ? (
         <MonitorShop view={view} />
       ) : (

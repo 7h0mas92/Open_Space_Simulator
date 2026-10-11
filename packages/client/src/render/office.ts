@@ -5,13 +5,20 @@
  * dessin par sous-maillage, quel que soit leur nombre (indispensable à 30 personnes en Licorne).
  */
 import * as THREE from 'three';
-import { DEFAULT_COMPUTER, type ComputerId, type WallFinishId, type WallZone } from '@oss/shared';
+import {
+  DEFAULT_COMPUTER,
+  type ComputerId,
+  type FloorFinish,
+  type FloorZone,
+  type WallFinishId,
+  type WallZone,
+} from '@oss/shared';
 import { accessCell, type ItemPlacement } from '../ai/grid';
 import { catalogItem, DESK_CHAIR, footprint } from '../view/catalog';
 import type { FurnitureColor } from '../view/colors';
 import { slotPosition } from '../view/placement';
 import type { OfficeLayout, RoomKind } from '../view/layout';
-import type { PlacedItemView, WallZoneView } from '../view/types';
+import type { FloorZoneView, PlacedItemView, WallZoneView } from '../view/types';
 import { wallLength, wallOpenings, type WallOpening, type WallSide } from '../view/windows';
 import { paintObject, type AssetLibrary } from './assets';
 import { buildFixture } from './annexDecor';
@@ -22,6 +29,7 @@ import {
   PARTITION_THICKNESS,
 } from './partitions';
 import { workstation } from './computers';
+import { buildFloorFinishes } from './floorFinishes';
 import { buildWallSkins } from './wallFinishes';
 import {
   buildMonitor,
@@ -283,6 +291,10 @@ export class OfficeView {
   /** Murs fins posés par le joueur : dessinés avec les cloisons, pour s'y raccorder. */
   private partitionItems: readonly PlacedItemView[] = [];
   private finishes: Partial<Record<WallZone, WallFinishId>> = {};
+  /** Sols posés par le joueur, une dalle par pièce : refaits quand le plan ou les sols changent. */
+  private readonly floors = new THREE.Group();
+  private floorFinishes: Partial<Record<FloorZone, FloorFinish>> = {};
+  private floorsKey = '';
   private readonly furniture = new THREE.Group();
   private readonly signs = new THREE.Group();
   private signsKey = '';
@@ -295,7 +307,14 @@ export class OfficeView {
   private buildId = 0;
 
   constructor(private readonly assets: AssetLibrary) {
-    this.root.add(this.structure, this.walls, this.furniture, this.signs, this.fixtures);
+    this.root.add(
+      this.structure,
+      this.floors,
+      this.walls,
+      this.furniture,
+      this.signs,
+      this.fixtures,
+    );
   }
 
   /** Reconstruit sol, murs et décor fixe si le plan change (phase, aile, annexe, décor). */
@@ -308,6 +327,7 @@ export class OfficeView {
     disposeChildren(this.structure);
     this.structure.add(buildFloor(layout));
     this.refreshWalls();
+    this.refreshFloors();
     void this.buildFixtures(layout);
   }
 
@@ -317,6 +337,29 @@ export class OfficeView {
     for (const { zone, finish } of zones) if (finish) finishes[zone] = finish;
     this.finishes = finishes;
     this.refreshWalls();
+  }
+
+  /** Sols des pièces (matière et teinte). */
+  setFloorFinishes(zones: readonly FloorZoneView[]): void {
+    const finishes: Partial<Record<FloorZone, FloorFinish>> = {};
+    for (const { zone, finish } of zones) if (finish) finishes[zone] = finish;
+    this.floorFinishes = finishes;
+    this.refreshFloors();
+  }
+
+  /** Reconstruit les dalles de sol si le plan ou les sols posés ont changé. */
+  private refreshFloors(): void {
+    const layout = this.layout;
+    if (!layout) return;
+    const finishes = Object.entries(this.floorFinishes)
+      .map(([zone, finish]) => `${zone}=${finish.material}:${finish.tint}`)
+      .join(',');
+    const key = `${this.layoutKey}|${finishes}`;
+    if (key === this.floorsKey) return;
+    this.floorsKey = key;
+    // Les matériaux sont partagés (cache de floorFinishes.ts) : on ne jette que les géométries.
+    disposeChildren(this.floors);
+    this.floors.add(buildFloorFinishes(layout, this.floorFinishes));
   }
 
   /**
@@ -530,6 +573,7 @@ export class OfficeView {
 
   dispose(): void {
     disposeChildren(this.structure);
+    disposeChildren(this.floors);
     disposeChildren(this.walls);
     disposeChildren(this.signs);
     disposeChildren(this.furniture, false);

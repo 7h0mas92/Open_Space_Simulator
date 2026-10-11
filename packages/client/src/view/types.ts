@@ -10,6 +10,9 @@
  */
 import type {
   AcquisitionOffer,
+  FloorFinish,
+  FloorMaterialId,
+  FloorZone,
   ComputerId,
   WallFinishId,
   WallZone,
@@ -571,6 +574,21 @@ export interface WallsView {
   readonly locked: readonly WallFinishId[];
 }
 
+/** Une pièce et son sol. */
+export interface FloorZoneView {
+  readonly zone: FloorZone;
+  /** Matière et teinte posées, `null` pour le sol d'origine de la pièce. */
+  readonly finish: FloorFinish | null;
+}
+
+/** Sols des pièces. */
+export interface FloorsView {
+  /** Pièces du bureau actuel, dans l'ordre d'affichage. */
+  readonly zones: readonly FloorZoneView[];
+  /** Matières pas encore débloquées à cette phase. */
+  readonly locked: readonly FloorMaterialId[];
+}
+
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
 export interface GameNotification {
   readonly tick: number;
@@ -644,6 +662,8 @@ export interface GameView {
   readonly pets: PetsView;
   /** Peintures et papiers peints des murs. */
   readonly walls: WallsView;
+  /** Sols des pièces. */
+  readonly floors: FloorsView;
   readonly canIpo: boolean;
   readonly result: GameResult | null;
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */
@@ -736,6 +756,7 @@ export type GameCommand =
   | { readonly type: 'fitMeetingRoom'; readonly format: MeetingFormatId }
   | { readonly type: 'clearMeetingRoom' }
   | { readonly type: 'coverWall'; readonly zone: WallZone; readonly finish: WallFinishId }
+  | { readonly type: 'coverFloor'; readonly zone: FloorZone; readonly finish: FloorFinish }
   | { readonly type: 'adoptPet'; readonly coat: PetCoat }
   | { readonly type: 'rehomePet'; readonly petId: string };
 

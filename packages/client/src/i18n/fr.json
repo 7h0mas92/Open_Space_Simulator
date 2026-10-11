@@ -572,6 +572,28 @@
       "left-auditorium": "Gauche · auditorium"
     }
   },
+  "floors": {
+    "tint": "Teinte",
+    "label": "{{material}} {{tint}}",
+    "applyTo": "Poser « {{floor}} » dans :",
+    "applyLabel": "Poser {{floor}} dans {{zone}} pour {{price}} €",
+    "alreadyLabel": "{{zone}} est déjà en {{floor}}",
+    "all": "Toutes les pièces ({{price}} €)",
+    "perRoom": "{{price}} € la pièce",
+    "zones": {
+      "open": "Open space",
+      "kitchen": "Cuisine",
+      "meeting": "Salle de réunion",
+      "lounge": "Coin détente",
+      "canteen": "Cantine",
+      "wing-1": "Aile 1",
+      "wing-2": "Aile 2",
+      "wing-3": "Aile 3",
+      "arcade": "Arcade",
+      "garden": "Jardin",
+      "auditorium": "Auditorium"
+    }
+  },
   "build": {
     "title": "Construction",
     "intro": "Choisis un objet à poser, ou touche un meuble du bureau pour le déplacer, le ranger ou le revendre.",
@@ -596,6 +618,7 @@
       "window": "Fenêtres",
       "partition": "Cloisons",
       "walls": "Murs",
+      "floors": "Sols",
       "accessory": "Accessoires",
       "monitors": "Écrans",
       "devices": "Périphériques"

@@ -46,7 +46,9 @@ import {
   type Stats,
   type TaskColumn,
   PHASES,
+  FLOOR_MATERIALS,
   WALL_FINISHES,
+  floorZones,
   wallZones,
 } from '@oss/shared';
 import { wallOffice } from '../simulation/walls';
@@ -103,6 +105,7 @@ import type {
   MeetingRoomView,
   PetsView,
   WallsView,
+  FloorsView,
   GaugeName,
   KanbanColumn,
   LeadershipView,
@@ -676,6 +679,19 @@ function wallsView(state: GameState): WallsView {
   };
 }
 
+function floorsView(state: GameState): FloorsView {
+  const phase = PHASES.indexOf(state.phase);
+  return {
+    zones: floorZones(wallOffice(state)).map((zone) => ({
+      zone,
+      finish: state.floors[zone] ?? null,
+    })),
+    locked: FLOOR_MATERIALS.filter((material) => PHASES.indexOf(material.minPhase) > phase).map(
+      (material) => material.id,
+    ),
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -745,6 +761,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     meetingRoom: meetingRoomView(state),
     pets: petsView(state),
     walls: wallsView(state),
+    floors: floorsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
       state.phase === 'UNICORN' &&
@@ -904,6 +921,13 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'CLEAR_MEETING_ROOM' };
     case 'coverWall':
       return { type: 'COVER_WALL', zone: command.zone, finish: command.finish };
+    case 'coverFloor':
+      return {
+        type: 'COVER_FLOOR',
+        zone: command.zone,
+        material: command.finish.material,
+        tint: command.finish.tint,
+      };
     case 'adoptPet':
       return { type: 'ADOPT_PET', coat: command.coat };
     case 'rehomePet':

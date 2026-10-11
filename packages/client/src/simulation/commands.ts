@@ -26,6 +26,7 @@ import { answerRaise } from './raises';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
+import { coverFloor } from './floors';
 import { coverWall } from './walls';
 
 const fail = (error: Extract<CommandResult, { ok: false }>['error']): CommandResult => ({
@@ -140,6 +141,8 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
         : sellStored(state, command.itemId, command.color);
     case 'COVER_WALL':
       return coverWall(state, command.zone, command.finish);
+    case 'COVER_FLOOR':
+      return coverFloor(state, command.zone, { material: command.material, tint: command.tint });
     case 'START_PITCH':
       return startPitch(state, ctx);
     case 'PITCH_ARGUMENT':
