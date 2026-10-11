@@ -9,6 +9,7 @@ import {
   TypingRhythm,
   type DeskActivity,
 } from '../../../src/audio/deskSounds';
+import { screenMountOf } from '../../../src/render/screens';
 
 /** Vue d'ensemble (bureau entier) et vue zoomée sur une zone. */
 const WIDE = { halfWidth: 12, halfHeight: 7 };
@@ -140,5 +141,14 @@ describe('bruits de bureau : enregistrement découpé', () => {
 
   it('rien à découper dans le silence', () => {
     expect(sliceKeystrokes(new Float32Array(4000), 8000)).toEqual([]);
+  });
+});
+
+describe('bureaux qui font du bruit', () => {
+  it('les postes à écran (dev, debout, garage) ont une dalle, donc des bruits', () => {
+    for (const kind of ['desk', 'standing-desk', 'ikea-desk']) {
+      expect(screenMountOf({ kind }), kind).not.toBeNull();
+    }
+    expect(screenMountOf({ kind: 'sofa' })).toBeNull();
   });
 });

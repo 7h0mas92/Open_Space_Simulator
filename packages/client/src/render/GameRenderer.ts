@@ -62,7 +62,7 @@ import { accessoryMatrix, itemMatrix, OfficeView } from './office';
 import { OfficeLights } from './officeLights';
 import { pixelRatioFor, QUALITY_PRESETS, type QualityLevel } from './quality';
 import { ProjectionView, unrolledPreview } from './projection';
-import { SCREEN_MOUNTS, ScreenGlow } from './screens';
+import { ScreenGlow, screenMountOf } from './screens';
 import { SkylineView } from './skyline';
 
 export type PickTarget =
@@ -816,13 +816,14 @@ export class GameRenderer {
     const typists: DeskActivity['typists'][number][] = [];
     const view = this.view;
     if (running && view) {
-      const kinds = new Map(view.items.map((item) => [item.id, item.kind]));
+      const items = new Map(view.items.map((item) => [item.id, item]));
       const point = this.deskPoint;
       for (const agent of this.current) {
         if (!agent.visible || agent.pose !== 'work' || !agent.using) continue;
-        const kind = kinds.get(agent.using);
+        const item = items.get(agent.using);
         const character = this.characters.get(agent.id);
-        if (!kind || !SCREEN_MOUNTS[kind] || !character) continue;
+        // Même règle que l'écran allumé : un bureau qui a une dalle (écran choisi ou portable).
+        if (!item || !screenMountOf(item) || !character) continue;
         point.set(character.root.position.x, 1, character.root.position.z).project(this.camera);
         typists.push({ id: agent.id, x: point.x * halfWidth, y: point.y * halfHeight });
       }
