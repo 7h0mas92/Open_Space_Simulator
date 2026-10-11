@@ -572,6 +572,28 @@
       "left-auditorium": "Left · auditorium"
     }
   },
+  "floors": {
+    "tint": "Shade",
+    "label": "{{material}}, {{tint}}",
+    "applyTo": "Lay “{{floor}}” in:",
+    "applyLabel": "Lay {{floor}} in: {{zone}} for €{{price}}",
+    "alreadyLabel": "{{zone}} already has {{floor}}",
+    "all": "Every room (€{{price}})",
+    "perRoom": "€{{price}} per room",
+    "zones": {
+      "open": "Open space",
+      "kitchen": "Kitchen",
+      "meeting": "Meeting room",
+      "lounge": "Lounge",
+      "canteen": "Canteen",
+      "wing-1": "Wing 1",
+      "wing-2": "Wing 2",
+      "wing-3": "Wing 3",
+      "arcade": "Arcade",
+      "garden": "Garden",
+      "auditorium": "Auditorium"
+    }
+  },
   "build": {
     "title": "Build mode",
     "intro": "Pick an item to place, or tap a piece of furniture to move, store or sell it.",
@@ -596,6 +618,7 @@
       "window": "Windows",
       "partition": "Partitions",
       "walls": "Walls",
+      "floors": "Floors",
       "accessory": "Accessories",
       "monitors": "Monitors",
       "devices": "Devices"

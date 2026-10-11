@@ -29,6 +29,7 @@ import { addMoney, devIds } from './helpers';
 import { meetingFormat } from './meetings';
 import { petEffects } from './pets';
 import { projectionEffects } from './projection';
+import { floorEffects } from './floors';
 import { wallEffects } from './walls';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
@@ -617,6 +618,11 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
   effects.moral += walls.moral;
   effects.quality += walls.quality;
   effects.hypePerDay += walls.hypePerDay;
+  // Sols : un peu de moral, parfois de la qualité ou de la hype.
+  const floors = floorEffects(state);
+  effects.moral += floors.moral;
+  effects.quality += floors.quality;
+  effects.hypePerDay += floors.hypePerDay;
   const inOffice = devIds(state).filter((id) => !(id in state.components.remote));
   effects.seatProductivity = distribute(productivitySeats, inOffice);
   effects.seatEnergySaving = distribute(energySeats, inOffice);

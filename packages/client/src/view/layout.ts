@@ -279,63 +279,71 @@ function floorCells(items: readonly FloorItem[]): Set<string> {
 }
 
 /**
- * Le plan cède la place au mobilier déjà posé. Le plan change sous les meubles quand le bureau
- * grandit : une nouvelle phase déplace les cloisons, une aile de filiale décale le décor fixe
- * des annexes. Un meuble ne doit jamais se retrouver dans un mur ou sous un banc :
- * - une cloison du plan sur une case meublée s'efface (le meuble est dans l'embrasure) ;
- * - un objet du décor fixe sur une case meublée se pousse vers la case libre la plus proche,
- *   toujours contre la cloison du fond (pas devant une porte ni contre un autre objet du
- *   décor, sans gêner un meuble voisin), ou disparaît s'il n'y en a aucune.
- * Fonction pure : mêmes meubles, même plan. Sans conflit, le plan est rendu tel quel.
+ * Les cloisons du plan cèdent la place au mobilier déjà posé. Le plan change sous les meubles
+ * quand le bureau grandit : une nouvelle phase déplace les cloisons. Un meuble ne doit jamais se
+ * retrouver dans un mur : une cloison du plan sur une case meublée s'efface (le meuble est dans
+ * l'embrasure). Fonction pure ; sans conflit, le plan est rendu tel quel.
  */
 export function yieldToItems(layout: OfficeLayout, items: readonly FloorItem[]): OfficeLayout {
   const taken = floorCells(items);
-  if (taken.size === 0) return layout;
-  const key = (x: number, z: number) => `${x},${z}`;
-  const fixtures = layout.fixtures ?? [];
-  const blockedPartitions = layout.partitions.some((cell) => taken.has(key(cell.x, cell.z)));
-  const blockedFixtures = fixtures.some((fixture) => taken.has(key(fixture.x, fixture.z)));
-  if (!blockedPartitions && !blockedFixtures) return layout;
+  const free = (cell: Cell) => !taken.has(`${cell.x},${cell.z}`);
+  if (layout.partitions.every(free)) return layout;
+  return { ...layout, partitions: layout.partitions.filter(free) };
+}
 
-  const partitions = layout.partitions.filter((cell) => !taken.has(key(cell.x, cell.z)));
-  const wall = new Set(partitions.map((cell) => key(cell.x, cell.z)));
+/**
+ * Place d'origine du décor offert avec les annexes, compte tenu du mobilier déjà posé. Une aile
+ * de filiale ou une nouvelle phase décale ce décor : il pourrait tomber sur un meuble (le banc
+ * du jardin dans un mur vitré). Un objet dont la case est prise se pousse vers la case libre la
+ * plus proche, toujours contre la cloison du fond (pas devant une porte, ni contre un autre
+ * objet du décor, sans gêner un meuble voisin), ou disparaît s'il n'y en a aucune.
+ * `items` : le mobilier et le décor que le joueur a déjà déplacé. Fonction pure.
+ */
+export function settleFixtures(
+  layout: OfficeLayout,
+  items: readonly FloorItem[],
+): readonly Fixture[] {
+  const fixtures = layout.fixtures ?? [];
+  const taken = floorCells(items);
+  const key = (x: number, z: number) => `${x},${z}`;
+  if (fixtures.every((fixture) => !taken.has(key(fixture.x, fixture.z)))) return fixtures;
+
+  const wall = new Set(yieldToItems(layout, items).partitions.map((cell) => key(cell.x, cell.z)));
   const placed = new Set(
     fixtures
       .filter((fixture) => !taken.has(key(fixture.x, fixture.z)))
       .map((fixture) => key(fixture.x, fixture.z)),
   );
-  const free = (x: number, z: number) =>
-    x > 0 && x < layout.width - 1 && !taken.has(key(x, z)) && !wall.has(key(x, z));
   // Contre la cloison du fond sur trois cases (pas devant une porte), loin des autres objets
-  // du décor, et aucun meuble autour (on ne bouche pas l'accès à un bureau).
+  // du décor, et aucun meuble sur la case ni autour (on ne bouche pas l'accès à un bureau).
   const fits = (x: number, z: number) =>
-    free(x, z) &&
+    x > 0 &&
+    x < layout.width - 1 &&
+    !wall.has(key(x, z)) &&
     [x - 1, x, x + 1].every((wx) => wall.has(key(wx, z - 1))) &&
-    !placed.has(key(x - 1, z)) &&
-    !placed.has(key(x, z)) &&
-    !placed.has(key(x + 1, z)) &&
-    [key(x - 1, z), key(x + 1, z), key(x, z + 1)].every((cell) => !taken.has(cell));
+    [x - 1, x, x + 1].every((nx) => !placed.has(key(nx, z))) &&
+    [key(x, z), key(x - 1, z), key(x + 1, z), key(x, z + 1)].every((cell) => !taken.has(cell));
 
-  const moved: Fixture[] = [];
+  const settled: Fixture[] = [];
   for (const fixture of fixtures) {
     if (!taken.has(key(fixture.x, fixture.z))) {
-      moved.push(fixture);
+      settled.push(fixture);
       continue;
     }
     for (let distance = 1; distance < layout.width; distance++) {
       const x = [fixture.x - distance, fixture.x + distance].find((cx) => fits(cx, fixture.z));
       if (x === undefined) continue;
-      moved.push({ ...fixture, x });
+      settled.push({ ...fixture, x });
       placed.add(key(x, fixture.z));
       break;
     }
   }
-  return { ...layout, partitions, fixtures: moved };
+  return settled;
 }
 
 /**
  * Plan du bureau d'un instantané : phase, ailes des filiales, annexes et décor des pièces,
- * qui cède la place au mobilier déjà posé (voir `yieldToItems`).
+ * dont les cloisons cèdent la place au mobilier déjà posé (voir `yieldToItems`).
  */
 export function layoutOf(view: {
   readonly phase: Phase;

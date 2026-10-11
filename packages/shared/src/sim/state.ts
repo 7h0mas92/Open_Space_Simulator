@@ -18,6 +18,7 @@ import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
+import { FloorFinishesSchema } from './floors.js';
 import { WallFinishesSchema } from './walls.js';
 import { AnnexDecorSchema } from './annexDecor.js';
 
@@ -370,6 +371,8 @@ export const GameStateSchema = z.object({
   inventory: z.array(StoredItemSchema).max(INVENTORY_MAX).default([]),
   /** Peintures et papiers peints des murs, par zone (absents des vieilles sauvegardes). */
   walls: WallFinishesSchema.default({}),
+  /** Sols posés, par pièce (absents des vieilles sauvegardes). */
+  floors: FloorFinishesSchema.default({}),
   /** Décor des annexes déplacé par le joueur, par clé (absent des vieilles sauvegardes). */
   annexDecor: AnnexDecorSchema.default({}),
   /** Chats du bureau (absents des sauvegardes d'avant leur ajout). */

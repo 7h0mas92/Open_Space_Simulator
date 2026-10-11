@@ -21,6 +21,7 @@ export * from './sim/state.js';
 export * from './sim/taskFlow.js';
 export * from './sim/teamRoles.js';
 export * from './sim/ventures.js';
+export * from './sim/floors.js';
 export * from './sim/walls.js';
 export * from './sim/annexDecor.js';
 export * from './data/cards/index.js';
