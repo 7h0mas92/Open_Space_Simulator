@@ -9,8 +9,8 @@ import type { PlacedItemView } from '../../../src/view/types';
 import {
   ROOM_KINDS,
   ROOM_STYLES,
-  layoutOf,
   officeLayout,
+  settleFixtures,
   yieldToItems,
   roomAt,
   type Cell,
@@ -126,13 +126,6 @@ describe('Décor des pièces', () => {
 });
 
 describe('Le plan cède la place aux meubles posés', () => {
-  const view = (phase: (typeof PHASES)[number], wings: number, items: PlacedItemView[]) => ({
-    phase,
-    seed: 'graine',
-    group: { wings },
-    funding: { annexes: 2 },
-    items,
-  });
   const glass = (x: number, z: number): PlacedItemView =>
     ({
       id: `mur-${x}-${z}`,
@@ -147,22 +140,26 @@ describe('Le plan cède la place aux meubles posés', () => {
   it('une aile de filiale ne pose plus le banc du jardin dans un mur vitré', () => {
     // Avec une filiale, la case est libre : le mur vitré y est accepté.
     const before = officeLayout('UNICORN', 1, 2, 'graine');
-    const target = benchOf(officeLayout('UNICORN', 2, 2, 'graine'))!;
+    const after = officeLayout('UNICORN', 2, 2, 'graine');
+    const target = benchOf(after)!;
     expect(benchOf(before)).not.toEqual(target);
     const wall = glass(target.x, target.z);
     expect(checkPlacement(before, [], wall)).toBeNull();
 
     // Une deuxième filiale décale le décor : le banc tomberait dans le mur, il se pousse.
-    const after = layoutOf(view('UNICORN', 2, [wall]));
-    const bench = benchOf(after)!;
+    const settled = settleFixtures(after, [wall]);
+    const bench = settled.find((f) => f.kind === 'bench')!;
     expect(bench).toBeDefined();
-    expect(bench).not.toMatchObject({ x: wall.x, z: wall.z });
     expect(bench.z).toBe(target.z);
+    expect(Math.abs(bench.x - wall.x)).toBeGreaterThan(1);
     expect(after.partitions).toContainEqual({ x: bench.x, z: bench.z - 1 });
-    for (const fixture of after.fixtures ?? [])
+    for (const fixture of settled)
       expect({ x: fixture.x, z: fixture.z }).not.toEqual({ x: wall.x, z: wall.z });
-    // Sa nouvelle case est bloquée comme avant.
-    expect(checkPlacement(after, [wall], glass(bench.x, bench.z))).toBe('wall');
+    // Les autres objets du décor restent à leur place.
+    expect(settled.filter((f) => f.kind !== 'bench')).toEqual(
+      (after.fixtures ?? []).filter((f) => f.kind !== 'bench'),
+    );
+    expect(settleFixtures(after, [])).toBe(after.fixtures);
   });
 
   it('une nouvelle phase ne fait pas passer une cloison à travers un meuble', () => {
