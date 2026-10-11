@@ -86,6 +86,14 @@ export const CommandSchema = z.discriminatedUnion('type', [
     y: z.number().int().nonnegative(),
     rotation: z.number().int().min(0).max(3),
   }),
+  /** Déplace ou tourne un objet du décor offert avec une annexe (voir `annexDecor.ts`). */
+  z.object({
+    type: z.literal('MOVE_ANNEX_DECOR'),
+    key: z.string().max(8),
+    x: z.number().int().nonnegative(),
+    y: z.number().int().nonnegative(),
+    rotation: z.number().int().min(0).max(3),
+  }),
   /** Allume ou éteint un projecteur : allumé, il déroule l'écran posé en face de lui. */
   z.object({ type: z.literal('SWITCH_PROJECTOR'), furnitureId: EntityIdSchema, on: z.boolean() }),
   z.object({ type: z.literal('SELL_FURNITURE'), furnitureId: EntityIdSchema }),

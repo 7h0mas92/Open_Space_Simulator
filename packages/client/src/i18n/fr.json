@@ -605,6 +605,7 @@
     "locked": "Débloqué en {{phase}}",
     "soldOut": "Maximum atteint ({{max}})",
     "tooExpensive": "Pas assez de trésorerie",
+    "annexDecor": "Décor offert avec l’annexe : tu peux le déplacer et le tourner, mais il n’a pas d’effet et ne se revend pas. Le même objet est en vente dans la boutique.",
     "rotate": "Tourner",
     "sell": "Revendre ({{price}} €)",
     "move": "Déplacer",
@@ -773,7 +774,6 @@
       "mug": "Mug de dev : anse, bande colorée, café froid et cuillère",
       "rubberDuck": "Canard en plastique : ailes, queue, bec et yeux",
       "trophy": "Trophée de hackathon : socle à deux étages, plaque, coupe à anses et étoile",
-      "annexDecor": "Décor des annexes du bureau : bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène, pupitre et écran de projection en formes Three.js (banc, plante en pot et enceintes du Furniture Kit)",
       "deskEarbuds": "Écouteurs sans fil à réduction de bruit : étui ouvert, deux écouteurs rangés et un posé à côté",
       "deskLamp": "Lampe d'architecte : socle lesté, bras à ressorts, abat-jour et ampoule",
       "bookStack": "Pile de livres reliés, tranches et marque-page",
@@ -826,7 +826,15 @@
       "ceilingProjector": "Vidéoprojecteur de plafond : platine, tige, croisillon et boîtier retourné",
       "projectionScreenSmall": "Écran de projection déroulant (petit) : caisson alu, pieds, toile, mât et barre animés",
       "projectionScreenMedium": "Écran de projection déroulant (moyen) : caisson alu, pieds, toile, mât et barre animés",
-      "projectionScreenLarge": "Écran de projection déroulant (grand) : caisson alu, pieds, toile, mât et barre animés"
+      "projectionScreenLarge": "Écran de projection déroulant (grand) : caisson alu, pieds, toile, mât et barre animés",
+      "arcadeCabinet": "Borne d'arcade : caisson violet, écran et fronton lumineux, joystick et boutons",
+      "pinballMachine": "Flipper : plateau incliné éclairé, fronton orange et pieds métalliques",
+      "neonSign": "Enseigne néon : anneau rose et barre bleue lumineux sur pied",
+      "indoorTree": "Arbre d'intérieur : grand pot en terre cuite, tronc et feuillage low-poly",
+      "zenFountain": "Fontaine zen : vasque en pierre, eau lumineuse et jet",
+      "smallStage": "Petite scène en bois avec son micro sur pied",
+      "lectern": "Pupitre de conférence en bois, plateau incliné et micro",
+      "auditoriumScreen": "Écran géant d'auditorium : dalle lumineuse sur deux mâts"
     },
     "back": "Retour"
   },

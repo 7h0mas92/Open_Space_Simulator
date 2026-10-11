@@ -8,12 +8,14 @@
  */
 import {
   ANNEXES,
+  ANNEX_DECOR,
   ANNEX_KINDS,
+  annexDecorKey,
   VENTURES,
   hashString,
   officeDepthWithAnnexes,
   officeWidthWithWings,
-  type AnnexKind,
+  type FurnitureId,
   type Phase,
 } from '@oss/shared';
 
@@ -59,24 +61,15 @@ export interface Room {
   readonly style?: number;
 }
 
-/** Objets fixes d'une annexe (bornes d'arcade, arbres, scène) : décor sur une case bloquée. */
-export const FIXTURE_KINDS = [
-  'arcade-cabinet',
-  'pinball',
-  'neon-sign',
-  'tree',
-  'planter',
-  'bench',
-  'fountain',
-  'stage',
-  'lectern',
-  'speaker',
-  'projection-screen',
-] as const;
-export type FixtureKind = (typeof FIXTURE_KINDS)[number];
-
+/**
+ * Objet du décor offert avec une annexe (borne d'arcade, arbre, scène…), à sa place d'origine.
+ * L'adaptateur en fait un objet posé (`PlacedItemView.annexDecor`), déplaçable comme le mobilier.
+ */
 export interface Fixture {
-  readonly kind: FixtureKind;
+  /** Clé de l'objet (voir `annexDecorKey`). */
+  readonly key: string;
+  /** Identifiant du catalogue : l'objet a le même rendu que celui de la boutique. */
+  readonly kind: FurnitureId;
   readonly x: number;
   readonly z: number;
 }
@@ -90,7 +83,7 @@ export interface OfficeLayout {
   readonly rooms: readonly Room[];
   /** Cases occupées par une cloison intérieure. */
   readonly partitions: readonly Cell[];
-  /** Décor fixe des annexes : ces cases sont bloquées comme des cloisons. */
+  /** Décor offert avec les annexes, à sa place d'origine (voir `Fixture`). */
   readonly fixtures?: readonly Fixture[];
   /** Case d'entrée : les personnages y apparaissent et y disparaissent. */
   readonly entrance: Cell;
@@ -174,13 +167,6 @@ const LAYOUTS: Record<Phase, OfficeLayout> = {
   // La phase finale garde le décor de la Licorne.
   END: { ...UNICORN, phase: 'END' },
 };
-/** Décor fixe d'une annexe, aligné contre sa cloison du fond (hors des portes). */
-const ANNEX_FIXTURES: Record<AnnexKind, readonly FixtureKind[]> = {
-  arcade: ['arcade-cabinet', 'arcade-cabinet', 'neon-sign', 'pinball', 'arcade-cabinet'],
-  garden: ['tree', 'bench', 'fountain', 'planter', 'tree'],
-  auditorium: ['speaker', 'stage', 'projection-screen', 'lectern', 'speaker'],
-};
-
 /** Portes d'une cloison horizontale : près des deux bords, décalées si une cloison les bouche. */
 function annexDoors(width: number, blocked: (cell: Cell) => boolean, z: number): number[] {
   return [2, width - 4].map((x) => (blocked({ x, z: z - 1 }) ? Math.min(width - 2, x + 1) : x));
@@ -230,16 +216,16 @@ export function officeLayout(phase: Phase, wings = 0, annexes = 0, seed = ''): O
     const doors = annexDoors(width, blocked, wall);
     partitions.push(...wallX(wall, 0, width - 1, doors));
     rooms.push({ kind, x: 0, z: wall + 1, width, depth: ANNEXES.depth - 1 });
-    // Décor fixe contre la cloison, une case sur deux, loin des portes.
+    // Décor offert, contre la cloison, une case sur deux, loin des portes.
     const slots: number[] = [];
     for (let x = 4; x <= width - 6; x += 2)
       if (doors.every((door) => Math.abs(door - x) > 1)) slots.push(x);
-    const props = ANNEX_FIXTURES[kind];
+    const props = ANNEX_DECOR[kind];
     // Les objets se répartissent sur toute la largeur de la salle.
     props.forEach((fixture, index) => {
       const slot = slots[Math.floor(((index + 0.5) * slots.length) / props.length)];
       if (slot !== undefined && !fixtures.some((f) => f.x === slot && f.z === wall + 1))
-        fixtures.push({ kind: fixture, x: slot, z: wall + 1 });
+        fixtures.push({ key: annexDecorKey(i, index), kind: fixture, x: slot, z: wall + 1 });
     });
   }
   if (count === 0 && annexCount === 0 && !seed) return base;
@@ -252,11 +238,6 @@ export function officeLayout(phase: Phase, wings = 0, annexes = 0, seed = ''): O
     partitions,
     fixtures,
   };
-}
-
-/** Cases bloquées par le décor fixe des annexes. */
-export function fixtureCells(layout: OfficeLayout): readonly Cell[] {
-  return layout.fixtures ?? [];
 }
 
 export function roomAt(layout: OfficeLayout, cell: Cell): Room | undefined {

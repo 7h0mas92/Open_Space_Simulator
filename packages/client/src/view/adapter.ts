@@ -50,6 +50,7 @@ import {
   wallZones,
 } from '@oss/shared';
 import { wallOffice } from '../simulation/walls';
+import { officeLayout } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
@@ -407,7 +408,34 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
   return { model, size, mount };
 }
 
+/**
+ * Décor offert avec les annexes : des objets posés comme les autres, à leur place d'origine ou
+ * là où le joueur les a déplacés. Sans valeur de revente : ils se déplacent et se tournent
+ * seulement (identifiant `annex:<clé>`, jamais celui d'une entité).
+ */
+function annexDecorViews(state: GameState): PlacedItemView[] {
+  const { phase, annexes, wings } = wallOffice(state);
+  return (officeLayout(phase, wings, annexes, state.seed).fixtures ?? []).map((fixture) => {
+    const moved = state.annexDecor[fixture.key];
+    return {
+      id: `annex:${fixture.key}`,
+      kind: fixture.kind,
+      x: moved?.x ?? fixture.x,
+      z: moved?.y ?? fixture.z,
+      rotation: ((moved?.rotation ?? 0) % 4) as Rotation,
+      resale: 0,
+      color: 'natural',
+      host: null,
+      annexDecor: fixture.key,
+    };
+  });
+}
+
 function itemViews(state: GameState): PlacedItemView[] {
+  return [...furnitureViews(state), ...annexDecorViews(state)];
+}
+
+function furnitureViews(state: GameState): PlacedItemView[] {
   return Object.entries(state.components.furniture).map(([id, item]) => ({
     id,
     kind: item.itemId,
@@ -833,6 +861,18 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
           hostId: item.host.id,
           slot: item.host.slot,
           rotation: (item.rotation + 1) % 4,
+        };
+      // Le décor d'une annexe n'est pas une entité : il a sa propre commande.
+      if (item.annexDecor !== undefined)
+        return {
+          type: 'MOVE_ANNEX_DECOR',
+          key: item.annexDecor,
+          x: command.type === 'moveItem' ? command.x : item.x,
+          y: command.type === 'moveItem' ? command.z : item.z,
+          rotation:
+            command.type === 'moveItem'
+              ? (command.rotation ?? item.rotation)
+              : (item.rotation + 1) % 4,
         };
       return command.type === 'moveItem'
         ? {
