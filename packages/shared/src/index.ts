@@ -12,6 +12,7 @@ export * from './sim/computers.js';
 export * from './sim/funding.js';
 export * from './sim/furniture.js';
 export * from './sim/meetings.js';
+export * from './sim/monitors.js';
 export * from './sim/pets.js';
 export * from './sim/pitch.js';
 export * from './sim/projection.js';

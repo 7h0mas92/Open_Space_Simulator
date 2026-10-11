@@ -5,7 +5,12 @@ import {
   officeDepthWithAnnexes,
   annexCount,
   PHASES,
+  DEFAULT_MONITOR,
   getFurniture,
+  getMonitor,
+  monitorEffects,
+  monitorPrice,
+  sameMonitor,
   getComputer,
   hasComputer,
   type CommandResult,
@@ -14,6 +19,8 @@ import {
   type FurnitureColor,
   type FurnitureDefinition,
   type GameState,
+  type MonitorChoice,
+  type MonitorSetup,
   type Phase,
 } from '@oss/shared';
 import { addComponent, createEntity, destroyEntity, query } from './ecs';
@@ -259,6 +266,7 @@ export function storeFurniture(state: GameState, furnitureId: EntityId): Command
       itemId: item.itemId,
       purchasePrice: item.purchasePrice,
       ...(item.color ? { color: item.color } : {}),
+      ...(item.monitor ? { monitor: { ...item.monitor } } : {}),
       ...(item.computer ? { computer: item.computer } : {}),
     });
     destroyEntity(state, id);
@@ -293,6 +301,7 @@ export function placeStored(
   state.inventory.splice(index, 1);
   const id = placeFurniture(state, item.id, x, y, rotation, stored.purchasePrice, stored.color);
   const placed = state.components.furniture[id];
+  if (placed && stored.monitor) placed.monitor = stored.monitor;
   if (placed && stored.computer) placed.computer = stored.computer;
   if (placed && item.projector) placed.on = true;
   return { ok: true };
@@ -344,7 +353,7 @@ export function sellStored(
   const stored = state.inventory[index];
   if (!stored) return { ok: false, error: 'NOT_FOUND' };
   state.inventory.splice(index, 1);
-  addMoney(state, stored.purchasePrice * RESALE_RATIO);
+  addMoney(state, (stored.purchasePrice + (stored.monitor?.price ?? 0)) * RESALE_RATIO);
   return { ok: true };
 }
 
@@ -420,8 +429,37 @@ export function sellFurniture(state: GameState, furnitureId: EntityId): CommandR
     addMoney(state, (state.components.furniture[id]?.purchasePrice ?? 0) * RESALE_RATIO);
     destroyEntity(state, id);
   }
-  addMoney(state, placed.purchasePrice * RESALE_RATIO);
+  addMoney(state, (placed.purchasePrice + (placed.monitor?.price ?? 0)) * RESALE_RATIO);
   destroyEntity(state, furnitureId);
+  return { ok: true };
+}
+
+/** Écran d'un poste de travail : celui choisi, ou celui livré avec le bureau. */
+export function monitorOf(placed: { monitor?: MonitorSetup | undefined }): MonitorChoice {
+  return placed.monitor ?? DEFAULT_MONITOR;
+}
+
+/**
+ * Change l'écran d'un poste de travail. Le nouvel écran est payé, l'ancien revendu à moitié
+ * prix (l'écran livré avec le bureau ne rapporte rien). Refusé si c'est déjà le même écran.
+ */
+export function setMonitor(
+  state: GameState,
+  furnitureId: EntityId,
+  choice: MonitorChoice,
+): CommandResult {
+  const placed = state.components.furniture[furnitureId];
+  const item = placed ? getFurniture(placed.itemId) : undefined;
+  const model = getMonitor(choice.model);
+  if (!placed || !item || !model) return { ok: false, error: 'NOT_FOUND' };
+  if (item.monitor !== true) return { ok: false, error: 'INVALID_PLACEMENT' };
+  if (phaseIndex(state.phase) < phaseIndex(model.minPhase)) return { ok: false, error: 'LOCKED' };
+  if (sameMonitor(monitorOf(placed), choice)) return { ok: false, error: 'NOT_ELIGIBLE' };
+  const price = monitorPrice(choice);
+  const refund = (placed.monitor?.price ?? 0) * RESALE_RATIO;
+  if (state.gauges.treasury < price - refund) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
+  addMoney(state, refund - price);
+  placed.monitor = { model: choice.model, size: choice.size, mount: choice.mount, price };
   return { ok: true };
 }
 
@@ -504,6 +542,13 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.restBonus += e.restBonus ?? 0;
     effects.babyfoot ||= e.babyfoot ?? false;
     const seats = e.seats ?? 1;
+    // L'écran choisi s'ajoute au poste (l'écran livré avec le bureau n'apporte rien de plus).
+    const screen = placed?.monitor ? monitorEffects(placed.monitor) : null;
+    if (screen) {
+      effects.quality += screen.quality;
+      effects.moral += screen.moral;
+      effects.debtPerDay += screen.debtPerDay;
+    }
     if (e.seatProductivity) effects.desks += seats;
     // L'ordinateur du bureau ajoute son bonus au poste, et un peu de moral, qualité ou hype.
     const pc = hasComputer(item.id) ? getComputer(placed?.computer).effects : {};
@@ -512,8 +557,11 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.hypePerDay += pc.hypePerDay ?? 0;
     for (let i = 0; i < seats; i++) {
       if (e.seatProductivity)
-        productivitySeats.push(e.seatProductivity + (pc.seatProductivity ?? 0));
-      if (e.seatEnergySaving) energySeats.push(e.seatEnergySaving);
+        productivitySeats.push(
+          e.seatProductivity + (screen?.productivity ?? 0) + (pc.seatProductivity ?? 0),
+        );
+      const energy = (e.seatEnergySaving ?? 0) + (screen?.energySaving ?? 0);
+      if (energy) energySeats.push(energy);
     }
     if (e.meetingShield) shieldSeats += seats;
   }

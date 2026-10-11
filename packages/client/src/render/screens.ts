@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import type { AgentPose, AgentSnapshot } from '../ai/agents';
 import type { ItemPlacement } from '../ai/grid';
 import type { PlacedItemView } from '../view/types';
+import { MONITOR_ANCHORS, monitorOfItem, monitorScreen } from './monitors';
 import { itemMatrix } from './office';
 import { PixelCanvas, pseudoRandom, radialGlowTexture } from './pixels';
 
@@ -69,14 +70,31 @@ interface ScreenMount {
   readonly tilt?: number;
   /** Hauteur du plateau sous l'écran (pour le reflet). */
   readonly surface: number;
+  /** Écran incurvé : avancée des bords, le contenu se courbe avec la dalle. */
+  readonly bend?: number;
 }
 
-/** Dalle de chaque bureau, alignée sur l'écran de son modèle (voir `view/catalog.ts`). */
+/**
+ * Dalle des bureaux sans écran à choisir : le portable du garage. Les postes de travail (bureau
+ * de dev, bureau debout) prennent la dalle de leur écran (voir `monitors.ts`).
+ */
 export const SCREEN_MOUNTS: Readonly<Record<string, ScreenMount>> = {
-  desk: { at: [-0.35, 1.13, -0.105], width: 0.66, height: 0.4, surface: 0.78 },
   'ikea-desk': { at: [-0.3, 0.86, -0.13], width: 0.44, height: 0.27, tilt: 0.3, surface: 0.7 },
-  'standing-desk': { at: [0, 1.36, -0.175], width: 0.64, height: 0.36, surface: 1.11 },
 };
+
+/** Ce qu'il faut savoir d'un objet posé pour trouver sa dalle : son type, son écran. */
+type ScreenHost = ItemPlacement & Pick<PlacedItemView, 'monitor'>;
+
+/** Dalle d'un bureau (celle de son écran, ou de son portable), `null` s'il n'en a pas. */
+export function screenMountOf(item: Pick<ScreenHost, 'kind' | 'monitor'>): ScreenMount | null {
+  const monitor = monitorOfItem(item);
+  const anchor = MONITOR_ANCHORS[item.kind];
+  if (monitor && anchor) {
+    const screen = monitorScreen(item.kind, monitor);
+    return screen ? { ...screen, surface: anchor.at[1] + 0.01 } : null;
+  }
+  return SCREEN_MOUNTS[item.kind] ?? null;
+}
 
 /** Couleur dominante de chaque contenu : reflet sur le bureau. */
 export const SCREEN_GLOW: Record<ScreenContent, number> = {
@@ -255,7 +273,7 @@ export function litScreens(input: ScreenInput): { item: PlacedItemView; content:
     if (!agent.visible || !agent.using) continue;
     const item = items.get(agent.using);
     const role = input.roles.get(agent.id);
-    if (!item || !role || !SCREEN_MOUNTS[item.kind]) continue;
+    if (!item || !role || !screenMountOf(item)) continue;
     const content = screenContentFor(role, agent.pose);
     if (content) lit.set(item.id, content);
   }
@@ -267,16 +285,35 @@ export function litScreens(input: ScreenInput): { item: PlacedItemView; content:
     });
 }
 
-/** Matrice monde de la dalle d'écran d'un bureau. */
-export function screenMatrix(item: ItemPlacement): THREE.Matrix4 | null {
-  const mount = SCREEN_MOUNTS[item.kind];
+/**
+ * Matrice monde de la dalle d'écran d'un bureau. Pour un écran incurvé, l'échelle en z donne
+ * l'avancée des bords à la dalle courbe (`curvedScreen`, dont z vaut x²).
+ */
+export function screenMatrix(item: ScreenHost): THREE.Matrix4 | null {
+  const mount = screenMountOf(item);
   if (!mount) return null;
   const local = new THREE.Matrix4().compose(
     new THREE.Vector3(...mount.at),
     new THREE.Quaternion().setFromEuler(new THREE.Euler(-(mount.tilt ?? 0), 0, 0)),
-    new THREE.Vector3(mount.width, mount.height, 1),
+    new THREE.Vector3(mount.width, mount.height, (mount.bend ?? 0) * 4 || 1),
   );
   return itemMatrix(item).multiply(local);
+}
+
+/**
+ * Dalle courbe de 1 x 1 : un plan découpé en bandes verticales dont les bords avancent
+ * (z = x², soit 0,25 au bord). L'échelle en z de l'instance règle la courbure réelle.
+ */
+function curvedScreen(): THREE.BufferGeometry {
+  const geometry = new THREE.PlaneGeometry(1, 1, 16, 1);
+  const position = geometry.getAttribute('position');
+  for (let i = 0; i < position.count; i += 1) {
+    const x = position.getX(i);
+    position.setZ(i, x * x);
+  }
+  position.needsUpdate = true;
+  geometry.computeVertexNormals();
+  return geometry;
 }
 
 const MAX_SCREENS = 64;
@@ -284,6 +321,8 @@ const MAX_SCREENS = 64;
 export class ScreenGlow {
   readonly root = new THREE.Group();
   private readonly meshes = new Map<ScreenContent, THREE.InstancedMesh>();
+  /** Mêmes contenus sur une dalle courbe, pour les écrans incurvés. */
+  private readonly curved = new Map<ScreenContent, THREE.InstancedMesh>();
   /** Reflet de l'écran sur le plateau du bureau, surtout visible la nuit. */
   private readonly spill: THREE.InstancedMesh;
   private readonly spillMaterial: THREE.MeshBasicMaterial;
@@ -292,23 +331,26 @@ export class ScreenGlow {
 
   constructor() {
     const plane = new THREE.PlaneGeometry(1, 1);
+    const bent = curvedScreen();
     for (const content of SCREEN_CONTENTS) {
       const texture = paintScreen(content).texture();
       if (SCROLL[content] > 0) {
         texture.wrapT = THREE.RepeatWrapping;
         texture.repeat.set(1, 0.25);
       }
-      const mesh = new THREE.InstancedMesh(
-        plane,
-        // Pas de tone mapping : l'écran garde ses couleurs vives et le bloom le fait briller.
-        new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }),
-        MAX_SCREENS,
-      );
-      mesh.count = 0;
-      mesh.frustumCulled = false;
-      mesh.name = `screen-${content}`;
-      this.meshes.set(content, mesh);
-      this.root.add(mesh);
+      // Pas de tone mapping : l'écran garde ses couleurs vives et le bloom le fait briller.
+      const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
+      for (const [store, geometry, name] of [
+        [this.meshes, plane, `screen-${content}`],
+        [this.curved, bent, `screen-curved-${content}`],
+      ] as const) {
+        const mesh = new THREE.InstancedMesh(geometry, material, MAX_SCREENS);
+        mesh.count = 0;
+        mesh.frustumCulled = false;
+        mesh.name = name;
+        store.set(content, mesh);
+        this.root.add(mesh);
+      }
     }
     this.spillMaterial = new THREE.MeshBasicMaterial({
       map: radialGlowTexture(32, 1.6),
@@ -331,8 +373,12 @@ export class ScreenGlow {
   /** Nombre d'écrans allumés (debug et tests). */
   get count(): number {
     let total = 0;
-    for (const mesh of this.meshes.values()) total += mesh.count;
+    for (const mesh of this.allMeshes()) total += mesh.count;
     return total;
+  }
+
+  private allMeshes(): THREE.InstancedMesh[] {
+    return [...this.meshes.values(), ...this.curved.values()];
   }
 
   /**
@@ -342,7 +388,11 @@ export class ScreenGlow {
   update(input: ScreenInput, delta: number, darkness: number, animate: boolean): void {
     const screens = litScreens(input);
     const key = screens
-      .map(({ item, content }) => `${item.id}:${content}:${item.x}:${item.z}:${item.rotation}`)
+      .map(
+        ({ item, content }) =>
+          `${item.id}:${content}:${item.x}:${item.z}:${item.rotation}` +
+          (item.monitor ? `:${item.monitor.model}:${item.monitor.size}:${item.monitor.mount}` : ''),
+      )
       .join('|');
     if (key !== this.key) {
       this.key = key;
@@ -354,14 +404,19 @@ export class ScreenGlow {
     for (const [content, mesh] of this.meshes) {
       const map = (mesh.material as THREE.MeshBasicMaterial).map;
       const speed = SCROLL[content];
-      if (map && speed > 0 && mesh.count > 0) map.offset.y = (this.elapsed * speed) % 1;
+      const shown = mesh.count + (this.curved.get(content)?.count ?? 0);
+      if (map && speed > 0 && shown > 0) map.offset.y = (this.elapsed * speed) % 1;
     }
   }
 
   dispose(): void {
+    // Les dalles plates et courbes d'un même contenu partagent leur matériau.
     for (const mesh of this.meshes.values()) {
       (mesh.material as THREE.MeshBasicMaterial).map?.dispose();
       (mesh.material as THREE.Material).dispose();
+    }
+    for (const mesh of this.allMeshes()) {
+      mesh.geometry.dispose();
       mesh.dispose();
     }
     this.spillMaterial.map?.dispose();
@@ -370,13 +425,13 @@ export class ScreenGlow {
   }
 
   private rebuild(screens: { item: PlacedItemView; content: ScreenContent }[]): void {
-    for (const mesh of this.meshes.values()) mesh.count = 0;
+    for (const mesh of this.allMeshes()) mesh.count = 0;
     const color = new THREE.Color();
     let spills = 0;
     for (const { item, content } of screens.slice(0, MAX_SCREENS)) {
       const matrix = screenMatrix(item);
-      const mesh = this.meshes.get(content);
-      const mount = SCREEN_MOUNTS[item.kind];
+      const mount = screenMountOf(item);
+      const mesh = (mount?.bend ? this.curved : this.meshes).get(content);
       if (!matrix || !mesh || !mount) continue;
       mesh.setMatrixAt(mesh.count++, matrix);
       // Le reflet : une tache de lumière sur le plateau, devant l'écran.
@@ -391,7 +446,7 @@ export class ScreenGlow {
       this.spill.setColorAt(spills, color.setHex(SCREEN_GLOW[content]));
       spills++;
     }
-    for (const mesh of this.meshes.values()) mesh.instanceMatrix.needsUpdate = true;
+    for (const mesh of this.allMeshes()) mesh.instanceMatrix.needsUpdate = true;
     this.spill.count = spills;
     this.spill.instanceMatrix.needsUpdate = true;
     if (this.spill.instanceColor) this.spill.instanceColor.needsUpdate = true;

@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { create } from 'zustand';
 import {
   CATALOG,
   ITEM_CATEGORIES,
@@ -13,6 +13,7 @@ import type { GameView, StoredItemView } from '../../view/types';
 import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { useThumbnail } from './thumbnails';
+import { MonitorShop } from './MonitorShop';
 import { WallFinishes } from './WallFinishes';
 
 /** Icône de chaque rayon (et de ses objets tant que leur vignette 3D n'est pas prête). */
@@ -31,18 +32,31 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
 };
 
 /**
- * Onglets du catalogue : les rayons de la boutique, le rayon Murs (peintures et papiers peints,
- * juste après les fenêtres), puis l'inventaire (objets rangés).
+ * Onglets du catalogue : les rayons de la boutique, le rayon Écrans (juste après le travail),
+ * le rayon Murs (peintures et papiers peints, juste après les fenêtres), puis l'inventaire.
  */
-type CatalogTab = ItemCategory | 'walls' | 'inventory';
+type CatalogTab = ItemCategory | 'monitors' | 'walls' | 'inventory';
 const TABS: readonly CatalogTab[] = ITEM_CATEGORIES.flatMap((category): CatalogTab[] =>
-  category === 'window' ? [category, 'walls'] : [category],
+  category === 'window'
+    ? [category, 'walls']
+    : category === 'work'
+      ? [category, 'monitors']
+      : [category],
 ).concat('inventory');
 
-const TAB_ICONS: Record<'walls' | 'inventory', string> = { walls: '🎨', inventory: '📦' };
+type SpecialTab = 'monitors' | 'walls' | 'inventory';
+const TAB_ICONS: Record<SpecialTab, string> = { monitors: '🖥️', walls: '🎨', inventory: '📦' };
+const isSpecial = (tab: CatalogTab): tab is SpecialTab => tab in TAB_ICONS;
 
-/** Onglet ouvert en dernier : on y revient après chaque pose. */
-let lastCategory: CatalogTab = 'work';
+/**
+ * Onglet ouvert : on y revient après chaque pose. La barre de sélection d'un bureau peut
+ * ouvrir directement le rayon Écrans.
+ */
+const useCatalogTab = create<{ tab: CatalogTab }>(() => ({ tab: 'work' }));
+
+export function showCatalogTab(tab: CatalogTab): void {
+  useCatalogTab.setState({ tab });
+}
 
 /**
  * Catalogue du mode construction, ancré en bas de l'écran. Choisir un objet le prend en main :
@@ -51,7 +65,7 @@ let lastCategory: CatalogTab = 'work';
  */
 export function Catalog({ view }: { view: GameView }) {
   const { t } = useTranslation();
-  const [category, setCategory] = useState<CatalogTab>(lastCategory);
+  const category = useCatalogTab((s) => s.tab);
   const pickItem = useGame((s) => s.pickItem);
   const items = CATALOG.filter((item) => item.category === category);
   const stored = view.inventory.reduce((sum, stack) => sum + stack.count, 0);
@@ -66,14 +80,9 @@ export function Catalog({ view }: { view: GameView }) {
             role="tab"
             aria-selected={category === id}
             data-testid={`catalog-tab-${id}`}
-            onClick={() => {
-              lastCategory = id;
-              setCategory(id);
-            }}
+            onClick={() => showCatalogTab(id)}
           >
-            <span aria-hidden="true">
-              {id === 'inventory' || id === 'walls' ? TAB_ICONS[id] : CATEGORY_ICONS[id]}
-            </span>
+            <span aria-hidden="true">{isSpecial(id) ? TAB_ICONS[id] : CATEGORY_ICONS[id]}</span>
             <span className="catalog-tab-label">
               {t(id === 'inventory' ? 'build.inventory' : `build.categories.${id}`)}
             </span>
@@ -89,6 +98,8 @@ export function Catalog({ view }: { view: GameView }) {
         <Inventory view={view} />
       ) : category === 'walls' ? (
         <WallFinishes view={view} />
+      ) : category === 'monitors' ? (
+        <MonitorShop view={view} />
       ) : (
         <ul className="catalog-items" role="tabpanel" data-testid="catalog">
           {category === 'pets' && (

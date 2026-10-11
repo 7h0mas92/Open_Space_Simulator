@@ -28,6 +28,7 @@ import {
   VENTURES,
   birthdayFromKey,
   civilFromDays,
+  getFurniture,
   getInvestor,
   getVentureIdea,
   seasonsAt,
@@ -37,6 +38,7 @@ import {
   type EventCard,
   type FurnitureColor,
   type GameState,
+  type MonitorChoice,
   type Identity,
   type PitchState,
   type Speed,
@@ -53,7 +55,7 @@ import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
 import { currentTier } from '../simulation/fundraising';
 import { softSigmoid } from '../simulation/math';
-import { countDesks, RESALE_RATIO } from '../simulation/furniture';
+import { countDesks, monitorOf, RESALE_RATIO } from '../simulation/furniture';
 import { activeProjections } from '../simulation/projection';
 import { leadershipEffects, teamShape } from '../simulation/leadership';
 import { devIds, teamMax } from '../simulation/helpers';
@@ -399,6 +401,12 @@ function candidateViews(state: GameState): CandidateView[] {
     }));
 }
 
+/** Écran d'un poste de travail, sans son prix d'achat. */
+function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
+  const { model, size, mount } = monitorOf(item);
+  return { model, size, mount };
+}
+
 function itemViews(state: GameState): PlacedItemView[] {
   return Object.entries(state.components.furniture).map(([id, item]) => ({
     id,
@@ -406,9 +414,11 @@ function itemViews(state: GameState): PlacedItemView[] {
     x: item.x,
     z: item.y,
     rotation: (item.rotation % 4) as Rotation,
-    resale: Math.round(item.purchasePrice * RESALE_RATIO),
+    // Un poste de travail se revend avec son écran.
+    resale: Math.round((item.purchasePrice + (item.monitor?.price ?? 0)) * RESALE_RATIO),
     color: item.color ?? 'natural',
     host: item.hostId !== undefined ? { id: item.hostId, slot: item.slot ?? 0 } : null,
+    ...(getFurniture(item.itemId)?.monitor ? { monitor: monitorView(item) } : {}),
     ...(item.on ? { on: true } : {}),
     ...(hasComputer(item.itemId) ? { computer: item.computer ?? DEFAULT_COMPUTER } : {}),
   }));
@@ -428,7 +438,9 @@ function inventoryView(state: GameState): StoredItemView[] {
             kind: stored.itemId,
             color,
             count: 1,
-            resale: Math.round(stored.purchasePrice * RESALE_RATIO),
+            resale: Math.round(
+              (stored.purchasePrice + (stored.monitor?.price ?? 0)) * RESALE_RATIO,
+            ),
           },
     );
   }
@@ -799,6 +811,14 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SWITCH_PROJECTOR', furnitureId: command.itemId, on: command.on };
     case 'paintItem':
       return { type: 'PAINT_FURNITURE', furnitureId: command.itemId, color: command.color };
+    case 'setMonitor':
+      return {
+        type: 'SET_MONITOR',
+        furnitureId: command.itemId,
+        model: command.monitor.model,
+        size: command.monitor.size,
+        mount: command.monitor.mount,
+      };
     case 'setComputer':
       return { type: 'SET_COMPUTER', furnitureId: command.itemId, computer: command.computer };
     case 'moveItem':

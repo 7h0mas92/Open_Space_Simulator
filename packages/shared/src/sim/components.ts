@@ -3,6 +3,7 @@ import { LocalizedTextSchema } from '../i18n.js';
 import { BirthdaySchema } from './calendar.js';
 import { ComputerIdSchema } from './computers.js';
 import { FURNITURE_COLORS } from './furniture.js';
+import { MonitorSetupSchema } from './monitors.js';
 import { TaskKindSchema } from './taskFlow.js';
 
 /**
@@ -283,6 +284,8 @@ export const FurnitureSchema = z.object({
    */
   hostId: EntityIdSchema.optional(),
   slot: z.number().int().nonnegative().optional(),
+  /** Poste de travail : l'écran choisi (absent : l'écran bureautique livré avec le bureau). */
+  monitor: MonitorSetupSchema.optional(),
   /** Projecteur allumé (absent = éteint). Voir `projection.ts`. */
   on: z.boolean().optional(),
   /** Bureau : ordinateur choisi (absent = la tour sobre d'origine, voir `computers.ts`). */

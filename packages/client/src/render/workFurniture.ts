@@ -4,7 +4,7 @@
  * télé et baie de serveurs.
  *
  * Les modèles Kenney correspondants sont d'un seul bloc ; ces versions gardent leurs dimensions
- * (hauteur des plateaux, emprise) pour que l'écran, le clavier, la souris, les accessoires et les
+ * (hauteur des plateaux, emprise) pour que l'écran (`monitors.ts`), le clavier, la souris, les accessoires et les
  * personnages restent à leur place, mais ajoutent ce qui rend un meuble crédible : tiroirs et
  * poignées, piètement métallique, passe-câbles, roulettes, coussins, vérin…
  * Chaque meuble est fusionné par matériau (voir `pieces.ts`) et regarde vers +z.
@@ -115,11 +115,7 @@ export function standingDesk(): THREE.Group {
   p.box(0.2, 0.035, 0.07, PALETTE.dark, [0.62, top - 0.08, 0.34]);
   p.light(0.05, 0.012, 0.005, 0x7cc8f4, [0.58, top - 0.065, 0.377]);
   for (const x of [0.65, 0.69]) p.box(0.025, 0.012, 0.006, PALETTE.slate, [x, top - 0.066, 0.377]);
-  // Écran sur pied (sa face sert de support au contenu animé de `screens.ts`) et son pied.
-  p.post(0.09, 0.1, 0.012, PALETTE.dark, [0, top, -0.22], 10);
-  p.box(0.05, 0.16, 0.03, PALETTE.dark, [0, top, -0.245]);
-  p.box(0.7, 0.42, 0.04, PALETTE.dark, [0, top + 0.05, -0.2]);
-  p.box(0.25, 0.18, 0.02, 0x23283a, [0, top + 0.15, -0.23]);
+  // L'écran se choisit à part (modèle, taille, pied ou bras) : voir `monitors.ts`.
   // Clavier QWERTY et souris : posés par le catalogue (`view/catalog.ts`), comme au bureau de dev.
   return p.build('standingDesk');
 }

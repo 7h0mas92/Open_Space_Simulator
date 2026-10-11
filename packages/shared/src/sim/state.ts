@@ -12,6 +12,7 @@ import { CommandLogSchema } from './commands.js';
 import { ComputerIdSchema } from './computers.js';
 import { FinancingStateSchema } from './funding.js';
 import { MeetingRoomSchema } from './meetings.js';
+import { MonitorSetupSchema } from './monitors.js';
 import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
@@ -137,6 +138,8 @@ export const StoredItemSchema = z.object({
   itemId: z.string(),
   purchasePrice: z.number().nonnegative(),
   color: FurnitureColorSchema.optional(),
+  /** Poste de travail rangé avec son écran (absent : l'écran livré avec le bureau). */
+  monitor: MonitorSetupSchema.optional(),
   /** Bureau rangé : son ordinateur, qui revient avec lui. */
   computer: ComputerIdSchema.optional(),
 });

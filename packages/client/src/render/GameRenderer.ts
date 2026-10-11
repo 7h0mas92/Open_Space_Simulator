@@ -870,14 +870,20 @@ export class GameRenderer {
 
   private async refreshGhost(): Promise<void> {
     const color = this.build?.color ?? 'natural';
-    const key = this.build?.kind ? `${this.build.kind}#${color}` : '';
+    // Un poste de travail déplacé garde son écran dans l'aperçu.
+    const moving = this.build?.movingItemId
+      ? this.view?.items.find((i) => i.id === this.build?.movingItemId)
+      : undefined;
+    const monitor = moving?.monitor;
+    const screen = monitor ? `#${monitor.model}:${monitor.size}:${monitor.mount}` : '';
+    const key = this.build?.kind ? `${this.build.kind}#${color}${screen}` : '';
     if (key !== this.ghostKey) {
       this.ghostKey = key;
       if (this.ghost) this.scene.remove(this.ghost);
       this.ghost = null;
       if (this.build?.kind) {
         // L'aperçu garde ses vraies couleurs (on voit la teinte choisie) ; rouge si impossible.
-        const ghost = await this.office.single(this.build.kind, color);
+        const ghost = await this.office.single(this.build.kind, color, monitor);
         if (this.ghostKey !== key) return;
         ghost.traverse((node) => {
           if (node instanceof THREE.Mesh) node.userData.material = node.material;

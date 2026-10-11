@@ -172,14 +172,13 @@ export const DESK_CHAIR: { readonly model: MissingAssetId; readonly paint: reado
 
 /** Habillage de chaque objet de la simulation (le typage oblige à n'en oublier aucun). */
 const LOOKS: Record<SimItemId, ItemLook> = {
-  // Bureau de dev complet : écran, clavier, souris.
+  // Bureau de dev : souris. L'écran (`render/monitors.ts`) et l'ordinateur se choisissent à part.
   desk: {
     category: 'work',
     model: primitive('officeDesk'),
     height: 0.75,
     use: 'desk',
     parts: [
-      part(kenney('computerScreen'), [-0.35, DESK_TOP, -0.15]),
       // La souris sur un tapis sombre qui la détache du plateau.
       part(primitive('mousePad'), [0.08, DESK_TOP, 0.15]),
       part(kenney('computerMouse'), [0.08, DESK_TOP + MOUSE_PAD, 0.15 + MOUSE_BACK], {
