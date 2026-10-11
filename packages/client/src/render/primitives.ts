@@ -70,6 +70,7 @@ import {
   projectionScreenMedium,
   projectionScreenSmall,
   videoProjector,
+  ceilingProjector,
 } from './projectionModels';
 import {
   bonsai,
@@ -483,6 +484,7 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   planterBox,
   giantMonstera,
   videoProjector,
+  ceilingProjector,
   projectionScreenSmall,
   projectionScreenMedium,
   projectionScreenLarge,

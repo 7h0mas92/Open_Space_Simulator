@@ -120,6 +120,8 @@ export interface CatalogItem extends ItemLook {
   readonly wall: boolean;
   /** Mur fin posé au sol (plein ou vitré), raccordé aux murs voisins, sinon `null`. */
   readonly partition: 'solid' | 'glass' | null;
+  /** Fixé au plafond : ne gêne ni le mobilier ni les passages. */
+  readonly ceiling: boolean;
   readonly paint: readonly string[];
   /** Équipement pour chat (litière, gamelle, arbre à chat), sinon `null`. */
   readonly petNeed: PetNeed | null;
@@ -620,6 +622,13 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 0.4,
     paint: ['dark'],
   },
+  // Vidéoprojecteur suspendu : tige et platine au plafond, boîtier tête en bas.
+  'ceiling-projector': {
+    category: 'devices',
+    model: primitive('ceilingProjector'),
+    height: 2.2,
+    paint: ['white'],
+  },
   // Vidéoprojecteur : posé sur un meuble, tourné vers un écran déroulant.
   projector: {
     category: 'devices',
@@ -669,6 +678,7 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   applianceSlots: 'applianceSlots' in item ? item.applianceSlots : 0,
   wall: 'wall' in item && item.wall === true,
   partition: 'partition' in item ? item.partition : null,
+  ceiling: 'ceiling' in item && item.ceiling === true,
   paint: LOOKS[item.id].paint ?? DEFAULT_PAINT,
   petNeed: 'petNeed' in item ? item.petNeed : null,
 }));

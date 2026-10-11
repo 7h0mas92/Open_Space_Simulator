@@ -29,6 +29,17 @@ export const FABRIC_Z = -0.05;
 export const POLE_Z = -0.12;
 /** Objectif du projecteur, dans le repère du modèle (l'avant est +z). */
 export const LENS = [-0.065, 0.055, 0.125] as const;
+/** Plafond (haut des murs) : la platine du projecteur suspendu s'y fixe. */
+const CEILING = 2.2;
+/** Le projecteur suspendu est retourné : son dessous est à cette hauteur. */
+const HANG = 1.86;
+/** Objectif du projecteur suspendu (boîtier retourné, objectif à gauche vu de face). */
+export const CEILING_LENS = [0.065, HANG + 0.1 - 0.055, 0.125] as const;
+
+/** Objectif d'un projecteur selon son modèle (posé sur un meuble ou suspendu). */
+export function lensOf(kind: string): readonly [number, number, number] {
+  return kind === 'ceiling-projector' ? CEILING_LENS : LENS;
+}
 
 export const ALUMINIUM = 0xc9ced6;
 export const CAP = 0x2a2e38;
@@ -95,4 +106,25 @@ export function videoProjector(): THREE.Group {
   p.post(0.018, 0.018, 0.008, CAP, [LENS[0], 0.095, 0.05], 10);
   p.light(0.014, 0.004, 0.014, 0x4caf6e, [0.09, 0.095, 0.06]);
   return p.build('videoProjector');
+}
+
+/**
+ * Vidéoprojecteur de plafond : platine, tige télescopique et support, avec le même boîtier que le
+ * projecteur de bureau monté tête en bas (comme dans les vraies salles de réunion).
+ */
+export function ceilingProjector(): THREE.Group {
+  const body = videoProjector();
+  // Retourné autour de l'axe avant-arrière : le dessus passe dessous, l'objectif reste devant.
+  body.rotation.z = Math.PI;
+  body.position.y = HANG + 0.1;
+  const p = new Pieces();
+  p.post(0.07, 0.07, 0.015, CAP, [0, CEILING - 0.015, 0], 12);
+  p.post(0.016, 0.016, CEILING - 0.015 - (HANG + 0.13), ALUMINIUM, [0, HANG + 0.13, 0], 8);
+  p.post(0.022, 0.022, 0.03, CAP, [0, HANG + 0.12, 0], 8);
+  // Croisillon qui tient le boîtier par le dessus.
+  p.box(0.2, 0.012, 0.03, CAP, [0, HANG + 0.098, 0]);
+  p.box(0.03, 0.012, 0.16, CAP, [0, HANG + 0.098, 0]);
+  const group = p.build('ceilingProjector');
+  group.add(body);
+  return group;
 }

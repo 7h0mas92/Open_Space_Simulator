@@ -98,9 +98,9 @@ export function buildNavGrid(layout: OfficeLayout, items: readonly ItemPlacement
   for (const cell of [...layout.partitions, ...fixtureCells(layout)]) grid.block(cell.x, cell.z);
   for (const item of items) {
     // Tapis et station d'écouteurs se traversent ; les accessoires sont posés sur les meubles et les
-    // fenêtres sont dans les murs.
+    // fenêtres sont dans les murs ; on passe sous les objets du plafond.
     const def = catalogItem(item.kind);
-    if (WALKABLE_KINDS.has(item.kind) || def?.accessory || def?.wall) continue;
+    if (WALKABLE_KINDS.has(item.kind) || def?.accessory || def?.wall || def?.ceiling) continue;
     for (const cell of itemCells(item)) grid.block(cell.x, cell.z);
   }
   return grid;
