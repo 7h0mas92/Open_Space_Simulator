@@ -612,6 +612,43 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   combiné devient au chargement un meuble offert + son appareil au même prix, même effet
   (`LEGACY_KITCHEN_ITEMS`, `client/src/simulation/kitchen.ts`). Bot : `findFreeSlot`.
 
+- Ordinateurs des postes (`shared/sim/computers.ts`, `render/computers.ts`, bouton « Ordinateur »
+  de l'objet sélectionné, `ui/build/ComputerPicker.tsx`) : chaque bureau de dev et bureau debout a
+  une tour sobre d'origine (incluse, au sol sous le plateau), ou au choix 3 tours gaming (« Néon »
+  900 €, watercooling 2 200 € en Seed, XXL « Titan » 4 500 € en Série A ; +1 à +3 % de productivité
+  au poste, +moral) ou un MacBook Pro (2 800 €, sans logo) posé à la place du clavier, qui disparaît
+  (+1 % au poste, +qualité, +hype). L'ancien est revendu à moitié prix, la valeur suit le bureau
+  (revente, inventaire). Le clavier QWERTY est posé avec l'ordinateur (`workstation` dans
+  `view/catalog.ts`, gabarit `@pc:<bureau>:<ordinateur>` dans `render/office.ts`). Commande
+  `SET_COMPUTER`, champ `computer` optionnel (absent = tour sobre), aucun tirage.
+
+- Murs fins (`render/partitions.ts`, rayon « 🧱 Cloisons » du mode construction) : les cloisons du
+  plan ne sont plus des blocs d'une case séparés par une fente, mais des murs fins continus
+  raccordés à leurs voisins (angles, T, croix) et enfoncés dans les murs extérieurs. Deux objets
+  d'une case, posés en série, tournés (0 le long de x, 1 le long de z), repeints : « Mur fin »
+  (`thin-wall`, 150 €, mi-hauteur, +0,05 % de productivité) et « Mur fin vitré »
+  (`glass-partition`, 450 €, verre du sol au plafond, léger +moral), 80 au plus chacun. Champ
+  `partition: 'solid' | 'glass'` du catalogue ; dessinés avec les cloisons, boîte invisible pour
+  la sélection. Ils bloquent le passage ; un mur qui enfermerait une zone est refusé (erreur
+  `blocksPath` dans `view/placement.ts`). Vitres des salles de réunion raccordées pareil. Aucun
+  tirage, ni commande, ni champ d'état.
+
+- Vidéoprojecteur et écrans déroulants (`shared/sim/projection.ts`, `client/src/simulation/projection.ts`,
+  rayon « 📽️ Périphériques » du mode construction) : vidéoprojecteur (`projector`, 700 €, accessoire
+  posé sur un meuble, bouton « ⏻ Allumer / Éteindre ») et 3 écrans de projection posés au sol
+  (petit 2 cases 450 €, moyen 3 cases 1 100 € en Seed, grand 4 cases 2 400 € en Série A). Allumé et
+  tourné vers un écran (cône de 50°, 1,5 à 10 cases, devant la toile), il déroule la toile, puis
+  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule. Un écran
+  par projecteur, le plus proche, projecteurs servis dans l'ordre d'achat (`projectionPairs`, même
+  calcul pour la simulation et le rendu). Effets seulement pendant la projection : écran +qualité,
+  +hype (+moral moyen et grand), projecteur +moral et -0,4 % de productivité. Commande
+  `SWITCH_PROJECTOR`, champ `on` optionnel (absent = éteint), `GameView.projections`, rendu animé
+  dans `render/projection.ts` (sans animation si « réduire les animations »). Aucun tirage.
+  Projecteur de plafond (`ceiling-projector`, 1 300 €, 3 au plus) : accroché au-dessus d'une case,
+  même d'un bureau, il vise depuis sa case avec les mêmes effets. Drapeau `ceiling` du catalogue :
+  les objets du plafond ne se chevauchent qu'entre eux, jamais au-dessus d'un mur vitré, et ne
+  bloquent pas le pathfinding (`ai/grid.ts`). Modèle `ceilingProjector` (`lensOf` pour le faisceau).
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur

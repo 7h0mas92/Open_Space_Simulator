@@ -73,6 +73,27 @@ export interface FurnitureDefinition {
    * mur de gauche (x = 0). Elle ne gêne pas le mobilier posé devant.
    */
   wall?: boolean;
+  /**
+   * Projecteur : un accessoire que le joueur allume ou éteint. Ses effets ne comptent que s'il
+   * est allumé et projette sur un écran déroulé (voir `projection.ts`).
+   */
+  projector?: boolean;
+  /**
+   * Écran de projection déroulant : posé au sol, la toile sort de son caisson quand un projecteur
+   * allumé le vise. Enroulé, il ne donne aucun effet.
+   */
+  projectionScreen?: boolean;
+  /**
+   * Mur fin posé au sol, sur une case, comme les cloisons du plan : plein (`solid`, à
+   * mi-hauteur) ou vitré du sol au plafond (`glass`). La rotation dit son sens : 0 le long de x,
+   * 1 le long de z. Il bloque le passage ; le rendu le raccorde aux murs voisins.
+   */
+  partition?: 'solid' | 'glass';
+  /**
+   * Fixé au plafond : il occupe une case en hauteur et ne gêne ni le mobilier ni les passages.
+   * Seuls les autres objets du plafond l'empêchent d'être posé.
+   */
+  ceiling?: boolean;
 }
 
 /**
@@ -465,6 +486,52 @@ export const FURNITURE_CATALOG = [
     maxCount: 2,
     effects: { hypePerDay: 0.08, teamProductivity: -0.01 },
   },
+  // Écrans de projection : la toile sort du caisson posé au sol quand un projecteur l'éclaire.
+  {
+    id: 'projection-screen-small',
+    name: t('Écran de projection déroulant (petit)', 'Pull-up projection screen (small)'),
+    description: t(
+      'Toile de 1,5 m qui sort de son caisson quand le projecteur s’allume : +qualité, +hype.',
+      '1.5 m screen that rises from its case when the projector is on: +quality, +hype.',
+    ),
+    price: 450,
+    width: 2,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    projectionScreen: true,
+    effects: { quality: 0.006, hypePerDay: 0.02 },
+  },
+  {
+    id: 'projection-screen-medium',
+    name: t('Écran de projection déroulant (moyen)', 'Pull-up projection screen (medium)'),
+    description: t(
+      'Toile de 2,4 m pour les revues de code en grand : +qualité, +hype une fois déroulée.',
+      '2.4 m screen for big-screen code reviews: +quality, +hype once unrolled.',
+    ),
+    price: 1100,
+    width: 3,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 3,
+    projectionScreen: true,
+    effects: { quality: 0.01, hypePerDay: 0.04, moral: 0.02 },
+  },
+  {
+    id: 'projection-screen-large',
+    name: t('Écran de projection déroulant (grand)', 'Pull-up projection screen (large)'),
+    description: t(
+      'Toile de 3,2 m, digne d’une keynote : beaucoup de hype une fois déroulée.',
+      '3.2 m screen worthy of a keynote: lots of hype once unrolled.',
+    ),
+    price: 2400,
+    width: 4,
+    depth: 1,
+    minPhase: 'SERIES_A',
+    maxCount: 2,
+    projectionScreen: true,
+    effects: { quality: 0.015, hypePerDay: 0.07, moral: 0.05 },
+  },
   {
     id: 'speaker',
     name: t('Enceinte lo-fi', 'Lo-fi speaker'),
@@ -759,6 +826,37 @@ export const FURNITURE_CATALOG = [
     wall: true,
     effects: { moral: 0.06, hypePerDay: 0.005 },
   },
+  // --- Murs fins : des cloisons à poser soi-même, case par case, raccordées aux murs voisins. ---
+  {
+    id: 'thin-wall',
+    name: t('Mur fin', 'Thin wall'),
+    description: t(
+      'Une cloison à mi-hauteur, posée case par case : moins de bruit, +0,05 % de productivité.',
+      'A half-height partition, placed tile by tile: less noise, +0.05% productivity.',
+    ),
+    price: 150,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 80,
+    partition: 'solid',
+    effects: { teamProductivity: 0.0005 },
+  },
+  {
+    id: 'glass-partition',
+    name: t('Mur fin vitré', 'Glass partition'),
+    description: t(
+      'Du verre du sol au plafond : on s’isole sans se cacher. Léger +moral.',
+      'Floor-to-ceiling glass: you get some quiet without hiding. Slight +morale.',
+    ),
+    price: 450,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 80,
+    partition: 'glass',
+    effects: { moral: 0.01 },
+  },
   // --- Électroménager : posé sur un meuble de cuisine (ou le frigo), jamais au sol. ---
   {
     id: 'drip-coffee-maker',
@@ -957,6 +1055,38 @@ export const FURNITURE_CATALOG = [
     maxCount: 10,
     accessory: true,
     effects: { teamProductivity: 0.004 },
+  },
+  {
+    id: 'projector',
+    name: t('Vidéoprojecteur', 'Video projector'),
+    description: t(
+      'Allumé, il déroule l’écran posé en face : +moral, léger -productivité.',
+      'Switched on, it unrolls the screen it faces: +morale, slight -productivity.',
+    ),
+    price: 700,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    accessory: true,
+    projector: true,
+    effects: { moral: 0.03, teamProductivity: -0.004 },
+  },
+  {
+    id: 'ceiling-projector',
+    name: t('Vidéoprojecteur de plafond', 'Ceiling projector'),
+    description: t(
+      'Accroché au plafond, il ne prend ni bureau ni sol. Allumé, il déroule l’écran en face.',
+      'Hung from the ceiling, it takes no desk or floor space. On, it unrolls the screen it faces.',
+    ),
+    price: 1300,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 3,
+    ceiling: true,
+    projector: true,
+    effects: { moral: 0.03, teamProductivity: -0.004 },
   },
   {
     id: 'mini-speaker',

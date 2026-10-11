@@ -61,6 +61,7 @@ import { lightingAt, type LightingState } from './lighting';
 import { accessoryMatrix, itemMatrix, OfficeView } from './office';
 import { OfficeLights } from './officeLights';
 import { pixelRatioFor, QUALITY_PRESETS, type QualityLevel } from './quality';
+import { ProjectionView, unrolledPreview } from './projection';
 import { SCREEN_MOUNTS, ScreenGlow } from './screens';
 import { SkylineView } from './skyline';
 
@@ -145,6 +146,8 @@ export class GameRenderer {
   private decorModes: Partial<Record<DecorTheme, DecorMode>> = {};
   private readonly roomLights = new OfficeLights(this.assets);
   private readonly screens = new ScreenGlow();
+  /** Toiles des écrans déroulants, faisceaux et objectifs des projecteurs allumés. */
+  private readonly projection = new ProjectionView();
   /** La ville de New York autour de la tour, vue par les baies vitrées. */
   private readonly skyline = new SkylineView();
   /** Rôle de chaque dev : choisit le contenu de son écran. */
@@ -231,6 +234,7 @@ export class GameRenderer {
       this.meetingRoom.root,
       this.roomLights.root,
       this.screens.root,
+      this.projection.root,
       this.pets.root,
     );
 
@@ -288,6 +292,7 @@ export class GameRenderer {
     );
     this.office.setWallFinishes(view.walls.zones);
     void this.office.setItems(view.items);
+    this.projection.sync(view.items, view.projections);
     this.updateDecor(view);
     void this.roomLights.setLayout(
       this.layout,
@@ -388,6 +393,9 @@ export class GameRenderer {
    */
   async thumbnail(kind: string, size = 128): Promise<string | null> {
     const object = await this.office.single(kind);
+    // Un écran déroulant se montre déroulé, sinon on ne verrait que son caisson.
+    const unrolled = unrolledPreview(kind);
+    if (unrolled) object.add(unrolled);
     const scene = new THREE.Scene();
     const sun = new THREE.DirectionalLight(0xffffff, 2.2);
     sun.position.set(3, 6, 4);
@@ -430,6 +438,13 @@ export class GameRenderer {
       this.renderer.setRenderTarget(null);
       this.renderer.setClearColor(clearColor, clearAlpha);
       target.dispose();
+      unrolled?.traverse((node) => {
+        if (!(node instanceof THREE.Mesh)) return;
+        node.geometry.dispose();
+        const mat = node.material as THREE.MeshBasicMaterial;
+        mat.map?.dispose();
+        mat.dispose();
+      });
     }
   }
 
@@ -512,6 +527,7 @@ export class GameRenderer {
     this.roomLights.dispose();
     this.skyline.dispose();
     this.screens.dispose();
+    this.projection.dispose();
     this.pets.dispose();
     this.composer?.dispose();
     this.renderer.dispose();
@@ -595,6 +611,7 @@ export class GameRenderer {
         !this.reducedMotion,
       );
     }
+    this.projection.update(delta, !this.reducedMotion);
     this.options.onDeskActivity?.(this.deskActivity(speed > 0));
     this.smoke.update(delta);
     this.confetti.update(delta);

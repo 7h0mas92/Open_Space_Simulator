@@ -413,6 +413,16 @@ flowchart LR
   bruit posés sur un bureau protègent un dev du malus des réunions. Un nuancier de 12 couleurs repeint le bois ou le tissu d'un objet
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
+- **Murs fins** : le rayon Cloisons propose un mur fin à mi-hauteur et un mur fin vitré du sol
+  au plafond, posés case par case. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
+  eux (angles, T, croix), sans jour entre deux murs, et se tournent, se repeignent et se revendent.
+  Un mur qui enfermerait une zone est refusé, pour que chacun puisse toujours rejoindre son bureau.
+- **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble, un
+  projecteur fixé au plafond (sans prendre de place au sol ni sur un bureau) et
+  trois écrans de projection déroulants (2, 3 et 4 cases). Allumé et tourné vers un écran, le
+  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. Projecteur et
+  écran ne donnent leur effet (moral, qualité, hype, léger malus de productivité) que pendant la
+  projection.
 - **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
   fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
   au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
@@ -443,6 +453,12 @@ flowchart LR
   touches (61 touches en relief avec leurs lettres, Entrée en bleu, un seul appel de dessin :
   `render/keyboard.ts`) et une souris Kenney à l'échelle du clavier sur un tapis de souris sombre ;
   le portable du garage a aussi sa souris et son tapis.
+- **Ordinateurs** : chaque bureau de dev et bureau debout a son ordinateur, choisi avec le bouton
+  « Ordinateur » en mode construction. La tour sobre est incluse et posée sous le plateau ; trois
+  tours gaming (« Néon » à ventilateurs RGB, watercooling dans un boîtier vitré, XXL « Titan »)
+  donnent un peu de productivité au poste et de moral ; le MacBook Pro (sans logo) se pose à la
+  place du clavier et apporte de la qualité et de la hype. L'ancien ordinateur est revendu à
+  moitié prix.
 - **Plantes d'intérieur** : en plus de la plante verte et du cactus, le rayon Déco propose huit
   plantes dessinées feuille par feuille en Three.js (`render/plants.ts`). Des petites
   (sansevieria, pothos sur sellette avec ses lianes, bonsaï), des grandes jusqu'à 2 m (figuier
@@ -638,8 +654,10 @@ génère que des messages Slack.
   filtre, machine à expresso et moulin, micro-ondes, bouilloire, cuiseur à riz, meubles de
   cuisine (tiroirs, portes, évier, colonne, vaisselier, îlot), frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, étui d'écouteurs sans fil ouvert,
-  mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, litières,
+  mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, tours de PC sobre et gaming,
+  MacBook Pro sans logo, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
+  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
+  litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction

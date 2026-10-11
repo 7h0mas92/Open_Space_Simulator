@@ -5,7 +5,7 @@
  * des bornes et des chevauchements ; les cloisons et l'entrée sont des contraintes du décor.
  */
 import { PHASES } from '@oss/shared';
-import { itemCells, type ItemPlacement } from '../ai/grid';
+import { buildNavGrid, itemCells, NEIGHBORS_4, type ItemPlacement, type NavGrid } from '../ai/grid';
 import { catalogItem, footprint, type CatalogItem } from './catalog';
 import { fixtureCells, type Cell, type OfficeLayout } from './layout';
 import type { GameView, ItemHost, PlacedItemView, Rotation } from './types';
@@ -19,7 +19,8 @@ export type PlacementError =
   | 'noSurface'
   | 'surfaceFull'
   | 'noCounter'
-  | 'noWall';
+  | 'noWall'
+  | 'blocksPath';
 
 export interface PlacementRequest {
   readonly kind: string;
@@ -62,11 +63,55 @@ export function checkPlacement(
   }
   // Même règle que la simulation : aucun chevauchement, tapis compris.
   for (const other of items) {
-    if (other.id === request.ignoreId || other.host || catalogItem(other.kind)?.wall) continue;
+    const otherDef = catalogItem(other.kind);
+    if (other.id === request.ignoreId || other.host || otherDef?.wall) continue;
+    // Le plafond et le sol sont deux étages : un objet du plafond ne gêne que ceux du plafond.
+    // Sauf un mur vitré, qui monte jusqu'au plafond.
+    const fullHeight = otherDef?.partition === 'glass' || def.partition === 'glass';
+    if ((otherDef?.ceiling ?? false) !== def.ceiling && !fullHeight) continue;
     const otherCells = itemCells(other);
     if (cells.some((cell) => has(otherCells, cell.x, cell.z))) return 'overlap';
   }
+  if (def.partition && closesOff(layout, items, cells, request.ignoreId)) return 'blocksPath';
   return null;
+}
+
+/** Cases praticables atteignables depuis l'entrée. */
+function reachableFromEntrance(grid: NavGrid, layout: OfficeLayout): Set<string> {
+  const start = grid.nearestWalkable(layout.entrance);
+  const seen = new Set<string>();
+  if (!start) return seen;
+  const queue: Cell[] = [start];
+  seen.add(`${start.x},${start.z}`);
+  for (const cell of queue) {
+    for (const [dx, dz] of NEIGHBORS_4) {
+      const x = cell.x + dx;
+      const z = cell.z + dz;
+      if (!grid.walkable(x, z) || seen.has(`${x},${z}`)) continue;
+      seen.add(`${x},${z}`);
+      queue.push({ x, z });
+    }
+  }
+  return seen;
+}
+
+/**
+ * Un mur fin ne doit enfermer aucune case : sinon un dev (ou un chat) ne pourrait plus
+ * rejoindre son bureau. Vrai si, une fois le mur posé, des cases jusque-là atteignables depuis
+ * l'entrée ne le sont plus (en dehors des cases du mur lui-même).
+ */
+function closesOff(
+  layout: OfficeLayout,
+  items: readonly PlacedItemView[],
+  cells: readonly Cell[],
+  ignoreId?: string,
+): boolean {
+  const others = items.filter((item) => item.id !== ignoreId);
+  const grid = buildNavGrid(layout, others);
+  const before = reachableFromEntrance(grid, layout);
+  const covered = cells.filter((cell) => before.has(`${cell.x},${cell.z}`)).length;
+  for (const cell of cells) grid.block(cell.x, cell.z);
+  return reachableFromEntrance(grid, layout).size < before.size - covered;
 }
 
 /**
