@@ -351,26 +351,50 @@ export function synthKeystroke(sampleRate: number, seed: number, space = false):
   return normalize(muffled);
 }
 
-/** Clic de souris : deux petits « tic » secs et aigus, l'appui puis le relâchement. */
+/** Un « clic » de micro-interrupteur : la lame métallique bascule et fait sonner la coque. */
+function switchSnap(sampleRate: number, random: () => number, brightness: number): Float32Array {
+  const impact = new Float32Array(Math.round(sampleRate * 0.05));
+  // Deux contacts à 0,3-0,6 ms d'écart : la lame touche, rebondit, touche encore.
+  for (const [delay, strength] of [
+    [0, 1],
+    [0.0003 + random() * 0.0003, 0.4 + random() * 0.3],
+  ] as const) {
+    const start = Math.round(delay * sampleRate);
+    const length = Math.max(2, Math.round(sampleRate * 0.00015));
+    for (let i = 0; i < length; i++)
+      impact[start + i] = (impact[start + i] ?? 0) + strength * (random() * 2 - 1);
+  }
+  const out = new Float32Array(impact.length);
+  mixInto(out, normalize(highpass(impact, sampleRate, 3000)), 0, 0.35);
+  mixInto(
+    out,
+    resonance(impact, sampleRate, 5600 * brightness * (0.95 + random() * 0.1), 25),
+    0,
+    0.45,
+  );
+  mixInto(
+    out,
+    resonance(impact, sampleRate, 2300 * brightness * (0.92 + random() * 0.16), 10),
+    0,
+    0.6,
+  );
+  mixInto(out, resonance(impact, sampleRate, 950 * (0.9 + random() * 0.2), 6), 0, 0.35);
+  mixInto(out, resonance(impact, sampleRate, 260 * (0.9 + random() * 0.2), 2), 0, 0.15);
+  return out;
+}
+
+/**
+ * Clic de souris de bureau : le micro-interrupteur sous le bouton claque (« tic » sec, coque en
+ * plastique qui sonne un peu creux), puis se relâche 60 à 110 ms plus tard, un ton plus haut et
+ * plus doux. Le tout entendu dans la pièce.
+ */
 export function synthMouseClick(sampleRate: number, seed: number): Float32Array {
   const random = lcg(seed);
-  const out = new Float32Array(Math.round(sampleRate * 0.12));
-  const pitch = 2600 + random() * 900;
-  const release = 0.065 + random() * 0.025;
-  let previous = 0;
-  const tick = (t: number, click: number, frequency: number) =>
-    click * Math.exp(-t / 0.0012) * 0.7 +
-    Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t / 0.0025) * 0.4;
-  for (let i = 0; i < out.length; i++) {
-    const t = i / sampleRate;
-    const noise = random() * 2 - 1;
-    const click = noise - previous;
-    previous = noise;
-    let sample = tick(t, click, pitch);
-    if (t >= release) sample += 0.6 * tick(t - release, click, pitch * 1.15);
-    out[i] = sample;
-  }
-  return normalize(out);
+  const out = new Float32Array(Math.round(sampleRate * 0.16));
+  mixInto(out, switchSnap(sampleRate, random, 1), 0, 1);
+  const release = Math.round((0.06 + random() * 0.05) * sampleRate);
+  mixInto(out, switchSnap(sampleRate, random, 1.12), release, 0.55 + random() * 0.15);
+  return normalize(lowpass(room(out, sampleRate, random), sampleRate, 8000));
 }
 
 /**
