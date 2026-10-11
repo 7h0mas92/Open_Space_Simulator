@@ -435,6 +435,11 @@ flowchart LR
   jungle, lambris, tableau noir, art déco, pluie de code). On choisit le mur à couvrir (fond ou
   gauche de chaque pièce) ou « Tous les murs » ; chaque mur couvert donne un peu de moral, parfois
   de la qualité ou de la hype. Les fenêtres restent visibles à travers.
+- **Sols** : le rayon Sols propose 8 matières sobres (vinyle, moquette en dalles, béton ciré,
+  carrelage, parquet en lames ou en chevrons, terrazzo, marbre poli), dont certaines se débloquent
+  avec les levées, chacune en plusieurs teintes neutres ou essences de bois. On choisit la pièce à
+  refaire ou « Toutes les pièces » ; chaque pièce refaite donne un peu de moral, parfois de la
+  qualité ou de la hype.
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
