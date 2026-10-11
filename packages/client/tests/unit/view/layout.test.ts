@@ -5,10 +5,13 @@ import { buildNavGrid } from '../../../src/ai/grid';
 import { FIXTURE_PRIMITIVES } from '../../../src/render/annexDecor';
 import { FLOOR_STYLES } from '../../../src/render/office';
 import { checkPlacement } from '../../../src/view/placement';
+import type { PlacedItemView } from '../../../src/view/types';
 import {
   ROOM_KINDS,
   ROOM_STYLES,
+  layoutOf,
   officeLayout,
+  yieldToItems,
   roomAt,
   type Cell,
   type OfficeLayout,
@@ -107,5 +110,65 @@ describe('Décor des pièces', () => {
     expect(styles('a')).toBe(styles('a'));
     const seeds = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(styles);
     expect(new Set(seeds).size).toBeGreaterThan(1);
+  });
+});
+
+describe('Le plan cède la place aux meubles posés', () => {
+  const view = (phase: (typeof PHASES)[number], wings: number, items: PlacedItemView[]) => ({
+    phase,
+    seed: 'graine',
+    group: { wings },
+    funding: { annexes: 2 },
+    items,
+  });
+  const glass = (x: number, z: number): PlacedItemView =>
+    ({
+      id: `mur-${x}-${z}`,
+      kind: 'glass-partition',
+      x,
+      z,
+      rotation: 1,
+      host: null,
+    }) as PlacedItemView;
+  const benchOf = (layout: OfficeLayout) => layout.fixtures?.find((f) => f.kind === 'bench');
+
+  it('une aile de filiale ne pose plus le banc du jardin dans un mur vitré', () => {
+    // Avec une filiale, la case est libre : le mur vitré y est accepté.
+    const before = officeLayout('UNICORN', 1, 2, 'graine');
+    const target = benchOf(officeLayout('UNICORN', 2, 2, 'graine'))!;
+    expect(benchOf(before)).not.toEqual(target);
+    const wall = glass(target.x, target.z);
+    expect(checkPlacement(before, [], wall)).toBeNull();
+
+    // Une deuxième filiale décale le décor : le banc tomberait dans le mur, il se pousse.
+    const after = layoutOf(view('UNICORN', 2, [wall]));
+    const bench = benchOf(after)!;
+    expect(bench).toBeDefined();
+    expect(bench).not.toMatchObject({ x: wall.x, z: wall.z });
+    expect(bench.z).toBe(target.z);
+    expect(after.partitions).toContainEqual({ x: bench.x, z: bench.z - 1 });
+    for (const fixture of after.fixtures ?? [])
+      expect({ x: fixture.x, z: fixture.z }).not.toEqual({ x: wall.x, z: wall.z });
+    // Sa nouvelle case est bloquée comme avant.
+    expect(checkPlacement(after, [wall], glass(bench.x, bench.z))).toBe('wall');
+  });
+
+  it('une nouvelle phase ne fait pas passer une cloison à travers un meuble', () => {
+    const seed = officeLayout('SEED');
+    const series = officeLayout('SERIES_A');
+    const cell = series.partitions.find(
+      (p) =>
+        p.x < seed.width && p.z < seed.depth && checkPlacement(seed, [], glass(p.x, p.z)) === null,
+    )!;
+    expect(cell).toBeDefined();
+    const after = yieldToItems(series, [glass(cell.x, cell.z)]);
+    expect(after.partitions).not.toContainEqual(cell);
+    expect(after.partitions).toHaveLength(series.partitions.length - 1);
+  });
+
+  it('sans conflit, le plan reste celui d’origine', () => {
+    const layout = officeLayout('UNICORN', 1, 2, 'graine');
+    expect(yieldToItems(layout, [])).toBe(layout);
+    expect(yieldToItems(layout, [glass(3, 3)])).toBe(layout);
   });
 });

@@ -16,6 +16,7 @@ import {
   type AnnexKind,
   type Phase,
 } from '@oss/shared';
+import { catalogItem, footprint } from './catalog';
 
 export interface Cell {
   readonly x: number;
@@ -274,12 +275,94 @@ export function roomAt(layout: OfficeLayout, cell: Cell): Room | undefined {
   return undefined;
 }
 
-/** Plan du bureau d'un instantané : phase, ailes des filiales, annexes et décor des pièces. */
+/** Ce qu'il faut savoir d'un objet posé pour connaître les cases qu'il occupe au sol. */
+interface FloorItem {
+  readonly kind: string;
+  readonly x: number;
+  readonly z: number;
+  readonly rotation: number;
+  readonly host?: unknown;
+}
+
+/** Cases occupées au sol par le mobilier du joueur (ni accessoires, ni fenêtres, ni plafond). */
+function floorCells(items: readonly FloorItem[]): Set<string> {
+  const cells = new Set<string>();
+  for (const item of items) {
+    const def = catalogItem(item.kind);
+    if (!def || item.host || def.accessory || def.wall || def.ceiling) continue;
+    const [w, d] = footprint(def, item.rotation);
+    for (let dx = 0; dx < w; dx++)
+      for (let dz = 0; dz < d; dz++) cells.add(`${item.x + dx},${item.z + dz}`);
+  }
+  return cells;
+}
+
+/**
+ * Le plan cède la place au mobilier déjà posé. Le plan change sous les meubles quand le bureau
+ * grandit : une nouvelle phase déplace les cloisons, une aile de filiale décale le décor fixe
+ * des annexes. Un meuble ne doit jamais se retrouver dans un mur ou sous un banc :
+ * - une cloison du plan sur une case meublée s'efface (le meuble est dans l'embrasure) ;
+ * - un objet du décor fixe sur une case meublée se pousse vers la case libre la plus proche,
+ *   toujours contre la cloison du fond (pas devant une porte ni contre un autre objet du
+ *   décor, sans gêner un meuble voisin), ou disparaît s'il n'y en a aucune.
+ * Fonction pure : mêmes meubles, même plan. Sans conflit, le plan est rendu tel quel.
+ */
+export function yieldToItems(layout: OfficeLayout, items: readonly FloorItem[]): OfficeLayout {
+  const taken = floorCells(items);
+  if (taken.size === 0) return layout;
+  const key = (x: number, z: number) => `${x},${z}`;
+  const fixtures = layout.fixtures ?? [];
+  const blockedPartitions = layout.partitions.some((cell) => taken.has(key(cell.x, cell.z)));
+  const blockedFixtures = fixtures.some((fixture) => taken.has(key(fixture.x, fixture.z)));
+  if (!blockedPartitions && !blockedFixtures) return layout;
+
+  const partitions = layout.partitions.filter((cell) => !taken.has(key(cell.x, cell.z)));
+  const wall = new Set(partitions.map((cell) => key(cell.x, cell.z)));
+  const placed = new Set(
+    fixtures
+      .filter((fixture) => !taken.has(key(fixture.x, fixture.z)))
+      .map((fixture) => key(fixture.x, fixture.z)),
+  );
+  const free = (x: number, z: number) =>
+    x > 0 && x < layout.width - 1 && !taken.has(key(x, z)) && !wall.has(key(x, z));
+  // Contre la cloison du fond sur trois cases (pas devant une porte), loin des autres objets
+  // du décor, et aucun meuble autour (on ne bouche pas l'accès à un bureau).
+  const fits = (x: number, z: number) =>
+    free(x, z) &&
+    [x - 1, x, x + 1].every((wx) => wall.has(key(wx, z - 1))) &&
+    !placed.has(key(x - 1, z)) &&
+    !placed.has(key(x, z)) &&
+    !placed.has(key(x + 1, z)) &&
+    [key(x - 1, z), key(x + 1, z), key(x, z + 1)].every((cell) => !taken.has(cell));
+
+  const moved: Fixture[] = [];
+  for (const fixture of fixtures) {
+    if (!taken.has(key(fixture.x, fixture.z))) {
+      moved.push(fixture);
+      continue;
+    }
+    for (let distance = 1; distance < layout.width; distance++) {
+      const x = [fixture.x - distance, fixture.x + distance].find((cx) => fits(cx, fixture.z));
+      if (x === undefined) continue;
+      moved.push({ ...fixture, x });
+      placed.add(key(x, fixture.z));
+      break;
+    }
+  }
+  return { ...layout, partitions, fixtures: moved };
+}
+
+/**
+ * Plan du bureau d'un instantané : phase, ailes des filiales, annexes et décor des pièces,
+ * qui cède la place au mobilier déjà posé (voir `yieldToItems`).
+ */
 export function layoutOf(view: {
   readonly phase: Phase;
   readonly seed: string;
   readonly group: { readonly wings: number };
   readonly funding: { readonly annexes: number };
+  readonly items?: readonly FloorItem[];
 }): OfficeLayout {
-  return officeLayout(view.phase, view.group.wings, view.funding.annexes, view.seed);
+  const layout = officeLayout(view.phase, view.group.wings, view.funding.annexes, view.seed);
+  return view.items ? yieldToItems(layout, view.items) : layout;
 }
