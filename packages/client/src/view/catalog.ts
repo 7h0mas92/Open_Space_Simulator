@@ -21,8 +21,10 @@ export const ITEM_CATEGORIES = [
   'fun',
   'decor',
   'pets',
+  'partition',
   'window',
   'accessory',
+  'devices',
 ] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
@@ -116,6 +118,10 @@ export interface CatalogItem extends ItemLook {
   readonly applianceSlots: number;
   /** Fenêtre : se fixe dans un mur du fond (rotation 0 : mur du fond, 1 : mur de gauche). */
   readonly wall: boolean;
+  /** Mur fin posé au sol (plein ou vitré), raccordé aux murs voisins, sinon `null`. */
+  readonly partition: 'solid' | 'glass' | null;
+  /** Fixé au plafond : ne gêne ni le mobilier ni les passages. */
+  readonly ceiling: boolean;
   readonly paint: readonly string[];
   /** Équipement pour chat (litière, gamelle, arbre à chat), sinon `null`. */
   readonly petNeed: PetNeed | null;
@@ -258,6 +264,25 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     model: primitive('mediaConsole'),
     height: 1.5,
     parts: [part(primitive('metricsScreen'), [0, TV_CABINET_TOP, -0.05])],
+  },
+  // Écrans de projection : seul le caisson est un gabarit, la toile est animée à part.
+  'projection-screen-small': {
+    category: 'devices',
+    model: primitive('projectionScreenSmall'),
+    height: 0.13,
+    paint: ['dark'],
+  },
+  'projection-screen-medium': {
+    category: 'devices',
+    model: primitive('projectionScreenMedium'),
+    height: 0.13,
+    paint: ['dark'],
+  },
+  'projection-screen-large': {
+    category: 'devices',
+    model: primitive('projectionScreenLarge'),
+    height: 0.13,
+    paint: ['dark'],
   },
   'server-rack': {
     category: 'work',
@@ -546,6 +571,20 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 2.2,
     paint: ['dark'],
   },
+  // Murs fins posés case par case (voir `render/partitions.ts`) : le plâtre, ou le cadre du
+  // vitrage, se repeint.
+  'thin-wall': {
+    category: 'partition',
+    model: primitive('thinWall'),
+    height: 1.3,
+    paint: ['plaster'],
+  },
+  'glass-partition': {
+    category: 'partition',
+    model: primitive('glassPartition'),
+    height: 2.2,
+    paint: ['metal'],
+  },
   // Lampe d'architecte : socle lesté, bras à ressorts, abat-jour penché, ampoule allumée.
   'desk-lamp': {
     category: 'accessory',
@@ -581,6 +620,20 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     model: primitive('secondScreen'),
     height: 0.4,
     paint: ['dark'],
+  },
+  // Vidéoprojecteur suspendu : tige et platine au plafond, boîtier tête en bas.
+  'ceiling-projector': {
+    category: 'devices',
+    model: primitive('ceilingProjector'),
+    height: 2.2,
+    paint: ['white'],
+  },
+  // Vidéoprojecteur : posé sur un meuble, tourné vers un écran déroulant.
+  projector: {
+    category: 'devices',
+    model: primitive('videoProjector'),
+    height: 0.1,
+    paint: ['white'],
   },
   'mini-speaker': { category: 'accessory', model: primitive('miniSpeaker'), height: 0.33 },
   trophy: { category: 'accessory', model: primitive('trophy'), height: 0.32, paint: ['gold'] },
@@ -623,6 +676,8 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   appliance: 'appliance' in item && item.appliance === true,
   applianceSlots: 'applianceSlots' in item ? item.applianceSlots : 0,
   wall: 'wall' in item && item.wall === true,
+  partition: 'partition' in item ? item.partition : null,
+  ceiling: 'ceiling' in item && item.ceiling === true,
   paint: LOOKS[item.id].paint ?? DEFAULT_PAINT,
   petNeed: 'petNeed' in item ? item.petNeed : null,
 }));

@@ -21,6 +21,7 @@ import {
 import type { SimContext } from './helpers';
 import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
+import { switchProjector } from './projection';
 import { answerRaise } from './raises';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -98,6 +99,10 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')
         : setMonitor(state, command.furnitureId, command);
+    case 'SWITCH_PROJECTOR':
+      return state.stage === 'PITCH'
+        ? fail('WRONG_STAGE')
+        : switchProjector(state, command.furnitureId, command.on);
     case 'SET_COMPUTER':
       return state.stage === 'PITCH'
         ? fail('WRONG_STAGE')

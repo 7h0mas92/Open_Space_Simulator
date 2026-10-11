@@ -286,6 +286,8 @@ export const FurnitureSchema = z.object({
   slot: z.number().int().nonnegative().optional(),
   /** Poste de travail : l'écran choisi (absent : l'écran bureautique livré avec le bureau). */
   monitor: MonitorSetupSchema.optional(),
+  /** Projecteur allumé (absent = éteint). Voir `projection.ts`. */
+  on: z.boolean().optional(),
   /** Bureau : ordinateur choisi (absent = la tour sobre d'origine, voir `computers.ts`). */
   computer: ComputerIdSchema.optional(),
 });

@@ -293,8 +293,18 @@ export interface PlacedItemView {
    * bureau s'il n'a jamais été changé. Absent pour les autres objets.
    */
   readonly monitor?: MonitorChoice;
+  /** Projecteur allumé (absent : éteint, ou objet sans interrupteur). */
+  readonly on?: boolean;
   /** Bureau : son ordinateur (tour ou portable), absent pour les autres objets. */
   readonly computer?: ComputerId;
+}
+
+/** Un projecteur allumé et l'écran qu'il a déroulé (voir `@oss/shared`, `projection.ts`). */
+export interface ProjectionView {
+  /** Identifiant de l'objet posé du projecteur. */
+  readonly projector: string;
+  /** Identifiant de l'objet posé de l'écran déroulé. */
+  readonly screen: string;
 }
 
 /**
@@ -597,6 +607,8 @@ export interface GameView {
   readonly tasks: readonly TaskView[];
   readonly candidates: readonly CandidateView[];
   readonly items: readonly PlacedItemView[];
+  /** Projections en cours : les écrans déroulés et les projecteurs qui les éclairent. */
+  readonly projections: readonly ProjectionView[];
   /** Inventaire : objets rangés, sans effet tant qu'ils ne sont pas reposés. */
   readonly inventory: readonly StoredItemView[];
   /** Vrai pendant un incident de production (fumée, écran rouge). */
@@ -680,6 +692,8 @@ export type GameCommand =
   | { readonly type: 'paintItem'; readonly itemId: string; readonly color: FurnitureColor }
   /** Change l'écran d'un poste de travail (modèle, taille, pied ou bras). */
   | { readonly type: 'setMonitor'; readonly itemId: string; readonly monitor: MonitorChoice }
+  /** Allume ou éteint un projecteur (il déroule l'écran posé en face de lui). */
+  | { readonly type: 'switchProjector'; readonly itemId: string; readonly on: boolean }
   | { readonly type: 'setComputer'; readonly itemId: string; readonly computer: ComputerId }
   | {
       readonly type: 'moveItem';

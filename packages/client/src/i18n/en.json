@@ -576,6 +576,15 @@
     "title": "Build mode",
     "intro": "Pick an item to place, or tap a piece of furniture to move, store or sell it.",
     "catalog": "Catalog",
+    "projector": {
+      "switchOn": "Switch on",
+      "switchOff": "Switch off",
+      "off": "Off: the screen in front stays rolled up.",
+      "projecting": "On: projecting onto: {{screen}}.",
+      "noScreen": "On, but no pull-up screen in front: turn it towards a screen (at most {{range}} tiles away).",
+      "unrolled": "Unrolled: a projector that is on lights it up.",
+      "rolled": "Rolled up: switch on a projector facing it to unroll it."
+    },
     "categories": {
       "work": "Work",
       "comfort": "Comfort",
@@ -585,9 +594,11 @@
       "decor": "Decor",
       "pets": "Pets",
       "window": "Windows",
+      "partition": "Partitions",
       "walls": "Walls",
       "accessory": "Accessories",
-      "monitors": "Monitors"
+      "monitors": "Monitors",
+      "devices": "Devices"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -680,6 +691,7 @@
     "surfaceFull": "No room left on this furniture.",
     "noCounter": "Appliances go on a kitchen cabinet (or on the fridge).",
     "noWall": "A window goes into one of the two back walls.",
+    "blocksPath": "This wall would close off the way through: leave a door.",
     "VENTURE_LIMIT": "Your group has already founded the maximum number of subsidiaries.",
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
     "NOT_AVAILABLE": "This financing is not available right now.",
@@ -792,6 +804,8 @@
       "windowMedium": "Two-tile window",
       "windowLarge": "Large three-tile window",
       "glassWall": "Floor-to-ceiling glass wall (building glass)",
+      "thinWall": "Half-height thin wall, joined to neighbouring walls",
+      "glassPartition": "Floor-to-ceiling glass partition, aluminium frame",
       "sofa": "Fabric sofa: cushions, rolled arms, wooden legs, throw pillows and a plaid",
       "bookcase": "Stocked bookcase: individual books, cupboard, baskets, plant, frame and trophy",
       "officeDesk": "Dev desk: worktop, steel frame, drawer unit, cable grommet and power strip",
@@ -807,7 +821,12 @@
       "kentiaPalm": "Kentia palm: arching fronds covered in leaflets",
       "oliveTree": "Olive tree with a gnarled trunk, silver foliage and olives",
       "planterBox": "Wooden slat planter: tall grass, plumes, bushes and flowers",
-      "giantMonstera": "Giant monstera with split leaves, in a woven basket"
+      "giantMonstera": "Giant monstera with split leaves, in a woven basket",
+      "videoProjector": "Video projector: casing, lens, vents, focus ring and power light",
+      "ceilingProjector": "Ceiling projector: mounting plate, rod, bracket and upside-down casing",
+      "projectionScreenSmall": "Pull-up projection screen (small): aluminium case, feet, animated fabric, pole and bar",
+      "projectionScreenMedium": "Pull-up projection screen (medium): aluminium case, feet, animated fabric, pole and bar",
+      "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar"
     },
     "back": "Back"
   },
