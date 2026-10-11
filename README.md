@@ -345,8 +345,11 @@ flowchart LR
   tirés sur une graine à part (graine + pitch + sprint) (`shared/sim/pitch.ts`,
   `shared/sim/funding.ts`, commande `TAKE_FINANCING`, état `financing`).
 - **Annexes du bureau** : dès la Série B, chaque tour réussi ouvre une annexe sur toute la
-  largeur du bureau (salle d'arcade, jardin intérieur, auditorium) avec son décor fixe et deux
-  places de plus dans l'équipe. Les sols des autres pièces changent d'une partie à l'autre
+  largeur du bureau (salle d'arcade, jardin intérieur, auditorium) avec son décor offert et deux
+  places de plus dans l'équipe. Ce décor se sélectionne, se tourne et se déplace comme le
+  mobilier (commande `MOVE_ANNEX_DECOR`, `shared/sim/annexDecor.ts`), et les mêmes objets sont
+  en vente avec un vrai effet (borne d'arcade, flipper, enseigne néon, arbre, fontaine, banc,
+  scène, pupitre, écran géant). Les sols des autres pièces changent d'une partie à l'autre
   (parquet, damier, terre cuite, moquette…), selon la graine (`view/layout.ts`,
   `render/annexDecor.ts`).
 - **Tâches dynamiques** : le backlog garde jusqu'à 2,5 idées par dev. Pendant le sprint, des
@@ -668,7 +671,7 @@ génère que des messages Slack.
   de ramen, mug, canard en plastique, trophée de hackathon, étui d'écouteurs sans fil ouvert,
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, tours de PC sobre et gaming,
   MacBook Pro sans logo, cinq écrans sur pied ou sur bras articulé (dont un incurvé), bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
+  pupitre et écran géant des annexes (aussi en vente), ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
   litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
