@@ -48,6 +48,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   group: '🏛️',
   meetings: '🗓️',
   pets: '🐈',
+  servers: '🗄️',
   funding: '💼',
   build: '🛠️',
   dashboard: '📈',

@@ -1,6 +1,7 @@
 import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
 import type { PetNeed } from './pets.js';
+import type { ServerGearKind } from './serverRoom.js';
 
 /**
  * Catalogue des objets du mode construction. Chaque objet a un effet réel sur la
@@ -32,6 +33,11 @@ export interface FurnitureEffects {
   debtPerDay?: number;
   /** Rend possible l'activité « babyfoot ». */
   babyfoot?: boolean;
+  /**
+   * Serveur d'une salle qui tourne : part de la facture d'hébergement épargnée (0.06 = -6 %),
+   * plafonnée au total (voir `HOSTING_SAVING_MAX` dans `serverRoom.ts`).
+   */
+  hostingSaving?: number;
 }
 
 export interface FurnitureDefinition {
@@ -99,6 +105,16 @@ export interface FurnitureDefinition {
    * Seuls les autres objets du plafond l'empêchent d'être posé.
    */
   ceiling?: boolean;
+  /**
+   * Salle des serveurs : un local vitré posé au sol. Ses emplacements (`surfaceSlots`)
+   * n'accueillent que du matériel serveur, et ce matériel ne se pose nulle part ailleurs.
+   */
+  serverRoom?: boolean;
+  /**
+   * Matériel de la salle des serveurs (accessoire) : sa famille. Ses effets ne comptent que si
+   * sa salle tourne (serveur, réseau et climatisation installés, voir `serverRoom.ts`).
+   */
+  serverGear?: ServerGearKind;
 }
 
 /**
@@ -1184,6 +1200,199 @@ export const FURNITURE_CATALOG = [
     maxCount: 2,
     accessory: true,
     effects: { moral: 0.03, coffeeRestock: 3 },
+  },
+  // --- Salle des serveurs : le local, puis le matériel qu'on y installe (voir `serverRoom.ts`). ---
+  {
+    id: 'server-closet',
+    name: t('Local serveurs', 'Server closet'),
+    description: t(
+      'Un placard vitré au sol technique : 4 emplacements pour le matériel serveur.',
+      'A glass closet with a raised floor: 4 slots for server hardware.',
+    ),
+    price: 4000,
+    width: 2,
+    depth: 2,
+    minPhase: 'SEED',
+    maxCount: 1,
+    effects: {},
+    surfaceSlots: 4,
+    serverRoom: true,
+  },
+  {
+    id: 'server-room',
+    name: t('Salle des serveurs', 'Server room'),
+    description: t(
+      'Une vraie salle climatisée, badge à l’entrée : 8 emplacements pour le matériel serveur.',
+      'A real air-conditioned room with a badge reader: 8 slots for server hardware.',
+    ),
+    price: 12000,
+    width: 4,
+    depth: 3,
+    minPhase: 'SERIES_A',
+    maxCount: 1,
+    effects: {},
+    surfaceSlots: 8,
+    serverRoom: true,
+  },
+  {
+    id: 'rack-server',
+    name: t('Baie de serveurs 1U', '1U server rack'),
+    description: t(
+      'Six serveurs qui ronronnent : +stabilité, -6 % de facture d’hébergement.',
+      'Six purring servers: +stability, -6% hosting bill.',
+    ),
+    price: 3000,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 8,
+    accessory: true,
+    serverGear: 'server',
+    effects: { stabilityPerDay: 0.15, hostingSaving: 0.06 },
+  },
+  {
+    id: 'blade-server',
+    name: t('Châssis de serveurs lames', 'Blade server chassis'),
+    description: t(
+      'Trente-deux lames dans une armoire : +stabilité, -12 % de facture d’hébergement.',
+      'Thirty-two blades in one cabinet: +stability, -12% hosting bill.',
+    ),
+    price: 9000,
+    width: 1,
+    depth: 1,
+    minPhase: 'SERIES_A',
+    maxCount: 6,
+    accessory: true,
+    serverGear: 'server',
+    effects: { stabilityPerDay: 0.3, hostingSaving: 0.12 },
+  },
+  {
+    id: 'gpu-server',
+    name: t('Serveur GPU', 'GPU server'),
+    description: t(
+      'Pour entraîner « notre propre IA » : +1,5 % de productivité, +hype. Chauffe beaucoup.',
+      'To train “our own AI”: +1.5% productivity, +hype. Runs very hot.',
+    ),
+    price: 15000,
+    width: 1,
+    depth: 1,
+    minPhase: 'SERIES_A',
+    maxCount: 4,
+    accessory: true,
+    serverGear: 'server',
+    effects: { teamProductivity: 0.015, hypePerDay: 0.05, hostingSaving: 0.03 },
+  },
+  {
+    id: 'network-switch',
+    name: t('Switch réseau 48 ports', '48-port network switch'),
+    description: t(
+      'Relie les serveurs entre eux, avec des câbles de toutes les couleurs. +stabilité.',
+      'Links the servers together with cables of every colour. +stability.',
+    ),
+    price: 800,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 4,
+    accessory: true,
+    serverGear: 'network',
+    effects: { stabilityPerDay: 0.04 },
+  },
+  {
+    id: 'fibre-router',
+    name: t('Box fibre pro', 'Business fibre router'),
+    description: t(
+      'Le point d’arrivée de la fibre : indispensable à l’abonnement. Compte comme du réseau.',
+      'Where the fibre comes in: required for the subscription. Counts as networking.',
+    ),
+    price: 600,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 2,
+    accessory: true,
+    serverGear: 'network',
+    effects: { stabilityPerDay: 0.02 },
+  },
+  {
+    id: 'precision-cooling',
+    name: t('Climatisation de précision', 'Precision air conditioner'),
+    description: t(
+      'Garde la salle à 21 °C. Sans elle, les serveurs surchauffent et ne servent à rien.',
+      'Keeps the room at 21 °C. Without it the servers overheat and do nothing.',
+    ),
+    price: 3500,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 4,
+    accessory: true,
+    serverGear: 'cooling',
+    effects: { stabilityPerDay: 0.02 },
+  },
+  {
+    id: 'ups-unit',
+    name: t('Onduleur', 'UPS'),
+    description: t(
+      'Vingt minutes de batterie quand quelqu’un débranche la multiprise. +stabilité.',
+      'Twenty minutes of battery when someone unplugs the power strip. +stability.',
+    ),
+    price: 2000,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 4,
+    accessory: true,
+    serverGear: 'power',
+    effects: { stabilityPerDay: 0.1 },
+  },
+  {
+    id: 'backup-nas',
+    name: t('Baie de sauvegarde', 'Backup storage array'),
+    description: t(
+      'Des sauvegardes qu’on a vraiment testées : +stabilité, -dette chaque jour.',
+      'Backups that were actually tested: +stability, -debt every day.',
+    ),
+    price: 2500,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 3,
+    accessory: true,
+    serverGear: 'storage',
+    effects: { stabilityPerDay: 0.05, debtPerDay: -0.05 },
+  },
+  {
+    id: 'firewall',
+    name: t('Pare-feu', 'Firewall'),
+    description: t(
+      'Bloque les attaques et Slack le vendredi. +stabilité, les investisseurs adorent : +hype.',
+      'Blocks attacks, and Slack on Fridays. +stability, investors love it: +hype.',
+    ),
+    price: 1800,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 2,
+    accessory: true,
+    serverGear: 'security',
+    effects: { stabilityPerDay: 0.06, hypePerDay: 0.02 },
+  },
+  {
+    id: 'fire-suppression',
+    name: t('Extinction automatique au gaz', 'Gas fire suppression'),
+    description: t(
+      'Deux bouteilles prêtes à étouffer le moindre incendie. +stabilité, l’équipe dort mieux.',
+      'Two cylinders ready to smother any fire. +stability, the team sleeps better.',
+    ),
+    price: 4000,
+    width: 1,
+    depth: 1,
+    minPhase: 'SERIES_A',
+    maxCount: 2,
+    accessory: true,
+    serverGear: 'security',
+    effects: { stabilityPerDay: 0.05, moral: 0.02 },
   },
 ] as const satisfies readonly FurnitureDefinition[];
 

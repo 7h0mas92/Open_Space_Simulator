@@ -117,7 +117,9 @@ describe('accessoires', () => {
             ? 'appliance'
             : 'projector' in item
               ? 'devices'
-              : 'accessory',
+              : 'serverGear' in item
+                ? 'servers'
+                : 'accessory',
         );
       }
     }
@@ -144,6 +146,19 @@ describe('accessoires', () => {
     expect(resolveAccessory([counter, oven(0)], { x: 6, z: 2 })).toEqual({
       host: { id: 'k', slot: 1 },
     });
+  });
+
+  it('installe le matériel serveur dans une salle des serveurs, et rien d’autre', () => {
+    const closet: PlacedItemView = { ...desk, id: 's', kind: 'server-closet', x: 6, z: 2 };
+    const rack = { kind: 'rack-server', rotation: 0 as const };
+    expect(checkPlacement(layout, [desk], { ...rack, x: 2, z: 2 })).toBe('noServerRoom');
+    expect(checkPlacement(layout, [desk], { ...rack, x: 9, z: 9 })).toBe('noServerRoom');
+    expect(resolveAccessory([closet], { ...rack, x: 7, z: 2 })).toMatchObject({
+      host: { id: 's' },
+    });
+    expect(checkPlacement(layout, [closet], { kind: 'rubber-duck', x: 7, z: 2, rotation: 0 })).toBe(
+      'noSurface',
+    );
   });
 
   it('se pose sur un meuble à plateau, jamais au sol', () => {

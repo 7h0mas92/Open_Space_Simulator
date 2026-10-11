@@ -3780,3 +3780,133 @@ legend {
     margin-inline: auto;
   }
 }
+
+/* --- Salle des serveurs et fibre ---------------------------------------------------------- */
+
+.servers-panel,
+.servers-panel section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.servers-panel {
+  gap: 12px;
+}
+
+.server-rooms,
+.server-needs,
+.fibre-plans {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fibre-plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 8px;
+}
+
+.server-room-card,
+.fibre-current {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.server-room-card h4,
+.server-room-card p,
+.fibre-current p,
+.server-saving {
+  margin: 0;
+}
+
+.server-needs .up,
+.server-state.up {
+  color: #7fd18b;
+}
+
+.server-needs .down,
+.server-state.down {
+  color: #ff9b8f;
+}
+
+.server-state,
+.server-saving {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.fibre-current > button,
+.fibre-actions button {
+  align-self: flex-start;
+}
+
+.fibre-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fibre-actions .hint {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.fibre-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.fibre-plan.current {
+  border-left-color: #7fd18b;
+}
+
+.fibre-plan.locked {
+  opacity: 0.75;
+  border-left-color: var(--text-muted);
+}
+
+.fibre-plan h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.fibre-speed,
+.fibre-price {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.fibre-price {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.fibre-plan .hint {
+  margin: 0;
+}
+
+.fibre-plan > button {
+  margin-top: auto;
+}

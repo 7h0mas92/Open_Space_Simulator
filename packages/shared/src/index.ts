@@ -17,6 +17,7 @@ export * from './sim/pets.js';
 export * from './sim/pitch.js';
 export * from './sim/projection.js';
 export * from './sim/raises.js';
+export * from './sim/serverRoom.js';
 export * from './sim/state.js';
 export * from './sim/taskFlow.js';
 export * from './sim/teamRoles.js';

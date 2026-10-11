@@ -5,6 +5,7 @@ import { MeetingFormatIdSchema } from './meetings.js';
 import { MonitorModelSchema, MonitorMountSchema, MonitorSizeSchema } from './monitors.js';
 import { FinancingKindSchema } from './funding.js';
 import { PetCoatSchema } from './pets.js';
+import { FibrePlanIdSchema } from './serverRoom.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
 
 /**
@@ -149,6 +150,10 @@ export const CommandSchema = z.discriminatedUnion('type', [
     furnitureId: EntityIdSchema,
     computer: ComputerIdSchema,
   }),
+  /** Souscrit à une offre fibre, ou en change : la première semaine est payée tout de suite. */
+  z.object({ type: z.literal('SUBSCRIBE_FIBRE'), plan: FibrePlanIdSchema }),
+  /** Résilie l'abonnement fibre (la semaine entamée n'est pas remboursée). */
+  z.object({ type: z.literal('CANCEL_FIBRE') }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export type CommandType = Command['type'];

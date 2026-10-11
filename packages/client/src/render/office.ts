@@ -18,6 +18,7 @@ import { buildFixture } from './annexDecor';
 import {
   buildPartitions,
   partitionCells,
+  partitionGlass,
   partitionShapes,
   PARTITION_THICKNESS,
 } from './partitions';
@@ -458,16 +459,19 @@ export class OfficeView {
           mesh.setMatrixAt(index, matrix.clone().multiply(part.matrix));
         });
         mesh.instanceMatrix.needsUpdate = true;
-        mesh.castShadow = true;
+        // Les vitres (salle des serveurs) laissent passer le clic vers le matériel derrière elles.
+        const glass = part.material === partitionGlass;
+        mesh.castShadow = !glass;
         mesh.receiveShadow = true;
         mesh.userData.itemIds = instances.map((i) => i.itemId);
         mesh.computeBoundingSphere();
         this.furniture.add(mesh);
-        this.pickables.push(mesh);
+        if (!glass) this.pickables.push(mesh);
         const itemKind = kind.split('#')[0] ?? kind;
-        // Les petits accessoires disparaissent au dézoom, pas l'électroménager.
+        // Les petits accessoires disparaissent au dézoom, pas l'électroménager ni les serveurs.
         const def = catalogItem(itemKind);
-        if (DECOR_KINDS.has(itemKind) || (def?.accessory && !def.appliance)) this.decor.push(mesh);
+        if (DECOR_KINDS.has(itemKind) || (def?.accessory && !def.appliance && !def.serverGear))
+          this.decor.push(mesh);
       }
     }
     if (partitionHits.length > 0) {

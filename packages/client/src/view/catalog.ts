@@ -6,7 +6,13 @@
  * le modèle Kenney (ou la forme Three.js si le modèle manque), la hauteur visée, la catégorie
  * de la boutique et le point d'intérêt que l'IA des personnages peut utiliser.
  */
-import { FURNITURE_CATALOG, type LocalizedText, type PetNeed, type Phase } from '@oss/shared';
+import {
+  FURNITURE_CATALOG,
+  type LocalizedText,
+  type PetNeed,
+  type Phase,
+  type ServerGearKind,
+} from '@oss/shared';
 import type { FurnitureModel, MissingAssetId } from '../render/assetManifest';
 
 export type ItemModel =
@@ -25,6 +31,7 @@ export const ITEM_CATEGORIES = [
   'window',
   'accessory',
   'devices',
+  'servers',
 ] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
@@ -125,6 +132,10 @@ export interface CatalogItem extends ItemLook {
   readonly paint: readonly string[];
   /** Équipement pour chat (litière, gamelle, arbre à chat), sinon `null`. */
   readonly petNeed: PetNeed | null;
+  /** Salle des serveurs : ses emplacements n'accueillent que le matériel serveur. */
+  readonly serverRoom: boolean;
+  /** Matériel de la salle des serveurs : sa famille, sinon `null`. */
+  readonly serverGear: ServerGearKind | null;
 }
 
 const kenney = (model: FurnitureModel): ItemModel => ({ source: 'kenney', model });
@@ -145,6 +156,28 @@ const BOOKCASE_TOP = 1.58;
 const COUNTER_TOP = 0.9;
 const ISLAND_TOP = 0.92;
 const NICHE_FLOOR = 1.02;
+/** Dessus du sol technique des salles des serveurs (voir `render/serverRoom.ts`). */
+const RAISED_FLOOR = 0.06;
+/** Une baie fait 0,55 de large : trois au fond du local, une contre le mur de gauche. */
+const CLOSET_SLOTS = [
+  [-0.6, RAISED_FLOOR, -0.5],
+  [0, RAISED_FLOOR, -0.5],
+  [0.6, RAISED_FLOOR, -0.5],
+  [-0.6, RAISED_FLOOR, 0.42],
+] as const;
+/** Deux rangées de quatre baies, l'allée devant la porte. */
+const ROOM_SLOTS = [-1.35, -0.45, 0.45, 1.35].flatMap((x) => [
+  [x, RAISED_FLOOR, -1.0] as const,
+  [x, RAISED_FLOOR, 0.1] as const,
+]);
+/** Matériel d'une salle des serveurs : armoires non repeignables, sur le sol technique. */
+const gear = (model: MissingAssetId, height: number): ItemLook => ({
+  category: 'servers',
+  model: primitive(model),
+  height,
+  paint: [],
+});
+
 /** Deux places côte à côte sur un meuble bas d'une case, chacune assez large pour un appareil. */
 const COUNTER_SLOTS = [
   [-0.2, COUNTER_TOP, -0.03],
@@ -661,6 +694,31 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 0.35,
     paint: ['red'],
   },
+  // Salles des serveurs : sol technique, cloisons vitrées, porte à badge.
+  'server-closet': {
+    category: 'servers',
+    model: primitive('serverCloset'),
+    height: 2.1,
+    paint: [],
+    surface: CLOSET_SLOTS,
+  },
+  'server-room': {
+    category: 'servers',
+    model: primitive('serverRoom'),
+    height: 2.1,
+    paint: [],
+    surface: ROOM_SLOTS,
+  },
+  'rack-server': gear('rackServer', 1.9),
+  'blade-server': gear('bladeServer', 1.9),
+  'gpu-server': gear('gpuServer', 1.9),
+  'network-switch': gear('networkSwitch', 1.6),
+  'fibre-router': gear('fibreRouter', 1.2),
+  'precision-cooling': gear('precisionCooling', 1.95),
+  'ups-unit': gear('upsUnit', 1.05),
+  'backup-nas': gear('backupNas', 1.4),
+  firewall: gear('firewallUnit', 1.2),
+  'fire-suppression': gear('fireSuppression', 1.7),
 };
 
 export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => ({
@@ -680,6 +738,8 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   ceiling: 'ceiling' in item && item.ceiling === true,
   paint: LOOKS[item.id].paint ?? DEFAULT_PAINT,
   petNeed: 'petNeed' in item ? item.petNeed : null,
+  serverRoom: 'serverRoom' in item && item.serverRoom === true,
+  serverGear: 'serverGear' in item ? item.serverGear : null,
 }));
 
 const byKind = new Map<string, CatalogItem>(CATALOG.map((item) => [item.kind, item]));
