@@ -39,6 +39,8 @@ export function SelectionBar({ view }: { view: GameView }) {
     if (!item || !def) return null;
     const projection = projectionStatus(item, view, itemName, t);
     const serverRoom = view.servers.rooms.find((room) => room.id === item.id);
+    // Décor offert avec une annexe : il se déplace et se tourne, rien de plus.
+    const gift = item.annexDecor !== undefined;
     return (
       <div
         className="selection-bar"
@@ -50,7 +52,9 @@ export function SelectionBar({ view }: { view: GameView }) {
           <p>
             <strong>{itemName(item.kind)}</strong>
           </p>
-          <span className="item-description">{localized(def.description, i18n.language)}</span>
+          <span className="item-description">
+            {gift ? t('build.annexDecor') : localized(def.description, i18n.language)}
+          </span>
           {item.monitor && (
             <span className="item-description item-monitor" data-testid="selected-monitor">
               🖥️ {monitorLabel(item.monitor, t, i18n.language)}
@@ -97,7 +101,7 @@ export function SelectionBar({ view }: { view: GameView }) {
         >
           ⟳ {t('build.rotate')}
         </button>
-        {def.paint.length > 0 && (
+        {!gift && def.paint.length > 0 && (
           <ColorPicker
             value={item.color}
             label={t('build.paint')}
@@ -131,34 +135,38 @@ export function SelectionBar({ view }: { view: GameView }) {
         <button type="button" onClick={() => startMove(item.id)}>
           ✥ {t('build.move')}
         </button>
-        <button
-          type="button"
-          data-testid="store-item"
-          onClick={() => {
-            const carried = view.items.filter((i) => i.host?.id === item.id).length;
-            void dispatch({ type: 'storeItem', itemId: item.id }).then((result) => {
-              if (!result.ok) return;
-              select(null);
-              notify(carried > 0 ? 'build.storedWith' : 'build.stored', 'success', {
-                item: itemName(item.kind),
-                count: carried,
-              });
-            });
-          }}
-        >
-          📦 {t('build.store')}
-        </button>
-        <button
-          type="button"
-          className="danger"
-          onClick={() => {
-            void dispatch({ type: 'sellItem', itemId: item.id }).then((result) => {
-              if (result.ok) select(null);
-            });
-          }}
-        >
-          {t('build.sell', { price: formatMoney(item.resale, i18n.language) })}
-        </button>
+        {!gift && (
+          <>
+            <button
+              type="button"
+              data-testid="store-item"
+              onClick={() => {
+                const carried = view.items.filter((i) => i.host?.id === item.id).length;
+                void dispatch({ type: 'storeItem', itemId: item.id }).then((result) => {
+                  if (!result.ok) return;
+                  select(null);
+                  notify(carried > 0 ? 'build.storedWith' : 'build.stored', 'success', {
+                    item: itemName(item.kind),
+                    count: carried,
+                  });
+                });
+              }}
+            >
+              📦 {t('build.store')}
+            </button>
+            <button
+              type="button"
+              className="danger"
+              onClick={() => {
+                void dispatch({ type: 'sellItem', itemId: item.id }).then((result) => {
+                  if (result.ok) select(null);
+                });
+              }}
+            >
+              {t('build.sell', { price: formatMoney(item.resale, i18n.language) })}
+            </button>
+          </>
+        )}
         <button
           type="button"
           className="icon-button"

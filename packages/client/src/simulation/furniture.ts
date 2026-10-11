@@ -4,6 +4,7 @@ import {
   officeWidthWithWings,
   officeDepthWithAnnexes,
   annexCount,
+  annexDecorItem,
   PHASES,
   DEFAULT_MONITOR,
   getFurniture,
@@ -422,6 +423,26 @@ export function moveFurniture(
       accessory.y = y;
     }
   }
+  return { ok: true };
+}
+
+/**
+ * Déplace ou tourne un objet du décor d'une annexe. Il reste du décor : aucun effet, aucun prix.
+ * Comme pour le mobilier, la simulation vérifie les bornes et le mobilier déjà posé ; les
+ * cloisons, l'entrée et le reste du décor sont vérifiés par le plan (`view/placement.ts`).
+ */
+export function moveAnnexDecor(
+  state: GameState,
+  key: string,
+  x: number,
+  y: number,
+  rotation: number,
+): CommandResult {
+  const itemId = annexDecorItem(key, annexCount(state.fundingRounds));
+  const item = itemId ? getFurniture(itemId) : undefined;
+  if (!item) return { ok: false, error: 'NOT_FOUND' };
+  if (!canPlace(state, item, x, y, rotation)) return { ok: false, error: 'INVALID_PLACEMENT' };
+  state.annexDecor = { ...state.annexDecor, [key]: { x, y, rotation } };
   return { ok: true };
 }
 

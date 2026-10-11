@@ -551,7 +551,7 @@ export const useGame = create<GameStore>((set, get) => ({
     }
     // Pose en série : l'objet reste en main tant qu'on peut en acheter un autre.
     const owned =
-      view.items.filter((item) => item.kind === build.kind).length +
+      view.items.filter((item) => item.kind === build.kind && !item.annexDecor).length +
       view.inventory.reduce((sum, s) => sum + (s.kind === build.kind ? s.count : 0), 0) +
       1;
     if (!stock && (owned >= def.maxCount || view.gauges.treasury - def.price < def.price)) {

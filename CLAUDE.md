@@ -650,10 +650,12 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   bloquent pas le pathfinding (`ai/grid.ts`). Modèle `ceilingProjector` (`lensOf` pour le faisceau).
 
 - Bruits de bureau (`client/src/audio/deskSounds.ts`, option `onDeskActivity` de `GameRenderer`,
-  branché dans `ui/game/Scene.tsx`) : un dev en pose « travail » à un bureau à écran fait des clics
-  de souris très faibles à tous les zooms (8 devs au plus, les plus proches du centre) ; en zoomant
+  branché dans `ui/game/Scene.tsx`) : un dev en pose « travail » à un bureau à écran (même règle
+  que l'écran allumé, `screenMountOf` : écran choisi ou portable du garage) fait des clics de
+  souris très faibles à tous les zooms (8 devs au plus, les plus proches du centre) ; en zoomant
   (plus petit côté de la vue de 8,5 à 5,5 unités, `closeness`), clavier et souris des devs proches
-  du centre, plus forts au centre et placés à gauche ou à droite (6 claviers au plus, `deskMix`).
+  du centre, plus forts au centre, baisse linéaire jusqu'à 1,6 fois le plus petit côté de la vue,
+  placés à gauche ou à droite (6 claviers au plus, `deskMix`).
   Frappes tirées de l'enregistrement fourni par Melvin (`public/assets/sounds/clavier-1-mrboubou13al.mp3`,
   précaché), découpé au chargement en 54 frappes (`sliceKeystrokes`) et joué bien plus bas que
   l'original ; frappes synthétisées en secours. Clic de souris synthétisé en Web Audio. Rythme

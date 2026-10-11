@@ -2,7 +2,7 @@ import { ANNEXES, ANNEX_KINDS, PHASES } from '@oss/shared';
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { buildNavGrid } from '../../../src/ai/grid';
-import { FIXTURE_PRIMITIVES } from '../../../src/render/annexDecor';
+import { ANNEX_DECOR_PRIMITIVES } from '../../../src/render/annexDecor';
 import { FLOOR_STYLES } from '../../../src/render/office';
 import { checkPlacement } from '../../../src/view/placement';
 import {
@@ -65,19 +65,31 @@ describe('Annexes du bureau', () => {
     }
   });
 
-  it('le décor fixe est dans son annexe, bloque la grille et la construction', () => {
+  it('le décor offert est dans son annexe, sans bloquer le plan lui-même', () => {
     const layout = officeLayout('SERIES_A', 0, 3);
     const fixtures = layout.fixtures ?? [];
     expect(fixtures.length).toBeGreaterThanOrEqual(ANNEXES.max * 4);
-    const grid = buildNavGrid(layout, []);
-    for (const fixture of fixtures) {
-      expect(ANNEX_KINDS).toContain(roomAt(layout, fixture)?.kind);
-      expect(grid.walkable(fixture.x, fixture.z)).toBe(false);
-    }
+    expect(new Set(fixtures.map((fixture) => fixture.key)).size).toBe(fixtures.length);
+    for (const fixture of fixtures) expect(ANNEX_KINDS).toContain(roomAt(layout, fixture)?.kind);
+    // Ce sont des objets posés (voir l'adaptateur) : seuls eux bloquent la grille.
     const first = fixtures[0]!;
-    expect(checkPlacement(layout, [], { kind: 'plant', x: first.x, z: first.z, rotation: 0 })).toBe(
-      'wall',
-    );
+    expect(buildNavGrid(layout, []).walkable(first.x, first.z)).toBe(true);
+    const placed = {
+      id: 'annex:0-0',
+      kind: first.kind,
+      x: first.x,
+      z: first.z,
+      rotation: 0 as const,
+    };
+    expect(buildNavGrid(layout, [placed]).walkable(first.x, first.z)).toBe(false);
+    expect(
+      checkPlacement(layout, [{ ...placed, resale: 0, color: 'natural', host: null }], {
+        kind: 'plant',
+        x: first.x,
+        z: first.z,
+        rotation: 0,
+      }),
+    ).toBe('overlap');
   });
 
   it('chaque objet du décor des annexes a une forme distincte', () => {
@@ -86,7 +98,7 @@ describe('Annexes du bureau', () => {
       const size = new THREE.Box3().setFromObject(group).getSize(new THREE.Vector3());
       return `${group.children.length}:${size.toArray().map((v) => v.toFixed(2))}`;
     };
-    const shapes = Object.values(FIXTURE_PRIMITIVES).map(signature);
+    const shapes = Object.values(ANNEX_DECOR_PRIMITIVES).map(signature);
     expect(new Set(shapes).size).toBe(shapes.length);
   });
 });

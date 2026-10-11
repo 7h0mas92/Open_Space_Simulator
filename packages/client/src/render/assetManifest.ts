@@ -262,7 +262,6 @@ export const MISSING_ASSETS = [
   { id: 'mug', replacement: 'primitive' },
   { id: 'rubberDuck', replacement: 'primitive' },
   { id: 'trophy', replacement: 'primitive' },
-  { id: 'annexDecor', replacement: 'decor' },
   { id: 'deskEarbuds', replacement: 'primitive' },
   { id: 'deskLamp', replacement: 'primitive' },
   { id: 'bookStack', replacement: 'primitive' },
@@ -330,6 +329,15 @@ export const MISSING_ASSETS = [
   { id: 'backupNas', replacement: 'primitive' },
   { id: 'firewallUnit', replacement: 'primitive' },
   { id: 'fireSuppression', replacement: 'primitive' },
+  // Décor des annexes (arcade, jardin, auditorium), aussi en vente (`render/annexDecor.ts`).
+  { id: 'arcadeCabinet', replacement: 'primitive' },
+  { id: 'pinballMachine', replacement: 'primitive' },
+  { id: 'neonSign', replacement: 'primitive' },
+  { id: 'indoorTree', replacement: 'primitive' },
+  { id: 'zenFountain', replacement: 'primitive' },
+  { id: 'smallStage', replacement: 'primitive' },
+  { id: 'lectern', replacement: 'primitive' },
+  { id: 'auditoriumScreen', replacement: 'primitive' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;

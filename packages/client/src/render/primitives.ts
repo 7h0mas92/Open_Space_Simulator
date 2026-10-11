@@ -64,6 +64,7 @@ import {
 } from './workFurniture';
 import { qwertyKeyboard } from './keyboard';
 import { partitionPiece } from './partitions';
+import { ANNEX_DECOR_PRIMITIVES } from './annexDecor';
 import { liquidTower, neonTower, plainTower, proLaptop, titanTower } from './computers';
 import {
   projectionScreenLarge,
@@ -514,13 +515,13 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   backupNas,
   firewallUnit,
   fireSuppression,
+  ...ANNEX_DECOR_PRIMITIVES,
   officeCharacters: null,
   officeCats: null,
   seasonalDecor: null,
   meetingRoomProps: null,
   deskMonitors: null,
   citySkyline: null,
-  annexDecor: null,
   uiPack: null,
   soundPacks: null,
 };
