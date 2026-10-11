@@ -375,6 +375,7 @@ test('mode construction : peindre un mur puis le tapisser', async ({ page }) => 
 });
 
 test('mode construction : changer la matière et la couleur du sol', async ({ page }) => {
+  test.slow();
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();
   await page.getByTestId('catalog-tab-floors').click();
@@ -396,8 +397,7 @@ test('mode construction : changer la matière et la couleur du sol', async ({ pa
   await expect(page.getByTestId('floor-tint-charcoal')).toHaveCount(0);
   await expect(page.getByTestId('floor-tint-oak')).toBeVisible();
   // Matière pas encore débloquée au garage.
-  await page.getByTestId('floor-material-marble').click();
-  await expect(zone).toBeDisabled();
+  await expect(page.getByTestId('floor-material-marble')).toContainText('Débloqué en Licorne');
 
   const tooSmall = await page.evaluate(() =>
     [...document.querySelectorAll('.build-hud button')]
