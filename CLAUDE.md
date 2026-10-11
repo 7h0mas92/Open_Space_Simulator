@@ -644,6 +644,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   +hype (+moral moyen et grand), projecteur +moral et -0,4 % de productivité. Commande
   `SWITCH_PROJECTOR`, champ `on` optionnel (absent = éteint), `GameView.projections`, rendu animé
   dans `render/projection.ts` (sans animation si « réduire les animations »). Aucun tirage.
+  Projecteur de plafond (`ceiling-projector`, 1 300 €, 3 au plus) : accroché au-dessus d'une case,
+  même d'un bureau, il vise depuis sa case avec les mêmes effets. Drapeau `ceiling` du catalogue :
+  les objets du plafond ne se chevauchent qu'entre eux, jamais au-dessus d'un mur vitré, et ne
+  bloquent pas le pathfinding (`ai/grid.ts`). Modèle `ceilingProjector` (`lensOf` pour le faisceau).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
