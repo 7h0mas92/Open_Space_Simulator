@@ -1,6 +1,7 @@
 import {
   CommandSchema,
   TIME,
+  getFurniture,
   type Command,
   type CommandResult,
   type GameState,
@@ -29,6 +30,7 @@ import { taskFlowSystem } from './taskFlow';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
+import { fibreSystem } from './serverRoom';
 
 /** Un système = une fonction qui fait évoluer l'état pendant un tick. */
 export type System = (state: GameState, ctx: SimContext, clock: SimClock) => void;
@@ -45,6 +47,7 @@ export const SYSTEMS: readonly System[] = [
   eventSystem,
   dailySystem,
   calendarSystem,
+  (state, ctx) => fibreSystem(state, ctx),
 ];
 
 export interface DispatchResult {
@@ -91,11 +94,12 @@ export class Simulation {
    * Toute modification du mobilier ou de l'équipe ajoute une entité (nextEntityId change)
    * ou en retire une (un des deux compteurs change). Les postes vont aux devs présents au
    * bureau : la liste des télétravailleurs fait donc aussi partie de la clé, comme la formule
-   * de la salle de réunion, et les ordinateurs des bureaux (changés sans nouvelle entité).
+   * de la salle de réunion, les ordinateurs des bureaux (changés sans nouvelle entité),
+   * l'abonnement fibre et la salle de chaque équipement serveur (déplaçable d'une salle à l'autre).
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.fibre?.plan ?? '-'}:${serverGearKey(state)}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;
@@ -165,5 +169,13 @@ function computersKey(state: GameState): string {
   let key = '';
   for (const [id, item] of Object.entries(state.components.furniture))
     if (item.computer) key += `${id}=${item.computer},`;
+  return key;
+}
+
+/** Salle de chaque équipement serveur : le déplacer d'une salle à l'autre change les effets. */
+function serverGearKey(state: GameState): string {
+  let key = '';
+  for (const [id, item] of Object.entries(state.components.furniture))
+    if (getFurniture(item.itemId)?.serverGear) key += `${id}@${item.hostId ?? ''},`;
   return key;
 }

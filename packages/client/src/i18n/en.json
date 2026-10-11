@@ -315,7 +315,8 @@
     "group": "Invest",
     "meetings": "Meeting room",
     "funding": "Raise funds",
-    "pets": "Office cats"
+    "pets": "Office cats",
+    "servers": "Server room"
   },
   "kanban": {
     "columns": {
@@ -621,7 +622,8 @@
       "floors": "Floors",
       "accessory": "Accessories",
       "monitors": "Monitors",
-      "devices": "Devices"
+      "devices": "Devices",
+      "servers": "Servers"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -716,6 +718,7 @@
     "noCounter": "Appliances go on a kitchen cabinet (or on the fridge).",
     "noWall": "A window goes into one of the two back walls.",
     "blocksPath": "This wall would close off the way through: leave a door.",
+    "noServerRoom": "Server hardware goes in a server room (or a server closet).",
     "VENTURE_LIMIT": "Your group has already founded the maximum number of subsidiaries.",
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
     "NOT_AVAILABLE": "This financing is not available right now.",
@@ -850,6 +853,18 @@
       "projectionScreenSmall": "Pull-up projection screen (small): aluminium case, feet, animated fabric, pole and bar",
       "projectionScreenMedium": "Pull-up projection screen (medium): aluminium case, feet, animated fabric, pole and bar",
       "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar",
+      "serverCloset": "Server closet: raised floor tiles, glass walls, badge-reader door, cable tray",
+      "serverRoom": "Server room: raised floor, perforated tiles, glass walls, badge-reader door, cable tray",
+      "rackServer": "1U server rack: cabinet, six servers with LEDs, patch panel and smoked door",
+      "bladeServer": "Blade server chassis: two enclosures of vertical blades with blue LEDs",
+      "gpuServer": "GPU server: four servers with glowing green fans",
+      "networkSwitch": "Network switch: open rack, 48-port switches, looping coloured cables",
+      "fibreRouter": "Business fibre router: cabinet, optical drawer, yellow fibres, ONT and router",
+      "precisionCooling": "Precision air conditioner: white cabinet, grilles, control screen, blowers",
+      "upsUnit": "UPS: black cabinet, green display, battery drawers",
+      "backupNas": "Backup array: drive drawers with LEDs and a tape library",
+      "firewallUnit": "Firewall: cabinet with a red strip, appliances with LEDs, padlock",
+      "fireSuppression": "Gas fire suppression: red cylinders, gauges, piping and sign",
       "arcadeCabinet": "Arcade cabinet: purple body, glowing screen and marquee, joystick and buttons",
       "pinballMachine": "Pinball machine: lit tilted playfield, orange backbox and metal legs",
       "neonSign": "Neon sign: glowing pink ring and blue bar on a stand",
@@ -1865,5 +1880,52 @@
     "adoptCardMissing_one": "{{count}} piece of equipment still missing: litter box, bowl and cat tree.",
     "adoptCardMissing_other": "{{count}} pieces of equipment still missing: litter box, bowl and cat tree.",
     "adoptCardReady": "All set: pick a coat and adopt."
+  },
+  "servers": {
+    "intro": "A server room hosts part of the product: the hosting bill goes down and prod holds up better. Buy a room (Servers aisle of build mode), then choose the hardware to install in it.",
+    "roomsTitle": "Your rooms",
+    "noRoom": "No server room yet: buy a server closet (Seed) or a server room (Series A) in the Servers aisle.",
+    "slots": "{{count}}/{{max}} slots",
+    "running": "It’s running: all its hardware gives its effects.",
+    "overheating": "It isn’t running: its hardware does nothing while something is missing.",
+    "needs": {
+      "server": "At least one server (rack, blades or GPU)",
+      "network": "Networking (switch or fibre router)",
+      "cooling": "A precision air conditioner"
+    },
+    "needsShort": {
+      "server": "a server",
+      "network": "networking",
+      "cooling": "cooling"
+    },
+    "installed": "installed",
+    "toInstall": "to install",
+    "saving": "Hosting bill: −{{percent}}% thanks to your servers ({{max}}% at most).",
+    "statusRunning": "Running · {{count}}/{{max}} slots",
+    "statusMissing": "Not running: missing {{missing}}.",
+    "open": "Room and fibre",
+    "fibreCard": "Fibre subscription",
+    "fibreCardCurrent": "Subscribed: {{plan}}. Tap to change plan or cancel.",
+    "fibreCardReady": "The fibre router is installed: pick a plan.",
+    "fibreCardMissing": "First install a fibre router in a server room.",
+    "fibre": {
+      "title": "Fibre subscription",
+      "intro": "Fibre is paid every week (every 7 game days) and comes into the fibre router of your server room. Changing plan starts a new week paid right away; if the treasury can’t cover the bill, the provider cuts the line.",
+      "none": "No subscription: pick a plan below.",
+      "needBox": "To subscribe, install a fibre router in a server room (Servers aisle).",
+      "needBoxShort": "You need a fibre router in a server room.",
+      "connected": "The line reaches the router: the plan gives its effects.",
+      "noBox": "No fibre router in a room: you pay for the line but it does nothing.",
+      "nextBill_one": "Next €{{price}} charge in {{count}} day",
+      "nextBill_other": "Next €{{price}} charge in {{count}} days",
+      "totalPaid": "€{{price}} paid in total",
+      "perWeek": "€{{price}} / week",
+      "subscribe": "Subscribe (€{{price}} for week 1)",
+      "switch": "Switch to this plan (€{{price}})",
+      "currentPlan": "Your current plan",
+      "cancel": "Cancel",
+      "cancelWarning": "The line will be cut right away, with no refund for the current week.",
+      "cancelConfirm": "Cancel fibre"
+    }
   }
 }

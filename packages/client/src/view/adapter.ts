@@ -50,6 +50,10 @@ import {
   WALL_FINISHES,
   floorZones,
   wallZones,
+  FIBRE_PLANS,
+  HOSTING_SAVING_MAX,
+  getFibrePlan,
+  hasFibreBox,
 } from '@oss/shared';
 import { wallOffice } from '../simulation/walls';
 import { officeLayout, settleFixtures, type Fixture } from './layout';
@@ -89,6 +93,12 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
+import {
+  fibreConnected,
+  hostingSaving,
+  serverRoomItems,
+  serverRoomStatuses,
+} from '../simulation/serverRoom';
 import type {
   CandidateView,
   DevActivity,
@@ -105,6 +115,7 @@ import type {
   GameView,
   MeetingRoomView,
   PetsView,
+  ServersView,
   WallsView,
   FloorsView,
   GaugeName,
@@ -707,6 +718,54 @@ function petsView(state: GameState): PetsView {
   };
 }
 
+function serversView(state: GameState): ServersView {
+  const hasBox = hasFibreBox(serverRoomItems(state));
+  const phase = PHASES.indexOf(state.phase);
+  const fibre = state.fibre;
+  return {
+    rooms: serverRoomStatuses(state).map((room) => ({
+      id: room.id,
+      kind: room.itemId,
+      running: room.running,
+      missing: [...room.missing],
+      gear: room.gear.length,
+      slots: getFurniture(room.itemId)?.surfaceSlots ?? 0,
+    })),
+    hostingSaving: hostingSaving(state),
+    hostingSavingMax: HOSTING_SAVING_MAX,
+    hasBox,
+    fibre: fibre
+      ? {
+          plan: fibre.plan,
+          connected: fibreConnected(state),
+          nextBillDays: Math.max(0, (fibre.paidUntil - state.tick) / TIME.ticksPerDay),
+          weeklyPrice: getFibrePlan(fibre.plan).weeklyPrice,
+          totalPaid: fibre.totalPaid,
+        }
+      : null,
+    plans: FIBRE_PLANS.map((plan) => ({
+      id: plan.id,
+      name: plan.name,
+      description: plan.description,
+      speed: plan.speed,
+      weeklyPrice: plan.weeklyPrice,
+      minPhase: plan.minPhase,
+      blocker:
+        fibre?.plan === plan.id
+          ? 'CURRENT'
+          : PHASES.indexOf(plan.minPhase) > phase
+            ? 'LOCKED'
+            : state.stage === 'PITCH'
+              ? 'WRONG_STAGE'
+              : !hasBox
+                ? 'NO_BOX'
+                : state.gauges.treasury < plan.weeklyPrice
+                  ? 'NOT_ENOUGH_MONEY'
+                  : null,
+    })),
+  };
+}
+
 function wallsView(state: GameState): WallsView {
   const phase = PHASES.indexOf(state.phase);
   return {
@@ -802,6 +861,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     meetingRoom: meetingRoomView(state),
     pets: petsView(state),
     walls: wallsView(state),
+    servers: serversView(state),
     floors: floorsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
@@ -985,5 +1045,9 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'ADOPT_PET', coat: command.coat };
     case 'rehomePet':
       return { type: 'REHOME_PET', petId: command.petId };
+    case 'subscribeFibre':
+      return { type: 'SUBSCRIBE_FIBRE', plan: command.plan };
+    case 'cancelFibre':
+      return { type: 'CANCEL_FIBRE' };
   }
 }

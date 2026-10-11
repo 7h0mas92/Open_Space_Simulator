@@ -38,6 +38,7 @@ export function SelectionBar({ view }: { view: GameView }) {
     const def = item && catalogItem(item.kind);
     if (!item || !def) return null;
     const projection = projectionStatus(item, view, itemName, t);
+    const serverRoom = view.servers.rooms.find((room) => room.id === item.id);
     // Décor offert avec une annexe : il se déplace et se tourne, rien de plus.
     const gift = item.annexDecor !== undefined;
     return (
@@ -64,7 +65,23 @@ export function SelectionBar({ view }: { view: GameView }) {
               {projection}
             </span>
           )}
+          {serverRoom && (
+            <span className="item-status" data-testid="server-room-status">
+              {serverRoom.running
+                ? t('servers.statusRunning', { count: serverRoom.gear, max: serverRoom.slots })
+                : t('servers.statusMissing', {
+                    missing: serverRoom.missing
+                      .map((need) => t(`servers.needsShort.${need}`))
+                      .join(', '),
+                  })}
+            </span>
+          )}
         </div>
+        {serverRoom && (
+          <button type="button" onClick={() => openPanel('servers')} data-testid="open-servers">
+            🌐 {t('servers.open')}
+          </button>
+        )}
         {isProjector(item.kind) && (
           <button
             type="button"

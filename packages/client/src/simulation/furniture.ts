@@ -30,6 +30,7 @@ import { meetingFormat } from './meetings';
 import { petEffects } from './pets';
 import { projectionEffects } from './projection';
 import { floorEffects } from './floors';
+import { fibreEffects, serverGearEffects } from './serverRoom';
 import { wallEffects } from './walls';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
@@ -164,7 +165,8 @@ function accessoriesOf(state: GameState, hostId: EntityId): EntityId[] {
 
 /**
  * L'emplacement `slot` du meuble `hostId` existe-t-il, est-il libre et assez grand pour `item` ?
- * Un appareil électroménager ne prend que les emplacements prévus pour lui (`applianceSlots`).
+ * Un appareil électroménager ne prend que les emplacements prévus pour lui (`applianceSlots`) ;
+ * le matériel serveur, que ceux d'une salle des serveurs.
  */
 function canHost(
   state: GameState,
@@ -178,6 +180,8 @@ function canHost(
   const definition = getFurniture(host.itemId);
   if (slot >= (definition?.surfaceSlots ?? 0)) return false;
   if (item.appliance && slot >= (definition?.applianceSlots ?? 0)) return false;
+  // Le matériel serveur ne va que dans une salle des serveurs, et elle n'accueille que lui.
+  if ((item.serverGear !== undefined) !== (definition?.serverRoom === true)) return false;
   return accessoriesOf(state, hostId).every(
     (id) => id === ignoreId || state.components.furniture[id]?.slot !== slot,
   );
@@ -551,8 +555,9 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     const placed = state.components.furniture[id];
     const item = placed ? getFurniture(placed.itemId) : undefined;
     if (!item) continue;
-    // Projecteurs et écrans déroulants : seulement s'ils projettent (voir plus bas).
-    if (item.projector || item.projectionScreen) continue;
+    // Projecteurs et écrans déroulants : seulement s'ils projettent ; matériel serveur :
+    // seulement si sa salle tourne (voir plus bas).
+    if (item.projector || item.projectionScreen || item.serverGear) continue;
     const e = item.effects;
     effects.coffeeRestock += e.coffeeRestock ?? 0;
     effects.moral += e.moral ?? 0;
@@ -593,6 +598,15 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.teamProductivity += e.teamProductivity ?? 0;
     effects.quality += e.quality ?? 0;
     effects.hypePerDay += e.hypePerDay ?? 0;
+  }
+  // Matériel des salles des serveurs qui tournent, et fibre si elle arrive dans une box.
+  const fibre = fibreEffects(state);
+  for (const e of fibre ? [...serverGearEffects(state), fibre] : serverGearEffects(state)) {
+    effects.moral += e.moral ?? 0;
+    effects.teamProductivity += e.teamProductivity ?? 0;
+    effects.hypePerDay += e.hypePerDay ?? 0;
+    effects.stabilityPerDay += e.stabilityPerDay ?? 0;
+    effects.debtPerDay += e.debtPerDay ?? 0;
   }
   // L'aménagement de la salle de réunion s'ajoute au mobilier (bonus et malus).
   const room = meetingFormat(state);
