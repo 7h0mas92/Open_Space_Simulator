@@ -417,7 +417,8 @@ flowchart LR
   au plafond, posés case par case. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
   eux (angles, T, croix), sans jour entre deux murs, et se tournent, se repeignent et se revendent.
   Un mur qui enfermerait une zone est refusé, pour que chacun puisse toujours rejoindre son bureau.
-- **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble et
+- **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble, un
+  projecteur fixé au plafond (sans prendre de place au sol ni sur un bureau) et
   trois écrans de projection déroulants (2, 3 et 4 cases). Allumé et tourné vers un écran, le
   projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. Projecteur et
   écran ne donnent leur effet (moral, qualité, hype, léger malus de productivité) que pendant la
@@ -655,7 +656,7 @@ génère que des messages Slack.
   de ramen, mug, canard en plastique, trophée de hackathon, étui d'écouteurs sans fil ouvert,
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, tours de PC sobre et gaming,
   MacBook Pro sans logo, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
-  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur et écrans déroulants,
+  pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
   litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
