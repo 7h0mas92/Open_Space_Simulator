@@ -30,9 +30,26 @@ describe('bruits de bureau : mixage', () => {
     expect(middle).toBeLessThan(1);
   });
 
-  it('de loin : clics de souris très faibles, aucun clavier', () => {
-    const voices = deskMix(activity(WIDE, [{ id: 'a', x: 0, y: 0 }]), 1);
-    expect(voices).toEqual([{ id: 'a', mouse: DESK_SOUND.faintMouse, keys: 0, pan: 0 }]);
+  it('de loin : ni souris ni clavier', () => {
+    expect(deskMix(activity(WIDE, [{ id: 'a', x: 0, y: 0 }]), 1)).toEqual([]);
+  });
+
+  it('la souris s’entend à la même distance que le clavier', () => {
+    const radius = Math.min(ZOOMED.halfWidth, ZOOMED.halfHeight) * DESK_SOUND.hearRadius;
+    const far = deskMix(activity(ZOOMED, [{ id: 'far', x: radius * 0.99, y: 0 }]), 1);
+    expect(far).toHaveLength(1);
+    expect(far[0]?.keys).toBeGreaterThan(0);
+    expect(far[0]?.mouse).toBeGreaterThan(0);
+    expect((far[0]?.mouse ?? 0) / (far[0]?.keys ?? 1)).toBeCloseTo(
+      DESK_SOUND.nearMouse / DESK_SOUND.nearKeys,
+    );
+    const ratio = closeness(3.5, 3.5);
+    const middle = deskMix(
+      activity({ halfWidth: 3.5, halfHeight: 3.5 }, [{ id: 'a', x: 0, y: 0 }]),
+      1,
+    );
+    expect(middle[0]?.mouse).toBeCloseTo(DESK_SOUND.nearMouse * ratio);
+    expect(middle[0]?.keys).toBeCloseTo(DESK_SOUND.nearKeys * ratio);
   });
 
   it('zoomé : clavier et souris plus forts au centre, plus doux en s’éloignant', () => {
@@ -61,8 +78,7 @@ describe('bruits de bureau : mixage', () => {
   it('le volume « Ambiance » règle tout, et le nombre de devs entendus est plafonné', () => {
     const many = Array.from({ length: 20 }, (_, i) => ({ id: `d${i}`, x: i * 0.2, y: 0 }));
     const voices = deskMix(activity(ZOOMED, many), 0.5);
-    expect(voices).toHaveLength(DESK_SOUND.maxFaint);
-    expect(voices.filter((voice) => voice.keys > 0).length).toBeLessThanOrEqual(DESK_SOUND.maxNear);
+    expect(voices).toHaveLength(DESK_SOUND.maxNear);
     expect(voices[0]?.keys).toBeCloseTo(DESK_SOUND.nearKeys * 0.5);
   });
 });
