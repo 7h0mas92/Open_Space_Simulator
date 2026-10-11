@@ -5,10 +5,9 @@
  * (`public/assets/sounds/clavier-1-mrboubou13al.mp3`), découpé en touches séparées au chargement
  * (`sliceKeystrokes`). Les clics de souris sont synthétisés en Web Audio, comme les frappes tant
  * que l'enregistrement n'est pas chargé (ou s'il manque). Deux couches, réglées par le volume
- * « Ambiance » des options :
- * - des clics de souris très faibles pour les devs à leur ordinateur, à tous les zooms ;
- * - quand on zoome assez sur une zone, le clavier et la souris des devs proches du centre de la
- *   vue, plus forts au centre, placés à gauche ou à droite selon leur place à l'écran.
+ * « Ambiance » des options : quand on zoome assez sur une zone, on entend le clavier et la souris
+ * des devs proches du centre de la vue, à la même distance, plus forts au centre, placés à gauche
+ * ou à droite selon leur place à l'écran. De loin, le bureau reste silencieux.
  *
  * Le rendu fournit l'activité (`DeskActivity`) ; ce module ne lit jamais l'état du jeu. Le hasard
  * vient de `Math.random` : c'est du son, pas la partie, le RNG du jeu n'est jamais touché.
@@ -41,14 +40,10 @@ export const DESK_SOUND = {
   spanFar: 8.5,
   /** …et où on les entend pleinement. */
   spanNear: 5.5,
-  /** Clic de souris lointain : à peine audible. */
-  faintMouse: 0.1,
   /** Clic de souris tout près, au centre de la vue zoomée. */
   nearMouse: 0.22,
   /** Frappe au clavier tout près (l'enregistrement est fort : on le joue bas). */
   nearKeys: 0.14,
-  /** Devs entendus de loin (les plus proches du centre de l'écran). */
-  maxFaint: 8,
   /** Claviers entendus en même temps quand on zoome. */
   maxNear: 6,
   /** Rayon d'écoute, en fraction du plus petit côté de la vue. */
@@ -84,19 +79,21 @@ export function deskMix(activity: DeskActivity, volume: number): DeskVoice[] {
     .filter((typist) => Math.abs(typist.x) <= halfWidth && Math.abs(typist.y) <= halfHeight)
     .map((typist) => ({ typist, distance: Math.hypot(typist.x, typist.y) }))
     .sort((a, b) => a.distance - b.distance || (a.typist.id < b.typist.id ? -1 : 1))
-    .slice(0, DESK_SOUND.maxFaint);
-  return onScreen.map(({ typist, distance }, rank) => {
-    const weight =
-      near > 0 && rank < DESK_SOUND.maxNear ? near * clamp01(1 - distance / radius) : 0;
+    .slice(0, DESK_SOUND.maxNear);
+  const voices: DeskVoice[] = [];
+  for (const { typist, distance } of onScreen) {
+    // Souris et clavier s'entendent à la même distance : même poids pour les deux.
+    const weight = near * clamp01(1 - distance / radius);
+    if (weight <= 0) continue;
     const pan = Math.max(-1, Math.min(1, typist.x / halfWidth)) * DESK_SOUND.maxPan;
-    return {
+    voices.push({
       id: typist.id,
-      mouse:
-        volume * (DESK_SOUND.faintMouse + (DESK_SOUND.nearMouse - DESK_SOUND.faintMouse) * weight),
+      mouse: volume * DESK_SOUND.nearMouse * weight,
       keys: volume * DESK_SOUND.nearKeys * weight,
       pan,
-    };
-  });
+    });
+  }
+  return voices;
 }
 
 export type DeskHitKind = 'key' | 'space' | 'mouse';
