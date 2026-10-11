@@ -675,6 +675,16 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `render/office.ts`, vignettes 3D sans redessin au changement de taille. Commande `SET_MONITOR`,
   champ `monitor` optionnel (absent = écran bureautique 27 pouces sur pied), aucun tirage.
 
+- Décor des annexes déplaçable (`shared/sim/annexDecor.ts`) : bornes d'arcade, flipper, enseigne
+  néon, arbres, banc, fontaine, plante, enceintes, scène, pupitre et écran des annexes sont des
+  objets posés (`annex:<clé>` dans `GameView.items`, champ `annexDecor`) : clic, « Tourner » et
+  « Déplacer » comme le mobilier ; offerts, ils n'ont pas d'effet et ne se vendent, ne se rangent
+  ni ne se repeignent. Pas d'entité ni de tirage : seuls les déplacements sont gardés (commande
+  `MOVE_ANNEX_DECOR`, état `annexDecor` vide par défaut). 9 objets en boutique avec effet : borne
+  d'arcade, flipper, petite scène, pupitre, écran géant d'auditorium (Détente), enseigne néon,
+  arbre d'intérieur, fontaine zen (Déco), banc (Confort) ; le décor offert ne compte pas dans le
+  maximum.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
