@@ -24,6 +24,7 @@ import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
+import { cancelFibre, subscribeFibre } from './serverRoom';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
@@ -187,5 +188,9 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return adoptPet(state, ctx, command.coat);
     case 'REHOME_PET':
       return rehomePet(state, ctx, command.petId);
+    case 'SUBSCRIBE_FIBRE':
+      return subscribeFibre(state, ctx, command.plan);
+    case 'CANCEL_FIBRE':
+      return cancelFibre(state, ctx);
   }
 }

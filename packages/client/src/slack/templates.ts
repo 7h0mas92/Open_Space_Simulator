@@ -2991,6 +2991,52 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
       'Who’s going to sit on my keyboard when I go on break now?',
     ),
   },
+  // ─── FIBRE_SUBSCRIBED / FIBRE_CANCELLED / FIBRE_CUT ───────────────────────
+  {
+    trigger: 'FIBRE_SUBSCRIBED',
+    channel: 'general',
+    author: bot('oncall'),
+    text: t(
+      '🌐 {event} Les déploiements passent de « va te faire un café » à « cligne des yeux ».',
+      '🌐 {event} Deploys go from “go grab a coffee” to “blink”.',
+    ),
+  },
+  {
+    trigger: 'FIBRE_SUBSCRIBED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Je viens de pull l’image Docker de 4 Go en 3 secondes. Je crois que je vais pleurer.',
+      'I just pulled the 4 GB Docker image in 3 seconds. I think I’m going to cry.',
+    ),
+  },
+  {
+    trigger: 'FIBRE_CANCELLED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Retour à la 4G de mon téléphone en partage de connexion. Ne m’appelez pas pendant un npm install.',
+      'Back to tethering on my phone’s 4G. Don’t call me during an npm install.',
+    ),
+  },
+  {
+    trigger: 'FIBRE_CUT',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t(
+      '📵 {event} Si quelqu’un a le code wifi du café d’en bas, c’est le moment.',
+      '📵 {event} If anyone has the wifi password of the café downstairs, now’s the time.',
+    ),
+  },
+  {
+    trigger: 'FIBRE_CUT',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Plus d’internet. On fait quoi, on lit la doc hors ligne ? Il y a une doc hors ligne ?',
+      'No more internet. What now, read the docs offline? Are there offline docs?',
+    ),
+  },
 ];
 
 /** Index des templates par déclencheur, construit une seule fois. */

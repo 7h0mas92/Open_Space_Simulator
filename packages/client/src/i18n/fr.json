@@ -315,7 +315,8 @@
     "group": "Investir",
     "meetings": "Salle de réunion",
     "funding": "Lever des fonds",
-    "pets": "Chats du bureau"
+    "pets": "Chats du bureau",
+    "servers": "Salle des serveurs"
   },
   "kanban": {
     "columns": {
@@ -621,7 +622,8 @@
       "floors": "Sols",
       "accessory": "Accessoires",
       "monitors": "Écrans",
-      "devices": "Périphériques"
+      "devices": "Périphériques",
+      "servers": "Serveurs"
     },
     "price": "{{price}} €",
     "owned": "{{count}}/{{max}}",
@@ -716,6 +718,7 @@
     "noCounter": "Un appareil électroménager se pose sur un meuble de cuisine (ou sur le frigo).",
     "noWall": "Une fenêtre se fixe dans un des deux murs du fond.",
     "blocksPath": "Ce mur fermerait le passage : laisse une porte.",
+    "noServerRoom": "Le matériel serveur s’installe dans une salle des serveurs (ou un local serveurs).",
     "VENTURE_LIMIT": "Ton groupe a déjà fondé le maximum de filiales.",
     "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
     "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
@@ -850,6 +853,18 @@
       "projectionScreenSmall": "Écran de projection déroulant (petit) : caisson alu, pieds, toile, mât et barre animés",
       "projectionScreenMedium": "Écran de projection déroulant (moyen) : caisson alu, pieds, toile, mât et barre animés",
       "projectionScreenLarge": "Écran de projection déroulant (grand) : caisson alu, pieds, toile, mât et barre animés",
+      "serverCloset": "Local serveurs : sol technique en dalles, cloisons vitrées, porte à badge, chemin de câbles",
+      "serverRoom": "Salle des serveurs : sol technique, dalles perforées, cloisons vitrées, porte à badge, chemin de câbles",
+      "rackServer": "Baie de serveurs 1U : armoire, six serveurs à voyants, brassage et porte fumée",
+      "bladeServer": "Châssis de serveurs lames : deux châssis de lames verticales aux voyants bleus",
+      "gpuServer": "Serveur GPU : quatre serveurs aux ventilateurs verts lumineux",
+      "networkSwitch": "Switch réseau : armoire ouverte, switchs 48 ports, câbles de couleur en boucles",
+      "fibreRouter": "Box fibre pro : coffret, tiroir optique, fibres jaunes, boîtier optique et routeur",
+      "precisionCooling": "Climatisation de précision : armoire blanche, grilles, écran de contrôle, souffleurs",
+      "upsUnit": "Onduleur : armoire noire, écran vert, tiroirs de batteries",
+      "backupNas": "Baie de sauvegarde : tiroirs de disques à voyants et robot de bandes",
+      "firewallUnit": "Pare-feu : armoire à bandeau rouge, boîtiers à voyants, cadenas",
+      "fireSuppression": "Extinction au gaz : bouteilles rouges, manomètres, tuyauterie et panneau",
       "arcadeCabinet": "Borne d'arcade : caisson violet, écran et fronton lumineux, joystick et boutons",
       "pinballMachine": "Flipper : plateau incliné éclairé, fronton orange et pieds métalliques",
       "neonSign": "Enseigne néon : anneau rose et barre bleue lumineux sur pied",
@@ -1865,5 +1880,52 @@
     "adoptCardMissing_one": "Il manque encore {{count}} équipement : litière, gamelle et arbre à chat.",
     "adoptCardMissing_other": "Il manque encore {{count}} équipements : litière, gamelle et arbre à chat.",
     "adoptCardReady": "Tout est prêt : choisis sa robe et adopte-le."
+  },
+  "servers": {
+    "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer.",
+    "roomsTitle": "Tes salles",
+    "noRoom": "Pas encore de salle des serveurs : achète un local serveurs (Seed) ou une salle des serveurs (Série A) dans le rayon Serveurs.",
+    "slots": "{{count}}/{{max}} emplacements",
+    "running": "Elle tourne : tout son matériel donne ses effets.",
+    "overheating": "Elle ne tourne pas : son matériel ne sert à rien tant qu’il manque un élément.",
+    "needs": {
+      "server": "Au moins un serveur (baie, lames ou GPU)",
+      "network": "Du réseau (switch ou box fibre)",
+      "cooling": "Une climatisation de précision"
+    },
+    "needsShort": {
+      "server": "un serveur",
+      "network": "du réseau",
+      "cooling": "la clim"
+    },
+    "installed": "installé",
+    "toInstall": "à installer",
+    "saving": "Facture d’hébergement : −{{percent}} % grâce à tes serveurs ({{max}} % au plus).",
+    "statusRunning": "Elle tourne · {{count}}/{{max}} emplacements",
+    "statusMissing": "Ne tourne pas : il manque {{missing}}.",
+    "open": "Salle et fibre",
+    "fibreCard": "Abonnement fibre",
+    "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
+    "fibreCardReady": "La box fibre est posée : choisis une offre.",
+    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs.",
+    "fibre": {
+      "title": "Abonnement fibre",
+      "intro": "La fibre se paie chaque semaine (tous les 7 jours de jeu) et arrive dans la box fibre de ta salle des serveurs. Changer d’offre repart pour une semaine payée tout de suite ; si la trésorerie ne couvre plus la facture, l’opérateur coupe la ligne.",
+      "none": "Pas d’abonnement : choisis une offre ci-dessous.",
+      "needBox": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
+      "needBoxShort": "Il faut une box fibre dans une salle des serveurs.",
+      "connected": "La ligne arrive dans la box : l’offre donne ses effets.",
+      "noBox": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien.",
+      "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
+      "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
+      "totalPaid": "{{price}} € payés en tout",
+      "perWeek": "{{price}} € / semaine",
+      "subscribe": "S’abonner ({{price}} € la 1re semaine)",
+      "switch": "Passer à cette offre ({{price}} €)",
+      "currentPlan": "Ton offre actuelle",
+      "cancel": "Résilier",
+      "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
+      "cancelConfirm": "Résilier la fibre"
+    }
   }
 }

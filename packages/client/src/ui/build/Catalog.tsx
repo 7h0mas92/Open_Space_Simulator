@@ -30,6 +30,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   window: '🪟',
   accessory: '🦆',
   devices: '📽️',
+  servers: '🗄️',
 };
 
 /**
@@ -114,6 +115,11 @@ export function Catalog({ view }: { view: GameView }) {
           {category === 'pets' && (
             <li>
               <AdoptCard view={view} />
+            </li>
+          )}
+          {category === 'servers' && (
+            <li>
+              <FibreCard view={view} />
             </li>
           )}
           {items.map((item) => (
@@ -231,6 +237,45 @@ function AdoptCard({ view }: { view: GameView }) {
       </span>
       <span className={missing > 0 ? 'catalog-card-text locked' : 'catalog-card-text'}>
         {missing > 0 ? t('pets.adoptCardMissing', { count: missing }) : t('pets.adoptCardReady')}
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Rayon Serveurs : la première carte ouvre le panneau de la salle des serveurs (état des salles,
+ * abonnement fibre). Elle rappelle l'offre en cours ou ce qu'il faut pour s'abonner.
+ */
+function FibreCard({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const openPanel = useGame((s) => s.openPanel);
+  const { fibre, plans, hasBox } = view.servers;
+  const current = fibre ? plans.find((plan) => plan.id === fibre.plan) : undefined;
+  const cheapest = Math.min(...plans.map((plan) => plan.weeklyPrice));
+  return (
+    <button
+      type="button"
+      className="catalog-card adopt-card"
+      onClick={() => openPanel('servers')}
+      data-testid="catalog-fibre"
+    >
+      <span className="item-thumb" aria-hidden="true">
+        🌐
+      </span>
+      <span className="catalog-card-name">{t('servers.fibreCard')}</span>
+      <span className="catalog-card-meta">
+        <span className="catalog-card-price">
+          {t('servers.fibre.perWeek', {
+            price: formatMoney(fibre?.weeklyPrice ?? cheapest, i18n.language),
+          })}
+        </span>
+      </span>
+      <span className={fibre || hasBox ? 'catalog-card-text' : 'catalog-card-text locked'}>
+        {current
+          ? t('servers.fibreCardCurrent', { plan: localized(current.name, i18n.language) })
+          : hasBox
+            ? t('servers.fibreCardReady')
+            : t('servers.fibreCardMissing')}
       </span>
     </button>
   );

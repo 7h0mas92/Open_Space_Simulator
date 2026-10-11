@@ -14,6 +14,8 @@ import type {
   FloorMaterialId,
   FloorZone,
   ComputerId,
+  FibrePlanId,
+  ServerRoomNeed,
   WallFinishId,
   WallZone,
   Birthday,
@@ -565,6 +567,52 @@ export interface PetsView {
   readonly blocker: 'LOCKED' | 'NOT_ELIGIBLE' | 'NOT_ENOUGH_MONEY' | 'WRONG_STAGE' | null;
 }
 
+/** Une salle des serveurs posée et ce qui lui manque pour tourner. */
+export interface ServerRoomView {
+  readonly id: string;
+  readonly kind: string;
+  /** Serveur, réseau et climatisation installés : son matériel donne ses effets. */
+  readonly running: boolean;
+  /** Ce qu'il faut encore y installer pour qu'elle tourne. */
+  readonly missing: readonly ServerRoomNeed[];
+  /** Équipements installés, sur le nombre d'emplacements. */
+  readonly gear: number;
+  readonly slots: number;
+}
+
+/** Une offre fibre et pourquoi on ne peut pas y souscrire maintenant. */
+export interface FibrePlanView {
+  readonly id: FibrePlanId;
+  readonly name: LocalizedText;
+  readonly description: LocalizedText;
+  readonly speed: LocalizedText;
+  readonly weeklyPrice: number;
+  readonly minPhase: Phase;
+  /** `CURRENT` : c'est l'offre en cours ; `NO_BOX` : aucune box fibre dans une salle. */
+  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'NO_BOX' | 'CURRENT' | 'WRONG_STAGE' | null;
+}
+
+/** Salles des serveurs et abonnement fibre. */
+export interface ServersView {
+  readonly rooms: readonly ServerRoomView[];
+  /** Part de la facture d'hébergement épargnée grâce aux serveurs (0.18 = -18 %). */
+  readonly hostingSaving: number;
+  readonly hostingSavingMax: number;
+  /** Une box fibre est posée dans une salle des serveurs. */
+  readonly hasBox: boolean;
+  /** Abonnement en cours, sinon null. */
+  readonly fibre: {
+    readonly plan: FibrePlanId;
+    /** La ligne arrive dans une box : ses effets comptent. */
+    readonly connected: boolean;
+    /** Jours de jeu avant le prochain prélèvement. */
+    readonly nextBillDays: number;
+    readonly weeklyPrice: number;
+    readonly totalPaid: number;
+  } | null;
+  readonly plans: readonly FibrePlanView[];
+}
+
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
 export interface WallZoneView {
   readonly zone: WallZone;
@@ -668,6 +716,8 @@ export interface GameView {
   readonly pets: PetsView;
   /** Peintures et papiers peints des murs. */
   readonly walls: WallsView;
+  /** Salles des serveurs et abonnement fibre. */
+  readonly servers: ServersView;
   /** Sols des pièces. */
   readonly floors: FloorsView;
   readonly canIpo: boolean;
@@ -764,7 +814,10 @@ export type GameCommand =
   | { readonly type: 'coverWall'; readonly zone: WallZone; readonly finish: WallFinishId }
   | { readonly type: 'coverFloor'; readonly zone: FloorZone; readonly finish: FloorFinish }
   | { readonly type: 'adoptPet'; readonly coat: PetCoat }
-  | { readonly type: 'rehomePet'; readonly petId: string };
+  | { readonly type: 'rehomePet'; readonly petId: string }
+  /** Souscrit à une offre fibre (ou en change). */
+  | { readonly type: 'subscribeFibre'; readonly plan: FibrePlanId }
+  | { readonly type: 'cancelFibre' };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

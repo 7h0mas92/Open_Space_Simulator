@@ -685,6 +685,16 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   arbre d'intérieur, fontaine zen (Déco), banc (Confort) ; le décor offert ne compte pas dans le
   maximum.
 
+- Sols (`shared/sim/floors.ts`, `client/src/simulation/floors.ts`, rayon « 🟫 Sols » du mode
+  construction, `ui/build/FloorShop.tsx`) : 8 matières sobres (vinyle 300 €, moquette en dalles,
+  béton ciré, carrelage grand format en Seed, parquet en lames, parquet en chevrons en Seed,
+  terrazzo en Série A, marbre poli 7 000 € en Licorne) et 12 teintes (neutres, essences de bois),
+  posées pièce par pièce (`FLOOR_ZONES` : open space, cuisine, réunion, détente, cantine, ailes,
+  annexes) ou « Toutes les pièces », sans remboursement de l'ancien sol ; +moral par pièce, et
+  +qualité ou +hype selon la matière. Motifs dessinés sur canvas (`view/floors.ts`), une dalle
+  texturée par pièce qui rejoint la voisine sous la cloison (`render/floorFinishes.ts`). Commande
+  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine tiré de la graine), aucun tirage.
+
 - Le plan cède la place aux meubles posés : quand le bureau grandit (nouvelle phase, aile de
   filiale), une cloison du plan qui tomberait sur un meuble s'efface (`yieldToItems` dans
   `view/layout.ts`, appliqué par `layoutOf`), et le décor offert des annexes que le joueur n'a

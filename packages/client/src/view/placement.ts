@@ -19,6 +19,7 @@ export type PlacementError =
   | 'noSurface'
   | 'surfaceFull'
   | 'noCounter'
+  | 'noServerRoom'
   | 'noWall'
   | 'blocksPath';
 
@@ -180,19 +181,26 @@ export function freeSlots(
 /**
  * Où poser un accessoire visé sur la case (x, z) : le meuble à plateau qui couvre la case, et
  * son emplacement libre le plus proche du centre de la case. Un appareil électroménager (`kind`)
- * demande un meuble de cuisine (ou un autre plateau prévu pour lui).
+ * demande un meuble de cuisine (ou un autre plateau prévu pour lui) ; le matériel serveur, une
+ * salle des serveurs, qui n'accueille rien d'autre.
  */
 export function resolveAccessory(
   items: readonly PlacedItemView[],
   request: Pick<PlacementRequest, 'x' | 'z' | 'ignoreId'> & { readonly kind?: string },
-): { readonly host: ItemHost } | { readonly error: 'noSurface' | 'surfaceFull' | 'noCounter' } {
-  const appliance = request.kind ? (catalogItem(request.kind)?.appliance ?? false) : false;
+):
+  | { readonly host: ItemHost }
+  | { readonly error: 'noSurface' | 'surfaceFull' | 'noCounter' | 'noServerRoom' } {
+  const def = request.kind ? catalogItem(request.kind) : undefined;
+  const appliance = def?.appliance ?? false;
+  const gear = Boolean(def?.serverGear);
   const host = items.find(
     (item) =>
       !item.host && itemCells(item).some((cell) => cell.x === request.x && cell.z === request.z),
   );
   const hostDef = host ? catalogItem(host.kind) : undefined;
-  if (!host || !hostDef?.surface?.length) return { error: appliance ? 'noCounter' : 'noSurface' };
+  if (gear && !hostDef?.serverRoom) return { error: 'noServerRoom' };
+  if (!host || !hostDef?.surface?.length || (hostDef.serverRoom && !gear))
+    return { error: appliance ? 'noCounter' : 'noSurface' };
   if (appliance && hostDef.applianceSlots === 0) return { error: 'noCounter' };
   let best: ItemHost | null = null;
   let bestDistance = Infinity;
