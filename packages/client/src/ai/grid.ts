@@ -3,7 +3,7 @@
  * Construite à partir du plan du bureau (cloisons) et des objets posés.
  */
 import { catalogItem, footprint } from '../view/catalog';
-import { fixtureCells, type Cell, type OfficeLayout } from '../view/layout';
+import type { Cell, OfficeLayout } from '../view/layout';
 import type { PlacedItemView } from '../view/types';
 
 /** Ce qu'il faut savoir d'un objet pour connaître son emprise au sol. */
@@ -95,7 +95,7 @@ export function accessCell(item: ItemPlacement): Cell {
 
 export function buildNavGrid(layout: OfficeLayout, items: readonly ItemPlacement[]): NavGrid {
   const grid = new NavGrid(layout.width, layout.depth);
-  for (const cell of [...layout.partitions, ...fixtureCells(layout)]) grid.block(cell.x, cell.z);
+  for (const cell of layout.partitions) grid.block(cell.x, cell.z);
   for (const item of items) {
     // Tapis et station d'écouteurs se traversent ; les accessoires sont posés sur les meubles et les
     // fenêtres sont dans les murs ; on passe sous les objets du plafond.

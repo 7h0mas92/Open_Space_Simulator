@@ -14,7 +14,6 @@ import type { OfficeLayout, RoomKind } from '../view/layout';
 import type { PlacedItemView, WallZoneView } from '../view/types';
 import { wallLength, wallOpenings, type WallOpening, type WallSide } from '../view/windows';
 import { paintObject, type AssetLibrary } from './assets';
-import { buildFixture } from './annexDecor';
 import {
   buildPartitions,
   partitionCells,
@@ -286,8 +285,6 @@ export class OfficeView {
   private readonly furniture = new THREE.Group();
   private readonly signs = new THREE.Group();
   private signsKey = '';
-  private readonly fixtures = new THREE.Group();
-  private fixturesId = 0;
   private readonly decor: THREE.Object3D[] = [];
   private readonly templates = new Map<string, Promise<TemplatePart[]>>();
   private layoutKey = '';
@@ -295,10 +292,10 @@ export class OfficeView {
   private buildId = 0;
 
   constructor(private readonly assets: AssetLibrary) {
-    this.root.add(this.structure, this.walls, this.furniture, this.signs, this.fixtures);
+    this.root.add(this.structure, this.walls, this.furniture, this.signs);
   }
 
-  /** Reconstruit sol, murs et décor fixe si le plan change (phase, aile, annexe, décor). */
+  /** Reconstruit sol et murs si le plan change (phase, aile, annexe, décor). */
   setLayout(layout: OfficeLayout): void {
     const styles = layout.rooms.map((room) => room.style ?? 0).join('');
     const key = `${layout.phase}:${layout.width}x${layout.depth}:${styles}`;
@@ -308,7 +305,6 @@ export class OfficeView {
     disposeChildren(this.structure);
     this.structure.add(buildFloor(layout));
     this.refreshWalls();
-    void this.buildFixtures(layout);
   }
 
   /** Peintures et papiers peints des zones de mur. */
@@ -339,31 +335,6 @@ export class OfficeView {
     disposeChildren(this.walls);
     this.walls.add(buildWalls(layout, this.openings, this.partitionItems));
     this.walls.add(buildWallSkins(layout, this.openings, this.finishes));
-  }
-
-  /** Décor fixe des annexes (arcade, jardin, auditorium), chargé en arrière-plan. */
-  private async buildFixtures(layout: OfficeLayout): Promise<void> {
-    const buildId = ++this.fixturesId;
-    const fixtures = layout.fixtures ?? [];
-    const objects = await Promise.all(
-      fixtures.map((fixture) => buildFixture(fixture.kind, this.assets)),
-    );
-    if (buildId !== this.fixturesId) return; // un plan plus récent a été demandé
-    // Les modèles Kenney partagent leur géométrie avec le cache : on ne la libère pas.
-    disposeChildren(this.fixtures, false);
-    objects.forEach((object, index) => {
-      const fixture = fixtures[index];
-      if (!fixture) return;
-      object.position.set(fixture.x, 0, fixture.z);
-      object.traverse((node) => {
-        if (node instanceof THREE.Mesh) {
-          node.castShadow = true;
-          node.receiveShadow = true;
-        }
-      });
-      object.name = `fixture-${fixture.kind}`;
-      this.fixtures.add(object);
-    });
   }
 
   /** Enseignes des ailes des filiales, accrochées au mur du fond de chaque aile. */
@@ -533,7 +504,6 @@ export class OfficeView {
     disposeChildren(this.walls);
     disposeChildren(this.signs);
     disposeChildren(this.furniture, false);
-    disposeChildren(this.fixtures, false);
   }
 
   private template(kind: string): Promise<TemplatePart[]> {

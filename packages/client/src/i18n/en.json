@@ -605,6 +605,7 @@
     "locked": "Unlocks at {{phase}}",
     "soldOut": "Limit reached ({{max}})",
     "tooExpensive": "Not enough cash",
+    "annexDecor": "Decor that came with the annex: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
     "rotate": "Rotate",
     "sell": "Sell (€{{price}})",
     "move": "Move",
@@ -773,7 +774,6 @@
       "mug": "Dev mug: handle, colored band, cold coffee and spoon",
       "rubberDuck": "Rubber duck: wings, tail, beak and eyes",
       "trophy": "Hackathon trophy: two-tier base, plaque, handled cup and star",
-      "annexDecor": "Office annex decor: arcade cabinets, pinball, neon sign, tree, fountain, stage, lectern and projection screen as Three.js shapes (bench, potted plant and speakers from the Furniture Kit)",
       "deskEarbuds": "Noise-cancelling wireless earbuds: open case, two buds inside and one lying next to it",
       "deskLamp": "Architect lamp: weighted base, spring arms, shade and bulb",
       "bookStack": "Stack of hardcover books, page edges and bookmark",
@@ -826,7 +826,15 @@
       "ceilingProjector": "Ceiling projector: mounting plate, rod, bracket and upside-down casing",
       "projectionScreenSmall": "Pull-up projection screen (small): aluminium case, feet, animated fabric, pole and bar",
       "projectionScreenMedium": "Pull-up projection screen (medium): aluminium case, feet, animated fabric, pole and bar",
-      "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar"
+      "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar",
+      "arcadeCabinet": "Arcade cabinet: purple body, glowing screen and marquee, joystick and buttons",
+      "pinballMachine": "Pinball machine: lit tilted playfield, orange backbox and metal legs",
+      "neonSign": "Neon sign: glowing pink ring and blue bar on a stand",
+      "indoorTree": "Indoor tree: large terracotta pot, trunk and low-poly foliage",
+      "zenFountain": "Zen fountain: stone basin, glowing water and jet",
+      "smallStage": "Small wooden stage with a microphone stand",
+      "lectern": "Wooden lectern with a slanted top and a microphone",
+      "auditoriumScreen": "Auditorium screen: glowing panel on two poles"
     },
     "back": "Back"
   },

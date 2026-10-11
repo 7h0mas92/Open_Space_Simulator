@@ -413,6 +413,31 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   // Enceinte colonne en noyer : deux boomers, tweeter, évent et pointes.
   speaker: { category: 'fun', model: primitive('floorSpeaker'), height: 1.25 },
   slide: { category: 'fun', model: primitive('slide'), height: 2, paint: ['red'] },
+  // Décor des annexes (`render/annexDecor.ts`), offert à leur ouverture et aussi en vente.
+  'arcade-cabinet': {
+    category: 'fun',
+    model: primitive('arcadeCabinet'),
+    height: 1.65,
+    paint: [],
+  },
+  pinball: { category: 'fun', model: primitive('pinballMachine'), height: 1.4, paint: [] },
+  stage: { category: 'fun', model: primitive('smallStage'), height: 1.3 },
+  lectern: { category: 'fun', model: primitive('lectern'), height: 1.2 },
+  'neon-sign': { category: 'decor', model: primitive('neonSign'), height: 2, paint: [] },
+  'indoor-tree': {
+    category: 'decor',
+    model: primitive('indoorTree'),
+    height: 2.1,
+    paint: ['terracotta'],
+  },
+  fountain: { category: 'decor', model: primitive('zenFountain'), height: 1.1, paint: [] },
+  bench: { category: 'comfort', model: kenney('bench'), height: 0.5 },
+  'auditorium-screen': {
+    category: 'fun',
+    model: primitive('auditoriumScreen'),
+    height: 2.05,
+    paint: [],
+  },
   // Canapé en tissu : coussins, accoudoirs roulés, pieds en bois, coussins décoratifs, plaid.
   sofa: {
     category: 'comfort',

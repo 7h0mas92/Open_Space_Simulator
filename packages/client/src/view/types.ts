@@ -297,6 +297,12 @@ export interface PlacedItemView {
   readonly on?: boolean;
   /** Bureau : son ordinateur (tour ou portable), absent pour les autres objets. */
   readonly computer?: ComputerId;
+  /**
+   * Décor offert avec une annexe (borne d'arcade, arbre, scène…) : sa clé. Il se déplace et se
+   * tourne, mais ne se vend, ne se range ni ne se repeint, et n'a aucun effet. Absent pour le
+   * mobilier acheté.
+   */
+  readonly annexDecor?: string;
 }
 
 /** Un projecteur allumé et l'écran qu'il a déroulé (voir `@oss/shared`, `projection.ts`). */
