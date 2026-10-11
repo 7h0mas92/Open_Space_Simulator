@@ -465,6 +465,12 @@ flowchart LR
   donnent un peu de productivité au poste et de moral ; le MacBook Pro (sans logo) se pose à la
   place du clavier et apporte de la qualité et de la hype. L'ancien ordinateur est revendu à
   moitié prix.
+- **Écrans** : l'écran se choisit à part du bureau, dans le rayon Écrans du mode construction ou
+  avec le bouton « Écran » d'un bureau sélectionné. Cinq modèles (bureautique, pivoté vertical,
+  gaming 165 Hz, pro ultra-fin, incurvé ultra-large), trois tailles chacun, sur leur pied ou sur
+  un bras articulé pincé au bord du bureau. Chaque écran a son effet au poste (productivité, et
+  selon le modèle moins de dette, plus de moral ou de qualité ; le bras fatigue moins), on équipe
+  un bureau ou tous les postes d'un coup, et l'ancien écran est repris à moitié prix.
 - **Plantes d'intérieur** : en plus de la plante verte et du cactus, le rayon Déco propose huit
   plantes dessinées feuille par feuille en Three.js (`render/plants.ts`). Des petites
   (sansevieria, pothos sur sellette avec ses lianes, bonsaï), des grandes jusqu'à 2 m (figuier
@@ -661,7 +667,7 @@ génère que des messages Slack.
   cuisine (tiroirs, portes, évier, colonne, vaisselier, îlot), frigo à boissons vitré, cactus, écran de métriques, pot
   de ramen, mug, canard en plastique, trophée de hackathon, étui d'écouteurs sans fil ouvert,
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, tours de PC sobre et gaming,
-  MacBook Pro sans logo, bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
+  MacBook Pro sans logo, cinq écrans sur pied ou sur bras articulé (dont un incurvé), bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran de projection des annexes, ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
   litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
