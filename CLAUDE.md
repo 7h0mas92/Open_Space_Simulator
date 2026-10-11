@@ -660,6 +660,19 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `TypingRhythm` (rafales, relectures), `Math.random` seulement : le RNG du jeu n'est pas touché.
   Muet en pause, pendant une carte d'événement, la nuit ; volume « Ambiance » des options.
 
+- Écrans des postes (`shared/sim/monitors.ts`, `render/monitors.ts`, rayon « 🖥️ Écrans » du mode
+  construction, `ui/build/MonitorShop.tsx`, bouton « 🖥️ Écran » de l'objet sélectionné) : l'écran
+  ne fait plus partie du bureau. 5 modèles (bureautique livré avec le bureau, pivoté vertical,
+  gaming 165 Hz, pro ultra-fin et incurvé ultra-large en Seed), 3 tailles chacun (24, 27, 32 pouces ;
+  34, 38, 45 pour l'incurvé, de 120 à 1 300 €), sur son pied ou sur un bras articulé (+150 €, -5 % de
+  fatigue au poste). Effets au poste : productivité (0 à +5 %), et selon le modèle -dette, +moral ou
+  +qualité ; ils s'ajoutent à ceux de l'ordinateur. Installation sur le bureau sélectionné ou sur
+  tous les postes d'un coup ; l'ancien écran est repris à moitié prix, l'écran suit le bureau
+  (inventaire, revente). Écran allumé du dev posé sur la dalle choisie (`screenMountOf`, dalle
+  courbe pour l'incurvé). Gabarit `@monitor:<bureau>:<modèle>:<taille>:<fixation>` dans
+  `render/office.ts`, vignettes 3D sans redessin au changement de taille. Commande `SET_MONITOR`,
+  champ `monitor` optionnel (absent = écran bureautique 27 pouces sur pied), aucun tirage.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
