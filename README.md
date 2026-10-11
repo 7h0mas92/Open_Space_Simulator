@@ -440,6 +440,14 @@ flowchart LR
   avec les levées, chacune en plusieurs teintes neutres ou essences de bois. On choisit la pièce à
   refaire ou « Toutes les pièces » ; chaque pièce refaite donne un peu de moral, parfois de la
   qualité ou de la hype.
+- **Salle des serveurs et fibre** : le rayon Serveurs propose un local serveur (dès la Seed) et
+  une salle des serveurs vitrée (dès la Série A), à équiper au choix : serveurs rack, lames ou
+  GPU, switch, box fibre, climatisation, onduleur, NAS de sauvegarde, pare-feu et extinction
+  automatique. Une salle ne tourne qu'avec un serveur, du réseau et du froid ; elle réduit alors la
+  facture d'hébergement (jusqu'à 40 %) et renforce la stabilité. Le panneau « 🗄️ Serveurs »
+  montre ce qui manque et propose trois abonnements fibre payés chaque semaine (400, 900 ou
+  2 500 €), qui demandent une box fibre posée dans une salle ; faute de trésorerie à l'échéance,
+  la ligne est coupée.
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
@@ -677,6 +685,8 @@ génère que des messages Slack.
   mini-cactus de bureau, clavier QWERTY à touches, tapis de souris, tours de PC sobre et gaming,
   MacBook Pro sans logo, cinq écrans sur pied ou sur bras articulé (dont un incurvé), bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran géant des annexes (aussi en vente), ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
+  local et salle des serveurs, serveurs rack, lames et GPU, switch, box fibre, climatisation de
+  précision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz,
   litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
