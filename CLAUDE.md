@@ -695,6 +695,14 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   texturée par pièce qui rejoint la voisine sous la cloison (`render/floorFinishes.ts`). Commande
   `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine tiré de la graine), aucun tirage.
 
+- Le plan cède la place aux meubles posés : quand le bureau grandit (nouvelle phase, aile de
+  filiale), une cloison du plan qui tomberait sur un meuble s'efface (`yieldToItems` dans
+  `view/layout.ts`, appliqué par `layoutOf`), et le décor offert des annexes que le joueur n'a
+  pas déplacé évite le mobilier : il se décale vers la case libre la plus proche contre la
+  cloison du fond, ou disparaît s'il n'y en a aucune (`settleFixtures`, appelé par
+  `annexDecorViews` dans `view/adapter.ts`). Plus de banc dans un mur vitré. Aucun tirage, ni
+  commande, ni champ d'état.
+
 - Salle des serveurs et fibre (`shared/sim/serverRoom.ts`, `client/src/simulation/serverRoom.ts`,
   rayon « 🗄️ Serveurs » du mode construction, panneau « 🗄️ Serveurs », `ui/servers/ServerRoom.tsx`) :
   local serveur 2 x 2 (4 000 €, Seed, 4 emplacements) et salle des serveurs vitrée 4 x 3
