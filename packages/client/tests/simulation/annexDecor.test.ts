@@ -86,6 +86,26 @@ describe('Décor des annexes', () => {
     expect(simulation.state.annexDecor).toEqual({});
   });
 
+  it('le décor offert ne tombe jamais sur un meuble déjà posé', () => {
+    // Quand le bureau grandit, la place d'origine du décor bouge : un meuble peut déjà s'y
+    // trouver (ici posé directement, comme avant une aile de filiale).
+    const simulation = withArcade();
+    const pinball = decorOf(simulation.state).find((item) => item.annexDecor === '0-3')!;
+    expect(
+      simulation.dispatch({
+        type: 'BUY_FURNITURE',
+        itemId: 'glass-partition',
+        x: pinball.x,
+        y: pinball.z,
+        rotation: 1,
+      }).result,
+    ).toEqual({ ok: true });
+    const moved = decorOf(simulation.state).find((item) => item.annexDecor === '0-3')!;
+    expect(moved.z).toBe(pinball.z);
+    expect(moved.x).not.toBe(pinball.x);
+    expect(decorOf(simulation.state)).toHaveLength(ANNEX_DECOR.arcade.length);
+  });
+
   it('le décor offert ne compte pas dans le maximum de la boutique', () => {
     const view = viewOf(withArcade().state);
     expect(shopStatus(catalogItem('arcade-cabinet')!, view)).toEqual({ owned: 0, block: null });

@@ -310,10 +310,9 @@ export class OfficeView {
   /** Reconstruit sol et murs si le plan change (phase, aile, annexe, décor). */
   setLayout(layout: OfficeLayout): void {
     const styles = layout.rooms.map((room) => room.style ?? 0).join('');
-    // Les cloisons et le décor fixe cèdent la place aux meubles posés : ils font partie de la clé.
+    // Les cloisons cèdent la place aux meubles posés : elles font partie de la clé.
     const partitions = layout.partitions.map((cell) => `${cell.x},${cell.z}`).join(';');
-    const fixtures = (layout.fixtures ?? []).map((f) => `${f.kind}@${f.x},${f.z}`).join(';');
-    const key = `${layout.phase}:${layout.width}x${layout.depth}:${styles}|${partitions}|${fixtures}`;
+    const key = `${layout.phase}:${layout.width}x${layout.depth}:${styles}|${partitions}`;
     if (key === this.layoutKey) return;
     this.layoutKey = key;
     this.layout = layout;

@@ -52,7 +52,7 @@ import {
   wallZones,
 } from '@oss/shared';
 import { wallOffice } from '../simulation/walls';
-import { officeLayout } from './layout';
+import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
@@ -416,9 +416,10 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
  * là où le joueur les a déplacés. Sans valeur de revente : ils se déplacent et se tournent
  * seulement (identifiant `annex:<clé>`, jamais celui d'une entité).
  */
-function annexDecorViews(state: GameState): PlacedItemView[] {
+function annexDecorViews(state: GameState, furniture: readonly PlacedItemView[]): PlacedItemView[] {
   const { phase, annexes, wings } = wallOffice(state);
-  return (officeLayout(phase, wings, annexes, state.seed).fixtures ?? []).map((fixture) => {
+  const layout = officeLayout(phase, wings, annexes, state.seed);
+  const view = (fixture: Fixture): PlacedItemView => {
     const moved = state.annexDecor[fixture.key];
     return {
       id: `annex:${fixture.key}`,
@@ -431,11 +432,23 @@ function annexDecorViews(state: GameState): PlacedItemView[] {
       host: null,
       annexDecor: fixture.key,
     };
+  };
+  const fixtures = layout.fixtures ?? [];
+  // Le décor déplacé par le joueur reste où il l'a mis ; le reste évite le mobilier déjà posé.
+  const pinned = fixtures.filter((fixture) => state.annexDecor[fixture.key]).map(view);
+  const settled = new Map(
+    settleFixtures(layout, [...furniture, ...pinned]).map((fixture) => [fixture.key, fixture]),
+  );
+  return fixtures.flatMap((fixture) => {
+    if (state.annexDecor[fixture.key]) return [view(fixture)];
+    const spot = settled.get(fixture.key);
+    return spot ? [view(spot)] : [];
   });
 }
 
 function itemViews(state: GameState): PlacedItemView[] {
-  return [...furnitureViews(state), ...annexDecorViews(state)];
+  const furniture = furnitureViews(state);
+  return [...furniture, ...annexDecorViews(state, furniture)];
 }
 
 function furnitureViews(state: GameState): PlacedItemView[] {
