@@ -297,19 +297,19 @@ function impactSound(
     at += 0.0008 + random() * 0.0016;
   }
   const out = new Float32Array(impact.length);
-  mixInto(out, normalize(highpass(impact, sampleRate, 2500)), 0, 0.28); // claquement sec
-  mixInto(out, resonance(impact, sampleRate, voice.cap, 10), 0, 0.45);
-  mixInto(out, resonance(impact, sampleRate, voice.plate, 16), 0, 0.55);
-  mixInto(out, resonance(impact, sampleRate, voice.hollow, 14), 0, 0.85 * hollowness);
-  mixInto(out, resonance(impact, sampleRate, voice.thud, 3), 0, 0.45 * hollowness);
-  mixInto(out, resonance(impact, sampleRate, voice.spring, 90), 0, 0.06);
+  mixInto(out, normalize(highpass(impact, sampleRate, 2500)), 0, 0.1); // claquement, à peine
+  mixInto(out, resonance(impact, sampleRate, voice.cap, 10), 0, 0.22);
+  mixInto(out, resonance(impact, sampleRate, voice.plate, 16), 0, 0.4);
+  mixInto(out, resonance(impact, sampleRate, voice.hollow, 12), 0, 1 * hollowness);
+  mixInto(out, resonance(impact, sampleRate, voice.thud, 2.5), 0, 0.7 * hollowness);
+  mixInto(out, resonance(impact, sampleRate, voice.spring, 90), 0, 0.03);
   return out;
 }
 
 /**
- * Frappe d'un clavier mécanique de bureau : la touche descend et tape le fond (claquement bruité,
+ * Frappe grave et sourde d'un clavier mécanique de bureau : la touche descend et tape le fond (choc,
  * boîtier creux, plaque et capuchon qui résonnent), puis remonte 45 à 120 ms plus tard (choc plus
- * clair et un peu plus faible). Chaque touche a sa place sur la plaque, donc ses résonances. La
+ * léger). Chaque touche a sa place sur la plaque, donc ses résonances. La
  * barre d'espace sonne plus grave et plus creuse, avec le cliquetis de son stabilisateur. Le tout
  * capté dans un bureau.
  */
@@ -319,11 +319,12 @@ export function synthKeystroke(sampleRate: number, seed: number, space = false):
   const spread = () => 0.9 + random() * 0.2;
   const low = space ? 0.62 : 1;
   const voice: KeyVoice = {
-    thud: 170 * low * spread(),
-    hollow: 640 * low * spread(),
-    plate: 2150 * spread(),
-    cap: 3900 * (space ? 0.8 : 1) * spread(),
-    spring: 6800 * spread(),
+    // Accordé grave : boîtier épais et capuchons épais, le « thock » sourd des claviers lubrifiés.
+    thud: 120 * low * spread(),
+    hollow: 380 * low * spread(),
+    plate: 1350 * spread(),
+    cap: 2500 * (space ? 0.8 : 1) * spread(),
+    spring: 5200 * spread(),
   };
   mixInto(out, impactSound(sampleRate, random, voice, space ? 1.3 : 1), 0, 1);
   if (space) {
@@ -335,9 +336,14 @@ export function synthKeystroke(sampleRate: number, seed: number, space = false):
   // Remontée : la tige revient en butée en haut, un choc plus clair, sans le creux du fond.
   const upVoice = { ...voice, plate: voice.plate * 1.12, cap: voice.cap * 1.08 };
   const release = Math.round((0.045 + random() * 0.075) * sampleRate);
-  mixInto(out, impactSound(sampleRate, random, upVoice, 0.35), release, 0.7 + random() * 0.2);
-  // Micro capté à un mètre : léger écho de la pièce, aigus extrêmes adoucis.
-  return normalize(lowpass(room(out, sampleRate, random), sampleRate, 7000));
+  mixInto(out, impactSound(sampleRate, random, upVoice, 0.5), release, 0.45 + random() * 0.15);
+  // Entendu à un mètre, à travers le bureau : écho de la pièce, aigus étouffés.
+  const muffled = lowpass(
+    lowpass(room(out, sampleRate, random), sampleRate, 3200),
+    sampleRate,
+    4500,
+  );
+  return normalize(muffled);
 }
 
 /** Clic de souris : deux petits « tic » secs et aigus, l'appui puis le relâchement. */
