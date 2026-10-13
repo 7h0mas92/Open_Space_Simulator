@@ -1,7 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 13 octobre 2026**, par Claude (projet de Thomas), à la création du
-> fichier. Dernier commit de `main` au moment de l'écriture : `a7c3eb2` (PR #119).
+> **Dernière mise à jour : 13 octobre 2026**, par Claude (projet de Thomas), fil « Mode
+> Carrière » (PR #121, en attente de validation). Dernier commit de `main` au moment de
+> l'écriture : `83fec14` (PR #120).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -62,7 +63,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Sujet                                               | Qui             | État                                                        |
 | --------------------------------------------------- | --------------- | ----------------------------------------------------------- |
 | Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Décidé le 13 octobre, démarre après la fusion de ce fichier |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Décidé le 13 octobre, démarre après la fusion de ce fichier |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | PR #121 ouverte, attend la validation de Thomas             |
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 8 à 10 missions courtes, chacune une partie
 normale avec un objectif (« Sortir du garage en 6 sprints », « Monter une salle des serveurs sans
@@ -71,9 +72,12 @@ objets pour les autres modes (marbre, tours gaming, papier peint pluie de code, 
 personnages…). Rester dans le thème du jeu. Thomas a donné le feu vert pour la suite et veut « un
 peu de tout » des autres idées, dans le même esprit.
 
-**Mode Carrière** : essayer de reproduire les performances d'anciennes startups devenues de
-grandes entreprises (Apple, Google…), **sans jamais citer leur nom directement** (noms parodiques
-ou allusions seulement, comme pour les super-héros inventés).
+**Mode Carrière** (PR #121, branche `claude/mode-carriere-41x7g3`) : 8 légendes jamais nommées
+(Pépin Computer, Matelas & Céréales, Rembobine, MicroMou, Trombinoscope, Orénoque, Centillion,
+Ampère Motors), chacune avec son départ et 4 jalons, étoiles à la fin. Détail dans `CLAUDE.md`.
+Ne touche pas aux déblocages du mode Histoire : si le mode Histoire fusionne avant, intégrer
+`main` (conflits attendus dans `GAME_MODES`, l'enum Prisma `GameMode`, `ModePicker`,
+`lessons.ts`, le test du classement et les i18n).
 
 **Proposition à valider pour les deux modes** : les objets débloqués sont utilisables en Normal,
 Facile et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
@@ -82,6 +86,9 @@ invités.
 
 ## En attente d'une décision
 
+- **Mode Carrière (PR #121)** : Thomas doit valider avant la fusion. Les jalons ont été calibrés
+  avec les bots de `pnpm balance` (Pépin et Matelas faciles, Centillion, Orénoque et Ampère
+  durs) ; à ajuster si Thomas les trouve trop durs ou trop faciles en jouant.
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
   ~20 % avant). Proposition : réduire un peu le café livré par la cuisine. Thomas n'a pas tranché
@@ -132,26 +139,26 @@ Règles fixées par Thomas (à respecter par tout le monde) :
 
 ## Où sont les choses
 
-| Quoi                                             | Où                                                                                                             |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (branche `main`)                                              |
-| Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                    |
-| Installation, architecture, déploiement, crédits | `README.md`                                                                                                    |
-| Ce relais                                        | `CONTEXTE.md`                                                                                                  |
-| Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                              |
-| Captures du README                               | `docs/screenshots/`                                                                                            |
-| Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                |
-| Interface de la simulation                       | `packages/client/src/simulation/README.md`                                                                     |
-| Constantes partagées de chaque système           | `packages/shared/src/sim/*.ts` (balance, furniture, pets, floors, serverRoom…)                                 |
-| Succès (65, dont 22 secrets)                     | `packages/shared/src/meta/achievements.ts`                                                                     |
-| 100 cartes d'événements                          | `packages/shared/src/data/cards/`                                                                              |
-| Modes de jeu                                     | `GAME_MODES` dans `packages/shared/src/game.ts` (EASY, NORMAL, HARDCORE, INTERNS_ONLY, SHIP_IN_3, DAILY)       |
-| Bots de `pnpm balance`                           | `packages/client/src/simulation/bots.ts` (random, shipper, balanced, cautious, investor, organizer, financier) |
-| Assets Kenney (déjà commités)                    | `packages/client/public/assets/kenney/` (Furniture Kit, Blocky Characters)                                     |
-| Musiques et sons                                 | `packages/client/public/assets/music/`, `packages/client/public/assets/sounds/`                                |
-| Variables d'environnement                        | `packages/server/.env.example`, `packages/client/.env.example`                                                 |
-| Déploiement                                      | `render.yaml`, `packages/client/vercel.json`, `.github/workflows/pages.yml`                                    |
-| CI                                               | `.github/workflows/ci.yml` (lint, format, typecheck, tests, build, e2e)                                        |
+| Quoi                                             | Où                                                                                                               |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (branche `main`)                                                |
+| Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                      |
+| Installation, architecture, déploiement, crédits | `README.md`                                                                                                      |
+| Ce relais                                        | `CONTEXTE.md`                                                                                                    |
+| Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                                |
+| Captures du README                               | `docs/screenshots/`                                                                                              |
+| Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                  |
+| Interface de la simulation                       | `packages/client/src/simulation/README.md`                                                                       |
+| Constantes partagées de chaque système           | `packages/shared/src/sim/*.ts` (balance, furniture, pets, floors, serverRoom…)                                   |
+| Succès (67, dont 22 secrets)                     | `packages/shared/src/meta/achievements.ts`                                                                       |
+| 100 cartes d'événements                          | `packages/shared/src/data/cards/`                                                                                |
+| Modes de jeu                                     | `GAME_MODES` dans `packages/shared/src/game.ts` (EASY, NORMAL, HARDCORE, INTERNS_ONLY, SHIP_IN_3, DAILY, CAREER) |
+| Bots de `pnpm balance`                           | `packages/client/src/simulation/bots.ts` (random, shipper, balanced, cautious, investor, organizer, financier)   |
+| Assets Kenney (déjà commités)                    | `packages/client/public/assets/kenney/` (Furniture Kit, Blocky Characters)                                       |
+| Musiques et sons                                 | `packages/client/public/assets/music/`, `packages/client/public/assets/sounds/`                                  |
+| Variables d'environnement                        | `packages/server/.env.example`, `packages/client/.env.example`                                                   |
+| Déploiement                                      | `render.yaml`, `packages/client/vercel.json`, `.github/workflows/pages.yml`                                      |
+| CI                                               | `.github/workflows/ci.yml` (lint, format, typecheck, tests, build, e2e)                                          |
 
 ## Installer et lancer
 
@@ -195,6 +202,10 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   réutiliser `nearestValidCell` et `shopStatus` (`view/placement.ts`). Chaque objet du catalogue
   a un rendu distinct (test) ; chaque bureau a une place d'écran (`SCREEN_MOUNTS`, test) ; chaque
   forme Three.js a une entrée `credits.missingItems` en FR et EN.
+- **Nouveau mode de jeu** : l'ajouter à `GAME_MODES`, à l'enum Prisma `GameMode` (migration
+  `ALTER TYPE`), à `MODE_ICONS`, à `ALL_BUT` de `lessons.ts` (avec ses étapes `rules`) et au
+  test des onglets du classement. Un réglage propre à une partie peut s'écrire dans la graine
+  (comme `career:<légende>:<graine>`) : le rejeu serveur le retrouve sans changer l'API.
 - **Serveur** : toutes les routes sous `/api`, erreurs `{ error: { code, message } }`, le serveur
   rejoue graine + commandes pour vérifier un score (il embarque la simulation du client).
 - **Textes** : toujours en FR et EN (`packages/client/src/i18n/fr.json`, `en.json`).
@@ -220,6 +231,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 13/10    | Thomas + Claude | #121        | Mode Carrière : 8 légendes parodiques, jalons et étoiles, légende dans la graine, mode `CAREER` + migration Prisma, 2 succès (67 au total). PR à valider par Thomas.                                                                             |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
 | 11/10    | Melvin          | #109 à #119 | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
 | 10–11/10 | Melvin          | #93 à #108  | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |
