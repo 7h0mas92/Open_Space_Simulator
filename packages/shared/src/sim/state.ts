@@ -8,6 +8,7 @@ import {
   IdentitySchema,
   StatsSchema,
 } from './components.js';
+import { CareerResultSchema, CareerStateSchema } from './career.js';
 import { CommandLogSchema } from './commands.js';
 import { ComputerIdSchema } from './computers.js';
 import { FinancingStateSchema } from './funding.js';
@@ -299,6 +300,8 @@ export const NOTIFICATION_KINDS = [
   'OBJECTIVE_SET',
   'OBJECTIVE_DONE',
   'OBJECTIVE_FAILED',
+  'CAREER_MILESTONE',
+  'CAREER_MISSED',
   'SPRINT_LOST',
   'GAME_OVER',
   'ACHIEVEMENT_UNLOCKED',
@@ -328,6 +331,8 @@ export const GameResultSchema = z.object({
   ownership: z.number(),
   /** Phrase partageable : « Ma startup a été rachetée 400 M€ et 7 devs ont fait un burn-out ». */
   headline: LocalizedTextSchema,
+  /** Bilan du mode Carrière : jalons tenus et étoiles (absent des autres modes). */
+  career: CareerResultSchema.optional(),
 });
 export type GameResult = z.infer<typeof GameResultSchema>;
 
@@ -387,6 +392,8 @@ export const GameStateSchema = z.object({
   raises: RaisesStateSchema.default(emptyRaisesState),
   /** Abonnement fibre en cours (null : pas d'abonnement, ou sauvegarde d'avant son ajout). */
   fibre: FibreSubscriptionSchema.nullable().default(null),
+  /** Mode Carrière : légende suivie et jalons (null dans les autres modes). */
+  career: CareerStateSchema.nullable().default(null),
   /**
    * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
    * les mêmes idées. Absent des vieilles sauvegardes.

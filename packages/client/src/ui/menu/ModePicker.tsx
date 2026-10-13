@@ -8,6 +8,7 @@ export const MODE_ICONS: Record<GameMode, string> = {
   INTERNS_ONLY: '🎒',
   SHIP_IN_3: '⏱️',
   DAILY: '📅',
+  CAREER: '🧭',
 };
 
 /** Choix du mode de jeu : une carte par mode, avec son étiquette et sa règle en une ligne. */

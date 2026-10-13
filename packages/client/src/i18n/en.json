@@ -296,6 +296,7 @@
     "dashboard": "Dashboard",
     "settings": "Settings",
     "credits": "Credits",
+    "career": "Career",
     "close": "Close",
     "menu": "Menu",
     "actions": "Game actions",
@@ -1023,6 +1024,11 @@
       "name": "Daily",
       "rule": "The same game for everyone today.",
       "tag": "Daily leaderboard"
+    },
+    "CAREER": {
+      "name": "Career",
+      "rule": "Replay the story of a startup that became a giant.",
+      "tag": "8 legends"
     }
   },
   "saves": {
@@ -1344,6 +1350,14 @@
           "dailyTips": {
             "title": "Today’s leaderboard",
             "body": "At the end of the game, your score goes to today’s leaderboard if you are signed in. The server replays your whole game from the seed and your decisions to check the score: no cheating possible.\n\nThere is no “Play again” button at the end: today’s game is played once. Come back tomorrow for a new seed."
+          },
+          "career": {
+            "title": "Career mode",
+            "body": "You replay the story of a startup that became a giant. It sets your start (more or less money, hype, debt, its first profile, sometimes a co-founder) and its milestones: reach a phase, a number of users or a funding round by a given sprint, then end the way it did.\n\nThe 🧭 button at the top of the screen shows your milestones and progress. Each milestone is checked at the sprint demo: a missed deadline is a missed milestone.\n\nAt the end: ★ if you met at least one milestone, ★★ half of them, ★★★ all of them."
+          },
+          "careerTips": {
+            "title": "Think like the legend",
+            "body": "• Read the milestones before the first sprint: they tell you when to raise, when to hire and what to aim for.\n• A close deadline comes first: a funding round closed in the right sprint is worth a star.\n• Everything else follows Normal mode: 18 months, 39 sprints, same cards.\n\nYour score counts in the Career leaderboard, and your best result for each legend is kept on this device."
           }
         }
       },
@@ -1926,6 +1940,38 @@
       "cancel": "Cancel",
       "cancelWarning": "The line will be cut right away, with no refund for the current week.",
       "cancelConfirm": "Cancel fibre"
+    }
+  },
+  "career": {
+    "intro": "Eight startups that started from nothing became giants. Their names have changed, their stories barely. Pick a legend, start with the same constraints and hit its milestones.",
+    "starsRule": "★ at least one milestone met · ★★ half of them · ★★★ all: legend matched.",
+    "difficulty": {
+      "1": "Approachable",
+      "2": "Tough",
+      "3": "Legendary"
+    },
+    "difficultyLabel": "Difficulty: {{level}}",
+    "year": "Inspired by a startup born in {{year}}",
+    "start": "Starting point",
+    "milestones": "Milestones",
+    "best": "Best result: {{stars}}",
+    "never": "Not tried yet",
+    "play": "Take the challenge",
+    "progress": "{{done}} of {{total}} milestones met",
+    "hudButton": "Career: {{done}} of {{total}} milestones met",
+    "status": {
+      "PENDING": "To meet",
+      "DONE": "Met in sprint {{sprint}}",
+      "FAILED": "Missed in sprint {{sprint}}"
+    },
+    "deadline": "Deadline: sprint {{sprint}} demo",
+    "atEnd": "Judged at the end of the game",
+    "endTitle": "Your career: {{name}}",
+    "stars": {
+      "0": "No stars",
+      "1": "One star: promising",
+      "2": "Two stars: almost a legend",
+      "3": "Three stars: legend matched!"
     }
   }
 }

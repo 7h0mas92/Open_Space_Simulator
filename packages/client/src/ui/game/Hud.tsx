@@ -50,6 +50,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   pets: '🐈',
   servers: '🗄️',
   funding: '💼',
+  career: '🧭',
   build: '🛠️',
   dashboard: '📈',
   slack: '💬',
@@ -246,14 +247,32 @@ export function Clock({ view }: { view: GameView }) {
 }
 
 /** Sauvegardes et options : des boutons-icônes en haut, à l'écart des actions de jeu. */
-export function SystemButtons() {
+export function SystemButtons({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const panel = useGame((s) => s.panel);
   const openPanel = useGame((s) => s.openPanel);
   const replay = useGame((s) => s.replayOf !== null);
   const panels = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
+  const career = view.career;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>
+      {career && (
+        // Mode Carrière : les jalons de la légende, à portée de clic.
+        <button
+          type="button"
+          className="system-button career-button"
+          aria-pressed={panel === 'career'}
+          aria-label={t('career.hudButton', { done: career.done, total: career.total })}
+          title={t('career.hudButton', { done: career.done, total: career.total })}
+          data-tutorial="panel-career"
+          onClick={() => openPanel(panel === 'career' ? null : 'career')}
+        >
+          <span aria-hidden="true">{PANEL_ICONS.career}</span>
+          <span className="career-button-count" aria-hidden="true">
+            {career.done}/{career.total}
+          </span>
+        </button>
+      )}
       {panels.map((id) => (
         <button
           key={id}

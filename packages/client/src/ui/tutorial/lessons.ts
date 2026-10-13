@@ -83,7 +83,7 @@ const planningOfSprint = (view: GameView, sprint: number) =>
 const lateSprint = (view: GameView) => (view.mode === 'SHIP_IN_3' ? 3 : 5);
 
 const ALL_BUT = (...excluded: GameMode[]): readonly GameMode[] =>
-  (['EASY', 'NORMAL', 'HARDCORE', 'INTERNS_ONLY', 'SHIP_IN_3', 'DAILY'] as const).filter(
+  (['EASY', 'NORMAL', 'HARDCORE', 'INTERNS_ONLY', 'SHIP_IN_3', 'DAILY', 'CAREER'] as const).filter(
     (mode) => !excluded.includes(mode),
   );
 
@@ -117,6 +117,8 @@ export const LESSONS: readonly Lesson[] = [
       { id: 'shipTips', modes: ['SHIP_IN_3'] },
       { id: 'daily', modes: ['DAILY'] },
       { id: 'dailyTips', modes: ['DAILY'] },
+      { id: 'career', modes: ['CAREER'], target: 'panel-career' },
+      { id: 'careerTips', modes: ['CAREER'] },
     ],
   },
   {

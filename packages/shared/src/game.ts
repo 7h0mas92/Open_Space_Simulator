@@ -27,6 +27,7 @@ export const GAME_MODES = [
   'INTERNS_ONLY',
   'SHIP_IN_3',
   'DAILY',
+  'CAREER',
 ] as const;
 export const GameModeSchema = z.enum(GAME_MODES);
 export type GameMode = z.infer<typeof GameModeSchema>;

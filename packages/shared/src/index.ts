@@ -5,6 +5,7 @@ export * from './health.js';
 export * from './i18n.js';
 export * from './sim/balance.js';
 export * from './sim/calendar.js';
+export * from './sim/career.js';
 export * from './sim/cards.js';
 export * from './sim/commands.js';
 export * from './sim/components.js';

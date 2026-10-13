@@ -1,5 +1,7 @@
 import {
   ACHIEVEMENTS,
+  CAREER_LEGENDS,
+  type CareerLegendId,
   ANNEXES,
   OUTCOMES,
   type AchievementDifficulty,
@@ -108,6 +110,19 @@ export interface GameRecord {
   trace: GaugeTrace;
   /** Tâches dynamiques : urgences et tâches hebdo réussies ou ratées, objectifs de sprint. */
   flow: FlowRecord;
+  /** Mode Carrière : légende, jalons tenus et étoiles. */
+  career?: { legend: CareerLegendId; done: string[]; stars: number };
+}
+
+/** Mode Carrière : réussite de chaque légende et de chacun de ses jalons. */
+export interface CareerSummary {
+  legend: CareerLegendId;
+  games: number;
+  bankruptcyRate: number;
+  /** Part des parties à 0, 1, 2 et 3 étoiles. */
+  stars: [number, number, number, number];
+  /** Part des parties qui tiennent chaque jalon, dans l'ordre de la légende. */
+  milestones: { id: string; rate: number }[];
 }
 
 export interface FlowRecord {
@@ -158,6 +173,17 @@ export function playBalanceGame(
     },
     achievements: [...state.achievements],
     trace: traceGauges(state),
+    ...(state.career
+      ? {
+          career: {
+            legend: state.career.legend,
+            done: Object.entries(state.career.milestones)
+              .filter(([, milestone]) => milestone.status === 'DONE')
+              .map(([id]) => id),
+            stars: state.result?.career?.stars ?? 0,
+          },
+        }
+      : {}),
     flow: {
       urgentDone: state.stats.urgentDone,
       urgentMissed: state.stats.urgentMissed,
@@ -244,6 +270,8 @@ export interface BalanceReport {
   achievements: AchievementRate[];
   /** Tâches dynamiques par bot, et réussite des objectifs par type et difficulté. */
   flow: { bots: FlowSummary[]; objectives: ObjectiveRate[] };
+  /** Mode Carrière, légende par légende (vide si aucune partie Carrière n'a été jouée). */
+  career: CareerSummary[];
 }
 
 export interface FlowSummary {
@@ -565,7 +593,33 @@ export function aggregate(allRecords: GameRecord[], cards: CardLibrary): Balance
       ),
       objectives: objectiveRates(records),
     },
+    career: careerSummaries(allRecords),
   };
+}
+
+function careerSummaries(records: GameRecord[]): CareerSummary[] {
+  return CAREER_LEGENDS.flatMap((legend): CareerSummary[] => {
+    const games = records.filter((r) => r.career?.legend === legend.id);
+    if (games.length === 0) return [];
+    const share = (test: (r: GameRecord) => boolean) => games.filter(test).length / games.length;
+    return [
+      {
+        legend: legend.id,
+        games: games.length,
+        bankruptcyRate: share((r) => r.outcome === 'BANKRUPTCY'),
+        stars: [0, 1, 2, 3].map((stars) => share((r) => r.career?.stars === stars)) as [
+          number,
+          number,
+          number,
+          number,
+        ],
+        milestones: legend.milestones.map(({ id }) => ({
+          id,
+          rate: share((r) => r.career?.done.includes(id) ?? false),
+        })),
+      },
+    ];
+  });
 }
 
 const pct = (value: number) => `${(value * 100).toFixed(1)} %`;
@@ -693,6 +747,21 @@ export function renderReport(report: BalanceReport): string {
         value === undefined ? '—' : value.toFixed(digits);
       lines.push(
         `| ${m.mode} | ${m.games} | ${pct(m.bankruptcyRate)} | ${money(m.medianValuation)} | ${cell(mid?.treasury, 1)} | ${cell(mid?.hype)} | ${cell(mid?.coffee)} | ${cell(end?.hype)} |`,
+      );
+    }
+  }
+  if (report.career.length > 0) {
+    lines.push('', '## Mode Carrière', '');
+    lines.push(
+      'Les bots ne suivent pas les jalons : ils jouent comme en Normal. Un jalon à 0 % est suspect, un jalon à 100 % trop facile.',
+      '',
+      '| Légende | Parties | Faillite | 0 ★ | 1 ★ | 2 ★ | 3 ★ | Jalons tenus |',
+      '| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
+    );
+    for (const c of report.career) {
+      const goals = c.milestones.map((m) => `${m.id} ${pct(m.rate)}`).join(' · ');
+      lines.push(
+        `| ${c.legend} | ${c.games} | ${pct(c.bankruptcyRate)} | ${c.stars.map(pct).join(' | ')} | ${goals} |`,
       );
     }
   }

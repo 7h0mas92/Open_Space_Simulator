@@ -9,6 +9,8 @@ import {
   dailySeed,
   isoDate,
   utcDate,
+  careerSeed,
+  type CareerLegendId,
   type EventCard,
   type FurnitureColor,
   type GameMode,
@@ -48,6 +50,7 @@ export const PANELS = [
   'pets',
   'servers',
   'funding',
+  'career',
   'dashboard',
   'slack',
   'saves',
@@ -145,6 +148,8 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   OBJECTIVE_SET: 'info',
   OBJECTIVE_DONE: 'success',
   OBJECTIVE_FAILED: 'info',
+  CAREER_MILESTONE: 'success',
+  CAREER_MISSED: 'error',
   SPRINT_LOST: 'error',
   ACHIEVEMENT_UNLOCKED: 'success',
 };
@@ -155,6 +160,8 @@ export type NotificationListener = (notifications: readonly GameNotification[]) 
 export interface StartOptions {
   seed?: string;
   mode?: GameMode;
+  /** Mode Carrière : la légende à suivre (écrite dans la graine). */
+  legend?: CareerLegendId;
   /** Source déjà prête (tests). */
   source?: GameSource;
   /** Reprendre une sauvegarde. */
@@ -272,7 +279,13 @@ async function createSource(options: StartOptions): Promise<GameSource> {
     );
   }
   const mode = options.mode ?? 'NORMAL';
-  const seed = options.seed ?? (mode === 'DAILY' ? await todaySeed() : randomSeed());
+  const seed =
+    options.seed ??
+    (mode === 'DAILY'
+      ? await todaySeed()
+      : mode === 'CAREER'
+        ? careerSeed(options.legend ?? 'pepin', randomSeed())
+        : randomSeed());
   const set = await cardsModule.currentCards();
   return EngineSource.start({ seed, mode }, { cards: set.cards, cardsVersion: set.version });
 }

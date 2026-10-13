@@ -350,3 +350,7 @@ button.cta small {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+
+.mode-career {
+  --mode-color: #5fd4c4;
+}

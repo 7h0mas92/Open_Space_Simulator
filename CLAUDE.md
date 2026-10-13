@@ -373,7 +373,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   caméra au bord de l'écran.
 - Mode construction refondu : catalogue en bas, aperçu sur la grille, bouton « Poser » au
   tactile, rendu 3D distinct pour chacun des 22 objets.
-- 65 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
+- 67 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
 - Menu principal refondu ; sans serveur, la fenêtre Connexion explique que les comptes sont
   indisponibles et le jeu reste jouable en invité.
 - Interface de jeu refondue : en haut ce qu'on lit (jauges, trésorerie en mois, horloge), en
@@ -725,6 +725,20 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Changement d'offre et résiliation sans remboursement, coût compté dans la trésorerie en mois.
   Commandes `SUBSCRIBE_FIBRE` / `CANCEL_FIBRE`, état `fibre` (null par défaut), `fibreSystem` en
   dernier système, rendu `render/serverRoom.ts` (12 formes des assets manquants). Aucun tirage.
+
+- Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
+  menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
+  8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,
+  MicroMou, Trombinoscope, Orénoque, Centillion, Ampère Motors), 3 niveaux de difficulté. Chaque
+  légende fixe le départ (trésorerie, hype, dette, profil du premier dev, cofondateur) et 4 jalons
+  (phase, utilisateurs, valorisation, levées, features, équipe, stabilité, hype, part du capital
+  avant un sprint ou à la fin, dette maximale, issue). Jalons vérifiés à chaque démo, puis jugés à
+  la fin : ★ un jalon, ★★ la moitié, ★★★ tous, ajouté à la phrase partageable
+  (`GameResult.career`). Légende écrite dans la graine (`career:<légende>:<graine>`), aucun tirage :
+  replays, sauvegardes et anti-triche inchangés. Mode `CAREER` (migration Prisma), état `career`
+  (null par défaut), notifications `CAREER_MILESTONE` / `CAREER_MISSED`, bouton 🧭 du HUD, chapitre
+  du tutoriel, meilleur résultat par légende sur l'appareil (`oss.career.best`), 2 succès
+  (`career-first-star`, `career-legend`), section « Mode Carrière » de `pnpm balance`.
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

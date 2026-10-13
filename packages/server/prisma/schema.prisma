@@ -29,6 +29,7 @@ enum GameMode {
   INTERNS_ONLY
   SHIP_IN_3
   DAILY
+  CAREER
 }
 
 enum Phase {

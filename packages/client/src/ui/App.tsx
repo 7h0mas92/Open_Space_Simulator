@@ -1,6 +1,7 @@
 import { ErrorCodeSchema } from '@oss/shared';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CareerPage } from './career/CareerPage';
 import { HomeMenu, type MenuPage } from './menu/HomeMenu';
 import { SaveSlots } from './menu/SaveSlots';
 import { AchievementsPage } from './meta/Achievements';
@@ -126,6 +127,13 @@ export function App() {
       return (
         <MetaPage title={t('panels.settings')} onBack={back}>
           <SettingsPanel inGame={false} />
+        </MetaPage>
+      );
+    case 'career':
+      return (
+        <MetaPage title={t('modes.CAREER.name')} onBack={back} wide>
+          <CareerPage />
+          {menuToast}
         </MetaPage>
       );
     case 'credits':
