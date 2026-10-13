@@ -8,6 +8,8 @@ import type {
   Notification,
   SaveData,
   Speed,
+  StoryMissionId,
+  StoryRewardId,
 } from '@oss/shared';
 
 /**
@@ -15,11 +17,19 @@ import type {
  * Tout passe par `postMessage` : les deux côtés ne partagent jamais d'objet.
  */
 
+/** Point de départ d'une partie : graine, mode, mission du mode Histoire et récompenses. */
+export interface GameSetup {
+  seed: string;
+  mode: GameMode;
+  mission?: StoryMissionId;
+  unlocks?: readonly StoryRewardId[];
+}
+
 export type GameStart =
-  | { kind: 'new'; seed: string; mode: GameMode }
+  | ({ kind: 'new' } & GameSetup)
   | { kind: 'load'; save: SaveData }
   /** Revoir une partie : la simulation rejoue elle-même les commandes à leur tick. */
-  | { kind: 'replay'; seed: string; mode: GameMode; commands: readonly LoggedCommand[] };
+  | ({ kind: 'replay'; commands: readonly LoggedCommand[] } & GameSetup);
 
 export type MainToWorker =
   | { type: 'init'; cards: readonly EventCard[]; game: GameStart }
