@@ -4,6 +4,8 @@
 
 Jeu de gestion de startup jouable dans le navigateur, en 3D low-poly isométrique.
 Le cahier des charges complet est dans [`CLAUDE.md`](./CLAUDE.md).
+Le relais entre les développeurs (travaux en cours, décisions en attente, journal des
+passations) est dans [`CONTEXTE.md`](./CONTEXTE.md), mis à jour à la fin de chaque travail.
 
 **État actuel : jeu complet, prêt à déployer.** Socle, simulation, rendu 3D, interface,
 événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),

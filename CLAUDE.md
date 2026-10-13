@@ -361,7 +361,13 @@ fait, explique comment le tester, puis ATTENDS ma validation avant de continuer.
 Si tu vois une meilleure solution technique que celle demandée, propose-la avant de l'appliquer.
 Ne supprime jamais une fonctionnalité du périmètre sans mon accord.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 11 octobre 2026)
+# PASSATION ENTRE THOMAS ET MELVIN
+Lis `CONTEXTE.md` à la racine avant de commencer : travaux en cours, décisions en attente,
+journal des passations. À la fin de chaque travail (fil de discussion ou PR), mets-le à jour
+(date, dernier commit, travaux en cours, une ligne dans le journal), en plus de cette section
+et du README.
+
+# ÉTAT D'AVANCEMENT (mis à jour le 13 octobre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
