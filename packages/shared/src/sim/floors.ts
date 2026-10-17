@@ -11,7 +11,7 @@ import type { WallOffice } from './walls.js';
  *
  * Une zone de sol par pièce : l'open space, la cuisine, la salle de réunion, le coin détente
  * (Série A), la cantine (Licorne), chaque aile de filiale et chaque annexe. Une pièce sans
- * revêtement garde son sol d'origine (celui tiré de la graine). Chaque zone couverte a un
+ * revêtement garde le sol d'origine, le même damier dans toutes les pièces. Chaque zone couverte a un
  * petit effet réel (moral, parfois qualité ou hype). Aucun tirage aléatoire : une partie sans
  * nouveau sol reste identique (replays, Daily).
  */

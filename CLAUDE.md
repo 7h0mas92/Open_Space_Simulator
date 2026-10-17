@@ -457,8 +457,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
   `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
-  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
-  variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
+  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places. Sol d'origine
+  identique dans toutes les pièces (damier beige, `BASE_FLOOR_COLORS` dans `render/office.ts`) :
+  ajouter ou agrandir une pièce ne change pas sa couleur, seul le rayon « Sols » la change.
 - Vue sur New York (`render/skyline.ts`) : le bureau est au dernier étage d'une tour, dans une ville low-poly façon
   Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
@@ -699,7 +700,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   annexes) ou « Toutes les pièces », sans remboursement de l'ancien sol ; +moral par pièce, et
   +qualité ou +hype selon la matière. Motifs dessinés sur canvas (`view/floors.ts`), une dalle
   texturée par pièce qui rejoint la voisine sous la cloison (`render/floorFinishes.ts`). Commande
-  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine tiré de la graine), aucun tirage.
+  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine, le même partout), aucun tirage.
 
 - Le plan cède la place aux meubles posés : quand le bureau grandit (nouvelle phase, aile de
   filiale), une cloison du plan qui tomberait sur un meuble s'efface (`yieldToItems` dans

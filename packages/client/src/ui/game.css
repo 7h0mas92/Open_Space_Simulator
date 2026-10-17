@@ -1789,7 +1789,7 @@ input[type='range'] {
   background-size: 1.4rem 1.4rem;
 }
 
-/* Sol d'origine de la pièce (damier tiré de la graine). */
+/* Sol d'origine, le même dans toutes les pièces (`BASE_FLOOR_COLORS`). */
 .floor-swatch.small.original {
   background: repeating-conic-gradient(#d9cbb4 0 25%, #c9b9a0 0 50%) 0 0 / 0.7rem 0.7rem;
 }
