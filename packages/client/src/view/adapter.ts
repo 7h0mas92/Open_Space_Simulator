@@ -50,10 +50,13 @@ import {
   WALL_FINISHES,
   floorZones,
   wallZones,
-  FIBRE_PLANS,
   HOSTING_SAVING_MAX,
-  getFibrePlan,
+  SUBSCRIPTION_SERVICES,
+  SUBSCRIPTION_SERVICE_INFO,
   hasFibreBox,
+  monthlyPrice,
+  offersOf,
+  type SubscriptionOffer,
 } from '@oss/shared';
 import { wallOffice } from '../simulation/walls';
 import { officeLayout, settleFixtures, type Fixture } from './layout';
@@ -93,12 +96,8 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
-import {
-  fibreConnected,
-  hostingSaving,
-  serverRoomItems,
-  serverRoomStatuses,
-} from '../simulation/serverRoom';
+import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulation/subscriptions';
+import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
 import type {
   CandidateView,
   DevActivity,
@@ -116,6 +115,9 @@ import type {
   MeetingRoomView,
   PetsView,
   ServersView,
+  SubscriptionOfferView,
+  SubscriptionServiceView,
+  SubscriptionsView,
   WallsView,
   FloorsView,
   GaugeName,
@@ -719,9 +721,6 @@ function petsView(state: GameState): PetsView {
 }
 
 function serversView(state: GameState): ServersView {
-  const hasBox = hasFibreBox(serverRoomItems(state));
-  const phase = PHASES.indexOf(state.phase);
-  const fibre = state.fibre;
   return {
     rooms: serverRoomStatuses(state).map((room) => ({
       id: room.id,
@@ -733,36 +732,67 @@ function serversView(state: GameState): ServersView {
     })),
     hostingSaving: hostingSaving(state),
     hostingSavingMax: HOSTING_SAVING_MAX,
-    hasBox,
-    fibre: fibre
-      ? {
-          plan: fibre.plan,
-          connected: fibreConnected(state),
-          nextBillDays: Math.max(0, (fibre.paidUntil - state.tick) / TIME.ticksPerDay),
-          weeklyPrice: getFibrePlan(fibre.plan).weeklyPrice,
-          totalPaid: fibre.totalPaid,
-        }
-      : null,
-    plans: FIBRE_PLANS.map((plan) => ({
-      id: plan.id,
-      name: plan.name,
-      description: plan.description,
-      speed: plan.speed,
-      weeklyPrice: plan.weeklyPrice,
-      minPhase: plan.minPhase,
-      blocker:
-        fibre?.plan === plan.id
-          ? 'CURRENT'
-          : PHASES.indexOf(plan.minPhase) > phase
-            ? 'LOCKED'
-            : state.stage === 'PITCH'
-              ? 'WRONG_STAGE'
-              : !hasBox
-                ? 'NO_BOX'
-                : state.gauges.treasury < plan.weeklyPrice
-                  ? 'NOT_ENOUGH_MONEY'
-                  : null,
-    })),
+    hasBox: hasFibreBox(serverRoomItems(state)),
+  };
+}
+
+function subscriptionOfferView(
+  state: GameState,
+  offer: SubscriptionOffer,
+  currentId: string | undefined,
+): SubscriptionOfferView {
+  return {
+    id: offer.id,
+    service: offer.service,
+    name: offer.name,
+    description: offer.description,
+    detail: offer.detail ?? null,
+    price: offer.price,
+    periodDays: offer.periodDays,
+    minPhase: offer.minPhase,
+    requires: offer.requires ?? null,
+    blocker:
+      currentId === offer.id
+        ? 'CURRENT'
+        : PHASES.indexOf(offer.minPhase) > PHASES.indexOf(state.phase)
+          ? 'LOCKED'
+          : state.stage === 'PITCH'
+            ? 'WRONG_STAGE'
+            : !requirementMet(state, offer)
+              ? 'REQUIREMENT'
+              : state.gauges.treasury < offer.price
+                ? 'NOT_ENOUGH_MONEY'
+                : null,
+  };
+}
+
+function subscriptionsView(state: GameState): SubscriptionsView {
+  const services = SUBSCRIPTION_SERVICES.map((service): SubscriptionServiceView => {
+    const current = subscriptionOf(state, service);
+    const currentId = current?.offer.id;
+    return {
+      id: service,
+      icon: SUBSCRIPTION_SERVICE_INFO[service].icon,
+      current: current
+        ? {
+            offer: subscriptionOfferView(state, current.offer, currentId),
+            active: requirementMet(state, current.offer),
+            nextBillDays: Math.max(
+              0,
+              (current.subscription.paidUntil - state.tick) / TIME.ticksPerDay,
+            ),
+            since: current.subscription.since,
+            totalPaid: current.subscription.totalPaid,
+            monthly: monthlyPrice(current.offer),
+          }
+        : null,
+      offers: offersOf(service).map((offer) => subscriptionOfferView(state, offer, currentId)),
+    };
+  });
+  return {
+    services,
+    count: services.filter((service) => service.current !== null).length,
+    monthlyTotal: subscriptionsMonthly(state),
   };
 }
 
@@ -862,6 +892,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    subscriptions: subscriptionsView(state),
     floors: floorsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
@@ -1045,9 +1076,9 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'ADOPT_PET', coat: command.coat };
     case 'rehomePet':
       return { type: 'REHOME_PET', petId: command.petId };
-    case 'subscribeFibre':
-      return { type: 'SUBSCRIBE_FIBRE', plan: command.plan };
-    case 'cancelFibre':
-      return { type: 'CANCEL_FIBRE' };
+    case 'subscribe':
+      return { type: 'SUBSCRIBE', offer: command.offer };
+    case 'cancelSubscription':
+      return { type: 'CANCEL_SUBSCRIPTION', service: command.service };
   }
 }

@@ -316,7 +316,8 @@
     "meetings": "Salle de réunion",
     "funding": "Lever des fonds",
     "pets": "Chats du bureau",
-    "servers": "Salle des serveurs"
+    "servers": "Salle des serveurs",
+    "subscriptions": "Abonnements"
   },
   "kanban": {
     "columns": {
@@ -560,7 +561,11 @@
     "alreadyLabel": "Le mur {{zone}} est déjà en {{finish}}",
     "all": "Tous les murs ({{price}} €)",
     "perWall": "{{price}} € le mur",
-    "effects": { "moral": "moral", "quality": "qualité", "hype": "hype" },
+    "effects": {
+      "moral": "moral",
+      "quality": "qualité",
+      "hype": "hype"
+    },
     "zones": {
       "back-open": "Fond · open space",
       "back-kitchen": "Fond · cuisine",
@@ -1907,25 +1912,42 @@
     "fibreCard": "Abonnement fibre",
     "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
     "fibreCardReady": "La box fibre est posée : choisis une offre.",
-    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs.",
-    "fibre": {
-      "title": "Abonnement fibre",
-      "intro": "La fibre se paie chaque semaine (tous les 7 jours de jeu) et arrive dans la box fibre de ta salle des serveurs. Changer d’offre repart pour une semaine payée tout de suite ; si la trésorerie ne couvre plus la facture, l’opérateur coupe la ligne.",
-      "none": "Pas d’abonnement : choisis une offre ci-dessous.",
-      "needBox": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
-      "needBoxShort": "Il faut une box fibre dans une salle des serveurs.",
-      "connected": "La ligne arrive dans la box : l’offre donne ses effets.",
-      "noBox": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien.",
-      "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
-      "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
-      "totalPaid": "{{price}} € payés en tout",
-      "perWeek": "{{price}} € / semaine",
-      "subscribe": "S’abonner ({{price}} € la 1re semaine)",
-      "switch": "Passer à cette offre ({{price}} €)",
-      "currentPlan": "Ton offre actuelle",
-      "cancel": "Résilier",
-      "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
-      "cancelConfirm": "Résilier la fibre"
-    }
+    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs."
+  },
+  "subscriptions": {
+    "intro": "Les services payés à intervalle régulier. La première période se paie à la souscription, puis à chaque échéance ; changer d’offre repart pour une période payée tout de suite. Si la trésorerie ne couvre plus une échéance, le prestataire coupe le service. Résilier l’arrête tout de suite, sans remboursement.",
+    "summaryNone": "Aucun abonnement en cours.",
+    "summary_one": "{{count}} abonnement en cours · environ {{price}} € par mois",
+    "summary_other": "{{count}} abonnements en cours · environ {{price}} € par mois",
+    "services": {
+      "internet": {
+        "name": "Internet",
+        "intro": "La fibre arrive dans la box fibre de ta salle des serveurs et se paie chaque semaine (tous les 7 jours de jeu)."
+      }
+    },
+    "requires": {
+      "fibreBox": {
+        "long": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
+        "short": "Il faut une box fibre dans une salle des serveurs.",
+        "inactive": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien."
+      }
+    },
+    "none": "Pas d’abonnement : choisis une offre ci-dessous.",
+    "active": "Actif : l’offre donne ses effets.",
+    "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
+    "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
+    "totalPaid": "{{price}} € payés en tout",
+    "since": "depuis le sprint {{sprint}}",
+    "perWeek": "{{price}} € / semaine",
+    "perMonth": "{{price}} € / mois",
+    "perDays_one": "{{price}} € / jour",
+    "perDays_other": "{{price}} € / {{count}} jours",
+    "subscribe": "S’abonner ({{price}} € la 1re période)",
+    "switch": "Passer à cette offre ({{price}} €)",
+    "currentOffer": "Ton offre actuelle",
+    "cancel": "Résilier",
+    "cancelWarning": "Le service s’arrête tout de suite, sans remboursement de la période entamée.",
+    "cancelConfirm": "Résilier {{offer}}",
+    "manageAll": "Voir tous les abonnements"
   }
 }

@@ -316,7 +316,8 @@
     "meetings": "Meeting room",
     "funding": "Raise funds",
     "pets": "Office cats",
-    "servers": "Server room"
+    "servers": "Server room",
+    "subscriptions": "Subscriptions"
   },
   "kanban": {
     "columns": {
@@ -560,7 +561,11 @@
     "alreadyLabel": "The {{zone}} wall already has {{finish}}",
     "all": "All walls (€{{price}})",
     "perWall": "€{{price}} per wall",
-    "effects": { "moral": "morale", "quality": "quality", "hype": "hype" },
+    "effects": {
+      "moral": "morale",
+      "quality": "quality",
+      "hype": "hype"
+    },
     "zones": {
       "back-open": "Back · open space",
       "back-kitchen": "Back · kitchen",
@@ -1907,25 +1912,42 @@
     "fibreCard": "Fibre subscription",
     "fibreCardCurrent": "Subscribed: {{plan}}. Tap to change plan or cancel.",
     "fibreCardReady": "The fibre router is installed: pick a plan.",
-    "fibreCardMissing": "First install a fibre router in a server room.",
-    "fibre": {
-      "title": "Fibre subscription",
-      "intro": "Fibre is paid every week (every 7 game days) and comes into the fibre router of your server room. Changing plan starts a new week paid right away; if the treasury can’t cover the bill, the provider cuts the line.",
-      "none": "No subscription: pick a plan below.",
-      "needBox": "To subscribe, install a fibre router in a server room (Servers aisle).",
-      "needBoxShort": "You need a fibre router in a server room.",
-      "connected": "The line reaches the router: the plan gives its effects.",
-      "noBox": "No fibre router in a room: you pay for the line but it does nothing.",
-      "nextBill_one": "Next €{{price}} charge in {{count}} day",
-      "nextBill_other": "Next €{{price}} charge in {{count}} days",
-      "totalPaid": "€{{price}} paid in total",
-      "perWeek": "€{{price}} / week",
-      "subscribe": "Subscribe (€{{price}} for week 1)",
-      "switch": "Switch to this plan (€{{price}})",
-      "currentPlan": "Your current plan",
-      "cancel": "Cancel",
-      "cancelWarning": "The line will be cut right away, with no refund for the current week.",
-      "cancelConfirm": "Cancel fibre"
-    }
+    "fibreCardMissing": "First install a fibre router in a server room."
+  },
+  "subscriptions": {
+    "intro": "Services paid at regular intervals. The first period is paid when you subscribe, then at each due date; switching plan starts a new period paid right away. If the treasury can’t cover a bill, the provider cuts the service. Cancelling stops it right away, with no refund.",
+    "summaryNone": "No active subscription.",
+    "summary_one": "{{count}} active subscription · about €{{price}} a month",
+    "summary_other": "{{count}} active subscriptions · about €{{price}} a month",
+    "services": {
+      "internet": {
+        "name": "Internet",
+        "intro": "Fibre comes into the fibre router of your server room and is paid every week (every 7 game days)."
+      }
+    },
+    "requires": {
+      "fibreBox": {
+        "long": "To subscribe, install a fibre router in a server room (Servers aisle).",
+        "short": "You need a fibre router in a server room.",
+        "inactive": "No fibre router in a room: you pay for the line but it does nothing."
+      }
+    },
+    "none": "No subscription: pick a plan below.",
+    "active": "Active: the plan gives its effects.",
+    "nextBill_one": "Next €{{price}} charge in {{count}} day",
+    "nextBill_other": "Next €{{price}} charge in {{count}} days",
+    "totalPaid": "€{{price}} paid in total",
+    "since": "since sprint {{sprint}}",
+    "perWeek": "€{{price}} / week",
+    "perMonth": "€{{price}} / month",
+    "perDays_one": "€{{price}} / day",
+    "perDays_other": "€{{price}} / {{count}} days",
+    "subscribe": "Subscribe (€{{price}} for the 1st period)",
+    "switch": "Switch to this plan (€{{price}})",
+    "currentOffer": "Your current plan",
+    "cancel": "Cancel",
+    "cancelWarning": "The service stops right away, with no refund for the current period.",
+    "cancelConfirm": "Cancel {{offer}}",
+    "manageAll": "See all subscriptions"
   }
 }
