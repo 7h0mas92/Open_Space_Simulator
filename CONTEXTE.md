@@ -1,7 +1,7 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 13 octobre 2026**, par Claude (projet de Thomas), à la création du
-> fichier. Dernier commit de `main` au moment de l'écriture : `a7c3eb2` (PR #119).
+> **Dernière mise à jour : 17 octobre 2026**, par Claude (projet de Melvin), ajout de
+> `ARBORESCENCE.md`. Dernier commit de `main` au moment de l'écriture : `83fec14` (PR #120).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -138,6 +138,7 @@ Règles fixées par Thomas (à respecter par tout le monde) :
 | Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                    |
 | Installation, architecture, déploiement, crédits | `README.md`                                                                                                    |
 | Ce relais                                        | `CONTEXTE.md`                                                                                                  |
+| Rôle et emplacement de chaque fichier            | `ARBORESCENCE.md`                                                                                              |
 | Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                              |
 | Captures du README                               | `docs/screenshots/`                                                                                            |
 | Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                |
@@ -220,6 +221,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 17/10    | Melvin + Claude | à venir     | Ajout de `ARBORESCENCE.md` : rôle de chaque fichier. Toute PR qui ajoute ou déplace un fichier met sa ligne à jour.                                                                                                                              |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
 | 11/10    | Melvin          | #109 à #119 | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
 | 10–11/10 | Melvin          | #93 à #108  | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |
