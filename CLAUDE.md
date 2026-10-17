@@ -404,8 +404,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   la semaine réelle (date dans la graine), 12 périodes d'environ une semaine (Nouvel An,
   Saint-Valentin, Pâques, Espace, Moyen Âge, Super-héros, Années 80, Été, Pirates, Halloween,
   Cyberpunk, Noël) avec 24 cartes de saison prioritaires. Décorations par thème en Three.js
-  (`render/decorations.ts`, `view/decor.ts`), réglées dans l'onglet « Décorations » du
-  back-office : désactivé, en saison (défaut) ou toujours ; table `DecorTheme`.
+  (`render/decorations.ts`, `view/decor.ts`) aux murs et sur les bureaux, plus aucune au sol
+  (objets fantômes ni déplaçables ni rangeables, retirés le 17 octobre 2026), réglées dans
+  l'onglet « Décorations » du back-office : désactivé, en saison (défaut) ou toujours ; table
+  `DecorTheme`.
 - Anniversaires des devs (date tirée de la graine, sans toucher au RNG) : table de fête
   décorative (gâteau, cadeaux, ballons), +moral, confettis, Slack ; le week-end, fête le lundi.
 - Performance des devs (`client/src/simulation/performance.ts`, composant ECS `performance`) :

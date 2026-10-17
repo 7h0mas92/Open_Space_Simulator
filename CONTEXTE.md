@@ -1,7 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 13 octobre 2026**, par Claude (projet de Thomas), à la création du
-> fichier. Dernier commit de `main` au moment de l'écriture : `a7c3eb2` (PR #119).
+> **Dernière mise à jour : 17 octobre 2026**, par Claude (projet de Melvin), correctif des objets
+> fantômes (branche `fix/objet_fantome`, vers `develop`). Dernier commit de `main` au moment de
+> l'écriture : `83fec14` (PR #120).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -218,14 +219,15 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 
 Le plus récent en haut. Une ligne par travail terminé.
 
-| Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
-| -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
-| 11/10    | Melvin          | #109 à #119 | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
-| 10–11/10 | Melvin          | #93 à #108  | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |
-| 9–10/10  | Melvin          | #37 à #92   | Filtres d'équipe, pause pendant les cartes, augmentations, levées de fonds, tâches dynamiques et par métier, réunions, fenêtres, chats, équipe web, musiques, meubles détaillés, papiers peints, mise à jour du jeu installé, New York réaliste. |
-| 8/10     | Thomas + Claude | #18 à #36   | Équilibrage, HUD, télétravail, back-office, personnages et packs, horloge continue, saisons, filiales, pauses.                                                                                                                                   |
-| 6–7/10   | Thomas + Claude | #1 à #17    | Les 12 étapes du plan, construction, succès, menu.                                                                                                                                                                                               |
+| Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
+| -------- | --------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 17/10    | Melvin + Claude | fix/objet_fantome | Plus de décorations de saison au sol (fantôme, chaudron, sapin…) : ni déplaçables ni rangeables. Restent guirlandes et objets sur les bureaux. À valider par Thomas (fonctionnalité retirée).                                                    |
+| 13/10    | Thomas + Claude | #120              | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
+| 11/10    | Melvin          | #109 à #119       | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
+| 10–11/10 | Melvin          | #93 à #108        | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |
+| 9–10/10  | Melvin          | #37 à #92         | Filtres d'équipe, pause pendant les cartes, augmentations, levées de fonds, tâches dynamiques et par métier, réunions, fenêtres, chats, équipe web, musiques, meubles détaillés, papiers peints, mise à jour du jeu installé, New York réaliste. |
+| 8/10     | Thomas + Claude | #18 à #36         | Équilibrage, HUD, télétravail, back-office, personnages et packs, horloge continue, saisons, filiales, pauses.                                                                                                                                   |
+| 6–7/10   | Thomas + Claude | #1 à #17          | Les 12 étapes du plan, construction, succès, menu.                                                                                                                                                                                               |
 
 ## Historique des PR
 
