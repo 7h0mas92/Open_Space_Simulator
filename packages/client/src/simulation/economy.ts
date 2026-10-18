@@ -1,4 +1,4 @@
-import { BALANCE, type GameState } from '@oss/shared';
+import { BALANCE, endlessCostMultiplier, type GameState } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
 import { fibreMonthly, hostingSaving } from './serverRoom';
 
@@ -42,6 +42,16 @@ export function hostingCost(state: GameState): number {
 }
 
 /**
+ * Frais fixes mensuels de la phase (loyer, marketing...). En mode illimité, ils montent à
+ * chaque sprint au-delà des 18 mois : la concurrence fait grimper les prix.
+ */
+export function fixedCosts(state: GameState): number {
+  return (
+    BALANCE.economy.fixedCostsMonthly[state.phase] * endlessCostMultiplier(state.mode, state.sprint)
+  );
+}
+
+/**
  * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. La
  * fibre, payée chaque semaine à part, n'y est pas.
  */
@@ -49,7 +59,7 @@ export function monthlyExpenses(state: GameState): number {
   return (
     monthlyPayroll(state) +
     teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
-    BALANCE.economy.fixedCostsMonthly[state.phase] +
+    fixedCosts(state) +
     hostingCost(state) +
     loanPayment(state)
   );

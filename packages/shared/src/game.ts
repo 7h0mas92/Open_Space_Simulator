@@ -26,6 +26,7 @@ export const GAME_MODES = [
   'HARDCORE',
   'INTERNS_ONLY',
   'SHIP_IN_3',
+  'ENDLESS',
   'DAILY',
 ] as const;
 export const GameModeSchema = z.enum(GAME_MODES);

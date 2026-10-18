@@ -1,6 +1,8 @@
 import {
   CommandLogSchema,
   dailySeed,
+  GLOBAL_EXCLUDED_MODES,
+  isEndless,
   LeaderboardQuerySchema,
   LeaderboardResponseSchema,
   ReplayResponseSchema,
@@ -34,38 +36,53 @@ function scopeSql({ mode, dailyDate }: Scope): Prisma.Sql {
   const conditions: Prisma.Sql[] = [Prisma.sql`TRUE`];
   if (mode) conditions.push(Prisma.sql`s."mode" = ${mode}::"GameMode"`);
   if (dailyDate) conditions.push(Prisma.sql`s."dailyDate" = ${dailyDate}::date`);
-  // Le classement global ne compte pas le mode Facile (il a son propre onglet).
-  if (!mode && !dailyDate) conditions.push(Prisma.sql`s."mode" <> 'EASY'::"GameMode"`);
+  // Le classement global ne compte ni le Facile ni l'Illimité (ils ont leur propre onglet).
+  if (!mode && !dailyDate) {
+    for (const excluded of GLOBAL_EXCLUDED_MODES)
+      conditions.push(Prisma.sql`s."mode" <> ${excluded}::"GameMode"`);
+  }
   return Prisma.join(conditions, ' AND ');
 }
+
+/** Le mode illimité se classe d'abord aux sprints tenus, puis à la valorisation (`compareGames`). */
+const byEndurance = (scope: Scope) => scope.mode !== undefined && isEndless(scope.mode);
 
 /**
  * Meilleur score de chaque joueur dans le classement demandé (un joueur n'y apparaît
  * qu'une fois), du plus haut au plus bas.
  */
 async function topScoreIds(prisma: PrismaClient, scope: Scope, limit: number): Promise<string[]> {
+  // En mode illimité, la clé de tri commence par les sprints tenus (0 ailleurs : sans effet ;
+  // `0::int` et non `0`, qu'ORDER BY prendrait pour un numéro de colonne).
+  const sprints = byEndurance(scope) ? Prisma.sql`s."sprintsPlayed"` : Prisma.sql`0::int`;
   const rows = await prisma.$queryRaw<{ id: string }[]>`
     SELECT id FROM (
-      SELECT DISTINCT ON (s."userId") s.id, s.valuation, s."createdAt"
+      SELECT DISTINCT ON (s."userId") s.id, ${sprints} AS sprints, s.valuation, s."createdAt"
       FROM "Score" s
       WHERE ${scopeSql(scope)}
-      ORDER BY s."userId", s.valuation DESC, s."createdAt" ASC
+      ORDER BY s."userId", ${sprints} DESC, s.valuation DESC, s."createdAt" ASC
     ) best
-    ORDER BY best.valuation DESC, best."createdAt" ASC
+    ORDER BY best.sprints DESC, best.valuation DESC, best."createdAt" ASC
     LIMIT ${limit}`;
   return rows.map((row) => row.id);
 }
 
-/** Rang d'une valorisation : 1 + nombre d'autres joueurs ayant fait mieux. */
+/**
+ * Rang d'un score : 1 + nombre d'autres joueurs ayant fait mieux (plus de valorisation, ou en
+ * mode illimité plus de sprints tenus, puis plus de valorisation à sprints égaux).
+ */
 async function rankOf(
   prisma: PrismaClient,
   scope: Scope,
-  valuation: number,
+  score: { valuation: number; sprintsPlayed: number },
   userId: string,
 ): Promise<number> {
+  const better = byEndurance(scope)
+    ? Prisma.sql`(s."sprintsPlayed" > ${score.sprintsPlayed} OR (s."sprintsPlayed" = ${score.sprintsPlayed} AND s.valuation > ${score.valuation}))`
+    : Prisma.sql`s.valuation > ${score.valuation}`;
   const [row] = await prisma.$queryRaw<{ better: bigint }[]>`
     SELECT COUNT(DISTINCT s."userId") AS better FROM "Score" s
-    WHERE ${scopeSql(scope)} AND s.valuation > ${valuation} AND s."userId" <> ${userId}`;
+    WHERE ${scopeSql(scope)} AND ${better} AND s."userId" <> ${userId}`;
   return Number(row?.better ?? 0) + 1;
 }
 
@@ -179,7 +196,12 @@ export const scoresRoutes: FastifyPluginAsyncZod = async (app) => {
       await recordEventStats(app.prisma, state);
       const newAchievements = await unlockForUser(app.prisma, userId, state.achievements);
       const scope: Scope = dailyDate ? { dailyDate: new Date(dailyDate) } : { mode };
-      const rank = await rankOf(app.prisma, scope, result.valuation, userId);
+      const rank = await rankOf(
+        app.prisma,
+        scope,
+        { valuation: result.valuation, sprintsPlayed: result.sprint },
+        userId,
+      );
       request.log.info(
         { scoreId: score.id, mode, outcome: result.outcome, valuation: result.valuation },
         'Score vérifié et enregistré',

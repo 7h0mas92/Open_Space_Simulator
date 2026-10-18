@@ -1,5 +1,6 @@
 import {
   BALANCE,
+  ENDLESS,
   GAME,
   STATE_VERSION,
   emptyRaisesState,
@@ -33,7 +34,12 @@ export function createEmptyState(config: GameConfig): GameState {
     rng: seedToState(config.seed),
     tick: 0,
     sprint: 1,
-    totalSprints: config.mode === 'SHIP_IN_3' ? 3 : GAME.totalSprints,
+    totalSprints:
+      config.mode === 'SHIP_IN_3'
+        ? 3
+        : config.mode === 'ENDLESS'
+          ? ENDLESS.sprintCap
+          : GAME.totalSprints,
     sprintTick: 0,
     stage: 'PLANNING',
     phase: 'GARAGE',

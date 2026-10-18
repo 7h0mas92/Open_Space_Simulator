@@ -373,7 +373,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   caméra au bord de l'écran.
 - Mode construction refondu : catalogue en bas, aperçu sur la grille, bouton « Poser » au
   tactile, rendu 3D distinct pour chacun des 22 objets.
-- 65 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
+- 68 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
 - Menu principal refondu ; sans serveur, la fenêtre Connexion explique que les comptes sont
   indisponibles et le jeu reste jouable en invité.
 - Interface de jeu refondue : en haut ce qu'on lit (jauges, trésorerie en mois, horloge), en
@@ -725,6 +725,23 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Changement d'offre et résiliation sans remboursement, coût compté dans la trésorerie en mois.
   Commandes `SUBSCRIBE_FIBRE` / `CANCEL_FIBRE`, état `fibre` (null par défaut), `fibreSystem` en
   dernier système, rendu `render/serverRoom.ts` (12 formes des assets manquants). Aucun tirage.
+
+- Mode illimité (`ENDLESS`, `shared/sim/endless.ts`) : pas de fin au 39e sprint, la partie dure tant
+  que la trésorerie tient (IPO et rachat toujours possibles). Après 18 mois, la concurrence monte à
+  chaque sprint : frais fixes x(1 + 4 % p + 0,4 % p²) (`fixedCosts` dans `economy.ts`), churn
+  +0,004 % par jour et par sprint, levées divisées par (1 + 5 % p) (`maxRaise`), message
+  `COMPETITION_RISES` tous les 13 sprints. 18 premiers mois identiques au Normal (même graine), aucun
+  tirage en plus. `totalSprints` = 9999 (`ENDLESS.sprintCap`), HUD « Sprint n » sans total, phrase de
+  fin avec les sprints tenus, 3 succès (2, 3, 5 ans), 2 étapes du tutoriel. Bots : ils ne vendent pas
+  en illimité et tiennent de 76 à 300 sprints. Serveur : valeur `ENDLESS` de l'enum (migration
+  `20261017150000_endless_mode`), classement par sprints tenus puis valorisation.
+- Classement des meilleures entreprises (`ui/meta/Leaderboard.tsx`) au menu et en jeu (🏆 dans les
+  boutons système, panneau `leaderboard`, sans replay en jeu) : « En ligne » ou « Sur cet appareil »
+  (`save/localScores.ts`, 50 parties gardées par mode, invité et sans serveur ; ouvert par défaut
+  quand le serveur ne répond pas). Nom d'entreprise tiré de la graine (`companyName` dans
+  `shared/meta/company.ts`, hachage, sans tirage), champ `company` du `ScoreDto`, aussi sur l'écran
+  de fin et l'image partagée. Ordre commun `compareGames` (`shared/meta/leaderboard.ts`) ; le global
+  exclut Facile et Illimité (`GLOBAL_EXCLUDED_MODES`).
 
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application

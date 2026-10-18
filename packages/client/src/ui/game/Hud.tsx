@@ -1,4 +1,4 @@
-import { SEASONS, SPEEDS, type Phase, type Speed } from '@oss/shared';
+import { SEASONS, SPEEDS, companyName, isEndless, type Phase, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView, type GaugeName } from '../../view/types';
 import { useSlack } from '../../slack/store';
@@ -38,7 +38,7 @@ const GAME_ACTIONS = [
   'slack',
 ] as const;
 type GameAction = (typeof GAME_ACTIONS)[number];
-const SYSTEM_PANELS = ['saves', 'settings'] as const;
+const SYSTEM_PANELS = ['saves', 'leaderboard', 'settings'] as const;
 
 /** Icône de chaque bouton du HUD, reprise dans l'en-tête du panneau ouvert. */
 export const PANEL_ICONS: Record<PanelId | 'build', string> = {
@@ -54,6 +54,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   dashboard: '📈',
   slack: '💬',
   saves: '💾',
+  leaderboard: '🏆',
   settings: '⚙️',
   credits: '©️',
 };
@@ -87,6 +88,7 @@ export function Company({ view }: { view: GameView }) {
     <div className="hud-company">
       <Tooltip
         text={[
+          t('hud.company', { name: companyName(view.seed) }),
           t('hud.phase', { phase }),
           t('hud.mode', { mode }),
           t('hud.team', { count: view.devs.length, max: view.teamMax }),
@@ -222,7 +224,11 @@ export function Clock({ view }: { view: GameView }) {
   return (
     <div className="clock" data-tutorial="clock" aria-live="off">
       <p className="clock-line">
-        <strong>{t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}</strong>
+        <strong>
+          {isEndless(view.mode)
+            ? t('time.sprintEndless', { sprint: time.sprint })
+            : t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}
+        </strong>
         <span className={`clock-time ${isFridayFive(live) ? 'friday' : ''}`}>
           {t('time.day', { day: days[weekday(live.day)] ?? '', time: formatClock(live.minute) })}
         </span>

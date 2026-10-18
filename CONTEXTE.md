@@ -1,7 +1,7 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 13 octobre 2026**, par Claude (projet de Thomas), à la création du
-> fichier. Dernier commit de `main` au moment de l'écriture : `a7c3eb2` (PR #119).
+> **Dernière mise à jour : 18 octobre 2026**, par Claude (projet de Melvin), mode illimité et
+> classement des entreprises. Base : `develop` au commit `83fec14` (PR #120).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -63,6 +63,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | --------------------------------------------------- | --------------- | ----------------------------------------------------------- |
 | Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Décidé le 13 octobre, démarre après la fusion de ce fichier |
 | Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Décidé le 13 octobre, démarre après la fusion de ce fichier |
+| Mode **illimité** et classement des entreprises     | Melvin + Claude | PR ouverte vers `develop`, en attente de validation         |
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 8 à 10 missions courtes, chacune une partie
 normale avec un objectif (« Sortir du garage en 6 sprints », « Monter une salle des serveurs sans
@@ -220,6 +221,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 18/10    | Melvin + Claude | develop     | Mode illimité `ENDLESS` (pression après 18 mois) et classement des entreprises (menu et jeu, en ligne ou appareil). Un mode non comparable va dans `GLOBAL_EXCLUDED_MODES`.                                                                      |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
 | 11/10    | Melvin          | #109 à #119 | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
 | 10–11/10 | Melvin          | #93 à #108  | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |

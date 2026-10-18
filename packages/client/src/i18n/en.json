@@ -276,6 +276,7 @@
   },
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
+    "sprintEndless": "Sprint {{sprint}}",
     "day": "{{day}} {{time}}",
     "birthday": "{{names}}'s birthday: cake at the office!",
     "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -316,7 +317,8 @@
     "meetings": "Meeting room",
     "funding": "Raise funds",
     "pets": "Office cats",
-    "servers": "Server room"
+    "servers": "Server room",
+    "leaderboard": "Leaderboard"
   },
   "kanban": {
     "columns": {
@@ -560,7 +562,11 @@
     "alreadyLabel": "The {{zone}} wall already has {{finish}}",
     "all": "All walls (€{{price}})",
     "perWall": "€{{price}} per wall",
-    "effects": { "moral": "morale", "quality": "quality", "hype": "hype" },
+    "effects": {
+      "moral": "morale",
+      "quality": "quality",
+      "hype": "hype"
+    },
     "zones": {
       "back-open": "Back · open space",
       "back-kitchen": "Back · kitchen",
@@ -981,6 +987,7 @@
     },
     "ownership": "Your stake",
     "sprints": "Sprints played",
+    "sprintsEndless": "Sprints survived",
     "again": "Play again",
     "menu": "Main menu",
     "share": "Share",
@@ -1019,6 +1026,11 @@
       "rule": "This app must ship in 3 sprints.",
       "tag": "Short game"
     },
+    "ENDLESS": {
+      "name": "Endless",
+      "rule": "No ending: last as long as you can, competition rises after 18 months.",
+      "tag": "How far?"
+    },
     "DAILY": {
       "name": "Daily",
       "rule": "The same game for everyone today.",
@@ -1056,7 +1068,19 @@
     "watch": "Watch {{pseudo}}'s game",
     "empty": "Nobody has posted a score here yet.",
     "error": "Could not reach the server.",
-    "replayError": "Could not load this replay."
+    "replayError": "Could not load this replay.",
+    "local": "On this device",
+    "localHint": "Your best companies, kept on this device, even without an account.",
+    "localEmpty": "Finish a game to add your first company here.",
+    "onlineHint": "The best companies of all signed-in players.",
+    "offline": "The online leaderboard needs the game server, which cannot be reached here. The leaderboard on this device still works.",
+    "company": "Company",
+    "mode": "Mode",
+    "date": "Date",
+    "endlessHint": "In Endless mode, the leaderboard ranks sprints survived first, then valuation.",
+    "you": "you",
+    "online": "Online",
+    "sources": "Leaderboard source"
   },
   "replay": {
     "banner": "{{pseudo}}'s replay: command {{played}}/{{total}}",
@@ -1336,6 +1360,14 @@
           "shipTips": {
             "title": "Ship, ship, ship",
             "body": "Only features count towards the 5: refactoring, bugfix and infra tasks do not.\n\n• Fill “To do” with small features from the first sprint.\n• Hire from the first sprint: every extra dev means more points shipped.\n• Do not worry too much about debt: you will not have time to pay for it.\n\nEvery demo report shows how many features the sprint shipped."
+          },
+          "endless": {
+            "title": "Endless mode",
+            "body": "Here, the game does not stop after 18 months (39 sprints). It lasts as long as your treasury holds.\n\nAfter sprint 39, competitors wake up:\n\n• fixed costs rise every sprint, faster and faster;\n• users leave a bit faster;\n• investors get tired: every round raises less.\n\nYou can still go public or accept an acquisition, but the game then ends."
+          },
+          "endlessTips": {
+            "title": "Go as far as you can",
+            "body": "The Endless leaderboard ranks sprints survived first, then valuation.\n\n• Keep a comfortable treasury: the pressure never stops rising.\n• Grow revenue faster than costs: users pay the salaries.\n• Watch stability: with competitors around, every outage drives more people away.\n\nAchievements await: 2, 3 and 5 years survived."
           },
           "daily": {
             "title": "The Daily",
@@ -1630,7 +1662,7 @@
     }
   },
   "hud": {
-    "company": "Your startup",
+    "company": "Company: {{name}}",
     "phase": "Stage: {{phase}}",
     "mode": "{{mode}} mode",
     "team": "Team: {{count}} of {{max}} seats",

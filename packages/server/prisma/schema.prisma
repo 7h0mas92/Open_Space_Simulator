@@ -28,6 +28,7 @@ enum GameMode {
   HARDCORE
   INTERNS_ONLY
   SHIP_IN_3
+  ENDLESS
   DAILY
 }
 

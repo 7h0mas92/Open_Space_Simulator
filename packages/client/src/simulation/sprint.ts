@@ -1,4 +1,13 @@
-import { BALANCE, TIME, type CommandResult, type GameState, type LocalizedText } from '@oss/shared';
+import {
+  BALANCE,
+  ENDLESS,
+  TIME,
+  endlessCostMultiplier,
+  endlessPressure,
+  type CommandResult,
+  type GameState,
+  type LocalizedText,
+} from '@oss/shared';
 import { BUYERS, FEEDBACK_BAD, FEEDBACK_GOOD, FEEDBACK_NEUTRAL } from './data/flavor';
 import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
@@ -46,6 +55,35 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
   resetTracker(state);
   rollObjective(state, ctx);
   raisePlanning(state, ctx);
+  announceCompetition(state, ctx);
+}
+
+/**
+ * Mode illimité : au premier sprint après les 18 mois, puis tous les 6 mois, le Slack annonce
+ * que la concurrence se renforce (frais fixes en hausse, utilisateurs plus volatils). Aucun
+ * tirage.
+ */
+function announceCompetition(state: GameState, ctx: SimContext): void {
+  const pressure = endlessPressure(state.mode, state.sprint);
+  if (pressure < 1 || (pressure - 1) % ENDLESS.milestoneSprints !== 0) return;
+  const percent = Math.round((endlessCostMultiplier(state.mode, state.sprint) - 1) * 100);
+  notify(
+    state,
+    ctx,
+    'COMPETITION_RISES',
+    pressure === 1
+      ? text([
+          '18 mois passés et toujours en vie. La concurrence se réveille : chaque sprint coûtera un peu plus cher.',
+          '18 months and still alive. Competitors wake up: every sprint will cost a bit more.',
+        ])
+      : text(
+          [
+            'Sprint {sprint} : de nouveaux concurrents arrivent. Frais fixes +{percent} % depuis les 18 mois.',
+            'Sprint {sprint}: new competitors show up. Fixed costs +{percent}% since month 18.',
+          ],
+          { sprint: state.sprint, percent },
+        ),
+  );
 }
 
 /** Fin de la planification : le sprint démarre. */

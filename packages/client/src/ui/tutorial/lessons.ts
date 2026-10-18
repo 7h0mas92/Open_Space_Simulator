@@ -1,4 +1,4 @@
-import type { GameMode } from '@oss/shared';
+import { GAME_MODES, type GameMode } from '@oss/shared';
 import type { GameView } from '../../view/types';
 import type { PanelId } from '../store/game';
 
@@ -83,9 +83,7 @@ const planningOfSprint = (view: GameView, sprint: number) =>
 const lateSprint = (view: GameView) => (view.mode === 'SHIP_IN_3' ? 3 : 5);
 
 const ALL_BUT = (...excluded: GameMode[]): readonly GameMode[] =>
-  (['EASY', 'NORMAL', 'HARDCORE', 'INTERNS_ONLY', 'SHIP_IN_3', 'DAILY'] as const).filter(
-    (mode) => !excluded.includes(mode),
-  );
+  GAME_MODES.filter((mode) => !excluded.includes(mode));
 
 export const LESSONS: readonly Lesson[] = [
   {
@@ -115,6 +113,8 @@ export const LESSONS: readonly Lesson[] = [
       { id: 'internsTips', modes: ['INTERNS_ONLY'] },
       { id: 'ship', modes: ['SHIP_IN_3'] },
       { id: 'shipTips', modes: ['SHIP_IN_3'] },
+      { id: 'endless', modes: ['ENDLESS'] },
+      { id: 'endlessTips', modes: ['ENDLESS'] },
       { id: 'daily', modes: ['DAILY'] },
       { id: 'dailyTips', modes: ['DAILY'] },
     ],

@@ -537,12 +537,26 @@ sequenceDiagram
 - **Replays** : `GET /api/scores/:id/replay` renvoie graine, commandes et cartes ; le moteur les
   rejoue en accéléré (les commandes du joueur sont bloquées).
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
+- **Mode illimité** (`ENDLESS`, `packages/shared/src/sim/endless.ts`) : pas de fin au 39e sprint,
+  la partie dure tant que la trésorerie tient (ou jusqu'à une IPO ou un rachat accepté). Après
+  les 18 mois, la concurrence pèse un peu plus à chaque sprint : frais fixes en hausse
+  (+4 % par sprint, plus une part au carré), départs d'utilisateurs en plus, levées de plus en
+  plus petites ; un message tous les 6 mois. Les 18 premiers mois sont identiques au mode Normal
+  pour une même graine. 3 succès (2, 3 et 5 ans tenus). Les bots tiennent de 76 à 300 sprints.
+- **Classements des meilleures entreprises** (`ui/meta/Leaderboard.tsx`), ouverts depuis le menu
+  principal et en jeu (bouton 🏆 en haut à droite, sans replay pour ne pas quitter la partie) :
+  « En ligne » (tous les joueurs connectés, scores vérifiés par le serveur) ou « Sur cet
+  appareil » (parties terminées ici, même en invité et sans serveur, `save/localScores.ts`).
+  Chaque partie a un nom d'entreprise tiré de sa graine par hachage (`companyName`, sans
+  tirage) que le serveur retrouve aussi. Onglets global, Daily du jour et par mode ; le global
+  exclut le Facile et l'Illimité ; l'Illimité se classe aux sprints tenus puis à la
+  valorisation (`compareGames`, même règle côté serveur).
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion. « Continuer » reprend
   la sauvegarde la plus récente d'une partie en cours : à la fin d'une partie, sa sauvegarde
   automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
   dans « Charger une partie »).
-- **Succès** : 65 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
+- **Succès** : 68 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
   condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
@@ -658,7 +672,8 @@ Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prê
 Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur GitHub Pages à
 chaque push sur `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
 Sans serveur, le jeu se joue en invité avec les 130 cartes intégrées et les sauvegardes
-locales ; le compte, les classements, le Daily en ligne et le Slack IA demandent le serveur
+locales ; le compte, les classements en ligne, le Daily en ligne et le Slack IA demandent le serveur
+(le classement « Sur cet appareil » fonctionne sans)
 Render. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
 
 Les secrets ne vont jamais dans le dépôt : ils se saisissent dans les tableaux de bord de
@@ -667,10 +682,10 @@ Render et Vercel. Toutes les variables sont décrites dans
 
 ## Ce que l'application fait et ne fait pas
 
-Elle fait : un jeu de gestion solo complet (6 modes, 39 sprints, 100 cartes, 8 profils de
+Elle fait : un jeu de gestion solo complet (7 modes dont un mode illimité, 39 sprints, 100 cartes, 8 profils de
 devs et 10 métiers d'une équipe web, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
 anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
-Daily, par mode), replays vérifiés par le serveur, 65 succès (dont 22 secrets), un back-office et un Slack
+Daily, par mode) et sur l'appareil, replays vérifiés par le serveur, 68 succès (dont 22 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 
 Elle ne fait pas : de multijoueur en temps réel, d'achats intégrés ni de publicité, de chat
