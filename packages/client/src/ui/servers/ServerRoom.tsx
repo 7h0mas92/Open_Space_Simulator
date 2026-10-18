@@ -8,8 +8,9 @@ import { useGame } from '../store/game';
 
 /*
  * Panneau « Salle des serveurs » (ouvert depuis le rayon Serveurs du mode construction, ou en
- * sélectionnant une salle) : l'état de chaque salle (ce qui manque pour qu'elle tourne), les
- * économies d'hébergement, puis l'abonnement fibre payé chaque semaine.
+ * sélectionnant une salle) : l'état de chaque salle (ce qui manque pour qu'elle tourne, sa
+ * température face à la clim), les économies d'hébergement, puis l'abonnement internet payé
+ * chaque semaine, de la box 4G à la fibre dédiée, selon la taille de l'équipe.
  */
 
 const NEED_ICONS = { server: '🗄️', network: '🔌', cooling: '❄️' } as const;
@@ -33,7 +34,7 @@ export function ServerRoom({ view }: { view: GameView }) {
           <ul className="server-rooms">
             {servers.rooms.map((room) => (
               <li key={room.id}>
-                <RoomCard room={room} />
+                <RoomCard room={room} summer={servers.summer} />
               </li>
             ))}
           </ul>
@@ -47,21 +48,42 @@ export function ServerRoom({ view }: { view: GameView }) {
       </section>
 
       <Fibre view={view} />
+      <p className="hint">{t('servers.fibre.prices')}</p>
     </div>
   );
 }
 
-function RoomCard({ room }: { room: ServerRoomView }) {
+function RoomCard({ room, summer }: { room: ServerRoomView; summer: boolean }) {
   const { t, i18n } = useTranslation();
   const def = catalogItem(room.kind);
+  const kw = (value: number) => value.toLocaleString(i18n.language, { maximumFractionDigits: 1 });
+  const ready = room.missing.length === 0;
+  const state = !ready
+    ? 'missing'
+    : room.level === 'overheat'
+      ? 'overheat'
+      : room.level === 'warm'
+        ? 'warm'
+        : 'running';
+  // Charge thermique : chaleur sur froid, affichée jusqu'à 150 %.
+  const load = room.cooling > 0 ? room.heat / room.cooling : room.heat > 0 ? 1.5 : 0;
   return (
     <article className="server-room-card" data-testid={`server-room-${room.id}`}>
       <h4>
         {def ? localized(def.name, i18n.language) : room.kind}{' '}
         <span className="hint">{t('servers.slots', { count: room.gear, max: room.slots })}</span>
       </h4>
-      <p className={room.running ? 'server-state up' : 'server-state down'}>
-        {room.running ? `✅ ${t('servers.running')}` : `🔥 ${t('servers.overheating')}`}
+      <p
+        className={state === 'running' ? 'server-state up' : 'server-state down'}
+        data-testid="server-room-state"
+      >
+        {state === 'running'
+          ? `✅ ${t('servers.running')}`
+          : state === 'warm'
+            ? `🌡️ ${t('servers.warm', { percent: Math.round(room.efficiency * 100) })}`
+            : state === 'overheat'
+              ? `🔥 ${t('servers.overheat')}`
+              : `⬜ ${t('servers.overheating')}`}
       </p>
       <ul className="server-needs">
         {SERVER_ROOM_NEEDS.map((need) => {
@@ -79,6 +101,30 @@ function RoomCard({ room }: { room: ServerRoomView }) {
           );
         })}
       </ul>
+      <div className="server-heat" data-testid="server-heat">
+        <p>
+          {t('servers.heat.load', { heat: kw(room.heat), cooling: kw(room.cooling) })}
+          {summer && <span className="server-summer"> · ☀️ {t('servers.heat.summer')}</span>}
+        </p>
+        <div
+          className={`server-heat-bar ${room.level}`}
+          role="meter"
+          aria-label={t('servers.heat.meter')}
+          aria-valuemin={0}
+          aria-valuemax={150}
+          aria-valuenow={Math.round(Math.min(1.5, load) * 100)}
+        >
+          <span style={{ width: `${(Math.min(1.5, load) / 1.5) * 100}%` }} />
+        </div>
+        <p className={room.monitored ? `server-temp ${room.level}` : 'hint'}>
+          {room.monitored
+            ? t('servers.heat.temperature', {
+                temp: Math.round(room.temperature),
+                level: t(`servers.heat.levels.${room.level}`),
+              })
+            : t('servers.heat.unmonitored')}
+        </p>
+      </div>
     </article>
   );
 }
@@ -88,7 +134,7 @@ function Fibre({ view }: { view: GameView }) {
   const dispatch = useGame((s) => s.dispatch);
   const replay = useGame((s) => s.replayOf !== null);
   const [confirming, setConfirming] = useState(false);
-  const { fibre, plans, hasBox } = view.servers;
+  const { fibre, plans, users } = view.servers;
   const current = fibre ? plans.find((plan) => plan.id === fibre.plan) : undefined;
   const money = (amount: number) => formatMoney(amount, i18n.language);
 
@@ -98,6 +144,9 @@ function Fibre({ view }: { view: GameView }) {
         {t('servers.fibre.title')}
       </h3>
       <p className="hint">{t('servers.fibre.intro')}</p>
+      <p className="server-saving" data-testid="internet-users">
+        👥 {t('servers.fibre.users', { count: users })}
+      </p>
       {fibre && current ? (
         <div className="fibre-current" data-testid="fibre-current">
           <p>
@@ -106,8 +155,21 @@ function Fibre({ view }: { view: GameView }) {
               {localized(current.speed, i18n.language)}
             </strong>
           </p>
-          <p className={fibre.connected ? 'server-state up' : 'server-state down'}>
-            {fibre.connected ? t('servers.fibre.connected') : t('servers.fibre.noBox')}
+          <p
+            className={
+              fibre.connected && fibre.penalty === 0 ? 'server-state up' : 'server-state down'
+            }
+            data-testid="fibre-state"
+          >
+            {!fibre.connected
+              ? t('servers.fibre.noBox')
+              : fibre.penalty > 0
+                ? t('servers.fibre.saturated', {
+                    count: users,
+                    max: current.maxUsers,
+                    percent: Math.round(fibre.penalty * 100),
+                  })
+                : t('servers.fibre.connected', { count: users, max: current.maxUsers })}
           </p>
           <p className="hint">
             {t('servers.fibre.nextBill', {
@@ -147,13 +209,13 @@ function Fibre({ view }: { view: GameView }) {
         </div>
       ) : (
         <p className="hint" data-testid="fibre-none">
-          {hasBox ? t('servers.fibre.none') : t('servers.fibre.needBox')}
+          {t('servers.fibre.none')}
         </p>
       )}
       <ul className="fibre-plans">
         {plans.map((plan) => (
           <li key={plan.id}>
-            <PlanCard plan={plan} subscribed={fibre !== null} disabled={replay} />
+            <PlanCard plan={plan} users={users} subscribed={fibre !== null} disabled={replay} />
           </li>
         ))}
       </ul>
@@ -163,16 +225,19 @@ function Fibre({ view }: { view: GameView }) {
 
 function PlanCard({
   plan,
+  users,
   subscribed,
   disabled,
 }: {
   plan: FibrePlanView;
+  users: number;
   subscribed: boolean;
   disabled: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
-  const price = formatMoney(plan.weeklyPrice, i18n.language);
+  const money = (amount: number) => formatMoney(amount, i18n.language);
+  const first = money(plan.firstPayment);
   const reason =
     plan.blocker === null || plan.blocker === 'CURRENT'
       ? null
@@ -182,16 +247,31 @@ function PlanCard({
           ? t('servers.fibre.needBoxShort')
           : t(`results.${plan.blocker}`);
   const current = plan.blocker === 'CURRENT';
+  const tooSmall = users > plan.maxUsers;
   return (
     <article
-      className={`fibre-plan${current ? ' current' : ''}${plan.blocker === 'LOCKED' ? ' locked' : ''}`}
+      className={`fibre-plan ${plan.technology}${current ? ' current' : ''}${plan.blocker === 'LOCKED' ? ' locked' : ''}`}
       data-testid={`fibre-plan-${plan.id}`}
     >
+      <p className="fibre-tech">{t(`servers.fibre.tech.${plan.technology}`)}</p>
       <h4>
         {localized(plan.name, i18n.language)}{' '}
         <span className="fibre-speed">{localized(plan.speed, i18n.language)}</span>
       </h4>
-      <p className="fibre-price">{t('servers.fibre.perWeek', { price })}</p>
+      <p className="fibre-price">
+        <strong>{t('servers.fibre.perMonth', { price: money(plan.monthlyPrice) })}</strong> ·{' '}
+        {t('servers.fibre.perWeek', { price: money(plan.weeklyPrice) })}
+      </p>
+      <p className={tooSmall ? 'fibre-users down' : 'fibre-users'}>
+        👥 {t('servers.fibre.maxUsers', { count: plan.maxUsers })}
+        {tooSmall && ` · ${t('servers.fibre.tooSmall')}`}
+      </p>
+      <p className="hint">
+        {plan.setupFee > 0
+          ? t('servers.fibre.setupFee', { price: money(plan.setupFee) })
+          : t('servers.fibre.noSetupFee')}
+        {plan.needsRouter && ` · ${t('servers.fibre.needsRouter')}`}
+      </p>
       <p className="hint">{localized(plan.description, i18n.language)}</p>
       {current ? (
         <p className="server-state up">{t('servers.fibre.currentPlan')}</p>
@@ -204,8 +284,8 @@ function PlanCard({
           data-testid={`fibre-subscribe-${plan.id}`}
         >
           {subscribed
-            ? t('servers.fibre.switch', { price })
-            : t('servers.fibre.subscribe', { price })}
+            ? t('servers.fibre.switch', { price: first })
+            : t('servers.fibre.subscribe', { price: first })}
         </button>
       )}
       {reason && <p className="hint">{reason}</p>}

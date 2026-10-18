@@ -3932,3 +3932,69 @@ legend {
 .fibre-plan > button {
   margin-top: auto;
 }
+
+/* Température des salles et offres internet. */
+
+.server-heat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.server-heat p,
+.fibre-plan p {
+  margin: 0;
+}
+
+.server-heat-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--border);
+}
+
+.server-heat-bar span {
+  display: block;
+  height: 100%;
+  background: #6fb7e8;
+}
+
+.server-heat-bar.warm span {
+  background: #f0b44c;
+}
+
+.server-heat-bar.overheat span {
+  background: #ff7b6b;
+}
+
+.server-temp.cool {
+  color: #7fd18b;
+}
+
+.server-temp.warm {
+  color: #f0c46c;
+}
+
+.server-temp.overheat,
+.fibre-users.down {
+  color: #ff9b8f;
+}
+
+.server-summer {
+  color: #f0c46c;
+}
+
+.fibre-tech {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fibre-plan.mobile {
+  border-left-color: #b48cf0;
+}
+
+.fibre-plan.ftto {
+  border-left-color: #f0b44c;
+}

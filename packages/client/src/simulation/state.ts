@@ -83,6 +83,7 @@ export function createEmptyState(config: GameConfig): GameState {
     pets: [],
     raises: emptyRaisesState(),
     fibre: null,
+    serverHeat: {},
     recentTaskTitles: [],
     lostSprintsPending: 0,
     tracker: {

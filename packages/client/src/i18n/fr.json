@@ -560,7 +560,11 @@
     "alreadyLabel": "Le mur {{zone}} est déjà en {{finish}}",
     "all": "Tous les murs ({{price}} €)",
     "perWall": "{{price}} € le mur",
-    "effects": { "moral": "moral", "quality": "qualité", "hype": "hype" },
+    "effects": {
+      "moral": "moral",
+      "quality": "qualité",
+      "hype": "hype"
+    },
     "zones": {
       "back-open": "Fond · open space",
       "back-kitchen": "Fond · cuisine",
@@ -872,7 +876,10 @@
       "zenFountain": "Fontaine zen : vasque en pierre, eau lumineuse et jet",
       "smallStage": "Petite scène en bois avec son micro sur pied",
       "lectern": "Pupitre de conférence en bois, plateau incliné et micro",
-      "auditoriumScreen": "Écran géant d'auditorium : dalle lumineuse sur deux mâts"
+      "auditoriumScreen": "Écran géant d'auditorium : dalle lumineuse sur deux mâts",
+      "splitAc": "Climatiseur mural : unité intérieure blanche à volet, sur support, groupe et tuyaux",
+      "inrowCooling": "Climatisation en rangée : armoire noire perforée, ventilateurs et écran bleu",
+      "serverMonitoring": "Supervision : pupitre, écran de courbes de température, sonde et gyrophare"
     },
     "back": "Retour"
   },
@@ -1863,7 +1870,7 @@
     "notPlaced": "à poser",
     "needsHint": "Les objets rangés dans l’inventaire ne comptent pas : ils doivent être posés dans l’open space.",
     "adoptTitle": "Adopter un chat ({{count}}/{{max}})",
-    "effects": "Chaque chat heureux : +moral pour toute l’équipe chaque jour, un peu de hype, et −0,4\u00a0% de productivité (il dort sur les claviers).",
+    "effects": "Chaque chat heureux : +moral pour toute l’équipe chaque jour, un peu de hype, et −0,4 % de productivité (il dort sur les claviers).",
     "coat": "Robe",
     "adopt": "Adopter ({{price}})",
     "full": "Le bureau a déjà {{max}} chats, c’est le maximum.",
@@ -1882,7 +1889,7 @@
     "adoptCardReady": "Tout est prêt : choisis sa robe et adopte-le."
   },
   "servers": {
-    "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer.",
+    "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer. Chaque appareil chauffe : prévois assez de clim.",
     "roomsTitle": "Tes salles",
     "noRoom": "Pas encore de salle des serveurs : achète un local serveurs (Seed) ou une salle des serveurs (Série A) dans le rayon Serveurs.",
     "slots": "{{count}}/{{max}} emplacements",
@@ -1891,7 +1898,7 @@
     "needs": {
       "server": "Au moins un serveur (baie, lames ou GPU)",
       "network": "Du réseau (switch ou box fibre)",
-      "cooling": "Une climatisation de précision"
+      "cooling": "Une climatisation (murale, de précision ou en rangée)"
     },
     "needsShort": {
       "server": "un serveur",
@@ -1903,29 +1910,60 @@
     "saving": "Facture d’hébergement : −{{percent}} % grâce à tes serveurs ({{max}} % au plus).",
     "statusRunning": "Elle tourne · {{count}}/{{max}} emplacements",
     "statusMissing": "Ne tourne pas : il manque {{missing}}.",
-    "open": "Salle et fibre",
-    "fibreCard": "Abonnement fibre",
+    "open": "Salle et internet",
+    "fibreCard": "Abonnement internet",
     "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
-    "fibreCardReady": "La box fibre est posée : choisis une offre.",
-    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs.",
+    "fibreCardReady": "De la box 4G à la fibre dédiée : choisis l’offre qui suit ton équipe.",
     "fibre": {
-      "title": "Abonnement fibre",
-      "intro": "La fibre se paie chaque semaine (tous les 7 jours de jeu) et arrive dans la box fibre de ta salle des serveurs. Changer d’offre repart pour une semaine payée tout de suite ; si la trésorerie ne couvre plus la facture, l’opérateur coupe la ligne.",
-      "none": "Pas d’abonnement : choisis une offre ci-dessous.",
-      "needBox": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
-      "needBoxShort": "Il faut une box fibre dans une salle des serveurs.",
-      "connected": "La ligne arrive dans la box : l’offre donne ses effets.",
-      "noBox": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien.",
+      "title": "Abonnement internet",
+      "intro": "Chaque offre supporte un nombre de salariés : au-delà, le réseau sature et toute l’équipe ralentit. Le prix est mensuel et prélevé chaque semaine (tous les 7 jours de jeu) ; la mise en service se paie à la souscription. Si la trésorerie ne couvre plus la facture, l’opérateur coupe la ligne.",
+      "none": "Pas d’abonnement : l’équipe se partage la 4G du téléphone du fondateur. Choisis une offre ci-dessous.",
+      "needBoxShort": "La fibre dédiée arrive dans une box fibre posée dans une salle des serveurs.",
+      "connected": "La ligne tient la charge : {{count}}/{{max}} salariés.",
+      "noBox": "Aucune box fibre dans une salle : tu paies la fibre dédiée mais elle n’arrive nulle part.",
       "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
       "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
       "totalPaid": "{{price}} € payés en tout",
-      "perWeek": "{{price}} € / semaine",
-      "subscribe": "S’abonner ({{price}} € la 1re semaine)",
+      "perWeek": "{{price}} € prélevés chaque semaine",
+      "subscribe": "S’abonner ({{price}} € tout de suite)",
       "switch": "Passer à cette offre ({{price}} €)",
       "currentPlan": "Ton offre actuelle",
       "cancel": "Résilier",
       "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
-      "cancelConfirm": "Résilier la fibre"
+      "cancelConfirm": "Résilier l’abonnement",
+      "users_one": "{{count}} salarié utilise la connexion (télétravail compris, par le VPN).",
+      "users_other": "{{count}} salariés utilisent la connexion (télétravail compris, par le VPN).",
+      "saturated": "Réseau saturé : {{count}} salariés pour {{max}} prévus, −{{percent}} % de productivité. Passe à une offre plus grosse.",
+      "perMonth": "{{price}} € HT / mois",
+      "fromPerMonth": "dès {{price}} € HT / mois",
+      "maxUsers_one": "Jusqu’à {{count}} salarié",
+      "maxUsers_other": "Jusqu’à {{count}} salariés",
+      "tooSmall": "trop petite pour ton équipe",
+      "setupFee": "Mise en service : {{price}} €",
+      "noSetupFee": "Mise en service offerte",
+      "needsRouter": "box fibre en salle des serveurs",
+      "prices": "Prix hors taxes constatés chez les opérateurs français pour les entreprises (2026), à titre indicatif.",
+      "tech": {
+        "mobile": "Box 4G / 5G en Wi-Fi",
+        "ftth": "Fibre mutualisée (FTTH)",
+        "ftto": "Fibre dédiée (FTTO)"
+      }
+    },
+    "warm": "Elle chauffe : les serveurs ralentissent et ne donnent que {{percent}} % de leurs effets.",
+    "overheat": "Surchauffe : les serveurs plantent, plus aucun effet et la prod se dégrade. Ajoute de la clim ou retire du matériel.",
+    "statusWarm": "Elle chauffe · {{count}}/{{max}} emplacements",
+    "statusOverheat": "Surchauffe : il faut plus de clim.",
+    "heat": {
+      "load": "Chaleur {{heat}} kW · clim {{cooling}} kW",
+      "summer": "été, +3 °C",
+      "meter": "Charge de la climatisation",
+      "temperature": "🌡️ {{temp}} °C · {{level}}",
+      "unmonitored": "🌡️ Température inconnue : installe une sonde de supervision pour la suivre et être prévenu quand elle monte.",
+      "levels": {
+        "cool": "tout va bien",
+        "warm": "ça chauffe (au-delà de 27 °C)",
+        "overheat": "surchauffe (au-delà de 32 °C)"
+      }
     }
   }
 }

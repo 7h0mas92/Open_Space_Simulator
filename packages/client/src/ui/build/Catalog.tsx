@@ -244,14 +244,14 @@ function AdoptCard({ view }: { view: GameView }) {
 
 /**
  * Rayon Serveurs : la première carte ouvre le panneau de la salle des serveurs (état des salles,
- * abonnement fibre). Elle rappelle l'offre en cours ou ce qu'il faut pour s'abonner.
+ * abonnement internet). Elle rappelle l'offre en cours, ou le prix de la moins chère.
  */
 function FibreCard({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const openPanel = useGame((s) => s.openPanel);
-  const { fibre, plans, hasBox } = view.servers;
+  const { fibre, plans } = view.servers;
   const current = fibre ? plans.find((plan) => plan.id === fibre.plan) : undefined;
-  const cheapest = Math.min(...plans.map((plan) => plan.weeklyPrice));
+  const cheapest = Math.min(...plans.map((plan) => plan.monthlyPrice));
   return (
     <button
       type="button"
@@ -265,17 +265,17 @@ function FibreCard({ view }: { view: GameView }) {
       <span className="catalog-card-name">{t('servers.fibreCard')}</span>
       <span className="catalog-card-meta">
         <span className="catalog-card-price">
-          {t('servers.fibre.perWeek', {
-            price: formatMoney(fibre?.weeklyPrice ?? cheapest, i18n.language),
-          })}
+          {current
+            ? t('servers.fibre.perMonth', {
+                price: formatMoney(current.monthlyPrice, i18n.language),
+              })
+            : t('servers.fibre.fromPerMonth', { price: formatMoney(cheapest, i18n.language) })}
         </span>
       </span>
-      <span className={fibre || hasBox ? 'catalog-card-text' : 'catalog-card-text locked'}>
+      <span className="catalog-card-text">
         {current
           ? t('servers.fibreCardCurrent', { plan: localized(current.name, i18n.language) })
-          : hasBox
-            ? t('servers.fibreCardReady')
-            : t('servers.fibreCardMissing')}
+          : t('servers.fibreCardReady')}
       </span>
     </button>
   );

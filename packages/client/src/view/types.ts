@@ -15,6 +15,8 @@ import type {
   FloorZone,
   ComputerId,
   FibrePlanId,
+  InternetTechnology,
+  ServerHeatLevel,
   ServerRoomNeed,
   WallFinishId,
   WallZone,
@@ -571,28 +573,44 @@ export interface PetsView {
 export interface ServerRoomView {
   readonly id: string;
   readonly kind: string;
-  /** Serveur, réseau et climatisation installés : son matériel donne ses effets. */
+  /** Serveur, réseau et climatisation installés, sans surchauffe : son matériel donne ses effets. */
   readonly running: boolean;
   /** Ce qu'il faut encore y installer pour qu'elle tourne. */
   readonly missing: readonly ServerRoomNeed[];
+  /** Chaleur dégagée par le matériel et froid des climatisations, en kW. */
+  readonly heat: number;
+  readonly cooling: number;
+  /** Température en °C (affichée seulement avec une sonde de supervision). */
+  readonly temperature: number;
+  readonly level: ServerHeatLevel;
+  readonly monitored: boolean;
+  /** Part des effets donnée par son matériel (1, 0,5 ou 0,75 si elle chauffe, 0 à l'arrêt). */
+  readonly efficiency: number;
   /** Équipements installés, sur le nombre d'emplacements. */
   readonly gear: number;
   readonly slots: number;
 }
 
-/** Une offre fibre et pourquoi on ne peut pas y souscrire maintenant. */
+/** Une offre internet et pourquoi on ne peut pas y souscrire maintenant. */
 export interface FibrePlanView {
   readonly id: FibrePlanId;
   readonly name: LocalizedText;
   readonly description: LocalizedText;
   readonly speed: LocalizedText;
+  readonly technology: InternetTechnology;
+  readonly monthlyPrice: number;
   readonly weeklyPrice: number;
+  readonly setupFee: number;
+  /** Ce que coûte la souscription : première semaine et mise en service. */
+  readonly firstPayment: number;
+  readonly maxUsers: number;
+  readonly needsRouter: boolean;
   readonly minPhase: Phase;
-  /** `CURRENT` : c'est l'offre en cours ; `NO_BOX` : aucune box fibre dans une salle. */
+  /** `CURRENT` : c'est l'offre en cours ; `NO_BOX` : fibre dédiée sans box fibre dans une salle. */
   readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'NO_BOX' | 'CURRENT' | 'WRONG_STAGE' | null;
 }
 
-/** Salles des serveurs et abonnement fibre. */
+/** Salles des serveurs et abonnement internet. */
 export interface ServersView {
   readonly rooms: readonly ServerRoomView[];
   /** Part de la facture d'hébergement épargnée grâce aux serveurs (0.18 = -18 %). */
@@ -600,11 +618,19 @@ export interface ServersView {
   readonly hostingSavingMax: number;
   /** Une box fibre est posée dans une salle des serveurs. */
   readonly hasBox: boolean;
+  /** L'été réchauffe les salles. */
+  readonly summer: boolean;
+  /** Salariés qui utilisent la connexion (toute l'équipe). */
+  readonly users: number;
   /** Abonnement en cours, sinon null. */
   readonly fibre: {
     readonly plan: FibrePlanId;
-    /** La ligne arrive dans une box : ses effets comptent. */
+    /** La ligne arrive (box fibre posée pour la fibre dédiée) : ses effets comptent. */
     readonly connected: boolean;
+    /** Charge de la ligne : au-delà de 1, elle sature. */
+    readonly load: number;
+    /** Productivité perdue par la saturation (0 si elle tient). */
+    readonly penalty: number;
     /** Jours de jeu avant le prochain prélèvement. */
     readonly nextBillDays: number;
     readonly weeklyPrice: number;

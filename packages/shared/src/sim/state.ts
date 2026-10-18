@@ -16,7 +16,7 @@ import { MonitorSetupSchema } from './monitors.js';
 import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
-import { FibreSubscriptionSchema } from './serverRoom.js';
+import { FibreSubscriptionSchema, ServerHeatLevelSchema } from './serverRoom.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
 import { FloorFinishesSchema } from './floors.js';
@@ -291,6 +291,13 @@ export const NOTIFICATION_KINDS = [
   'FIBRE_CANCELLED',
   /** L'opérateur coupe la ligne : la trésorerie ne couvrait plus la semaine. */
   'FIBRE_CUT',
+  /** Trop de salariés au bureau pour l'offre internet : la ligne sature (ou ne sature plus). */
+  'INTERNET_SATURATED',
+  'INTERNET_OK',
+  /** Température d'une salle des serveurs (prévenu seulement avec une sonde de supervision). */
+  'SERVER_ROOM_WARM',
+  'SERVER_ROOM_OVERHEAT',
+  'SERVER_ROOM_COOL',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -387,6 +394,11 @@ export const GameStateSchema = z.object({
   raises: RaisesStateSchema.default(emptyRaisesState),
   /** Abonnement fibre en cours (null : pas d'abonnement, ou sauvegarde d'avant son ajout). */
   fibre: FibreSubscriptionSchema.nullable().default(null),
+  /**
+   * Dernier niveau de température connu de chaque salle des serveurs, par identifiant de salle,
+   * pour prévenir quand il change (absent des vieilles sauvegardes).
+   */
+  serverHeat: z.record(z.string(), ServerHeatLevelSchema).default({}),
   /**
    * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
    * les mêmes idées. Absent des vieilles sauvegardes.
