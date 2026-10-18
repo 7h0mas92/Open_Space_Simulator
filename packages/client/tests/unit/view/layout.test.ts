@@ -175,6 +175,14 @@ describe('Le plan cède la place aux meubles posés', () => {
     expect(after.partitions).toHaveLength(series.partitions.length - 1);
   });
 
+  it('une cloison du plan reste quand un meuble occupe la demi-case à côté de son trait', () => {
+    const layout = officeLayout('SEED');
+    // Cloison le long de z en x = 10 (open space | cuisine).
+    const plant = (x: number) => ({ kind: 'plant', x, z: 4, rotation: 0 });
+    expect(yieldToItems(layout, [plant(9.5), plant(10.5)])).toBe(layout);
+    expect(yieldToItems(layout, [plant(10)]).partitions).not.toContainEqual({ x: 10, z: 4 });
+  });
+
   it('sans conflit, le plan reste celui d’origine', () => {
     const layout = officeLayout('UNICORN', 1, 2, 'graine');
     expect(yieldToItems(layout, [])).toBe(layout);

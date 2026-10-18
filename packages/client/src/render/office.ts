@@ -13,7 +13,7 @@ import {
   type WallFinishId,
   type WallZone,
 } from '@oss/shared';
-import { accessCell, type ItemPlacement } from '../ai/grid';
+import { accessPoint, type ItemPlacement } from '../ai/grid';
 import { catalogItem, DESK_CHAIR, footprint } from '../view/catalog';
 import type { FurnitureColor } from '../view/colors';
 import { slotPosition } from '../view/placement';
@@ -235,7 +235,8 @@ function extrasFor(
       color: 'natural',
     });
   if (def?.use !== 'desk' || item.kind === 'standing-desk') return extras;
-  const chairCell = accessCell(item);
+  // La chaise est au point exact devant le bureau, même décalé d'une demi-case.
+  const chairCell = accessPoint(item);
   const facing = new THREE.Quaternion().setFromAxisAngle(
     new THREE.Vector3(0, 1, 0),
     (item.rotation * Math.PI) / 2 + Math.PI,
