@@ -143,9 +143,9 @@ export interface LobbyScene {
   readonly weekday: number;
 }
 
-/** Les secrétaires sont au comptoir en semaine, de 8 h 30 à 18 h 30. */
+/** Les secrétaires sont au comptoir en semaine, de 8 h à 19 h. */
 export function receptionOpen(minute: number, weekday: number): boolean {
-  return weekday < 5 && minute >= 8 * 60 + 30 && minute < 18 * 60 + 30;
+  return weekday < 5 && minute >= 8 * 60 && minute < 19 * 60;
 }
 
 /** L'agent est dans le hall : de 8 h à 20 h en semaine, ou tout le temps (gardiennage 24 h/24). */
@@ -201,9 +201,13 @@ export class LobbyRenderer {
     for (const gate of this.gates) this.root.remove(gate.root);
     this.gates = gates.map((cell) => buildGate(cell.x, cell.z));
     for (const gate of this.gates) this.root.add(gate.root);
+    // La caméra est fixée en haut du mur de gauche du hall, tournée vers les portes.
     const first = gates[0];
     this.camera.visible = false;
-    if (first) this.camera.position.set(first.x + 0.5, 2.0, first.z + 0.14);
+    if (first) {
+      this.camera.position.set(-0.32, 1.95, first.z + 2.5);
+      this.camera.rotation.y = Math.PI / 2;
+    }
   }
 
   /** Place le personnel selon l'heure, la formule de sécurité et les comptoirs posés. */
@@ -230,8 +234,8 @@ export class LobbyRenderer {
     this.guard.body.visible = onDuty && gate !== undefined;
     if (gate) {
       // L'agent se tient côté hall, à gauche des portes, tourné vers l'entrée.
-      this.guard.body.position.set(gate.root.position.x - 0.9, 0, gate.root.position.z + 1.6);
-      this.guard.body.rotation.y = -Math.PI / 4;
+      this.guard.body.position.set(gate.root.position.x - 1.7, 0, gate.root.position.z + 1.3);
+      this.guard.body.rotation.y = Math.PI / 6;
     }
     this.camera.visible = lobby.built && lobby.security !== null;
   }

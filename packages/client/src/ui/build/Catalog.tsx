@@ -309,7 +309,9 @@ function LobbyCard({ view }: { view: GameView }) {
       <span className="catalog-card-name">{t('lobby.card')}</span>
       <span className="catalog-card-meta">
         <span className="catalog-card-price">
-          {lobby.built ? t('lobby.cardBuilt') : formatMoney(lobby.price, i18n.language)}
+          {lobby.built
+            ? t('lobby.cardBuilt')
+            : t('build.price', { price: formatMoney(lobby.price, i18n.language) })}
         </span>
       </span>
       <span

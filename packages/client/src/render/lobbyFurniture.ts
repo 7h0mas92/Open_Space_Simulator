@@ -20,10 +20,11 @@ export function receptionDesk(): THREE.Group {
   pieces.box(2.7, 0.04, 0.55, STONE, [0, 0.48, 0.02]); // plan de travail
   pieces.box(2.9, 0.05, 0.02, PALETTE.woodDark, [0, 0.62, 0.43]); // filet de façade
   for (const x of [-0.65, 0.65]) {
-    pieces.box(0.06, 0.12, 0.04, PALETTE.dark, [x, 0.52, -0.08]); // pied d'écran
-    pieces.box(0.42, 0.26, 0.03, PALETTE.dark, [x, 0.6, -0.08]);
-    pieces.light(0.38, 0.22, 0.005, 0x3d6db5, [x, 0.62, -0.06]);
-    pieces.box(0.34, 0.015, 0.12, 0xe9e6df, [x, 0.52, 0.1]); // clavier
+    // Écrans tournés vers les secrétaires (-z), clavier devant elles.
+    pieces.box(0.06, 0.12, 0.04, PALETTE.dark, [x, 0.52, 0.14]); // pied d'écran
+    pieces.box(0.42, 0.26, 0.03, PALETTE.dark, [x, 0.6, 0.12]);
+    pieces.light(0.38, 0.22, 0.005, 0x3d6db5, [x, 0.62, 0.1]);
+    pieces.box(0.34, 0.015, 0.12, 0xe9e6df, [x, 0.52, -0.12]); // clavier
   }
   pieces.box(0.32, 0.03, 0.22, 0x9b2f2f, [0.05, 0.76, 0.3]); // registre des visiteurs
   pieces.box(0.06, 0.1, 0.06, PALETTE.gold, [-0.25, 0.76, 0.3]); // sonnette
