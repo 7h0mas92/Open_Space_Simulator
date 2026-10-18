@@ -577,10 +577,14 @@ export class GameRenderer {
     this.lastFrame = now;
 
     const view = this.view;
+    // Pendant la pause du Daily, l'équipe continue d'aller s'asseoir en salle de réunion.
+    const dailyLive = view?.step === 'EXECUTION' && view.meetingRoom.daily?.live === true;
     const speed = !view
       ? 0
       : view.time.speed === 0
-        ? 0
+        ? dailyLive
+          ? 1
+          : 0
         : view.step === 'EXECUTION'
           ? view.time.speed
           : 1;

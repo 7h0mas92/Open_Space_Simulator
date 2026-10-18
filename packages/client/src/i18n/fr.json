@@ -1954,7 +1954,7 @@
     "started": "commencé, {{now}} %",
     "moved": "{{before}} % → {{now}} %",
     "nothing": "Rien en cours.",
-    "duplicates": "Travail en double évité grâce au Daily. Tickets en partie recodés pour rien depuis le début : {{count}}.",
+    "duplicates": "Sans Daily, deux devs finissent par coder la même chose. Tickets en partie recodés pour rien depuis le début : {{count}}.",
     "empty": "Aucun ticket.",
     "backlog": "{{count}} idées restent au backlog.",
     "unassigned": "Personne",

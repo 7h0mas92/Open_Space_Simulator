@@ -3964,6 +3964,13 @@ legend {
   min-height: var(--touch);
 }
 
+@media (max-width: 600px) {
+  .daily-moment {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+}
+
 /* Kanbanana : l'appli de tickets, inspirée des outils de tickets pro (nom et logo du jeu). */
 .ticket-app {
   display: grid;
@@ -4015,9 +4022,13 @@ legend {
 
 .ticket-speakers li {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
+}
+
+.ticket-speaker {
+  display: grid;
+  min-width: 0;
 }
 
 .ticket-speaker-name {
@@ -4037,6 +4048,7 @@ legend {
 }
 
 .ticket-column {
+  min-width: 0;
   padding: 0.5rem;
   border-radius: 8px;
   background: #e9ebf0;
@@ -4071,6 +4083,7 @@ legend {
 
 .ticket {
   display: grid;
+  min-width: 0;
   gap: 0.4rem;
   padding: 0.6rem 0.7rem;
   border: 1px solid #d7dbe3;
@@ -4108,6 +4121,7 @@ legend {
 
 .ticket-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
   color: #4c5466;
@@ -4123,6 +4137,7 @@ legend {
 
 .ticket-key {
   color: inherit;
+  white-space: nowrap;
   font-weight: 700;
 }
 

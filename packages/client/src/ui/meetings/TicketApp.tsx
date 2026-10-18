@@ -112,18 +112,20 @@ export function TicketApp({ view }: { view: GameView }) {
                 return (
                   <li key={speaker.id}>
                     <Avatar who={speaker} />
-                    <span className="ticket-speaker-name">{speaker.name}</span>
-                    {ticket ? (
-                      <span className="ticket-speaker-point">
-                        <span className="ticket-key">{ticket.key}</span>{' '}
-                        {localized(ticket.title, i18n.language)} ·{' '}
-                        {before === null
-                          ? t('tickets.started', { now: percent(now) })
-                          : t('tickets.moved', { before: percent(before), now: percent(now) })}
-                      </span>
-                    ) : (
-                      <span className="ticket-speaker-point hint">{t('tickets.nothing')}</span>
-                    )}
+                    <span className="ticket-speaker">
+                      <span className="ticket-speaker-name">{speaker.name}</span>
+                      {ticket ? (
+                        <span className="ticket-speaker-point">
+                          <span className="ticket-key">{ticket.key}</span>{' '}
+                          {localized(ticket.title, i18n.language)} ·{' '}
+                          {before === null
+                            ? t('tickets.started', { now: percent(now) })
+                            : t('tickets.moved', { before: percent(before), now: percent(now) })}
+                        </span>
+                      ) : (
+                        <span className="ticket-speaker-point hint">{t('tickets.nothing')}</span>
+                      )}
+                    </span>
                   </li>
                 );
               })}

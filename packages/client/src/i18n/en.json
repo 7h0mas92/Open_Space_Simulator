@@ -1954,7 +1954,7 @@
     "started": "started, {{now}}%",
     "moved": "{{before}}% → {{now}}%",
     "nothing": "Nothing in progress.",
-    "duplicates": "The Daily prevents duplicate work. Tickets partly re-coded for nothing so far: {{count}}.",
+    "duplicates": "Without a Daily, two devs end up coding the same thing. Tickets partly re-coded for nothing so far: {{count}}.",
     "empty": "No tickets.",
     "backlog": "{{count}} ideas left in the backlog.",
     "unassigned": "Nobody",
