@@ -3932,3 +3932,225 @@ legend {
 .fibre-plan > button {
   margin-top: auto;
 }
+
+/* Daily du matin : bandeau au-dessus du dock (et du bandeau des urgences), le temps de la pause. */
+.daily-moment {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  bottom: calc(var(--dock-space) + 64px);
+  left: 50%;
+  z-index: 31;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #3d6fb8;
+  border-radius: var(--radius);
+  background: #1d3f73;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 35%);
+  color: #fff;
+  transform: translateX(-50%);
+}
+
+.daily-moment-text {
+  flex: 1 1 16rem;
+  font-weight: 600;
+}
+
+.daily-moment button {
+  min-height: var(--touch);
+}
+
+/* Kanbanana : l'appli de tickets, inspirée des outils de tickets pro (nom et logo du jeu). */
+.ticket-app {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ticket-app-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: #1d3f73;
+  color: #fff;
+}
+
+.ticket-logo {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  background: #ffd23f;
+}
+
+.ticket-app-project,
+.ticket-app-points {
+  color: #d5e0f2;
+}
+
+.ticket-app-points {
+  margin-left: auto;
+}
+
+.ticket-daily {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+}
+
+.ticket-speakers {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ticket-speakers li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ticket-speaker-name {
+  font-weight: 700;
+}
+
+.ticket-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .ticket-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ticket-column {
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #e9ebf0;
+  color: #172033;
+}
+
+.ticket-column h3 {
+  margin: 0.25rem 0.25rem 0.5rem;
+  color: #3f4759;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ticket-column .hint {
+  color: #4c5466;
+}
+
+.ticket-count {
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: #d3d7e0;
+}
+
+.ticket-column ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ticket {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #d7dbe3;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(9 30 66 / 20%);
+}
+
+.ticket.is-discussed {
+  border: 2px solid #2f6fd8;
+}
+
+.ticket.is-urgent {
+  border-left: 4px solid #c62f25;
+}
+
+.ticket-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ticket-progress {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #e4e7ee;
+}
+
+.ticket-progress span {
+  display: block;
+  height: 100%;
+  background: #2f6fd8;
+}
+
+.ticket-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #4c5466;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ticket-type {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 3px;
+}
+
+.ticket-key {
+  color: inherit;
+  font-weight: 700;
+}
+
+.ticket-flag {
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  background: #fbe3e1;
+  color: #8f1f17;
+}
+
+.ticket-points {
+  margin-left: auto;
+  min-width: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: #e4e7ee;
+  color: #2c3446;
+  text-align: center;
+}
+
+.ticket-avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}

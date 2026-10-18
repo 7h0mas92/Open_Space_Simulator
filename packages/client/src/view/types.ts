@@ -536,6 +536,10 @@ export interface MeetingRoomView {
   readonly useless: number;
   /** Réunions de crise tenues quand la prod est tombée. */
   readonly crisis: number;
+  /** Dernier Daily tenu (point sur les tickets), null si aucun. */
+  readonly daily: DailyView | null;
+  /** Tickets en partie recodés pour rien, faute de Daily (travail en double). */
+  readonly duplicates: number;
   /** Dernières réunions (du matin ou de crise), de la plus récente à la plus ancienne. */
   readonly recent: readonly {
     readonly tick: number;
@@ -543,6 +547,29 @@ export interface MeetingRoomView {
     readonly crisis: boolean;
     readonly text: LocalizedText;
   }[];
+}
+
+/** Le point d'un participant du Daily sur son ticket. */
+export interface DailyEntryView {
+  readonly devId: string;
+  readonly taskId: string;
+  /** Avancement au Daily (0 à 1), et au Daily précédent si le ticket y était déjà. */
+  readonly progress: number;
+  readonly before: number | null;
+}
+
+/** Le Daily du matin : qui y était, utile ou non, et le point de chacun sur son ticket. */
+export interface DailyView {
+  readonly tick: number;
+  /** Tenu aujourd'hui (le bonus de concentration court jusqu'au soir). */
+  readonly today: boolean;
+  /** La réunion se tient en ce moment : le projecteur de la salle affiche l'appli de tickets. */
+  readonly live: boolean;
+  readonly useful: boolean;
+  /** Bonus de productivité des participants jusqu'au soir, en % (0 si inutile ou passé). */
+  readonly focus: number;
+  readonly attendees: readonly string[];
+  readonly entries: readonly DailyEntryView[];
 }
 
 /** Un chat du bureau. */

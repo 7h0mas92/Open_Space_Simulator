@@ -316,7 +316,8 @@
     "meetings": "Salle de réunion",
     "funding": "Lever des fonds",
     "pets": "Chats du bureau",
-    "servers": "Salle des serveurs"
+    "servers": "Salle des serveurs",
+    "tickets": "Kanbanana, l’appli de tickets"
   },
   "kanban": {
     "columns": {
@@ -560,7 +561,11 @@
     "alreadyLabel": "Le mur {{zone}} est déjà en {{finish}}",
     "all": "Tous les murs ({{price}} €)",
     "perWall": "{{price}} € le mur",
-    "effects": { "moral": "moral", "quality": "qualité", "hype": "hype" },
+    "effects": {
+      "moral": "moral",
+      "quality": "qualité",
+      "hype": "hype"
+    },
     "zones": {
       "back-open": "Fond · open space",
       "back-kitchen": "Fond · cuisine",
@@ -757,7 +762,8 @@
       "ambienceVolume": "Ambiance"
     },
     "slackAi": "Slack piloté par l'IA",
-    "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques."
+    "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques.",
+    "dailyPause": "Arrêter le temps quelques secondes au Daily du matin"
   },
   "credits": {
     "title": "Crédits",
@@ -1743,6 +1749,7 @@
   },
   "meetings": {
     "intro": "Aménage la salle de réunion du bureau. Chaque formule a un bonus et un malus, et l'équipe s'y retrouve chaque matin de semaine à {{hour}}, dès son arrivée, pendant {{minutes}} minutes : une réunion utile rapporte quelque chose, une réunion inutile coûte du moral.",
+    "dailyIntro": "Le Daily, c'est le point sur les tickets : chacun dit où il en est et ce qu'il fait aujourd'hui, et l'appli de tickets s'affiche au projecteur de la salle. Réunion utile : les participants avancent de {{focus}} % plus vite jusqu'au soir. Sans Daily ce matin-là (salle vide) ou pour ceux qui n'y étaient pas (télétravail), deux devs finissent par coder la même chose et une partie d'un ticket est à refaire.",
     "crisisIntro": "Quand la prod tombe, la salle devient une cellule de crise : le coupable s'il y en a un, les {{count}} devs les plus solides (DevOps et Tech Lead d'abord, coupable compris) et le Product Owner ou un manager s'y réunissent une demi-heure. En sortant, le meilleur prend « Réparer la prod », déjà avancée.",
     "crisis": "Réunions de crise",
     "crisisOne": "Réunion de crise",
@@ -1926,6 +1933,36 @@
       "cancel": "Résilier",
       "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
       "cancelConfirm": "Résilier la fibre"
+    }
+  },
+  "daily": {
+    "liveUseful": "Daily en salle de réunion : chacun fait le point sur son ticket. Utile, +{{focus}} % jusqu’au soir.",
+    "liveUseless": "Daily en salle de réunion : ça aurait pu être un mail.",
+    "open": "Voir {{app}}",
+    "resume": "Reprendre"
+  },
+  "tickets": {
+    "intro": "L’appli de tickets du bureau, projetée dans la salle de réunion pendant le Daily. Lecture seule : les tickets se déplacent dans le Kanban.",
+    "sprint": "Sprint {{sprint}}",
+    "pointsDone": "{{done}} / {{total}} points terminés",
+    "dailyTitle": "Daily de ce matin",
+    "noDaily": "Pas encore de Daily : aménage la salle de réunion, l’équipe s’y retrouvera chaque matin de semaine à 9h.",
+    "useful": "Daily utile : les participants savent où ils en sont, +{{focus}} % de productivité jusqu’au soir.",
+    "usefulPast": "Daily utile.",
+    "useless": "Daily inutile : du moral en moins, mais au moins personne ne code la même chose.",
+    "notToday": "(dernier Daily, pas aujourd’hui)",
+    "started": "commencé, {{now}} %",
+    "moved": "{{before}} % → {{now}} %",
+    "nothing": "Rien en cours.",
+    "duplicates": "Travail en double évité grâce au Daily. Tickets en partie recodés pour rien depuis le début : {{count}}.",
+    "empty": "Aucun ticket.",
+    "backlog": "{{count}} idées restent au backlog.",
+    "unassigned": "Personne",
+    "progress": "Avancement",
+    "points": "Points",
+    "kinds": {
+      "URGENT": "Urgent",
+      "WEEKLY": "Semaine"
     }
   }
 }

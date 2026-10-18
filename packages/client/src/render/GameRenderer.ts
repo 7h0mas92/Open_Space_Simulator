@@ -39,6 +39,8 @@ import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
 import { DecorationsView } from './decorations';
 import { MeetingRoomView } from './meetingRoom';
+import { DailyBoardView } from './dailyBoard';
+import { ticketBoard } from '../view/ticketBoard';
 import { THEME_MODELS } from './decorModels';
 import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
@@ -142,6 +144,8 @@ export class GameRenderer {
   private readonly office = new OfficeView(this.assets);
   private readonly decorations = new DecorationsView(this.assets);
   private readonly meetingRoom = new MeetingRoomView(this.assets);
+  /** Écran et projecteur du Daily : l'appli de tickets projetée pendant la réunion. */
+  private readonly dailyBoard = new DailyBoardView();
   /** Réglage de chaque thème de décoration au back-office (absent = pendant sa période). */
   private decorModes: Partial<Record<DecorTheme, DecorMode>> = {};
   private readonly roomLights = new OfficeLights(this.assets);
@@ -232,6 +236,7 @@ export class GameRenderer {
       this.office.root,
       this.decorations.root,
       this.meetingRoom.root,
+      this.dailyBoard.root,
       this.roomLights.root,
       this.screens.root,
       this.projection.root,
@@ -295,6 +300,7 @@ export class GameRenderer {
     void this.office.setItems(view.items);
     this.projection.sync(view.items, view.projections);
     this.updateDecor(view);
+    this.dailyBoard.setBoard(ticketBoard(view), english ? 'en' : 'fr');
     void this.roomLights.setLayout(
       this.layout,
       QUALITY_PRESETS[this.quality].roomLights,
@@ -525,6 +531,7 @@ export class GameRenderer {
     this.office.dispose();
     this.decorations.dispose();
     this.meetingRoom.dispose();
+    this.dailyBoard.dispose();
     this.roomLights.dispose();
     this.skyline.dispose();
     this.screens.dispose();
@@ -559,6 +566,7 @@ export class GameRenderer {
     this.world.setDecor(plan.blocked, plan.party, plan.meeting?.seats ?? []);
     void this.decorations.update(key, plan, this.layout, view.items);
     void this.meetingRoom.update(key, plan.meeting, this.layout);
+    this.dailyBoard.setPlan(plan.meeting);
   }
 
   // --- Boucle ------------------------------------------------------------------------------
@@ -613,6 +621,7 @@ export class GameRenderer {
       );
     }
     this.projection.update(delta, !this.reducedMotion);
+    this.dailyBoard.update(delta, !this.reducedMotion);
     this.options.onDeskActivity?.(this.deskActivity(speed > 0));
     this.smoke.update(delta);
     this.confetti.update(delta);

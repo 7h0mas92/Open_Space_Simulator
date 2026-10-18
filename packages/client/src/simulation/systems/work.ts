@@ -23,7 +23,7 @@ import {
 } from '../helpers';
 import { leadershipEffects, NO_LEADERSHIP, type LeadershipEffects } from '../leadership';
 import { recordTaskDone, recordWork } from '../performance';
-import { isTeamMeetingTime } from '../meetings';
+import { checkDuplicateWork, dailyFocus, isTeamMeetingTime } from '../meetings';
 import { completeSpecialTask } from '../taskFlow';
 import { getClock, type SimClock } from '../time';
 
@@ -75,7 +75,9 @@ export function productivity(
     1 +
     ctx.office.teamProductivity +
     (ctx.office.seatProductivity[devId] ?? 0) +
-    leadership.productivity;
+    leadership.productivity +
+    // Sorti d'un Daily utile ce matin : il sait exactement où il en est sur son ticket.
+    dailyFocus(state, devId);
   if (identity.role === 'SENIOR_BEARD' && task.shinyFramework)
     rate *= BALANCE.roles.seniorShinyMalus;
   if (thinksInRust(state, devId)) {
@@ -281,4 +283,6 @@ export function workSystem(
     gainXp(state, ctx, devId, rate);
     if (task.progress >= task.work) completeTask(state, ctx, taskId, devId, leadership);
   }
+  // Sans Daily ce matin, deux devs finissent par coder la même chose.
+  checkDuplicateWork(state, ctx, clock);
 }

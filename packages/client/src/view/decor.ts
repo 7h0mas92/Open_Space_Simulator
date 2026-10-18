@@ -49,6 +49,11 @@ export interface MeetingPlan {
   readonly seats: readonly MeetingSeat[];
   /** Cases contre le mur du fond, de gauche à droite, occupées par un objet. */
   readonly wall: readonly Cell[];
+  /**
+   * Écran de projection du Daily, au milieu du mur du fond (null si la salle est trop étroite) :
+   * centre, rangée et largeur en cases. Le projecteur est suspendu au-dessus de la table.
+   */
+  readonly screen: { readonly x: number; readonly z: number; readonly cells: number } | null;
 }
 
 export interface DecorPlan {
@@ -217,7 +222,24 @@ function placeMeeting(
       if (inRoom(next)) return false;
       return !layout.partitions.some((p) => p.x === next.x && p.z === next.z);
     });
-  // Les coins d'abord, puis le milieu, puis le reste.
+  // L'écran du Daily d'abord, au milieu du mur du fond : les objets se rangent de part et d'autre.
+  let screen: MeetingPlan['screen'] = null;
+  const screenCells = room.width >= 6 ? 3 : 2;
+  if (room.width >= 3) {
+    // Au milieu si possible, sinon le plus près du milieu (pas devant une porte).
+    const center = room.x + Math.floor((room.width - screenCells) / 2);
+    const starts: number[] = [];
+    for (let x = room.x; x + screenCells <= room.x + room.width; x++) starts.push(x);
+    starts.sort((a, b) => Math.abs(a - center) - Math.abs(b - center));
+    for (const startX of starts) {
+      const cells: Cell[] = [];
+      for (let dx = 0; dx < screenCells; dx++) cells.push({ x: startX + dx, z: room.z });
+      if (cells.some(opening) || !planner.tryBlock(cells)) continue;
+      screen = { x: startX + (screenCells - 1) / 2, z: room.z, cells: screenCells };
+      break;
+    }
+  }
+  // Les coins d'abord, puis le milieu (sauf derrière l'écran), puis le reste.
   const middle = room.x + Math.floor((room.width - 1) / 2);
   const order = [room.x, room.x + room.width - 1, middle];
   for (let x = room.x; x < room.x + room.width; x++) if (!order.includes(x)) order.push(x);
@@ -247,7 +269,7 @@ function placeMeeting(
     }
   }
   for (const seat of seats) planner.keepFree(seat.cell);
-  return { format, room, table, seats, wall };
+  return { format, room, table, seats, wall, screen };
 }
 
 /** Cases candidates le long des murs du fond (là où l'on voit le mieux depuis la caméra). */

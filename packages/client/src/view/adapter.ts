@@ -12,6 +12,7 @@ import {
   BALANCE,
   DEFAULT_COMPUTER,
   hasComputer,
+  DAILY_SYNC,
   MEETING_FORMATS,
   PETS,
   FUNDING_TIERS,
@@ -114,6 +115,7 @@ import type {
   GroupView,
   GameView,
   MeetingRoomView,
+  DailyView,
   PetsView,
   ServersView,
   WallsView,
@@ -667,6 +669,22 @@ function groupView(state: GameState): GroupView {
 /** Nombre de réunions récentes affichées dans le panneau de la salle. */
 const RECENT_MEETINGS = 4;
 
+function dailyView(state: GameState): DailyView | null {
+  const sync = state.morningSync;
+  if (!sync) return null;
+  const today = sync.day === getClock(state).day;
+  return {
+    tick: sync.tick,
+    today,
+    // Le snapshot qui suit le tick du Daily : l'équipe est en salle, l'appli est projetée.
+    live: state.stage === 'EXECUTION' && sync.tick === state.tick - 1,
+    useful: sync.useful,
+    focus: sync.useful && today ? Math.round(DAILY_SYNC.focusBonus * 100) : 0,
+    attendees: [...sync.attendees],
+    entries: sync.entries.map((entry) => ({ ...entry })),
+  };
+}
+
 function meetingRoomView(state: GameState): MeetingRoomView {
   const recent = state.notifications
     .filter(
@@ -703,6 +721,8 @@ function meetingRoomView(state: GameState): MeetingRoomView {
     useful: state.stats.meetingsUseful,
     useless: state.stats.meetingsUseless,
     crisis: state.stats.crisisMeetings,
+    daily: dailyView(state),
+    duplicates: state.stats.duplicateWork,
     recent,
   };
 }
