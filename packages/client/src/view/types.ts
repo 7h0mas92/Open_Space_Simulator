@@ -15,6 +15,7 @@ import type {
   FloorZone,
   ComputerId,
   FibrePlanId,
+  SecurityPlanId,
   ServerRoomNeed,
   WallFinishId,
   WallZone,
@@ -613,6 +614,44 @@ export interface ServersView {
   readonly plans: readonly FibrePlanView[];
 }
 
+/** Une formule de sécurité et pourquoi on ne peut pas y souscrire maintenant. */
+export interface SecurityPlanView {
+  readonly id: SecurityPlanId;
+  readonly name: LocalizedText;
+  readonly description: LocalizedText;
+  readonly coverage: LocalizedText;
+  readonly monthlyPrice: number;
+  readonly weeklyPrice: number;
+  readonly minPhase: Phase;
+  /** `CURRENT` : c'est la formule en cours ; `NO_LOBBY` : il faut d'abord un hall. */
+  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'NO_LOBBY' | 'CURRENT' | 'WRONG_STAGE' | null;
+}
+
+/** Hall d'entrée du rez-de-chaussée, ses secrétaires et le service de sécurité. */
+export interface LobbyView {
+  /** Le hall est aménagé. */
+  readonly built: boolean;
+  /** Prix des travaux et phase à partir de laquelle on peut les lancer. */
+  readonly price: number;
+  readonly minPhase: Phase;
+  /** Pourquoi on ne peut pas aménager le hall maintenant (`null` si c'est possible ou fait). */
+  readonly buildBlocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'WRONG_STAGE' | null;
+  readonly receptionists: number;
+  readonly maxReceptionists: number;
+  readonly receptionistMonthly: number;
+  /** Formule de sécurité en cours, sinon null. */
+  readonly security: {
+    readonly plan: SecurityPlanId;
+    /** Un agent se tient dans le hall : en journée seulement, ou jour et nuit. */
+    readonly guard: 'none' | 'day' | 'always';
+    /** Jours de jeu avant le prochain prélèvement. */
+    readonly nextBillDays: number;
+    readonly weeklyPrice: number;
+    readonly totalPaid: number;
+  } | null;
+  readonly plans: readonly SecurityPlanView[];
+}
+
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
 export interface WallZoneView {
   readonly zone: WallZone;
@@ -718,6 +757,8 @@ export interface GameView {
   readonly walls: WallsView;
   /** Salles des serveurs et abonnement fibre. */
   readonly servers: ServersView;
+  /** Hall d'entrée, accueil et sécurité. */
+  readonly lobby: LobbyView;
   /** Sols des pièces. */
   readonly floors: FloorsView;
   readonly canIpo: boolean;
@@ -817,7 +858,12 @@ export type GameCommand =
   | { readonly type: 'rehomePet'; readonly petId: string }
   /** Souscrit à une offre fibre (ou en change). */
   | { readonly type: 'subscribeFibre'; readonly plan: FibrePlanId }
-  | { readonly type: 'cancelFibre' };
+  | { readonly type: 'cancelFibre' }
+  /** Aménage le hall d'entrée, règle l'accueil et le service de sécurité. */
+  | { readonly type: 'buildLobby' }
+  | { readonly type: 'setReceptionists'; readonly count: number }
+  | { readonly type: 'subscribeSecurity'; readonly plan: SecurityPlanId }
+  | { readonly type: 'cancelSecurity' };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

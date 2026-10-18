@@ -32,6 +32,7 @@ export const ITEM_CATEGORIES = [
   'accessory',
   'devices',
   'servers',
+  'lobby',
 ] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
@@ -744,6 +745,13 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   'backup-nas': gear('backupNas', 1.4),
   firewall: gear('firewallUnit', 1.2),
   'fire-suppression': gear('fireSuppression', 1.7),
+  // Hall d'entrée : le comptoir d'accueil, où se tiennent les secrétaires.
+  'reception-desk': {
+    category: 'lobby',
+    model: primitive('receptionDesk'),
+    height: 0.76,
+    paint: ['wood'],
+  },
 };
 
 export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => ({

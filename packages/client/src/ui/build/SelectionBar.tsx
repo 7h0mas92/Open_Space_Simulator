@@ -1,4 +1,4 @@
-import { isProjector, PROJECTION_RANGE } from '@oss/shared';
+import { isProjector, PROJECTION_RANGE, RECEPTION_DESK_ID } from '@oss/shared';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
@@ -53,7 +53,11 @@ export function SelectionBar({ view }: { view: GameView }) {
             <strong>{itemName(item.kind)}</strong>
           </p>
           <span className="item-description">
-            {gift ? t('build.annexDecor') : localized(def.description, i18n.language)}
+            {gift && item.annexDecor?.startsWith('L-')
+              ? t('build.lobbyDecor')
+              : gift
+                ? t('build.annexDecor')
+                : localized(def.description, i18n.language)}
           </span>
           {item.monitor && (
             <span className="item-description item-monitor" data-testid="selected-monitor">
@@ -77,6 +81,11 @@ export function SelectionBar({ view }: { view: GameView }) {
             </span>
           )}
         </div>
+        {item.kind === RECEPTION_DESK_ID && view.lobby.built && (
+          <button type="button" onClick={() => openPanel('lobby')} data-testid="open-lobby">
+            🛎️ {t('lobby.open')}
+          </button>
+        )}
         {serverRoom && (
           <button type="button" onClick={() => openPanel('servers')} data-testid="open-servers">
             🌐 {t('servers.open')}

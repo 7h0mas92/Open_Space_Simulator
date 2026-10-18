@@ -30,6 +30,7 @@ import { taskFlowSystem } from './taskFlow';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
+import { securitySystem } from './lobby';
 import { fibreSystem } from './serverRoom';
 
 /** Un système = une fonction qui fait évoluer l'état pendant un tick. */
@@ -48,6 +49,7 @@ export const SYSTEMS: readonly System[] = [
   dailySystem,
   calendarSystem,
   (state, ctx) => fibreSystem(state, ctx),
+  (state, ctx) => securitySystem(state, ctx),
 ];
 
 export interface DispatchResult {
@@ -95,11 +97,12 @@ export class Simulation {
    * ou en retire une (un des deux compteurs change). Les postes vont aux devs présents au
    * bureau : la liste des télétravailleurs fait donc aussi partie de la clé, comme la formule
    * de la salle de réunion, les ordinateurs des bureaux (changés sans nouvelle entité),
-   * l'abonnement fibre et la salle de chaque équipement serveur (déplaçable d'une salle à l'autre).
+   * l'abonnement fibre et la salle de chaque équipement serveur (déplaçable d'une salle à l'autre),
+   * le hall, ses secrétaires et le service de sécurité.
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.fibre?.plan ?? '-'}:${serverGearKey(state)}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.fibre?.plan ?? '-'}:${serverGearKey(state)}:${lobbyKey(state)}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;
@@ -178,4 +181,9 @@ function serverGearKey(state: GameState): string {
   for (const [id, item] of Object.entries(state.components.furniture))
     if (getFurniture(item.itemId)?.serverGear) key += `${id}@${item.hostId ?? ''},`;
   return key;
+}
+
+/** Hall d'entrée : aménagé ou non, nombre de secrétaires, formule de sécurité. */
+function lobbyKey(state: GameState): string {
+  return state.lobby ? `${state.lobby.receptionists}/${state.security?.plan ?? '-'}` : '-';
 }

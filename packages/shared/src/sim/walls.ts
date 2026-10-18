@@ -256,6 +256,8 @@ export interface WallOffice {
   readonly phase: Phase;
   readonly wings: number;
   readonly annexes: number;
+  /** Hall d'entrée aménagé (absent : pas de hall). */
+  readonly lobby?: boolean;
 }
 
 const phaseIndex = (phase: Phase) => PHASES.indexOf(phase);

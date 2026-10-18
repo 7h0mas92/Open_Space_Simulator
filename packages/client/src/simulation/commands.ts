@@ -24,6 +24,7 @@ import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
+import { buildLobby, cancelSecurity, setReceptionists, subscribeSecurity } from './lobby';
 import { cancelFibre, subscribeFibre } from './serverRoom';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -192,5 +193,13 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return subscribeFibre(state, ctx, command.plan);
     case 'CANCEL_FIBRE':
       return cancelFibre(state, ctx);
+    case 'BUILD_LOBBY':
+      return buildLobby(state, ctx);
+    case 'SET_RECEPTIONISTS':
+      return setReceptionists(state, ctx, command.count);
+    case 'SUBSCRIBE_SECURITY':
+      return subscribeSecurity(state, ctx, command.plan);
+    case 'CANCEL_SECURITY':
+      return cancelSecurity(state, ctx);
   }
 }

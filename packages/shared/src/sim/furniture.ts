@@ -795,6 +795,21 @@ export const FURNITURE_CATALOG = [
     maxCount: 1,
     effects: { hypePerDay: 0.06, quality: 0.01 },
   },
+  // --- Hall d'entrée (voir `lobby.ts`) : le comptoir est offert avec le hall, et en vente. ---
+  {
+    id: 'reception-desk',
+    name: t('Comptoir d’accueil', 'Reception desk'),
+    description: t(
+      'Un grand comptoir en bois et pierre, deux écrans, un registre des visiteurs : +hype.',
+      'A large wood and stone counter, two screens, a visitor log: +hype.',
+    ),
+    price: 2500,
+    width: 3,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 2,
+    effects: { hypePerDay: 0.02, moral: 0.02 },
+  },
   {
     id: 'litter-open',
     name: t('Litière ouverte', 'Open litter tray'),

@@ -316,7 +316,8 @@
     "meetings": "Meeting room",
     "funding": "Raise funds",
     "pets": "Office cats",
-    "servers": "Server room"
+    "servers": "Server room",
+    "lobby": "Lobby"
   },
   "kanban": {
     "columns": {
@@ -592,7 +593,8 @@
       "wing-3": "Wing 3",
       "arcade": "Arcade",
       "garden": "Garden",
-      "auditorium": "Auditorium"
+      "auditorium": "Auditorium",
+      "lobby": "Lobby"
     }
   },
   "build": {
@@ -623,7 +625,8 @@
       "accessory": "Accessories",
       "monitors": "Monitors",
       "devices": "Devices",
-      "servers": "Servers"
+      "servers": "Servers",
+      "lobby": "Lobby"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -631,6 +634,7 @@
     "soldOut": "Limit reached ({{max}})",
     "tooExpensive": "Not enough cash",
     "annexDecor": "Decor that came with the annex: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
+    "lobbyDecor": "Decor that came with the lobby: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
     "rotate": "Rotate",
     "sell": "Sell (€{{price}})",
     "move": "Move",
@@ -854,6 +858,8 @@
       "projectionScreenMedium": "Pull-up projection screen (medium): aluminium case, feet, animated fabric, pole and bar",
       "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar",
       "serverCloset": "Server closet: raised floor tiles, glass walls, badge-reader door, cable tray",
+      "receptionDesk": "Reception desk: wooden front, stone top, two screens, visitor log and bell",
+      "badgeGates": "Lobby: stainless steel badge gates with glass flaps, receptionists, security guard and camera",
       "serverRoom": "Server room: raised floor, perforated tiles, glass walls, badge-reader door, cable tray",
       "rackServer": "1U server rack: cabinet, six servers with LEDs, patch panel and smoked door",
       "bladeServer": "Blade server chassis: two enclosures of vertical blades with blue LEDs",
@@ -1880,6 +1886,50 @@
     "adoptCardMissing_one": "{{count}} piece of equipment still missing: litter box, bowl and cat tree.",
     "adoptCardMissing_other": "{{count}} pieces of equipment still missing: litter box, bowl and cat tree.",
     "adoptCardReady": "All set: pick a coat and adopt."
+  },
+  "lobby": {
+    "card": "Lobby",
+    "cardBuilt": "Built",
+    "cardBuild": "Ground-floor lobby: badge doors, reception desk, security.",
+    "cardStatus_one": "{{count}} receptionist · security: {{security}}",
+    "cardStatus_other": "{{count}} receptionists · security: {{security}}",
+    "open": "Reception and security",
+    "intro": "The ground-floor lobby welcomes the team and visitors: you come in, badge, then go up to the office. It sits in front of every other room.",
+    "buildTitle": "Build the lobby",
+    "features": {
+      "gates": "Two magnetic badge doors between the lobby and the office (+stability)",
+      "desk": "A reception desk for two receptionists",
+      "waiting": "A bench and two plants for visitors (+hype, +morale)"
+    },
+    "build": "Start the works ({{price}})",
+    "built": "Lobby built: everyone comes in through the badge doors.",
+    "receptionTitle": "Reception",
+    "receptionHint": "Up to two receptionists screen calls, parcels and visitors: +1% productivity, +morale and +hype each. Salary: {{salary}} a month, added to expenses.",
+    "receptionists_zero": "No receptionist (out of {{max}})",
+    "receptionists_one": "{{count}} receptionist out of {{max}}",
+    "receptionists_other": "{{count}} receptionists out of {{max}}",
+    "hire": "Hire a receptionist ({{salary}} a month)",
+    "dismiss": "Let a receptionist go",
+    "payroll": "Reception salaries: {{price}} a month.",
+    "security": {
+      "title": "Security service",
+      "intro": "A subscription paid every week, at market prices. The guard stands in the lobby, next to the badge doors.",
+      "none": "none",
+      "noneHint": "No security service yet.",
+      "needLobby": "Build the lobby first: the guard and the badge doors are there.",
+      "needLobbyShort": "You need a lobby.",
+      "perWeek": "{{price}} / week",
+      "perMonth": "(≈ {{price}} / month)",
+      "subscribe": "Subscribe ({{price}} for the 1st week)",
+      "switch": "Switch plan ({{price}})",
+      "currentPlan": "Current plan",
+      "nextBill_one": "Next charge of {{price}} in {{count}} day",
+      "nextBill_other": "Next charge of {{price}} in {{count}} days",
+      "totalPaid": "{{price}} paid so far",
+      "cancel": "Cancel",
+      "cancelWarning": "The contract stops right away; the current week is not refunded.",
+      "cancelConfirm": "Yes, cancel"
+    }
   },
   "servers": {
     "intro": "A server room hosts part of the product: the hosting bill goes down and prod holds up better. Buy a room (Servers aisle of build mode), then choose the hardware to install in it.",

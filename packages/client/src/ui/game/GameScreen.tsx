@@ -15,6 +15,7 @@ import { Funding } from '../funding/Funding';
 import { Group } from '../group/Group';
 import { MeetingRoom } from '../meetings/MeetingRoom';
 import { Pets } from '../pets/Pets';
+import { Lobby } from '../lobby/Lobby';
 import { ServerRoom } from '../servers/ServerRoom';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
@@ -52,6 +53,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Pets view={view} />;
     case 'servers':
       return <ServerRoom view={view} />;
+    case 'lobby':
+      return <Lobby view={view} />;
     case 'funding':
       return <Funding view={view} />;
     case 'dashboard':

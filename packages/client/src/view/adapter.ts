@@ -51,6 +51,9 @@ import {
   floorZones,
   wallZones,
   FIBRE_PLANS,
+  LOBBY,
+  SECURITY_PLANS,
+  getSecurityPlan,
   HOSTING_SAVING_MAX,
   getFibrePlan,
   hasFibreBox,
@@ -116,6 +119,7 @@ import type {
   MeetingRoomView,
   PetsView,
   ServersView,
+  LobbyView,
   WallsView,
   FloorsView,
   GaugeName,
@@ -428,8 +432,8 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
  * seulement (identifiant `annex:<clé>`, jamais celui d'une entité).
  */
 function annexDecorViews(state: GameState, furniture: readonly PlacedItemView[]): PlacedItemView[] {
-  const { phase, annexes, wings } = wallOffice(state);
-  const layout = officeLayout(phase, wings, annexes, state.seed);
+  const { phase, annexes, wings, lobby } = wallOffice(state);
+  const layout = officeLayout(phase, wings, annexes, state.seed, lobby === true);
   const view = (fixture: Fixture): PlacedItemView => {
     const moved = state.annexDecor[fixture.key];
     return {
@@ -766,6 +770,59 @@ function serversView(state: GameState): ServersView {
   };
 }
 
+function lobbyView(state: GameState): LobbyView {
+  const phase = PHASES.indexOf(state.phase);
+  const security = state.security;
+  const built = state.lobby !== null;
+  return {
+    built,
+    price: LOBBY.price,
+    minPhase: LOBBY.minPhase,
+    buildBlocker: built
+      ? null
+      : PHASES.indexOf(LOBBY.minPhase) > phase
+        ? 'LOCKED'
+        : state.stage === 'PITCH'
+          ? 'WRONG_STAGE'
+          : state.gauges.treasury < LOBBY.price
+            ? 'NOT_ENOUGH_MONEY'
+            : null,
+    receptionists: state.lobby?.receptionists ?? 0,
+    maxReceptionists: LOBBY.maxReceptionists,
+    receptionistMonthly: LOBBY.receptionistMonthly,
+    security: security
+      ? {
+          plan: security.plan,
+          guard: getSecurityPlan(security.plan).guard,
+          nextBillDays: Math.max(0, (security.paidUntil - state.tick) / TIME.ticksPerDay),
+          weeklyPrice: getSecurityPlan(security.plan).weeklyPrice,
+          totalPaid: security.totalPaid,
+        }
+      : null,
+    plans: SECURITY_PLANS.map((plan) => ({
+      id: plan.id,
+      name: plan.name,
+      description: plan.description,
+      coverage: plan.coverage,
+      monthlyPrice: plan.monthlyPrice,
+      weeklyPrice: plan.weeklyPrice,
+      minPhase: plan.minPhase,
+      blocker:
+        security?.plan === plan.id
+          ? 'CURRENT'
+          : PHASES.indexOf(plan.minPhase) > phase
+            ? 'LOCKED'
+            : state.stage === 'PITCH'
+              ? 'WRONG_STAGE'
+              : !built
+                ? 'NO_LOBBY'
+                : state.gauges.treasury < plan.weeklyPrice
+                  ? 'NOT_ENOUGH_MONEY'
+                  : null,
+    })),
+  };
+}
+
 function wallsView(state: GameState): WallsView {
   const phase = PHASES.indexOf(state.phase);
   return {
@@ -862,6 +919,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    lobby: lobbyView(state),
     floors: floorsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
@@ -1049,5 +1107,13 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SUBSCRIBE_FIBRE', plan: command.plan };
     case 'cancelFibre':
       return { type: 'CANCEL_FIBRE' };
+    case 'buildLobby':
+      return { type: 'BUILD_LOBBY' };
+    case 'setReceptionists':
+      return { type: 'SET_RECEPTIONISTS', count: command.count };
+    case 'subscribeSecurity':
+      return { type: 'SUBSCRIBE_SECURITY', plan: command.plan };
+    case 'cancelSecurity':
+      return { type: 'CANCEL_SECURITY' };
   }
 }

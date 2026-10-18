@@ -1,7 +1,8 @@
 /**
  * Plan du bureau pour chaque phase : taille de la grille, salles et cloisons.
  * Le bureau s'agrandit à chaque levée de fonds (Garage → Seed → Série A → Licorne), puis
- * d'une annexe à chaque tour suivant (Série B, C, D) et d'une aile par filiale.
+ * d'une annexe à chaque tour suivant (Série B, C, D) et d'une aile par filiale. Le hall d'entrée
+ * du rez-de-chaussée, une fois aménagé, passe devant tout le reste.
  *
  * Les cloisons occupent des cases entières (plus simple pour le pathfinding) ; les portes sont
  * des trous dans ces cloisons. Les murs extérieurs sont dessinés autour de la grille.
@@ -10,7 +11,10 @@ import {
   ANNEXES,
   ANNEX_DECOR,
   ANNEX_KINDS,
+  LOBBY,
+  LOBBY_DECOR,
   annexDecorKey,
+  lobbyDecorKey,
   VENTURES,
   hashString,
   officeDepthWithAnnexes,
@@ -33,6 +37,7 @@ export const ROOM_KINDS = [
   'canteen',
   'incubator',
   ...ANNEX_KINDS,
+  'lobby',
 ] as const;
 export type RoomKind = (typeof ROOM_KINDS)[number];
 
@@ -47,6 +52,8 @@ export const ROOM_STYLES: Record<RoomKind, number> = {
   arcade: 1,
   garden: 1,
   auditorium: 1,
+  // Le hall garde le sol de base du bureau (jamais une autre teinte sans le choix du joueur).
+  lobby: 1,
 };
 
 export interface Room {
@@ -88,6 +95,16 @@ export interface OfficeLayout {
   readonly fixtures?: readonly Fixture[];
   /** Case d'entrée : les personnages y apparaissent et y disparaissent. */
   readonly entrance: Cell;
+  /** Hall d'entrée, s'il est aménagé : la rangée de sa cloison et ses deux portes à badge. */
+  readonly lobby?: LobbyPlan;
+}
+
+/** Le hall d'entrée sur le plan. */
+export interface LobbyPlan {
+  /** Rangée de la cloison qui sépare le hall du bureau ; le hall est juste devant. */
+  readonly wall: number;
+  /** Les deux portes à badge, percées côte à côte dans cette cloison. */
+  readonly gates: readonly Cell[];
 }
 
 /** Cloison horizontale (le long de x) avec des portes aux abscisses données. */
@@ -180,14 +197,61 @@ function roomStyle(seed: string, kind: RoomKind, index: number): number {
 }
 
 /**
+ * Hall d'entrée : une pièce sur toute la largeur, devant le reste du bureau. Sa cloison est
+ * percée de deux portes à badge côte à côte, au milieu (décalées si une cloison de l'autre côté
+ * les bouche). On y entre par le mur de gauche, au fond du hall. Il est livré avec son décor :
+ * le comptoir d'accueil à droite des portes, une banquette près de l'entrée, deux plantes qui
+ * encadrent les portes.
+ */
+function addLobby(
+  width: number,
+  wall: number,
+  rooms: Room[],
+  partitions: Cell[],
+  fixtures: Fixture[],
+): LobbyPlan {
+  const blocked = (cell: Cell) => partitions.some((p) => p.x === cell.x && p.z === cell.z);
+  let gate = Math.max(1, Math.floor(width / 2) - 1);
+  while (
+    gate < width - 3 &&
+    (blocked({ x: gate, z: wall - 1 }) || blocked({ x: gate + 1, z: wall - 1 }))
+  )
+    gate++;
+  const gates = [
+    { x: gate, z: wall },
+    { x: gate + 1, z: wall },
+  ];
+  partitions.push(...wallX(wall, 0, width - 1, [gate, gate + 1]));
+  rooms.push({ kind: 'lobby', x: 0, z: wall + 1, width, depth: LOBBY.depth - 1 });
+  const spots: readonly Cell[] = [
+    { x: Math.min(width - 3, gate + 3), z: wall + 2 }, // comptoir (3 cases)
+    { x: 2, z: wall + 1 }, // banquette
+    { x: gate - 1, z: wall + 1 }, // plantes de part et d'autre des portes
+    { x: gate + 2, z: wall + 1 },
+  ];
+  LOBBY_DECOR.forEach((kind, index) => {
+    const spot = spots[index];
+    if (spot && spot.x >= 1) fixtures.push({ key: lobbyDecorKey(index), kind, ...spot });
+  });
+  return { wall, gates };
+}
+
+/**
  * Plan du bureau. Chaque filiale fondée ajoute une aile « incubateur » à droite du bureau :
  * une cloison percée de deux portes, puis une salle de toute la profondeur. Chaque tour de
  * table à partir de la Série B ajoute une annexe à l'avant, sur toute la largeur : salle
  * d'arcade, puis jardin intérieur, puis auditorium, chacune avec son décor fixe.
  *
- * `seed` (facultatif) varie le décor de sol de chaque pièce d'une partie à l'autre.
+ * `seed` (facultatif) varie le décor de sol de chaque pièce d'une partie à l'autre ; `lobby`
+ * ajoute le hall d'entrée devant le tout (voir `addLobby`).
  */
-export function officeLayout(phase: Phase, wings = 0, annexes = 0, seed = ''): OfficeLayout {
+export function officeLayout(
+  phase: Phase,
+  wings = 0,
+  annexes = 0,
+  seed = '',
+  lobby = false,
+): OfficeLayout {
   const base = LAYOUTS[phase];
   const count = Math.max(0, Math.min(wings, VENTURES.maxFounded));
   const annexCount = Math.max(0, Math.min(annexes, ANNEXES.max));
@@ -229,15 +293,21 @@ export function officeLayout(phase: Phase, wings = 0, annexes = 0, seed = ''): O
         fixtures.push({ key: annexDecorKey(i, index), kind: fixture, x: slot, z: wall + 1 });
     });
   }
-  if (count === 0 && annexCount === 0 && !seed) return base;
+  const withLobby = lobby && phase !== 'GARAGE';
+  if (count === 0 && annexCount === 0 && !seed && !withLobby) return base;
+  const depth = officeDepthWithAnnexes(base.depth, annexCount);
+  const lobbyPlan = withLobby ? addLobby(width, depth, rooms, partitions, fixtures) : undefined;
+  const fullDepth = depth + (lobbyPlan ? LOBBY.depth : 0);
   return {
     ...base,
     width,
-    depth: officeDepthWithAnnexes(base.depth, annexCount),
+    depth: fullDepth,
     maxTeam: base.maxTeam + count * VENTURES.teamPerWing + annexCount * ANNEXES.teamPerAnnex,
     rooms: rooms.map((room, index) => ({ ...room, style: roomStyle(seed, room.kind, index) })),
     partitions,
     fixtures,
+    // On entre par le hall : au fond, contre le mur de gauche.
+    ...(lobbyPlan ? { lobby: lobbyPlan, entrance: { x: 0, z: fullDepth - 1 } } : {}),
   };
 }
 
@@ -342,7 +412,7 @@ export function settleFixtures(
 }
 
 /**
- * Plan du bureau d'un instantané : phase, ailes des filiales, annexes et décor des pièces,
+ * Plan du bureau d'un instantané : phase, ailes des filiales, annexes, hall et décor des pièces,
  * dont les cloisons cèdent la place au mobilier déjà posé (voir `yieldToItems`).
  */
 export function layoutOf(view: {
@@ -350,8 +420,15 @@ export function layoutOf(view: {
   readonly seed: string;
   readonly group: { readonly wings: number };
   readonly funding: { readonly annexes: number };
+  readonly lobby?: { readonly built: boolean };
   readonly items?: readonly FloorItem[];
 }): OfficeLayout {
-  const layout = officeLayout(view.phase, view.group.wings, view.funding.annexes, view.seed);
+  const layout = officeLayout(
+    view.phase,
+    view.group.wings,
+    view.funding.annexes,
+    view.seed,
+    view.lobby?.built === true,
+  );
   return view.items ? yieldToItems(layout, view.items) : layout;
 }

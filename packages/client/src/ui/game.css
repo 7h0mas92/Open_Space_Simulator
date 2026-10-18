@@ -3932,3 +3932,30 @@ legend {
 .fibre-plan > button {
   margin-top: auto;
 }
+
+/* --- Hall d'entrée et sécurité ------------------------------------------------------------ */
+
+.lobby-features {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lobby-panel section > button {
+  align-self: flex-start;
+}
+
+.lobby-reception {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lobby-reception button {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1.2rem;
+}

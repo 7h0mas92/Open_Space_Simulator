@@ -97,6 +97,8 @@ export const FLOOR_STYLES: Record<RoomKind, readonly FloorStyle[]> = {
   arcade: [checker(0x4a4380, 0x403a72)], // moquette d'arcade violette
   garden: [checker(0x8cc277, 0x82b86d)], // pelouse
   auditorium: [planks(0xb5525a, 0xa94a52)], // moquette rouge
+  // Le hall garde le sol de base de l'open space : une autre teinte reste un choix du joueur.
+  lobby: [checker(0xd9cbb4, 0xd0c1a8)],
 };
 
 /** Décor de sol d'une pièce (le décor d'origine si son style est inconnu). */

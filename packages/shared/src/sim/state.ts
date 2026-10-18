@@ -17,6 +17,7 @@ import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { FibreSubscriptionSchema } from './serverRoom.js';
+import { LobbyStateSchema, SecuritySubscriptionSchema } from './lobby.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
 import { FloorFinishesSchema } from './floors.js';
@@ -291,6 +292,14 @@ export const NOTIFICATION_KINDS = [
   'FIBRE_CANCELLED',
   /** L'opérateur coupe la ligne : la trésorerie ne couvrait plus la semaine. */
   'FIBRE_CUT',
+  /** Hall d'entrée aménagé, secrétaire embauchée ou partie. */
+  'LOBBY_BUILT',
+  'RECEPTIONIST_HIRED',
+  'RECEPTIONIST_LEFT',
+  /** Abonnement de sécurité souscrit, changé, résilié ou suspendu faute de paiement. */
+  'SECURITY_SUBSCRIBED',
+  'SECURITY_CANCELLED',
+  'SECURITY_CUT',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -387,6 +396,10 @@ export const GameStateSchema = z.object({
   raises: RaisesStateSchema.default(emptyRaisesState),
   /** Abonnement fibre en cours (null : pas d'abonnement, ou sauvegarde d'avant son ajout). */
   fibre: FibreSubscriptionSchema.nullable().default(null),
+  /** Hall d'entrée au rez-de-chaussée (null : pas de hall, ou sauvegarde d'avant son ajout). */
+  lobby: LobbyStateSchema.nullable().default(null),
+  /** Abonnement de sécurité en cours (null : aucun, ou sauvegarde d'avant son ajout). */
+  security: SecuritySubscriptionSchema.nullable().default(null),
   /**
    * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
    * les mêmes idées. Absent des vieilles sauvegardes.

@@ -65,6 +65,7 @@ import {
 import { qwertyKeyboard } from './keyboard';
 import { partitionPiece } from './partitions';
 import { ANNEX_DECOR_PRIMITIVES } from './annexDecor';
+import { receptionDesk } from './lobbyFurniture';
 import { liquidTower, neonTower, plainTower, proLaptop, titanTower } from './computers';
 import {
   projectionScreenLarge,
@@ -516,6 +517,8 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   firewallUnit,
   fireSuppression,
   ...ANNEX_DECOR_PRIMITIVES,
+  receptionDesk,
+  badgeGates: null,
   officeCharacters: null,
   officeCats: null,
   seasonalDecor: null,

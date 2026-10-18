@@ -7,6 +7,7 @@ import { FinancingKindSchema } from './funding.js';
 import { PetCoatSchema } from './pets.js';
 import { FloorMaterialIdSchema, FloorTintSchema, FloorZoneSchema } from './floors.js';
 import { FibrePlanIdSchema } from './serverRoom.js';
+import { LOBBY, SecurityPlanIdSchema } from './lobby.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
 
 /**
@@ -170,6 +171,17 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('SUBSCRIBE_FIBRE'), plan: FibrePlanIdSchema }),
   /** Résilie l'abonnement fibre (la semaine entamée n'est pas remboursée). */
   z.object({ type: z.literal('CANCEL_FIBRE') }),
+  /** Fait aménager le hall d'entrée au rez-de-chaussée (travaux payés tout de suite). */
+  z.object({ type: z.literal('BUILD_LOBBY') }),
+  /** Fixe le nombre de secrétaires à l'accueil (embauche ou départ). */
+  z.object({
+    type: z.literal('SET_RECEPTIONISTS'),
+    count: z.number().int().min(0).max(LOBBY.maxReceptionists),
+  }),
+  /** Souscrit à un service de sécurité, ou en change : la première semaine est payée. */
+  z.object({ type: z.literal('SUBSCRIBE_SECURITY'), plan: SecurityPlanIdSchema }),
+  /** Résilie le service de sécurité (la semaine entamée n'est pas remboursée). */
+  z.object({ type: z.literal('CANCEL_SECURITY') }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export type CommandType = Command['type'];

@@ -10,8 +10,8 @@ import type { WallOffice } from './walls.js';
  * ciré, parquet, carrelage...) et une teinte sobre au choix, posées pièce par pièce.
  *
  * Une zone de sol par pièce : l'open space, la cuisine, la salle de réunion, le coin détente
- * (Série A), la cantine (Licorne), chaque aile de filiale et chaque annexe. Une pièce sans
- * revêtement garde son sol d'origine (celui tiré de la graine). Chaque zone couverte a un
+ * (Série A), la cantine (Licorne), chaque aile de filiale, chaque annexe et le hall. Une pièce
+ * sans revêtement garde son sol d'origine (celui tiré de la graine). Chaque zone couverte a un
  * petit effet réel (moral, parfois qualité ou hype). Aucun tirage aléatoire : une partie sans
  * nouveau sol reste identique (replays, Daily).
  */
@@ -28,6 +28,7 @@ export const FLOOR_ZONES = [
   'arcade',
   'garden',
   'auditorium',
+  'lobby',
 ] as const;
 export const FloorZoneSchema = z.enum(FLOOR_ZONES);
 export type FloorZone = z.infer<typeof FloorZoneSchema>;
@@ -252,6 +253,8 @@ export function floorZoneExists(zone: FloorZone, office: WallOffice): boolean {
     case 'wing-2':
     case 'wing-3':
       return Math.min(office.wings, VENTURES.maxFounded) >= Number(zone.slice('wing-'.length));
+    case 'lobby':
+      return office.lobby === true;
     default: {
       const annex = ANNEX_KINDS.indexOf(zone);
       return annex >= 0 && annex < Math.min(office.annexes, ANNEXES.max);

@@ -338,6 +338,10 @@ export const MISSING_ASSETS = [
   { id: 'smallStage', replacement: 'primitive' },
   { id: 'lectern', replacement: 'primitive' },
   { id: 'auditoriumScreen', replacement: 'primitive' },
+  // Hall d'entrée : comptoir d'accueil (`render/lobbyFurniture.ts`), portes à badge, personnel
+  // et caméra (`render/lobby.ts`).
+  { id: 'receptionDesk', replacement: 'primitive' },
+  { id: 'badgeGates', replacement: 'decor' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;
