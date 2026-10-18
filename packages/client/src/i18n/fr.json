@@ -316,7 +316,8 @@
     "meetings": "Salle de réunion",
     "funding": "Lever des fonds",
     "pets": "Chats du bureau",
-    "servers": "Salle des serveurs"
+    "servers": "Salle des serveurs",
+    "cleaning": "Ménage"
   },
   "kanban": {
     "columns": {
@@ -1927,5 +1928,46 @@
       "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
       "cancelConfirm": "Résilier la fibre"
     }
+  },
+  "cleaning": {
+    "intro": "Chaque jour de semaine, l’équipe présente au bureau le salit : emballages, gobelets, canettes, boîtes de pizza… Plus tu attends, plus la saleté monte vite, et un bureau sale ralentit tous ceux qui y travaillent (pas les télétravailleurs). Appelle l’entreprise de nettoyage Nickel Chrome ou prends un abonnement.",
+    "dirtTitle": "Saleté du bureau",
+    "dirt": "{{percent}} % de saleté",
+    "levels": {
+      "clean": "Propre",
+      "warn": "À surveiller",
+      "dirty": "Sale"
+    },
+    "loss": "L’équipe sur place travaille {{percent}} % moins vite.",
+    "noLoss": "Bureau impeccable : aucun travail perdu.",
+    "days_one": "{{count}} jour sans ménage",
+    "days_other": "{{count}} jours sans ménage",
+    "crewTitle": "Nickel Chrome, entreprise de nettoyage",
+    "tools": {
+      "cart": "cheffe d’équipe, chariot",
+      "vacuum": "aspirateur",
+      "mop": "serpillière"
+    },
+    "status": {
+      "visit": "Ménage en cours ({{percent}} %)",
+      "express": "L’équipe express arrive tout de suite",
+      "booked_one": "L’équipe passe dans {{count}} heure",
+      "booked_other": "L’équipe passe dans {{count}} heures"
+    },
+    "call": "Appeler pour ce soir ({{price}} €)",
+    "express": "Express, tout de suite ({{price}} €)",
+    "callHint": "Un appel est payé à la réservation : l’équipe passe le soir à 19h, ou tout de suite en express.",
+    "history_one": "{{count}} passage, {{price}} € dépensés",
+    "history_other": "{{count}} passages, {{price}} € dépensés",
+    "planTitle": "Abonnement de ménage",
+    "none": "Pas d’abonnement : l’équipe ne vient que si tu l’appelles.",
+    "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
+    "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
+    "totalPaid": "{{price}} € payés en tout",
+    "discount": "(-{{percent}} % par passage)",
+    "cancel": "Résilier",
+    "cancelWarning": "L’équipe ne viendra plus, sans remboursement de la semaine entamée.",
+    "cancelConfirm": "Résilier le ménage",
+    "button": "Ménage : {{percent}} % de saleté"
   }
 }

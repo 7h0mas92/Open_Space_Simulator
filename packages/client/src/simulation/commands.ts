@@ -25,6 +25,7 @@ import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
 import { cancelFibre, subscribeFibre } from './serverRoom';
+import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
@@ -192,5 +193,11 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return subscribeFibre(state, ctx, command.plan);
     case 'CANCEL_FIBRE':
       return cancelFibre(state, ctx);
+    case 'CALL_CLEANING':
+      return callCleaning(state, ctx, command.express);
+    case 'SUBSCRIBE_CLEANING':
+      return subscribeCleaning(state, ctx, command.plan);
+    case 'CANCEL_CLEANING':
+      return cancelCleaning(state, ctx);
   }
 }

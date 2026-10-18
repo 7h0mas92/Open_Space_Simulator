@@ -6,6 +6,7 @@ import { MonitorModelSchema, MonitorMountSchema, MonitorSizeSchema } from './mon
 import { FinancingKindSchema } from './funding.js';
 import { PetCoatSchema } from './pets.js';
 import { FloorMaterialIdSchema, FloorTintSchema, FloorZoneSchema } from './floors.js';
+import { CleaningPlanIdSchema } from './cleaning.js';
 import { FibrePlanIdSchema } from './serverRoom.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
 
@@ -170,6 +171,12 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('SUBSCRIBE_FIBRE'), plan: FibrePlanIdSchema }),
   /** Résilie l'abonnement fibre (la semaine entamée n'est pas remboursée). */
   z.object({ type: z.literal('CANCEL_FIBRE') }),
+  /** Appelle l'entreprise de nettoyage : ce soir à 19h, ou en express tout de suite. */
+  z.object({ type: z.literal('CALL_CLEANING'), express: z.boolean() }),
+  /** Souscrit à un abonnement de ménage, ou en change : la première semaine est payée. */
+  z.object({ type: z.literal('SUBSCRIBE_CLEANING'), plan: CleaningPlanIdSchema }),
+  /** Résilie l'abonnement de ménage (la semaine entamée n'est pas remboursée). */
+  z.object({ type: z.literal('CANCEL_CLEANING') }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export type CommandType = Command['type'];

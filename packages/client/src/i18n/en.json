@@ -316,7 +316,8 @@
     "meetings": "Meeting room",
     "funding": "Raise funds",
     "pets": "Office cats",
-    "servers": "Server room"
+    "servers": "Server room",
+    "cleaning": "Cleaning"
   },
   "kanban": {
     "columns": {
@@ -1927,5 +1928,46 @@
       "cancelWarning": "The line will be cut right away, with no refund for the current week.",
       "cancelConfirm": "Cancel fibre"
     }
+  },
+  "cleaning": {
+    "intro": "Every weekday, the team in the office makes a mess: wrappers, cups, cans, pizza boxes… The longer you wait, the faster it gets dirty, and a dirty office slows down everyone working there (not remote workers). Call the Nickel Chrome cleaning company or take a subscription.",
+    "dirtTitle": "Office dirt",
+    "dirt": "{{percent}}% dirty",
+    "levels": {
+      "clean": "Clean",
+      "warn": "Watch out",
+      "dirty": "Dirty"
+    },
+    "loss": "The team on site works {{percent}}% slower.",
+    "noLoss": "Spotless office: no work lost.",
+    "days_one": "{{count}} day without cleaning",
+    "days_other": "{{count}} days without cleaning",
+    "crewTitle": "Nickel Chrome, cleaning company",
+    "tools": {
+      "cart": "team lead, cart",
+      "vacuum": "vacuum cleaner",
+      "mop": "mop"
+    },
+    "status": {
+      "visit": "Cleaning in progress ({{percent}}%)",
+      "express": "The express crew is on its way",
+      "booked_one": "The crew comes in {{count}} hour",
+      "booked_other": "The crew comes in {{count}} hours"
+    },
+    "call": "Book for tonight (€{{price}})",
+    "express": "Express, right now (€{{price}})",
+    "callHint": "A call is paid when booked: the crew comes at 7 pm, or right away for express.",
+    "history_one": "{{count}} visit, €{{price}} spent",
+    "history_other": "{{count}} visits, €{{price}} spent",
+    "planTitle": "Cleaning subscription",
+    "none": "No subscription: the crew only comes when you call.",
+    "nextBill_one": "Next €{{price}} payment in {{count}} day",
+    "nextBill_other": "Next €{{price}} payment in {{count}} days",
+    "totalPaid": "€{{price}} paid in total",
+    "discount": "(-{{percent}}% per visit)",
+    "cancel": "Cancel",
+    "cancelWarning": "The crew won’t come any more; the current week isn’t refunded.",
+    "cancelConfirm": "Cancel cleaning",
+    "button": "Cleaning: {{percent}}% dirty"
   }
 }

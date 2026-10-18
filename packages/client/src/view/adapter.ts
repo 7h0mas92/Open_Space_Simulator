@@ -50,6 +50,11 @@ import {
   WALL_FINISHES,
   floorZones,
   wallZones,
+  CLEANING,
+  CLEANING_CREW,
+  CLEANING_PLANS,
+  cleaningCallPrice,
+  dirtProductivity,
   FIBRE_PLANS,
   HOSTING_SAVING_MAX,
   getFibrePlan,
@@ -65,7 +70,7 @@ import { softSigmoid } from '../simulation/math';
 import { countDesks, monitorOf, RESALE_RATIO } from '../simulation/furniture';
 import { activeProjections } from '../simulation/projection';
 import { leadershipEffects, teamShape } from '../simulation/leadership';
-import { devIds, teamMax } from '../simulation/helpers';
+import { clamp, devIds, teamMax } from '../simulation/helpers';
 import {
   expectedProductivity,
   expectedQuality,
@@ -93,6 +98,7 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
+import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
 import {
   fibreConnected,
   hostingSaving,
@@ -116,6 +122,7 @@ import type {
   MeetingRoomView,
   PetsView,
   ServersView,
+  CleaningView,
   WallsView,
   FloorsView,
   GaugeName,
@@ -766,6 +773,75 @@ function serversView(state: GameState): ServersView {
   };
 }
 
+function cleaningView(state: GameState): CleaningView {
+  const cleaning = state.cleaning;
+  const visitCost = visitPrice(state);
+  const callPrice = cleaningCallPrice(visitCost, false);
+  const expressPrice = cleaningCallPrice(visitCost, true);
+  const busy = cleaning.booking !== null || cleaning.visit !== null;
+  const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
+  const plan = cleaning.plan;
+  const visit = cleaning.visit;
+  return {
+    dirt: cleaning.dirt,
+    alert: CLEANING.dirtyAlert,
+    productivity: dirtProductivity(cleaning.dirt),
+    daysSinceClean: cleaning.daysSinceClean,
+    visit: visit
+      ? {
+          express: visit.express,
+          progress: clamp((state.tick - visit.start) / Math.max(1, visit.end - visit.start), 0, 1),
+        }
+      : null,
+    booking: cleaning.booking
+      ? {
+          express: cleaning.booking.express,
+          inHours: Math.max(0, (cleaning.booking.start - state.tick) / TIME.ticksPerHour),
+        }
+      : null,
+    plan: plan
+      ? {
+          plan: plan.plan,
+          weeklyPrice: planWeeklyPrice(state, plan.plan),
+          nextBillDays: Math.max(0, (plan.paidUntil - state.tick) / TIME.ticksPerDay),
+          totalPaid: plan.totalPaid,
+        }
+      : null,
+    plans: CLEANING_PLANS.map((option) => {
+      const weeklyPrice = planWeeklyPrice(state, option.id);
+      return {
+        id: option.id,
+        name: option.name,
+        description: option.description,
+        days: [...option.days],
+        weeklyPrice,
+        discount: option.discount,
+        blocker:
+          plan?.plan === option.id
+            ? 'CURRENT'
+            : wrongStage
+              ? 'WRONG_STAGE'
+              : state.gauges.treasury < weeklyPrice
+                ? 'NOT_ENOUGH_MONEY'
+                : null,
+      };
+    }),
+    visitPrice: visitCost,
+    callPrice,
+    expressPrice,
+    callBlocker: busy
+      ? 'BUSY'
+      : wrongStage
+        ? 'WRONG_STAGE'
+        : state.gauges.treasury < callPrice
+          ? 'NOT_ENOUGH_MONEY'
+          : null,
+    crew: CLEANING_CREW.map((member) => ({ ...member })),
+    visits: cleaning.visits,
+    spent: cleaning.spent,
+  };
+}
+
 function wallsView(state: GameState): WallsView {
   const phase = PHASES.indexOf(state.phase);
   return {
@@ -862,6 +938,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    cleaning: cleaningView(state),
     floors: floorsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
@@ -1049,5 +1126,11 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SUBSCRIBE_FIBRE', plan: command.plan };
     case 'cancelFibre':
       return { type: 'CANCEL_FIBRE' };
+    case 'callCleaning':
+      return { type: 'CALL_CLEANING', express: command.express };
+    case 'subscribeCleaning':
+      return { type: 'SUBSCRIBE_CLEANING', plan: command.plan };
+    case 'cancelCleaning':
+      return { type: 'CANCEL_CLEANING' };
   }
 }

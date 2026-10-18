@@ -1,6 +1,7 @@
 import { BALANCE, type GameState } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
 import { fibreMonthly, hostingSaving } from './serverRoom';
+import { cleaningMonthly } from './cleaning';
 
 /** Revenu récurrent annuel (ARR), en euros. */
 export function annualRevenue(state: GameState): number {
@@ -92,7 +93,7 @@ export function portfolioValue(state: GameState): number {
 
 /** Nombre de mois de trésorerie restants au rythme actuel (Infinity si rentable). */
 export function runwayMonths(state: GameState): number {
-  const burn = monthlyExpenses(state) + fibreMonthly(state) - monthlyRevenue(state);
+  const burn = monthlyExpenses(state) + fibreMonthly(state) + cleaningMonthly(state) - monthlyRevenue(state);
   if (burn <= 0) return Number.POSITIVE_INFINITY;
   return state.gauges.treasury / burn;
 }

@@ -2,6 +2,7 @@ import {
   BALANCE,
   GAME,
   STATE_VERSION,
+  emptyCleaningState,
   emptyRaisesState,
   type DevRole,
   type GameMode,
@@ -83,6 +84,7 @@ export function createEmptyState(config: GameConfig): GameState {
     pets: [],
     raises: emptyRaisesState(),
     fibre: null,
+    cleaning: emptyCleaningState(),
     recentTaskTitles: [],
     lostSprintsPending: 0,
     tracker: {

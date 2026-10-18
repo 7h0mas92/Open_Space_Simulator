@@ -17,6 +17,7 @@ import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { FibreSubscriptionSchema } from './serverRoom.js';
+import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
 import { FloorFinishesSchema } from './floors.js';
@@ -291,6 +292,16 @@ export const NOTIFICATION_KINDS = [
   'FIBRE_CANCELLED',
   /** L'opérateur coupe la ligne : la trésorerie ne couvrait plus la semaine. */
   'FIBRE_CUT',
+  /** Saleté au-delà du seuil d'alerte : l'équipe se plaint. */
+  'OFFICE_DIRTY',
+  /** Entreprise de nettoyage : appel réservé, ménage commencé ou terminé. */
+  'CLEANING_BOOKED',
+  'CLEANING_STARTED',
+  'CLEANING_DONE',
+  /** Abonnement de ménage souscrit, changé, résilié ou coupé faute de paiement. */
+  'CLEANING_SUBSCRIBED',
+  'CLEANING_CANCELLED',
+  'CLEANING_CUT',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -387,6 +398,8 @@ export const GameStateSchema = z.object({
   raises: RaisesStateSchema.default(emptyRaisesState),
   /** Abonnement fibre en cours (null : pas d'abonnement, ou sauvegarde d'avant son ajout). */
   fibre: FibreSubscriptionSchema.nullable().default(null),
+  /** Saleté du bureau et entreprise de nettoyage (bureau propre dans les vieilles sauvegardes). */
+  cleaning: CleaningStateSchema.default(emptyCleaningState),
   /**
    * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
    * les mêmes idées. Absent des vieilles sauvegardes.

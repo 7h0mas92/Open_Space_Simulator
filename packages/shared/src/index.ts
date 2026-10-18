@@ -6,6 +6,7 @@ export * from './i18n.js';
 export * from './sim/balance.js';
 export * from './sim/calendar.js';
 export * from './sim/cards.js';
+export * from './sim/cleaning.js';
 export * from './sim/commands.js';
 export * from './sim/components.js';
 export * from './sim/computers.js';

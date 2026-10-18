@@ -31,6 +31,7 @@ import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
 import { fibreSystem } from './serverRoom';
+import { cleaningSystem } from './cleaning';
 
 /** Un système = une fonction qui fait évoluer l'état pendant un tick. */
 export type System = (state: GameState, ctx: SimContext, clock: SimClock) => void;
@@ -48,6 +49,7 @@ export const SYSTEMS: readonly System[] = [
   dailySystem,
   calendarSystem,
   (state, ctx) => fibreSystem(state, ctx),
+  cleaningSystem,
 ];
 
 export interface DispatchResult {

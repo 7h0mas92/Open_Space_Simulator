@@ -1,3 +1,4 @@
+import { dirtLevel } from '../cleaning/Cleaning';
 import { SEASONS, SPEEDS, type Phase, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView, type GaugeName } from '../../view/types';
@@ -49,6 +50,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   meetings: '🗓️',
   pets: '🐈',
   servers: '🗄️',
+  cleaning: '🧹',
   funding: '💼',
   build: '🛠️',
   dashboard: '📈',
@@ -246,7 +248,7 @@ export function Clock({ view }: { view: GameView }) {
 }
 
 /** Sauvegardes et options : des boutons-icônes en haut, à l'écart des actions de jeu. */
-export function SystemButtons() {
+export function SystemButtons({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const panel = useGame((s) => s.panel);
   const openPanel = useGame((s) => s.openPanel);
@@ -254,6 +256,7 @@ export function SystemButtons() {
   const panels = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>
+      <CleaningButton view={view} />
       {panels.map((id) => (
         <button
           key={id}
@@ -269,6 +272,32 @@ export function SystemButtons() {
         </button>
       ))}
     </div>
+  );
+}
+
+/** Ménage : un bouton-icône avec la saleté du bureau, qui ouvre le panneau Ménage. */
+function CleaningButton({ view }: { view: GameView }) {
+  const { t } = useTranslation();
+  const panel = useGame((s) => s.panel);
+  const openPanel = useGame((s) => s.openPanel);
+  const percent = Math.round(view.cleaning.dirt);
+  const level = dirtLevel(view.cleaning);
+  const label = t('cleaning.button', { percent });
+  return (
+    <button
+      type="button"
+      className={`system-button cleaning-button dirt-${level}`}
+      aria-pressed={panel === 'cleaning'}
+      aria-label={label}
+      title={label}
+      data-testid="open-cleaning"
+      onClick={() => openPanel(panel === 'cleaning' ? null : 'cleaning')}
+    >
+      <span aria-hidden="true">{view.cleaning.visit ? '🫧' : PANEL_ICONS.cleaning}</span>
+      <span className="dirt-badge" aria-hidden="true">
+        {percent}
+      </span>
+    </button>
   );
 }
 
