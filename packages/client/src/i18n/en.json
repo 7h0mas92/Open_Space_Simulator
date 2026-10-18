@@ -827,6 +827,8 @@
       "catTreeMedium": "Double cat tree (2 tiles, grey carpet): cubby, basket and mouse",
       "catTreeLarge": "Giant cat tree (3 tiles, mauve carpet): cubby, rope bridge and mouse",
       "officeCats": "Office cats: six coats built from Three.js shapes, animated in code (walking, napping, eating)",
+      "cleaningCrew": "Cleaning crew: three uniformed cleaners built like the devs (Kenney clips), cart, vacuum and mop in Three.js shapes",
+      "officeLitter": "Floor litter: crumpled paper, wrappers, cans, cups, pizza boxes, banana peels and stains",
       "windowSmall": "Small window and its wall section",
       "windowMedium": "Two-tile window",
       "windowLarge": "Large three-tile window",

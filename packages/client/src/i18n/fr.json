@@ -827,6 +827,8 @@
       "catTreeMedium": "Arbre à chat double (2 cases, moquette grise) : niche, panier et souris",
       "catTreeLarge": "Arbre à chat géant (3 cases, moquette mauve) : niche, passerelle et souris",
       "officeCats": "Chats du bureau : six robes construites en formes Three.js, animées par le code (marche, sieste, repas)",
+      "cleaningCrew": "Équipe de ménage : trois agents en uniforme construits comme les devs (clips Kenney), chariot, aspirateur et serpillière en formes Three.js",
+      "officeLitter": "Déchets au sol : papiers froissés, emballages, canettes, gobelets, boîtes de pizza, peaux de banane et taches",
       "windowSmall": "Petite fenêtre et son pan de mur",
       "windowMedium": "Fenêtre de deux cases",
       "windowLarge": "Grande fenêtre de trois cases",

@@ -108,7 +108,8 @@ function startVisit(state: GameState, ctx: SimContext, express: boolean): void {
  * ou en express, tout de suite et plus cher. Payé à la réservation.
  */
 export function callCleaning(state: GameState, ctx: SimContext, express: boolean): CommandResult {
-  if (state.stage === 'PITCH' || state.stage === 'ENDED') return { ok: false, error: 'WRONG_STAGE' };
+  if (state.stage === 'PITCH' || state.stage === 'ENDED')
+    return { ok: false, error: 'WRONG_STAGE' };
   const cleaning = state.cleaning;
   if (cleaning.booking || cleaning.visit) return { ok: false, error: 'NOT_ELIGIBLE' };
   const price = cleaningCallPrice(visitPrice(state), express);
@@ -147,7 +148,8 @@ export function subscribeCleaning(
   ctx: SimContext,
   planId: CleaningPlanId,
 ): CommandResult {
-  if (state.stage === 'PITCH' || state.stage === 'ENDED') return { ok: false, error: 'WRONG_STAGE' };
+  if (state.stage === 'PITCH' || state.stage === 'ENDED')
+    return { ok: false, error: 'WRONG_STAGE' };
   const current = state.cleaning.plan;
   if (current?.plan === planId) return { ok: false, error: 'NOT_ELIGIBLE' };
   const price = planWeeklyPrice(state, planId);
@@ -180,7 +182,8 @@ export function subscribeCleaning(
 
 /** Résilie l'abonnement de ménage tout de suite, sans remboursement. */
 export function cancelCleaning(state: GameState, ctx: SimContext): CommandResult {
-  if (state.stage === 'PITCH' || state.stage === 'ENDED') return { ok: false, error: 'WRONG_STAGE' };
+  if (state.stage === 'PITCH' || state.stage === 'ENDED')
+    return { ok: false, error: 'WRONG_STAGE' };
   if (!state.cleaning.plan) return { ok: false, error: 'NOT_FOUND' };
   state.cleaning.plan = null;
   notify(
@@ -237,10 +240,13 @@ function getDirty(state: GameState, ctx: SimContext, clock: SimClock): void {
       state,
       ctx,
       'OFFICE_DIRTY',
-      text([
-        'Le bureau est sale ({dirt} %) : emballages, gobelets, boîtes de pizza… l’équipe travaille moins bien.',
-        'The office is dirty ({dirt}%): wrappers, cups, pizza boxes… the team works worse.',
-      ], { dirt: Math.round(cleaning.dirt) }),
+      text(
+        [
+          'Le bureau est sale ({dirt} %) : emballages, gobelets, boîtes de pizza… l’équipe travaille moins bien.',
+          'The office is dirty ({dirt}%): wrappers, cups, pizza boxes… the team works worse.',
+        ],
+        { dirt: Math.round(cleaning.dirt) },
+      ),
     );
   }
 }

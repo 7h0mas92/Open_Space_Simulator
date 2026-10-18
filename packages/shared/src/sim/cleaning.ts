@@ -171,9 +171,7 @@ export const CleaningStateSchema = z.object({
   alerted: z.boolean(),
   plan: CleaningSubscriptionSchema.nullable(),
   /** Appel ponctuel réservé : l'équipe arrive à ce tick. */
-  booking: z
-    .object({ start: z.number().int().nonnegative(), express: z.boolean() })
-    .nullable(),
+  booking: z.object({ start: z.number().int().nonnegative(), express: z.boolean() }).nullable(),
   /** Ménage en cours : du tick `start` au tick `end` (exclu), saleté de départ `from`. */
   visit: z
     .object({

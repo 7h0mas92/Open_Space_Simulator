@@ -288,6 +288,8 @@ export const MISSING_ASSETS = [
   { id: 'catTreeMedium', replacement: 'primitive' },
   { id: 'catTreeLarge', replacement: 'primitive' },
   { id: 'officeCats', replacement: 'character' },
+  { id: 'cleaningCrew', replacement: 'character' },
+  { id: 'officeLitter', replacement: 'character' },
   { id: 'windowSmall', replacement: 'primitive' },
   { id: 'windowMedium', replacement: 'primitive' },
   { id: 'windowLarge', replacement: 'primitive' },

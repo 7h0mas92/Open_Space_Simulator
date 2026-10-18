@@ -657,7 +657,11 @@ export interface CleaningView {
   readonly expressPrice: number;
   /** Ce qui empêche d'appeler l'équipe maintenant (`BUSY` : déjà réservée ou sur place). */
   readonly callBlocker: 'BUSY' | 'WRONG_STAGE' | 'NOT_ENOUGH_MONEY' | null;
-  readonly crew: readonly { readonly id: string; readonly name: string; readonly tool: CleanerTool }[];
+  readonly crew: readonly {
+    readonly id: string;
+    readonly name: string;
+    readonly tool: CleanerTool;
+  }[];
   readonly visits: number;
   readonly spent: number;
 }

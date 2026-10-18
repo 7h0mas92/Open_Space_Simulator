@@ -421,7 +421,8 @@ class Cleaner {
     this.time += reducedMotion ? 0 : seconds;
     this.mixer?.update(reducedMotion ? 0 : seconds);
     // L'outil s'agite pendant le ménage (serpillière, brosse de l'aspirateur).
-    this.toolMesh.rotation.y = pose === 'scrub' && !reducedMotion ? Math.sin(this.time * 14) * 0.12 : 0;
+    this.toolMesh.rotation.y =
+      pose === 'scrub' && !reducedMotion ? Math.sin(this.time * 14) * 0.12 : 0;
   }
 
   dispose(): void {

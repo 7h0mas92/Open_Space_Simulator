@@ -13,7 +13,9 @@ import { useGame } from '../store/game';
 const TOOL_ICONS = { cart: '🛒', vacuum: '🌀', mop: '🧽' } as const;
 
 /** Niveau de saleté affiché : propre, à surveiller, sale. */
-export function dirtLevel(cleaning: Pick<CleaningView, 'dirt' | 'alert'>): 'clean' | 'warn' | 'dirty' {
+export function dirtLevel(
+  cleaning: Pick<CleaningView, 'dirt' | 'alert'>,
+): 'clean' | 'warn' | 'dirty' {
   if (cleaning.dirt >= cleaning.alert) return 'dirty';
   return cleaning.dirt >= cleaning.alert / 2 ? 'warn' : 'clean';
 }
