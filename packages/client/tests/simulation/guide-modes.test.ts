@@ -1,4 +1,4 @@
-import { BALANCE, GAME_MODES, type GameMode } from '@oss/shared';
+import { GAME_MODES, difficultyOf, type GameMode } from '@oss/shared';
 import { describe, expect, it } from 'vitest';
 import { defaultCardLibrary } from '../../src/events/defaultCards';
 import { createBot } from '../../src/simulation/bots';
@@ -149,7 +149,7 @@ describe.each(GAME_MODES)('Tutoriel complet en partie réelle : %s', (mode) => {
   });
 
   it('respecte le nombre de cartes tirées au hasard par sprint du mode', () => {
-    const max = mode === 'EASY' ? BALANCE.easy.maxEventsPerSprint : BALANCE.events.maxPerSprint;
+    const max = difficultyOf(mode).eventsPerSprint;
     for (const game of games) {
       expect(game.firstCardTick).not.toBeNull();
       expect(game.maxCardsPerSprint).toBeLessThanOrEqual(max);

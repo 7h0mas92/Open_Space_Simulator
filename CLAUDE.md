@@ -726,6 +726,16 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Commandes `SUBSCRIBE_FIBRE` / `CANCEL_FIBRE`, état `fibre` (null par défaut), `fibreSystem` en
   dernier système, rendu `render/serverRoom.ts` (12 formes des assets manquants). Aucun tirage.
 
+- Difficulté des modes (`shared/sim/difficulty.ts`, `difficultyOf(mode)`) : un profil de
+  multiplicateurs par mode remplace `BALANCE.easy`. Facile : 2,2 M€ au départ, effets négatifs des
+  cartes -15 %, autant de cartes qu'en Normal. Hardcore : 1,5 M€, dépenses +15 %, revenus -15 %,
+  4 cartes au plus par sprint (tirage x1,5), effets négatifs +30 %, pannes +50 %, barre des
+  investisseurs +0,3 (`pitchBar` dans `simulation/fundraising.ts`). Normal, Daily, Stagiaires Only
+  et 3 sprints au profil neutre : mêmes parties qu'avant. Rapport `pnpm balance` : section
+  « Difficulté par mode et par stratégie », 700 parties par autre mode. Faillite Hardcore 32 %
+  (bons bots 7 à 20 %, licorne 2 à 4 %) ; Facile proche du Normal, un peu plus indulgent. Les
+  replays des anciens scores Facile et Hardcore ne rejouent plus à l'identique.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur

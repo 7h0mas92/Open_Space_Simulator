@@ -2,6 +2,7 @@ import {
   BALANCE,
   GAME,
   STATE_VERSION,
+  difficultyOf,
   emptyRaisesState,
   type DevRole,
   type GameMode,
@@ -24,8 +25,7 @@ export interface GameConfig {
 /** État vide, avant l'arrivée du premier dev. */
 export function createEmptyState(config: GameConfig): GameState {
   const { start } = BALANCE;
-  const treasury =
-    config.mode === 'EASY' ? start.treasury * BALANCE.easy.treasuryMultiplier : start.treasury;
+  const treasury = start.treasury * difficultyOf(config.mode).treasury;
   return {
     version: STATE_VERSION,
     seed: config.seed,

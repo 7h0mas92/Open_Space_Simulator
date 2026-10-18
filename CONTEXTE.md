@@ -1,7 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 13 octobre 2026**, par Claude (projet de Thomas), à la création du
-> fichier. Dernier commit de `main` au moment de l'écriture : `a7c3eb2` (PR #119).
+> **Dernière mise à jour : 18 octobre 2026**, par Claude (projet de Melvin), rééquilibrage des
+> modes Facile et Hardcore (PR vers `develop`). Dernier commit de `develop` au moment de
+> l'écriture : `83fec14` (PR #120).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -179,6 +180,9 @@ pnpm dev   # jeu sur localhost:5173, API et Swagger sur localhost:3000/docs
 
 Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 
+- **Difficulté d'un mode** : toujours via `difficultyOf(mode)` (`shared/sim/difficulty.ts`),
+  jamais un `mode === 'EASY'` codé en dur ; le profil neutre (1 partout) garde le Normal et le
+  Daily identiques au bit près.
 - **Simulation déterministe** (`packages/client/src/simulation`, ECS en TypeScript pur) : RNG
   sfc32 dans l'état, 1 pas = 30 min, 672 pas par sprint, 39 sprints. ESLint y interdit three,
   React, le DOM, `Math.random`, `Date.now`, `Math.log/exp/pow/sin`.
@@ -220,6 +224,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 18/10    | Melvin + Claude | develop     | Difficulté par mode (`difficultyOf`) : Facile moins généreux, Hardcore vraiment dur. Normal et Daily inchangés.                                                                                                                                  |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
 | 11/10    | Melvin          | #109 à #119 | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
 | 10–11/10 | Melvin          | #93 à #108  | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |

@@ -996,7 +996,7 @@
     "title": "Pick your mode",
     "EASY": {
       "name": "Easy",
-      "rule": "To learn: full tutorial, more money, softer crises.",
+      "rule": "To learn: full tutorial, a bit more money, softer crises. Bad management still sinks you.",
       "tag": "Beginner"
     },
     "NORMAL": {
@@ -1006,7 +1006,7 @@
     },
     "HARDCORE": {
       "name": "Hardcore",
-      "rule": "No pause. Ever.",
+      "rule": "No pause, less money, more crises. Every decision counts.",
       "tag": "Expert"
     },
     "INTERNS_ONLY": {
@@ -1307,7 +1307,7 @@
         "steps": {
           "easy": {
             "title": "Easy mode",
-            "body": "Easy mode is made for learning:\n\n• you start with €3M instead of €2M;\n• at most 2 random cards per sprint instead of 3 (the Friday 5pm outage can still add one);\n• the negative effects of crises are halved.\n\nEasy mode scores have their own leaderboard: they don't count in the global leaderboard."
+            "body": "Easy mode is made for learning, not for a guaranteed win:\n\n• you start with €2.2M instead of €2M;\n• the negative effects of crises are 15% smaller;\n• as many cards come up as in Normal (at most 3 per sprint, plus the Friday 5pm outage).\n\nSalaries, customers and investors are the same as in Normal: a badly run team still goes bankrupt.\n\nEasy mode scores have their own leaderboard: they don't count in the global leaderboard."
           },
           "normal": {
             "title": "Normal mode",
@@ -1315,11 +1315,11 @@
           },
           "hardcore": {
             "title": "Hardcore mode",
-            "body": "No pause. Ever. The pause button and the space bar no longer respond, and even this tutorial cannot stop time: read it while keeping an eye on the office.\n\nThe other rules are the Normal ones: €2M, 18 months, at most 3 random cards per sprint.\n\nTip: time stays stopped during planning and the demo. That is when you think."
+            "body": "No pause. Ever. The pause button and the space bar no longer respond, and even this tutorial cannot stop time: read it while keeping an eye on the office.\n\nAnd everything is harder than in Normal:\n\n• €1.5M to start instead of €2M;\n• salaries and costs 15% higher, customers paying 15% less;\n• more crises (at most 4 cards per sprint) with negative effects 30% stronger;\n• prod outages 50% more frequent;\n• more demanding investors at every round.\n\nWaiting without deciding leads to bankruptcy: every choice counts.\n\nTip: time stays stopped during planning and the demo. That is when you think."
           },
           "hardcoreEvents": {
             "title": "Crises do not wait",
-            "body": "In Hardcore, an event card does not stop time. If you do not choose within 2 in-game hours (a little under 2 seconds at x1), the last answer is picked for you: “you did not decide, so the problem decided for you”.\n\nThat last answer is often the worst one. Stay at x1 during office hours so you have time to read, and keep x2 or x4 for nights and weekends."
+            "body": "In Hardcore, an event card does not stop time. If you do not choose within 2 in-game hours (a little under 2 seconds at x1), the last answer is picked for you: “you did not decide, so the problem decided for you”.\n\nThat last answer is often the worst one, and negative effects are 30% stronger than in Normal (the numbers shown include it). Stay at x1 during office hours so you have time to read, and keep x2 or x4 for nights and weekends."
           },
           "interns": {
             "title": "Interns Only mode",
@@ -1476,7 +1476,7 @@
           },
           "soft": {
             "title": "In Easy mode",
-            "body": "In Easy mode, the negative effects of cards are halved (the numbers shown already include it) and at most 2 random cards come up per sprint. Only the Friday 5pm outage can add one."
+            "body": "In Easy mode, the negative effects of cards are 15% smaller (the numbers shown already include it). As many cards come up as in Normal: at most 3 random ones per sprint, plus the Friday 5pm outage."
           }
         }
       },
