@@ -1,8 +1,8 @@
 # Contexte de passation
 
 > **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), fil « Mode
-> Carrière » (PR #121, à valider par Thomas). Dernier commit de `main` au moment de l'écriture :
-> `6924163` (PR #136, après le mode Histoire #122).
+> Carrière » (PR #121, validée par Thomas et fusionnée). Dernier commit de `main` avant la
+> fusion : `6924163` (PR #136, après le mode Histoire #122).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -60,10 +60,10 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 
 ## Travaux en cours
 
-| Sujet                                               | Qui             | État                                      |
-| --------------------------------------------------- | --------------- | ----------------------------------------- |
-| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)          |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | PR #121 à jour avec `main`, attend Thomas |
+| Sujet                                               | Qui             | État                             |
+| --------------------------------------------------- | --------------- | -------------------------------- |
+| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122) |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné le 2 novembre (PR #121) |
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
 10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
@@ -72,12 +72,11 @@ débloque une récompense **nouvelle** (2 papiers peints, 2 sols, 2 couleurs, 2 
 départ : `packages/shared/src/story/rewards.ts`) : aucun objet existant n'a été retiré des
 autres modes. Équilibrage : `pnpm balance:story`.
 
-**Mode Carrière** (PR #121, branche `claude/mode-carriere-41x7g3`) : 8 légendes jamais nommées
+**Mode Carrière** (PR #121, fusionné le 2 novembre) : 8 légendes jamais nommées
 (Pépin Computer, Matelas & Céréales, Rembobine, MicroMou, Trombinoscope, Orénoque, Centillion,
 Ampère Motors), chacune avec son départ et 4 jalons, étoiles à la fin. Détail dans `CLAUDE.md`.
-Ne touche pas aux déblocages du mode Histoire : si le mode Histoire fusionne avant, intégrer
-`main` (conflits attendus dans `GAME_MODES`, l'enum Prisma `GameMode`, `ModePicker`,
-`lessons.ts`, le test du classement et les i18n).
+Pas de récompense du mode Histoire en Carrière (hors `UNLOCK_MODES`), pour que chaque légende
+se joue pareil pour tous. Migration Prisma `20261102090000_career_mode`, après celle du mode Histoire.
 
 **Proposition à valider pour les deux modes** : les objets débloqués sont utilisables en Normal,
 Facile et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
@@ -92,7 +91,7 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
   un mode (#121 Carrière, #135 Illimité, #130 difficulté par mode) doivent intégrer `main` et
   garder `STORY` dans `GAME_MODES` (hors `MENU_MODES` et `UNLOCK_MODES`).
 
-- **Mode Carrière (PR #121)** : Thomas doit valider avant la fusion. Les jalons ont été calibrés
+- **Mode Carrière (PR #121, fusionné)** : les jalons ont été calibrés
   avec les bots de `pnpm balance` (Pépin et Matelas faciles, Centillion, Orénoque et Ampère
   durs) ; à ajuster si Thomas les trouve trop durs ou trop faciles en jouant.
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
@@ -245,7 +244,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 02/11    | Thomas + Claude | #121        | Mode Carrière repris après la pause : `main` intégré (mode Histoire), modes `STORY` et `CAREER` côte à côte, migrations Prisma dans l'ordre. À valider par Thomas.                                                                               |
+| 02/11    | Thomas + Claude | #121        | Mode Carrière repris après la pause : `main` intégré (mode Histoire), modes `STORY` et `CAREER` côte à côte, migrations Prisma dans l'ordre, CI verte. Validé par Thomas et fusionné.                                                            |
 | 02/11    | Thomas + Claude | #122        | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
 | 13/10    | Thomas + Claude | #122        | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
 | 13/10    | Thomas + Claude | #121        | Mode Carrière : 8 légendes parodiques, jalons et étoiles, légende dans la graine, mode `CAREER` + migration Prisma, 2 succès (67 au total). PR à valider par Thomas.                                                                             |
