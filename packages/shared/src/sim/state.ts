@@ -8,6 +8,7 @@ import {
   IdentitySchema,
   StatsSchema,
 } from './components.js';
+import { CareerResultSchema, CareerStateSchema } from './career.js';
 import { CommandLogSchema } from './commands.js';
 import { ComputerIdSchema } from './computers.js';
 import { FinancingStateSchema } from './funding.js';
@@ -326,6 +327,8 @@ export const NOTIFICATION_KINDS = [
   'OBJECTIVE_SET',
   'OBJECTIVE_DONE',
   'OBJECTIVE_FAILED',
+  'CAREER_MILESTONE',
+  'CAREER_MISSED',
   'SPRINT_LOST',
   'GAME_OVER',
   'ACHIEVEMENT_UNLOCKED',
@@ -355,6 +358,8 @@ export const GameResultSchema = z.object({
   ownership: z.number(),
   /** Phrase partageable : « Ma startup a été rachetée 400 M€ et 7 devs ont fait un burn-out ». */
   headline: LocalizedTextSchema,
+  /** Bilan du mode Carrière : jalons tenus et étoiles (absent des autres modes). */
+  career: CareerResultSchema.optional(),
   /** Mode Histoire : la mission est-elle réussie ? (absent hors mission) */
   mission: z
     .object({
@@ -440,6 +445,8 @@ export const GameStateSchema = z.object({
   cleaning: CleaningStateSchema.default(emptyCleaningState),
   /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */
   subscriptions: SubscriptionsSchema.default([]),
+  /** Mode Carrière : légende suivie et jalons (null dans les autres modes). */
+  career: CareerStateSchema.nullable().default(null),
   /**
    * Dernier niveau de température connu de chaque salle des serveurs, par identifiant de salle,
    * pour prévenir quand il change (absent des vieilles sauvegardes).

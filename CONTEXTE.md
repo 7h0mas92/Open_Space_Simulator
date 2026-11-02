@@ -1,10 +1,9 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin) : partage du travail
-> en cours entre Thomas et Melvin, voir [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md).
-> Dernier commit de `develop` : `a77f906` (PR #144) ; dernier commit de `main` : `d28c381`
-> (PR #143). **`main` a 5 PR absentes de `develop`** (#121, #137, #138, #142, #143) : à
-> réintégrer en premier (tâche T1 de la passation).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : `main` réintégré
+> dans `develop` (tâche T1 de [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md)). Base :
+> `develop` au commit `5e65463` (PR #145) et `main` au commit `d28c381` (PR #143). Une fois cette
+> PR fusionnée, `develop` contient tout `main` : Carrière, Nouvelle partie, Supabase, Vercel.
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -55,8 +54,10 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 - **État** : les 12 étapes du plan sont livrées, plus une centaine d'ajouts validés (PR #1 à
   #119, toutes fusionnées, **aucune PR ouverte** au 13 octobre). La liste complète est dans
   `CLAUDE.md`, section « ÉTAT D'AVANCEMENT ».
-- **Jeu en ligne** (invité seulement, redéployé à chaque fusion dans `main`) :
-  https://7h0mas92.github.io/Open_Space_Simulator/
+- **Jeu en ligne avec comptes** (Vercel, redéployé à chaque fusion dans `main`) :
+  https://open-space-simulator.vercel.app, serveur Render `https://oss-server-e90i.onrender.com`
+  (endormi après 15 min sans visite, ~50 s au réveil), base Supabase `open-space-simulator`.
+  Version invité seule : https://7h0mas92.github.io/Open_Space_Simulator/
 - **Langue** : tout est en français (code commenté, commits, PR, échanges) ; le jeu est en FR et
   EN.
 
@@ -65,11 +66,12 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Sujet                                               | Qui             | État                                              |
 | --------------------------------------------------- | --------------- | ------------------------------------------------- |
 | Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                  |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Dans `main` (#121), pas encore dans `develop`     |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné (#121), réintégré dans `develop` (T1)    |
 | Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135)   |
 | Offres internet et température des salles (#129)    | Melvin + Claude | À rebrancher sur le modèle des abonnements (#126) |
 | Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation         |
-| Remettre `main` dans `develop` (T1)                 | Thomas          | À faire en premier (13 fichiers en conflit)       |
+| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | PR ouverte, 13 conflits résolus, à valider        |
+| **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                  |
 | Histoire longue, rivaux, arbres devs et R&D (T2-T4) | Thomas          | Proposition prête, rien de codé                   |
 | Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                        |
 | Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                               |
@@ -85,9 +87,11 @@ débloque une récompense **nouvelle** (2 papiers peints, 2 sols, 2 couleurs, 2 
 départ : `packages/shared/src/story/rewards.ts`) : aucun objet existant n'a été retiré des
 autres modes. Équilibrage : `pnpm balance:story`.
 
-**Mode Carrière** : essayer de reproduire les performances d'anciennes startups devenues de
-grandes entreprises (Apple, Google…), **sans jamais citer leur nom directement** (noms parodiques
-ou allusions seulement, comme pour les super-héros inventés).
+**Mode Carrière** (PR #121, fusionné le 2 novembre) : 8 légendes jamais nommées
+(Pépin Computer, Matelas & Céréales, Rembobine, MicroMou, Trombinoscope, Orénoque, Centillion,
+Ampère Motors), chacune avec son départ et 4 jalons, étoiles à la fin. Détail dans `CLAUDE.md`.
+Pas de récompense du mode Histoire en Carrière (hors `UNLOCK_MODES`), pour que chaque légende
+se joue pareil pour tous. Migration Prisma `20261102090000_career_mode`, après celle du mode Histoire.
 
 **Proposition à valider pour les deux modes** : les objets débloqués sont utilisables en Normal,
 Facile, Illimité et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
@@ -96,14 +100,27 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
 
 ## En attente d'une décision
 
+- **GitHub Actions** : bloqué du 13 octobre au 2 novembre (jobs arrêtés en 3 secondes, sans
+  runner). Le 2 novembre, les jobs démarrent de nouveau sur des runners ; vérifier quand même en
+  local avant de fusionner. Les modes Histoire (`STORY`) et Carrière (`CAREER`) sont dans
+  `GAME_MODES` ; un nouveau mode doit les garder (`STORY` hors `MENU_MODES` et `UNLOCK_MODES`,
+  `CAREER` hors `UNLOCK_MODES` et dans `GLOBAL_EXCLUDED_MODES`).
+
+- **Mode Carrière (PR #121, fusionné)** : les jalons ont été calibrés
+  avec les bots de `pnpm balance` (Pépin et Matelas faciles, Centillion, Orénoque et Ampère
+  durs) ; à ajuster si Thomas les trouve trop durs ou trop faciles en jouant.
+- **Carrière hors du classement global** (choix fait en réintégrant `main`, à confirmer par
+  Thomas) : chaque légende part d'une trésorerie différente, donc la Carrière a son onglet mais
+  ne se mélange plus au Normal dans le classement global (`GLOBAL_EXCLUDED_MODES`).
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
   ~20 % avant). Proposition : réduire un peu le café livré par la cuisine. Thomas n'a pas tranché
   (question du 8 octobre) ; ne rien changer sans son accord.
-- **Comptes en ligne** (actions de Thomas, étapes dans le README, section Déploiement) : Render
-  (Blueprint `render.yaml`), URL Render dans `packages/client/vercel.json`, projet Vercel (Root
-  Directory `packages/client`), OAuth App GitHub. En attendant, la version GitHub Pages n'a ni
-  comptes, ni classements, ni Daily en ligne, ni Slack IA, ni packs, ni back-office.
+- **Connexion GitHub** (action de Thomas, étapes dans le README, section Déploiement) : les
+  comptes email + mot de passe marchent en ligne depuis le 2 novembre. Reste l'OAuth App GitHub
+  (callback `https://open-space-simulator.vercel.app/api/auth/github/callback`), puis
+  `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` sur Render ; facultatif : `ANTHROPIC_API_KEY` pour
+  le Slack IA.
 - **Effets sonores et ambiance** : le lecteur Howler est prêt mais `SOUND_FILES` est vide dans
   `packages/client/src/audio/manifest.ts`. Les musiques (7 MP3 dans
   `packages/client/public/assets/music/`) et les bruits de clavier et de souris sont faits.
@@ -151,28 +168,29 @@ Règles fixées par Thomas (à respecter par tout le monde) :
 
 ## Où sont les choses
 
-| Quoi                                             | Où                                                                                                              |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (`develop` en test, `main` publiée)                            |
-| Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                     |
-| Installation, architecture, déploiement, crédits | `README.md`                                                                                                     |
-| Ce relais                                        | `CONTEXTE.md`                                                                                                   |
-| Rôle et emplacement de chaque fichier            | `ARBORESCENCE.md`                                                                                               |
-| Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                               |
-| Captures du README                               | `docs/screenshots/`                                                                                             |
-| Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                 |
-| Interface de la simulation                       | `packages/client/src/simulation/README.md`                                                                      |
-| Constantes partagées de chaque système           | `packages/shared/src/sim/*.ts` (balance, furniture, pets, floors, serverRoom…)                                  |
-| Succès (65, dont 22 secrets)                     | `packages/shared/src/meta/achievements.ts`                                                                      |
-| 100 cartes d'événements                          | `packages/shared/src/data/cards/`                                                                               |
-| Modes de jeu                                     | `GAME_MODES` dans `packages/shared/src/game.ts` (EASY, NORMAL, HARDCORE, INTERNS_ONLY, SHIP_IN_3, DAILY, STORY) |
-| Mode Histoire (chapitres, missions, récompenses) | `packages/shared/src/story/`, `packages/client/src/simulation/story.ts`, `packages/client/src/ui/story/`        |
-| Bots de `pnpm balance`                           | `packages/client/src/simulation/bots.ts` (random, shipper, balanced, cautious, investor, organizer, financier)  |
-| Assets Kenney (déjà commités)                    | `packages/client/public/assets/kenney/` (Furniture Kit, Blocky Characters)                                      |
-| Musiques et sons                                 | `packages/client/public/assets/music/`, `packages/client/public/assets/sounds/`                                 |
-| Variables d'environnement                        | `packages/server/.env.example`, `packages/client/.env.example`                                                  |
-| Déploiement                                      | `render.yaml`, `packages/client/vercel.json`, `.github/workflows/pages.yml`                                     |
-| CI                                               | `.github/workflows/ci.yml` (lint, format, typecheck, tests, build, e2e)                                         |
+| Quoi                                             | Où                                                                                                                               |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (`develop` en test, `main` publiée)                                             |
+| Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                                      |
+| Installation, architecture, déploiement, crédits | `README.md`                                                                                                                      |
+| Ce relais                                        | `CONTEXTE.md`                                                                                                                    |
+| Rôle et emplacement de chaque fichier            | `ARBORESCENCE.md`                                                                                                                |
+| Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                                                |
+| Captures du README                               | `docs/screenshots/`                                                                                                              |
+| Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                                  |
+| Interface de la simulation                       | `packages/client/src/simulation/README.md`                                                                                       |
+| Constantes partagées de chaque système           | `packages/shared/src/sim/*.ts` (balance, furniture, pets, floors, serverRoom…)                                                   |
+| Succès (70, dont 22 secrets)                     | `packages/shared/src/meta/achievements.ts`                                                                                       |
+| 100 cartes d'événements                          | `packages/shared/src/data/cards/`                                                                                                |
+| Modes de jeu                                     | `GAME_MODES` dans `packages/shared/src/game.ts` (EASY, NORMAL, HARDCORE, INTERNS_ONLY, SHIP_IN_3, ENDLESS, DAILY, STORY, CAREER) |
+| Mode Histoire (chapitres, missions, récompenses) | `packages/shared/src/story/`, `packages/client/src/simulation/story.ts`, `packages/client/src/ui/story/`                         |
+| Mode Carrière (légendes, jalons, étoiles)        | `packages/shared/src/sim/career.ts`, `packages/client/src/simulation/career.ts`, `packages/client/src/ui/career/`                |
+| Bots de `pnpm balance`                           | `packages/client/src/simulation/bots.ts` (random, shipper, balanced, cautious, investor, organizer, financier)                   |
+| Assets Kenney (déjà commités)                    | `packages/client/public/assets/kenney/` (Furniture Kit, Blocky Characters)                                                       |
+| Musiques et sons                                 | `packages/client/public/assets/music/`, `packages/client/public/assets/sounds/`                                                  |
+| Variables d'environnement                        | `packages/server/.env.example`, `packages/client/.env.example`                                                                   |
+| Déploiement                                      | `render.yaml`, `packages/client/vercel.json`, `.github/workflows/pages.yml`                                                      |
+| CI                                               | `.github/workflows/ci.yml` (lint, format, typecheck, tests, build, e2e)                                                          |
 
 ## Installer et lancer
 
@@ -225,6 +243,10 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   réutiliser `nearestValidCell` et `shopStatus` (`view/placement.ts`). Chaque objet du catalogue
   a un rendu distinct (test) ; chaque bureau a une place d'écran (`SCREEN_MOUNTS`, test) ; chaque
   forme Three.js a une entrée `credits.missingItems` en FR et EN.
+- **Nouveau mode de jeu** : l'ajouter à `GAME_MODES`, à l'enum Prisma `GameMode` (migration
+  `ALTER TYPE`), à `MODE_ICONS`, à `ALL_BUT` de `lessons.ts` (avec ses étapes `rules`) et au
+  test des onglets du classement. Un réglage propre à une partie peut s'écrire dans la graine
+  (comme `career:<légende>:<graine>`) : le rejeu serveur le retrouve sans changer l'API.
 - **Serveur** : toutes les routes sous `/api`, erreurs `{ error: { code, message } }`, le serveur
   rejoue graine + commandes pour vérifier un score (il embarque la simulation du client).
 - **Mode Histoire** : une mission est une partie `STORY` (`GameConfig.mission`), terminée par
@@ -233,6 +255,11 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   (`unlocks`) : le serveur vérifie qu'elles sont gagnées et les rejoue. Un contenu réservé porte
   un champ `unlock` (meuble, papier peint, sol) ou est dans `COLOR_UNLOCKS`. `MENU_MODES` = les
   modes du menu et des classements (sans STORY).
+- **Base de production sur Supabase** : seulement un PostgreSQL hébergé, le serveur passe par
+  Prisma (pas d'auth ni de SDK Supabase). Toute nouvelle table active la RLS dans sa migration
+  (`ALTER TABLE "X" ENABLE ROW LEVEL SECURITY;`), sinon l'API REST publique de Supabase la
+  lirait ; `tests/rls.test.ts` échoue sinon. Ne jamais modifier une migration déjà appliquée
+  (somme de contrôle dans `_prisma_migrations`).
 - **Textes** : toujours en FR et EN (`packages/client/src/i18n/fr.json`, `en.json`).
 - **Versions figées** : TypeScript 6.0, Prisma 7.10 (`@prisma/adapter-pg`), Zod 4, Fastify 5,
   Vite 8, Vitest 5, Playwright 1.56.1, Node 22, pnpm 10.28, PostgreSQL 16.
@@ -247,6 +274,13 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 - Captures headless : Chromium logiciel tourne à ~2 fps ; le jeu passe en qualité basse quand
   WebGL n'a pas de carte graphique.
 - GitHub Pages : source « GitHub Actions », `BASE_PATH=/Open_Space_Simulator/`.
+- Un abonnement global branché dans un `useEffect` doit renvoyer un nettoyage qui permet de le
+  rebrancher : en `pnpm dev`, StrictMode monte l'application deux fois (c'est ce qui coupait la
+  sauvegarde automatique, voir `installGameLifecycle`).
+- Supabase : « self-signed certificate in certificate chain » = le driver `pg` lit
+  `sslmode=require` comme `verify-full` ; `createPrismaClient` ajoute `uselibpqcompat=true`.
+  Prendre l'URL du _Session pooler_ (5432), pas la _Direct connection_ (IPv6 seulement) ni le
+  _Transaction pooler_ (6543). Projet gratuit en pause après 7 jours sans requête.
 
 ---
 
@@ -256,7 +290,14 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                             |
 | -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 02/11    | Melvin + Claude | (cette PR)        | Partage du travail : `docs/PASSATION-THOMAS.md` (tâches T1 à T6 pour Thomas avec un prompt chacune, M1 à M4 pour Melvin) et `docs/proposition-mode-histoire.md`. `main` a 5 PR absentes de `develop` : à réintégrer d'abord.                                                                                                                                                           |
+| 02/11    | Thomas + Claude | #148              | Tâche T1 : `main` réintégré dans `develop` (merge commit). 13 conflits résolus en gardant les deux côtés : Carrière et Illimité, trésorerie de la légende multipliée par `difficultyOf`, ménage et abonnements à côté de `career`, succès de l'Illimité et de la Carrière (70). Carrière ajoutée à `GLOBAL_EXCLUDED_MODES`.                                                            |
+| 02/11    | Melvin + Claude | #146              | Daily et Kanbanana (#133) décrits dans `CLAUDE.md` et le README. Nouveau champ `morningSync` et stat `duplicateWork` (défauts pour les anciennes sauvegardes). Idées de suite proposées à Melvin pour le Daily : blocage signalé, pair programming, Daily qui dérape, retard, rétro de fin de sprint, succès.                                                                          |
+| 02/11    | Melvin + Claude | #145              | Partage du travail : `docs/PASSATION-THOMAS.md` (tâches T1 à T6 pour Thomas avec un prompt chacune, M1 à M4 pour Melvin) et `docs/proposition-mode-histoire.md`. `main` a 5 PR absentes de `develop` : à réintégrer d'abord.                                                                                                                                                           |
+| 02/11    | Thomas + Claude | #143              | Jeu en ligne avec comptes : client Vercel `open-space-simulator.vercel.app`, `CLIENT_URL` réglé sur Render, inscription testée par Thomas (compte créé dans Supabase). Reste l'OAuth GitHub.                                                                                                                                                                                           |
+| 02/11    | Thomas + Claude | #142              | Serveur Render en ligne (`oss-server-e90i.onrender.com`), branché sur Supabase et rempli par le seed (130 cartes, 67 succès, admin). `vercel.json` pointe dessus. Reste : projet Vercel, `CLIENT_URL` sur Render, OAuth GitHub.                                                                                                                                                        |
+| 02/11    | Thomas + Claude | #138              | Base de production sur Supabase : projet créé, migrations appliquées, RLS sur toutes les tables (nouvelle migration + test), correctif SSL de `pg`, `render.yaml` sans base Render. Reste le mot de passe et Render (Thomas).                                                                                                                                                          |
+| 02/11    | Thomas + Claude | #137              | Bouton « Nouvelle partie » sous « Continuer ». Sauvegarde auto rétablie en `pnpm dev` (StrictMode). À valider.                                                                                                                                                                                                                                                                         |
+| 02/11    | Thomas + Claude | #121              | Mode Carrière repris après la pause : `main` intégré (mode Histoire), modes `STORY` et `CAREER` côte à côte, migrations Prisma dans l'ordre, CI verte. Validé par Thomas et fusionné.                                                                                                                                                                                                  |
 | 02/11    | Thomas + Claude | #123 à #135       | CI de nouveau active. `develop` avancé jusqu'à `main` (mode Histoire), puis 11 PR de Melvin fusionnées dans `develop` après résolution des conflits : #123 à #128, #130 à #133, #135. Ménage à côté du modèle des abonnements, frais de l'illimité et du Hardcore cumulés, doublons du journal retirés. Restent #129 (à refaire sur les abonnements) et #134 (brouillon).              |
 | 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                                                                                                                                                                 |
 | 18/10    | Melvin + Claude | (PR develop)      | Saleté du bureau (0 à 100 %, -20 % de travail à 50 %) et entreprise de nettoyage Nickel Chrome : appel, express, abonnement hebdo (`shared/sim/cleaning.ts`, `simulation/cleaning.ts`, `render/cleaning.ts`, bouton 🧹). Champ `cleaning` par défaut ; règle qui change toutes les parties (anciens replays de scores divergent). À brancher sur le futur modèle commun d'abonnements. |
@@ -268,6 +309,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 | 17/10    | Melvin + Claude | fix/sol_couleur   | Sol d'origine identique dans toutes les pièces (`BASE_FLOOR_COLORS`), plus de décor de sol tiré de la graine ; seul le rayon Sols le change.                                                                                                                                                                                                                                           |
 | 17/10    | Melvin + Claude | (develop)         | Rubrique Abonnements (🧾 en haut) : modèle commun `subscriptions` (un abonnement par service, facturation à l'échéance, coupure si impayé, `requires`). La fibre y est passée ; ménage, internet et sécurité s'y branchent.                                                                                                                                                            |
 | 13/10    | Thomas + Claude | #122              | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                                                                                                                                                            |
+| 13/10    | Thomas + Claude | #121              | Mode Carrière : 8 légendes parodiques, jalons et étoiles, légende dans la graine, mode `CAREER` + migration Prisma, 2 succès (67 au total). PR à valider par Thomas.                                                                                                                                                                                                                   |
 | 13/10    | Thomas + Claude | #120              | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                                                                                                                                                                    |
 | 11/10    | Melvin          | #109 à #119       | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                                                                                                                                                        |
 | 10–11/10 | Melvin          | #93 à #108        | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                                                                                                                                                                     |

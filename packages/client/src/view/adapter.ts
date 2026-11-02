@@ -65,7 +65,10 @@ import {
   monthlyPrice,
   offersOf,
   type SubscriptionOffer,
+  careerLegend,
+  careerMilestoneLabel,
 } from '@oss/shared';
+import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
 import { completedSprints, missionProgress } from '../simulation/story';
 import { hasUnlock } from '../simulation/unlocks';
@@ -148,6 +151,8 @@ import type {
   GaugeName,
   KanbanColumn,
   LeadershipView,
+  CareerMilestoneView,
+  LegendRunView,
   ObjectiveView,
   PlacedItemView,
   StoredItemView,
@@ -380,6 +385,43 @@ function objectiveView(state: GameState): ObjectiveView | null {
     value,
     reached: objectiveReached(objective, value),
     reward: objective.reward,
+  };
+}
+
+/** Mode Carrière : la légende et l'état de chaque jalon, avec la progression vers sa cible. */
+function legendRunView(state: GameState): LegendRunView | null {
+  const career = state.career;
+  if (!career) return null;
+  const legend = careerLegend(career.legend);
+  const milestones = legend.milestones.map((milestone): CareerMilestoneView => {
+    const progress = career.milestones[milestone.id] ?? { status: 'PENDING', sprint: null };
+    const bySprint =
+      milestone.kind === 'phase' || milestone.kind === 'metric'
+        ? (milestone.bySprint ?? null)
+        : null;
+    return {
+      id: milestone.id,
+      label: careerMilestoneLabel(milestone),
+      status: progress.status,
+      sprint: progress.sprint,
+      bySprint,
+      progress:
+        milestone.kind === 'metric'
+          ? Math.min(1, careerMetricValue(state, milestone.metric) / milestone.min)
+          : null,
+    };
+  });
+  return {
+    legend: legend.id,
+    icon: legend.icon,
+    name: legend.name,
+    year: legend.year,
+    difficulty: legend.difficulty,
+    story: legend.story,
+    twist: legend.twist,
+    milestones,
+    done: milestones.filter((m) => m.status === 'DONE').length,
+    total: milestones.length,
   };
 }
 
@@ -1024,6 +1066,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     event: eventView(state, context),
     lastReport: state.history.sprints.at(-1) ?? null,
     objective: objectiveView(state),
+    career: legendRunView(state),
     pitch: pitch ? pitchView(state, pitch) : null,
     pitchBlocker: pitchBlocker(state),
     funding: fundingView(state),

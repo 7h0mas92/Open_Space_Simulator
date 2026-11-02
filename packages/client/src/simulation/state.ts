@@ -17,6 +17,7 @@ import {
   type StoryRewardId,
 } from '@oss/shared';
 import { generateDev, hireDev } from './devs';
+import { createCareerState, legendOfSeed } from './career';
 import { placeFurniture } from './furniture';
 import type { SimContext } from './helpers';
 import { seedToState } from './rng';
@@ -45,7 +46,11 @@ function gameUnlocks(config: GameConfig): StoryRewardId[] {
 /** État vide, avant l'arrivée du premier dev. */
 export function createEmptyState(config: GameConfig): GameState {
   const { start } = BALANCE;
-  const treasury = start.treasury * difficultyOf(config.mode).treasury;
+  // Mode Carrière : la légende écrite dans la graine fixe l'argent, la hype et la dette du départ.
+  const legend = config.mode === 'CAREER' ? legendOfSeed(config.seed) : null;
+  const treasury =
+    start.treasury * difficultyOf(config.mode).treasury * (legend?.start.treasuryFactor ?? 1);
+  const hype = legend?.start.hype ?? start.hype;
   const mission =
     config.mode === 'STORY' ? getStoryMission(config.mission ?? STORY_MISSION_IDS[0]) : undefined;
   return {
@@ -85,9 +90,9 @@ export function createEmptyState(config: GameConfig): GameState {
     gauges: {
       treasury,
       coffee: start.coffee,
-      debt: start.debt,
+      debt: legend?.start.debt ?? start.debt,
       stability: start.stability,
-      hype: start.hype,
+      hype,
       users: start.users,
     },
     valuation: 0,
@@ -114,6 +119,7 @@ export function createEmptyState(config: GameConfig): GameState {
     fibre: null,
     cleaning: emptyCleaningState(),
     subscriptions: [],
+    career: legend ? createCareerState(config.seed) : null,
     serverHeat: {},
     recentTaskTitles: [],
     story: mission ? { missionId: mission.id, startSprint: 1 } : null,
@@ -124,7 +130,7 @@ export function createEmptyState(config: GameConfig): GameState {
       usersLost: 0,
       revenue: 0,
       expenses: 0,
-      hypeAtStart: start.hype,
+      hypeAtStart: hype,
       incidents: 0,
       specialDone: 0,
       specialMissed: 0,
@@ -171,10 +177,18 @@ export function createEmptyState(config: GameConfig): GameState {
 
 /** Le garage du départ : un fondateur, un premier dev, deux bureaux IKEA et une cafetière. */
 export function setupNewGame(state: GameState, ctx: SimContext): void {
-  const firstRoles: DevRole[] =
-    state.mode === 'INTERNS_ONLY' ? ['INTERN'] : ['SENIOR_BEARD', 'TEN_X', 'RUSTACEAN'];
+  const legend = state.career ? legendOfSeed(state.seed) : null;
+  const firstRoles: readonly DevRole[] =
+    state.mode === 'INTERNS_ONLY'
+      ? ['INTERN']
+      : (legend?.start.firstRoles ?? ['SENIOR_BEARD', 'TEN_X', 'RUSTACEAN']);
   const first = generateDev(ctx.rng, ctx.rng.pick(firstRoles));
   hireDev(state, ctx, first, first.askingSalary);
+  // Certaines légendes démarrent à deux : le cofondateur est là dès le garage.
+  if (legend?.start.cofounder) {
+    const cofounder = generateDev(ctx.rng, legend.start.cofounder);
+    hireDev(state, ctx, cofounder, cofounder.askingSalary);
+  }
   placeFurniture(state, 'ikea-desk', 1, 1, 0);
   const desk = placeFurniture(state, 'ikea-desk', 1, 3, 0);
   // Pas encore de cuisine au garage : la cafetière est posée sur le second bureau.

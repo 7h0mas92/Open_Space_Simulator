@@ -36,6 +36,7 @@ import type {
   FurnitureColor,
   GameMode,
   GameResult,
+  CareerLegendId,
   LocalizedText,
   MeetingFormatId,
   MonitorChoice,
@@ -255,6 +256,34 @@ export interface ObjectiveView {
   /** Vrai si la cible est atteinte à cet instant (pour « aucune panne » : pas encore de panne). */
   readonly reached: boolean;
   readonly reward: SprintObjective['reward'];
+}
+
+/** Un jalon de la légende suivie en mode Carrière. */
+export interface CareerMilestoneView {
+  readonly id: string;
+  /** Intitulé (« Avoir 100 k utilisateurs avant la fin du sprint 20 »). */
+  readonly label: LocalizedText;
+  readonly status: 'PENDING' | 'DONE' | 'FAILED';
+  /** Sprint où il a été tenu ou manqué. */
+  readonly sprint: number | null;
+  /** Dernier sprint pour le tenir, `null` s'il se juge à la fin de la partie. */
+  readonly bySprint: number | null;
+  /** Progression vers la cible (0 à 1), `null` si elle ne se mesure pas (issue, phase). */
+  readonly progress: number | null;
+}
+
+/** Mode Carrière : la légende suivie et ses jalons. */
+export interface LegendRunView {
+  readonly legend: CareerLegendId;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly year: number;
+  readonly difficulty: 1 | 2 | 3;
+  readonly story: LocalizedText;
+  readonly twist: LocalizedText;
+  readonly milestones: readonly CareerMilestoneView[];
+  readonly done: number;
+  readonly total: number;
 }
 
 /** Effets de l'encadrement (directeur, managers, scrum master, tech lead, testeurs, DevOps). */
@@ -857,6 +886,8 @@ export interface GameView {
   readonly lastReport: SprintReport | null;
   /** Objectif du sprint en cours (certains sprints seulement), sinon null. */
   readonly objective: ObjectiveView | null;
+  /** Mode Carrière : légende et jalons (null dans les autres modes). */
+  readonly career: LegendRunView | null;
   readonly pitch: PitchView | null;
   /** Peut-on lancer une levée de fonds maintenant ? Sinon, la raison. */
   readonly pitchBlocker: 'WRONG_STAGE' | 'NO_HYPE' | 'COOLDOWN' | null;
