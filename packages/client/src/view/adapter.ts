@@ -59,6 +59,8 @@ import {
   hasFibreBox,
 } from '@oss/shared';
 import { wallOffice } from '../simulation/walls';
+import { completedSprints, missionProgress } from '../simulation/story';
+import { hasUnlock } from '../simulation/unlocks';
 import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
@@ -103,6 +105,7 @@ import {
   serverRoomStatuses,
 } from '../simulation/serverRoom';
 import type {
+  StoryView,
   CandidateView,
   DevActivity,
   DevView,
@@ -833,6 +836,9 @@ function wallsView(state: GameState): WallsView {
     locked: WALL_FINISHES.filter((finish) => PHASES.indexOf(finish.minPhase) > phase).map(
       (finish) => finish.id,
     ),
+    storyLocked: WALL_FINISHES.filter((finish) => !hasUnlock(state, finish.unlock)).map(
+      (finish) => finish.id,
+    ),
   };
 }
 
@@ -846,6 +852,21 @@ function floorsView(state: GameState): FloorsView {
     locked: FLOOR_MATERIALS.filter((material) => PHASES.indexOf(material.minPhase) > phase).map(
       (material) => material.id,
     ),
+    storyLocked: FLOOR_MATERIALS.filter((material) => !hasUnlock(state, material.unlock)).map(
+      (material) => material.id,
+    ),
+  };
+}
+
+function storyView(state: GameState): StoryView | null {
+  const progress = missionProgress(state);
+  if (!progress) return null;
+  return {
+    missionId: progress.mission.id,
+    goals: progress.goals,
+    constraints: progress.constraints,
+    sprintsDone: completedSprints(state),
+    sprints: progress.mission.sprints,
   };
 }
 
@@ -926,6 +947,8 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       state.phase === 'UNICORN' &&
       state.gauges.stability >= BALANCE.phases.ipoMinStability,
     result: state.result,
+    story: storyView(state),
+    unlocks: [...state.unlocks],
     achievements: [...state.achievements],
     replay: context.replay ?? null,
     running: context.running,

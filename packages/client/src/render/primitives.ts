@@ -26,6 +26,7 @@ import {
   trophy,
 } from './deskAccessories';
 import { detailedBookcase, detailedSofa } from './furnitureDetail';
+import { ipoBell, unicornStatue } from './storyRewards';
 import {
   canteenTable,
   doorCabinet,
@@ -516,6 +517,8 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   backupNas,
   firewallUnit,
   fireSuppression,
+  unicornStatue,
+  ipoBell,
   ...ANNEX_DECOR_PRIMITIVES,
   receptionDesk,
   badgeGates: null,

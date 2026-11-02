@@ -12,6 +12,7 @@ import {
   type PetNeed,
   type Phase,
   type ServerGearKind,
+  type StoryRewardId,
 } from '@oss/shared';
 import type { FurnitureModel, MissingAssetId } from '../render/assetManifest';
 
@@ -137,6 +138,8 @@ export interface CatalogItem extends ItemLook {
   readonly serverRoom: boolean;
   /** Matériel de la salle des serveurs : sa famille, sinon `null`. */
   readonly serverGear: ServerGearKind | null;
+  /** Récompense du mode Histoire qui le met en vente, sinon `null` (en vente pour tous). */
+  readonly unlock: StoryRewardId | null;
 }
 
 const kenney = (model: FurnitureModel): ItemModel => ({ source: 'kenney', model });
@@ -752,6 +755,14 @@ const LOOKS: Record<SimItemId, ItemLook> = {
     height: 0.76,
     paint: ['wood'],
   },
+  // Récompenses du mode Histoire (`render/storyRewards.ts`).
+  'unicorn-statue': {
+    category: 'decor',
+    model: primitive('unicornStatue'),
+    height: 1.5,
+    paint: ['gold'],
+  },
+  'ipo-bell': { category: 'decor', model: primitive('ipoBell'), height: 1.4, paint: ['woodDark'] },
 };
 
 export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => ({
@@ -773,6 +784,7 @@ export const CATALOG: readonly CatalogItem[] = FURNITURE_CATALOG.map((item) => (
   petNeed: 'petNeed' in item ? item.petNeed : null,
   serverRoom: 'serverRoom' in item && item.serverRoom === true,
   serverGear: 'serverGear' in item ? item.serverGear : null,
+  unlock: 'unlock' in item ? item.unlock : null,
 }));
 
 const byKind = new Map<string, CatalogItem>(CATALOG.map((item) => [item.kind, item]));

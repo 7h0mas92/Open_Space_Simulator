@@ -2,10 +2,16 @@ import {
   BALANCE,
   GAME,
   STATE_VERSION,
+  STORY_MISSION_IDS,
+  STORY_REWARD_IDS,
+  UNLOCK_MODES,
   emptyRaisesState,
+  getStoryMission,
   type DevRole,
   type GameMode,
   type GameState,
+  type StoryMissionId,
+  type StoryRewardId,
 } from '@oss/shared';
 import { generateDev, hireDev } from './devs';
 import { placeFurniture } from './furniture';
@@ -15,10 +21,22 @@ import { beginPlanning } from './sprint';
 import { computeValuation } from './economy';
 import { announceSeasons, calendarDay } from './systems/calendar';
 import { recordHistory } from './systems/daily';
+import { applyStartPerks, setupMission, startingCoffeeMaker } from './story';
 
 export interface GameConfig {
   seed: string;
   mode: GameMode;
+  /** Mode Histoire : la mission jouée (la première de la campagne par défaut). */
+  mission?: StoryMissionId;
+  /** Récompenses du mode Histoire débloquées par le joueur (ignorées en Daily et en mission). */
+  unlocks?: readonly StoryRewardId[];
+}
+
+/** Récompenses retenues pour la partie : rangées dans l'ordre de la campagne, sans doublon. */
+function gameUnlocks(config: GameConfig): StoryRewardId[] {
+  if (!UNLOCK_MODES.includes(config.mode)) return [];
+  const owned = new Set(config.unlocks ?? []);
+  return STORY_REWARD_IDS.filter((id) => owned.has(id));
 }
 
 /** État vide, avant l'arrivée du premier dev. */
@@ -26,6 +44,8 @@ export function createEmptyState(config: GameConfig): GameState {
   const { start } = BALANCE;
   const treasury =
     config.mode === 'EASY' ? start.treasury * BALANCE.easy.treasuryMultiplier : start.treasury;
+  const mission =
+    config.mode === 'STORY' ? getStoryMission(config.mission ?? STORY_MISSION_IDS[0]) : undefined;
   return {
     version: STATE_VERSION,
     seed: config.seed,
@@ -33,7 +53,7 @@ export function createEmptyState(config: GameConfig): GameState {
     rng: seedToState(config.seed),
     tick: 0,
     sprint: 1,
-    totalSprints: config.mode === 'SHIP_IN_3' ? 3 : GAME.totalSprints,
+    totalSprints: mission?.sprints ?? (config.mode === 'SHIP_IN_3' ? 3 : GAME.totalSprints),
     sprintTick: 0,
     stage: 'PLANNING',
     phase: 'GARAGE',
@@ -86,6 +106,8 @@ export function createEmptyState(config: GameConfig): GameState {
     lobby: null,
     security: null,
     recentTaskTitles: [],
+    story: mission ? { missionId: mission.id, startSprint: 1 } : null,
+    unlocks: gameUnlocks(config),
     lostSprintsPending: 0,
     tracker: {
       usersAtStart: 0,
@@ -145,15 +167,19 @@ export function setupNewGame(state: GameState, ctx: SimContext): void {
   placeFurniture(state, 'ikea-desk', 1, 1, 0);
   const desk = placeFurniture(state, 'ikea-desk', 1, 3, 0);
   // Pas encore de cuisine au garage : la cafetière est posée sur le second bureau.
-  const coffee = placeFurniture(state, 'drip-coffee-maker', 1, 3, 0);
+  const coffee = placeFurniture(state, startingCoffeeMaker(state), 1, 3, 0);
   const coffeeMaker = state.components.furniture[coffee];
   if (coffeeMaker) {
     coffeeMaker.hostId = desk;
     coffeeMaker.slot = 0;
   }
   placeFurniture(state, 'small-plant', 7, 5, 0);
+  applyStartPerks(state);
+  // Mode Histoire : phase, jauges et équipe du début de la mission (avant les premiers
+  // candidats et le premier backlog, qui en dépendent).
+  setupMission(state, ctx);
   state.valuation = computeValuation(state);
-  state.stats.maxValuation = state.valuation;
+  state.stats.maxValuation = Math.max(state.stats.maxValuation, state.valuation);
   beginPlanning(state, ctx);
   announceSeasons(state, ctx, calendarDay(state, 0), false);
   recordHistory(state, 0);

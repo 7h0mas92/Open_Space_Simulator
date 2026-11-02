@@ -1,5 +1,11 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import type { SprintObjective } from '@oss/shared';
+import {
+  STORY_MISSION_IDS,
+  getStoryMission,
+  getStoryReward,
+  type SprintObjective,
+} from '@oss/shared';
+import { MissionGoals } from '../story/MissionGoals';
 import { useTranslation } from 'react-i18next';
 import type {
   DevView,
@@ -569,7 +575,9 @@ function EndScreen({ view }: { view: GameView }) {
         title: t('app.title'),
         headline,
         lines: [
-          `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
+          result.mission
+            ? t(result.mission.success ? 'story.end.success' : 'story.end.failure')
+            : `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
           `${t(`modes.${view.mode}.name`)} · ${t('end.sprints')} ${result.sprint}/${view.time.totalSprints}`,
           t('end.shareAchievements', { count: view.achievements.length }),
         ],
@@ -581,6 +589,8 @@ function EndScreen({ view }: { view: GameView }) {
       notify('end.shareFailed', 'error');
     }
   }
+
+  if (result.mission) return <MissionEnd view={view} onShare={() => void share()} />;
 
   return (
     <Dialog title={t(`end.outcomes.${result.outcome}`)} className="end-screen">
@@ -615,6 +625,64 @@ function EndScreen({ view }: { view: GameView }) {
         )}
         <button type="button" onClick={quit}>
           {t('end.menu')}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
+/** Fin d'une mission du mode Histoire : réussie (récompense débloquée) ou ratée, et la suite. */
+function MissionEnd({ view, onShare }: { view: GameView; onShare: () => void }) {
+  const { t, i18n } = useTranslation();
+  const start = useGame((s) => s.start);
+  const quit = useGame((s) => s.quit);
+  const replayOf = useGame((s) => s.replayOf);
+  const outcome = view.result?.mission;
+  const mission = outcome ? getStoryMission(outcome.id) : undefined;
+  if (!view.result || !outcome || !mission) return null;
+  const reward = getStoryReward(mission.reward);
+  const index = STORY_MISSION_IDS.indexOf(mission.id);
+  const next = outcome.success ? STORY_MISSION_IDS[index + 1] : undefined;
+  const nextMission = next ? getStoryMission(next) : undefined;
+  const title = t(outcome.success ? 'story.end.success' : 'story.end.failure');
+  return (
+    <Dialog title={title} className="end-screen mission-end">
+      <p className="eyebrow">
+        {mission.icon} {localized(mission.title, i18n.language)}
+      </p>
+      <h2 data-testid="mission-outcome">{title}</h2>
+      <p className="headline">{localized(view.result.headline, i18n.language)}</p>
+      {outcome.failure && <p className="down">{t(`story.end.failures.${outcome.failure}`)}</p>}
+      {view.story && <MissionGoals goals={view.story.goals} constraints={view.story.constraints} />}
+      {outcome.success && reward && (
+        <p className="mission-reward up" role="status" data-testid="mission-reward">
+          <span aria-hidden="true">{reward.icon} </span>
+          {t('story.end.unlocked', { reward: localized(reward.name, i18n.language) })}
+        </p>
+      )}
+      <div className="stage-actions">
+        {!replayOf && nextMission && (
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void start({ mode: 'STORY', mission: nextMission.id })}
+            data-testid="mission-next"
+          >
+            ▶ {t('story.end.next', { mission: localized(nextMission.title, i18n.language) })}
+          </button>
+        )}
+        {!replayOf && (
+          <button type="button" onClick={() => void start({ mode: 'STORY', mission: mission.id })}>
+            ↻ {t('story.end.retry')}
+          </button>
+        )}
+        {!replayOf && (
+          <button type="button" onClick={onShare}>
+            📤 {t('end.share')}
+          </button>
+        )}
+        <button type="button" onClick={quit}>
+          {t('story.end.chapters')}
         </button>
       </div>
     </Dialog>

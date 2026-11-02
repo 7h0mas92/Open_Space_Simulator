@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { StoryRewardId } from '../story/rewards.js';
 import { PHASES, type Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
 import { ANNEX_KINDS, ANNEXES } from './funding.js';
@@ -42,6 +43,9 @@ export const FLOOR_MATERIAL_IDS = [
   'chevron',
   'terrazzo',
   'marble',
+  // Récompenses du mode Histoire
+  'datacenter',
+  'checker',
 ] as const;
 export const FloorMaterialIdSchema = z.enum(FLOOR_MATERIAL_IDS);
 export type FloorMaterialId = z.infer<typeof FloorMaterialIdSchema>;
@@ -92,6 +96,8 @@ export interface FloorMaterial {
   /** Teintes proposées, la première est celle choisie par défaut. */
   readonly tints: readonly [FloorTint, ...FloorTint[]];
   readonly effects: FloorMaterialEffects;
+  /** Récompense du mode Histoire qui la débloque (absent : en vente pour tous). */
+  readonly unlock?: StoryRewardId;
 }
 
 const t = (fr: string, en: string): LocalizedText => ({ fr, en });
@@ -211,6 +217,32 @@ export const FLOOR_MATERIALS: readonly FloorMaterial[] = [
     minPhase: 'UNICORN',
     tints: ['white', 'pearl', 'charcoal'],
     effects: { moral: 0.045, hypePerDay: 0.007 },
+  },
+  {
+    id: 'datacenter',
+    name: t('Dalles techniques', 'Raised floor tiles'),
+    description: t(
+      'Récompense du mode Histoire : dalles perforées de salle des serveurs, voyants compris.',
+      'Story mode reward: perforated server-room tiles, status lights included.',
+    ),
+    price: 1800,
+    minPhase: 'GARAGE',
+    tints: ['grey', 'pearl', 'charcoal', 'slate'],
+    effects: { moral: 0.03, quality: 0.002 },
+    unlock: 'floor-datacenter',
+  },
+  {
+    id: 'checker',
+    name: t('Damier rétro', 'Retro checkerboard'),
+    description: t(
+      'Récompense du mode Histoire : le damier noir et blanc d’une salle d’arcade.',
+      'Story mode reward: an arcade’s black-and-white checkerboard.',
+    ),
+    price: 2500,
+    minPhase: 'GARAGE',
+    tints: ['charcoal', 'slate', 'sage', 'taupe'],
+    effects: { moral: 0.035, hypePerDay: 0.003 },
+    unlock: 'floor-checker',
   },
 ];
 
