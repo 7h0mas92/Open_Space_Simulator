@@ -1,6 +1,7 @@
 import {
   BALANCE,
   MEETINGS,
+  RETRO,
   ROLE_PROFILES,
   ROLE_TRADE,
   SKILLS,
@@ -27,6 +28,7 @@ import { leadershipEffects, NO_LEADERSHIP, type LeadershipEffects } from '../lea
 import { recordTaskDone, recordWork } from '../performance';
 import { checkDuplicateWork, dailyFocus, isTeamMeetingTime } from '../meetings';
 import { completeSpecialTask } from '../taskFlow';
+import { activeRetro, retroActive } from '../retro';
 import {
   NO_SKILL_EFFECTS,
   hasSkill,
@@ -83,7 +85,12 @@ export function productivity(
   // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf écouteurs à réduction de bruit) ;
   // la salle de réunion rend ce malus plus léger (stand-up) ou plus lourd (brainstorming).
   // Avec un scrum master, ces réunions pèsent moitié moins.
-  if (hasProductOwner && !ctx.office.meetingShielded[devId]) {
+  const retro = activeRetro(state);
+  if (
+    hasProductOwner &&
+    !ctx.office.meetingShielded[devId] &&
+    !(retro === 'NO_MEETING_WEDNESDAY' && getClock(state).dayOfWeek === 3)
+  ) {
     // Arbre de compétences : Concentration (ce dev) et Réunions efficaces (le PO).
     rate *=
       1 -
@@ -122,6 +129,12 @@ export function productivity(
       : stack;
   if (identity.trait === 'PERFECTIONIST') rate *= 0.9;
   if (identity.trait === 'COFFEE_ADDICT' && state.gauges.coffee > 50) rate *= 1.1;
+  // Action de la dernière rétrospective (aucune : rien ne change).
+  if (retro === 'CODE_REVIEW') rate *= RETRO.codeReviewSpeed;
+  else if (retro === 'KEEP_GOING') rate *= RETRO.keepGoingSpeed;
+  else if (retro === 'ON_CALL' && task.kind === 'URGENT') rate *= RETRO.onCallUrgentSpeed;
+  else if (retro === 'SMALLER_TICKETS' && task.size <= RETRO.smallTicketMaxSize)
+    rate *= RETRO.smallTicketsSpeed;
   // Arbre de compétences : vitesse, type de tâche, matinée, fin de sprint, Crunch (1 sans compétence).
   rate *= skillSpeedMultiplier(state, devId, task, clock);
   return rate;
@@ -139,6 +152,7 @@ export function effectiveQuality(state: GameState, ctx: SimContext, devId: Entit
   // Télétravail : moins de relectures à deux devant le même écran.
   if (devId in state.components.remote && identity.role !== 'GHOST')
     quality *= 1 - BALANCE.remote.qualityPenalty;
+  if (retroActive(state, 'CODE_REVIEW')) quality *= RETRO.codeReviewQuality;
   return clamp(quality, 0, 1);
 }
 
@@ -241,7 +255,8 @@ function completeTask(
           (1.3 - quality) *
           debtMultiplier *
           leadership.featureDebtFactor *
-          skills.featureDebtFactor,
+          skills.featureDebtFactor *
+          (retroActive(state, 'MORE_TESTS') ? RETRO.moreTestsDebtFactor : 1),
       );
       addGauge(state, 'stability', task.size * stability.featurePerPoint);
       state.stats.featuresShipped += 1;
