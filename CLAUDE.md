@@ -771,11 +771,12 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   ne crée plus de base Render. En local, docker compose ne change pas.
 
 Reste à faire :
-- Comptes en ligne : le serveur tourne sur Render (`https://oss-server-e90i.onrender.com`,
-  base Supabase remplie par le seed) et `vercel.json` pointe dessus. Restent le projet Vercel,
-  `CLIENT_URL` sur Render et l'application GitHub OAuth (étapes dans le README, section
-  Déploiement). Le jeu invité est en ligne sur
-  https://7h0mas92.github.io/Open_Space_Simulator/ et se redéploie à chaque fusion.
+- Connexion GitHub : créer l'application GitHub OAuth (callback
+  `https://open-space-simulator.vercel.app/api/auth/github/callback`) et mettre ses clés sur
+  Render (étapes dans le README, section Déploiement). Le jeu avec comptes est en ligne sur
+  https://open-space-simulator.vercel.app (serveur Render `https://oss-server-e90i.onrender.com`,
+  base Supabase) ; la version invité reste sur https://7h0mas92.github.io/Open_Space_Simulator/.
+  Les deux se redéploient à chaque fusion.
 - Effets sonores et ambiance : le lecteur Howler est prêt (`audio/manifest.ts`), les fichiers
   restent à déposer (les bruits de clavier et de souris sont faits).
 
