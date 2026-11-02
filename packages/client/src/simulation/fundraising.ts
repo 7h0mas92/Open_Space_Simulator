@@ -14,6 +14,7 @@ import {
   TEAM_MAX,
   annexCount,
   endlessRaiseShare,
+  freeSeasonStart,
   difficultyOf,
   fundingTier,
   fundingTierIndex,
@@ -252,7 +253,9 @@ export function maxRaise(state: GameState): number {
     hires * AVERAGE_HIRE_COST;
   // En mode illimité, après les 18 mois, les investisseurs financent de moins en moins.
   const target =
-    projected * BALANCE.fundraising.maxRunwayMonths * endlessRaiseShare(state.mode, state.sprint);
+    projected *
+    BALANCE.fundraising.maxRunwayMonths *
+    endlessRaiseShare(state.mode, state.sprint, freeSeasonStart(state.story));
   return Math.round(Math.max(target * 0.25, target - Math.max(0, state.gauges.treasury)));
 }
 

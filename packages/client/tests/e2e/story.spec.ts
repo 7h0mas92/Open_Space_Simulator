@@ -39,6 +39,13 @@ test('l’histoire en 5 actes commence au prologue, avec sa date limite', async 
   await expect(page.getByTestId('story-page')).toContainText('Ctrl+Alt+Fonder');
   await expect(page.getByTestId('act-bell')).toContainText('La cloche');
   await page.getByTestId('campaign-start').click();
+  // Scène du prologue : le temps est arrêté, les répliques défilent, puis les objectifs.
+  const scene = page.getByTestId('story-scene');
+  await expect(scene).toContainText('Synergix');
+  await page.getByTestId('story-scene-next').click();
+  await expect(scene).toContainText('Bastien Lemaître');
+  await page.getByTestId('story-scene-skip').click();
+  await expect(scene).toBeHidden();
   const panel = page.getByTestId('campaign-panel');
   await expect(panel).toBeVisible();
   await expect(panel).toContainText('Le garage');

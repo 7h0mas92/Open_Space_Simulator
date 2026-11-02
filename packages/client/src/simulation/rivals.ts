@@ -1,4 +1,6 @@
 import {
+  FREE_SEASON_NEWCOMER_SPRINTS,
+  NEWCOMER_RIVALS,
   RIVALS,
   RIVAL_RULES,
   getRival,
@@ -108,6 +110,37 @@ function arrivals(state: GameState, sim: SimContext, campaign: CampaignState): v
           }),
     );
   }
+}
+
+/**
+ * Saison libre : tous les `FREE_SEASON_NEWCOMER_SPRINTS` sprints, une nouvelle startup attaque
+ * le marché, d'autant plus grosse que le joueur est gros (15 % de ses utilisateurs au moins).
+ */
+function newcomer(state: GameState, sim: SimContext, campaign: CampaignState): void {
+  const free = campaign.freeSeason;
+  if (!free) return;
+  const elapsed = state.sprint - free.fromSprint;
+  if (elapsed <= 0 || elapsed % FREE_SEASON_NEWCOMER_SPRINTS !== 0) return;
+  const id = NEWCOMER_RIVALS.find((rival) => !campaign.rivals.some((r) => r.id === rival));
+  if (!id) return;
+  const profile = getRival(id);
+  campaign.rivals.push(
+    newRival(profile, Math.max(profile.startUsers, Math.round(state.gauges.users * 0.15))),
+  );
+  notify(
+    state,
+    sim,
+    'RIVAL_ACTION',
+    text(
+      [
+        'Nouvelle concurrente : {name} entre sur ton marché.',
+        'New challenger: {name} enters your market.',
+      ],
+      {
+        name: profile.name,
+      },
+    ),
+  );
 }
 
 /** Croissance d'un rival sur un sprint (logistique, plus un peu de hasard et son caractère). */
@@ -244,6 +277,7 @@ export function rivalsSprint(state: GameState, sim: SimContext): void {
   if (!campaign) return;
   const rng = rivalRng(state);
   arrivals(state, sim, campaign);
+  newcomer(state, sim, campaign);
   for (const rival of campaign.rivals) {
     if (!rival.alive) continue;
     const profile = getRival(rival.id);
@@ -259,4 +293,10 @@ export function rivalsSprint(state: GameState, sim: SimContext): void {
 export function rivalUsers(state: GameState, id: RivalId): number {
   const rival = state.story?.campaign?.rivals.find((r) => r.id === id);
   return rival?.alive ? rival.users : 0;
+}
+
+/** Effet de carte `rivals` : utilisateurs de chaque rival en jeu, en pourcentage. */
+export function changeRivalUsers(state: GameState, percent: number): void {
+  for (const rival of aliveRivals(state))
+    rival.users = Math.max(0, rival.users * (1 + percent / 100));
 }

@@ -6,6 +6,7 @@ import {
   TIME,
   endlessCostMultiplier,
   endlessPressure,
+  freeSeasonStart,
   type CommandResult,
   type GameState,
   type LocalizedText,
@@ -71,9 +72,11 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
  * tirage.
  */
 function announceCompetition(state: GameState, ctx: SimContext): void {
-  const pressure = endlessPressure(state.mode, state.sprint);
+  const pressure = endlessPressure(state.mode, state.sprint, freeSeasonStart(state.story));
   if (pressure < 1 || (pressure - 1) % ENDLESS.milestoneSprints !== 0) return;
-  const percent = Math.round((endlessCostMultiplier(state.mode, state.sprint) - 1) * 100);
+  const percent = Math.round(
+    (endlessCostMultiplier(state.mode, state.sprint, freeSeasonStart(state.story)) - 1) * 100,
+  );
   notify(
     state,
     ctx,

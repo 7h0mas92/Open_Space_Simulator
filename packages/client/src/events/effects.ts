@@ -17,6 +17,7 @@ import {
   devsWithRole,
   type SimContext,
 } from '../simulation/helpers';
+import { changeRivalUsers } from '../simulation/rivals';
 import { changeVentureValuation, latestActiveVenture } from '../simulation/ventures';
 
 /** Sens « négatif » de chaque effet chiffré : c'est lui qu'on aggrave en cas de report. */
@@ -106,4 +107,5 @@ export function applyEffects(
   const venture = latestActiveVenture(state);
   if (effects.ventureValue !== undefined && venture)
     changeVentureValuation(venture, 1 + scaled('ventureValue') / 100);
+  if (effects.rivals !== undefined) changeRivalUsers(state, effects.rivals);
 }

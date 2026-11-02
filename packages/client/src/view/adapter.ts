@@ -1185,6 +1185,10 @@ function campaignView(state: GameState): CampaignView | null {
     done: [...progress.campaign.done],
     sprintsDone: completedSprints(state),
     market: marketView(state, progress.campaign),
+    freeSeason: progress.campaign.freeSeason !== undefined,
+    freeSeasonSprints: progress.campaign.freeSeason
+      ? Math.max(0, state.sprint - progress.campaign.freeSeason.fromSprint)
+      : 0,
   };
 }
 
@@ -1454,6 +1458,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'CANCEL_TEAM_BUILDING' };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
+    case 'endStory':
+      return { type: 'END_STORY' };
     case 'foundVenture':
       return { type: 'FOUND_VENTURE', ideaId: command.ideaId };
     case 'sellVenture':

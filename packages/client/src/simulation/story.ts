@@ -1,10 +1,12 @@
 import {
+  ENDLESS,
   STORY_ACTS,
   STORY_STATS,
   getStoryAct,
   getStoryMission,
   type CampaignResult,
   type CampaignState,
+  type CommandResult,
   type GameState,
   type MissionGoal,
   type StoryAct,
@@ -394,6 +396,18 @@ function endCampaign(
 function checkCampaign(state: GameState, ctx: SimContext, campaign: CampaignState): void {
   if (state.result) {
     if (state.result.campaign) return;
+    const free = campaign.freeSeason;
+    if (free) {
+      // Saison libre : l'histoire est déjà réussie (entrée en Bourse), quelle que soit la suite.
+      state.result.campaign = {
+        act: getStoryAct(campaign.act).id,
+        success: true,
+        failure: null,
+        ending: 'IPO',
+        freeSeasonSprints: Math.max(0, state.sprint - free.fromSprint),
+      };
+      return;
+    }
     const act = getStoryAct(campaign.act);
     const { outcome } = state.result;
     const ending = outcome === 'IPO' || outcome === 'ACQUISITION' ? outcome : null;
@@ -423,4 +437,40 @@ export function campaignDeadline(state: GameState, ctx: SimContext): boolean {
   if (!act || act.goals.length === 0 || state.sprint < act.deadline) return false;
   endCampaign(state, ctx, 'TIME');
   return true;
+}
+
+/**
+ * Entrée en Bourse pendant l'histoire, à partir de « Le géant » : la fin écrite est atteinte,
+ * les objectifs secondaires sont vérifiés une dernière fois, puis la partie continue en Saison
+ * libre (plus de date limite, concurrence qui monte, nouvelles startups). Renvoie faux hors de
+ * l'histoire ou trop tôt : l'entrée en Bourse termine alors la partie comme d'habitude.
+ */
+export function startFreeSeason(state: GameState, ctx: SimContext, valuation: number): boolean {
+  const campaign = state.story?.campaign;
+  if (!campaign || campaign.freeSeason || campaign.act < GIANT_ACT) return false;
+  checkSideGoals(state, ctx, campaign);
+  for (const id of getStoryAct(campaign.act).side)
+    if (!campaign.done.includes(id) && !campaign.missed.includes(id)) campaign.missed.push(id);
+  state.valuation = Math.round(valuation);
+  campaign.freeSeason = { fromSprint: state.sprint, valuation: state.valuation };
+  state.totalSprints = ENDLESS.sprintCap;
+  notify(
+    state,
+    ctx,
+    'STORY_END',
+    text([
+      'Entrée en Bourse ! L’histoire est finie, la Saison libre commence.',
+      'IPO! The story is over, the Free season begins.',
+    ]),
+  );
+  return true;
+}
+
+/** Saison libre : le joueur termine la partie sur la fin « entrée en Bourse ». */
+export function endStory(state: GameState, ctx: SimContext): CommandResult {
+  const free = state.story?.campaign?.freeSeason;
+  if (!free) return { ok: false, error: 'NOT_ELIGIBLE' };
+  if (state.stage === 'ENDED') return { ok: false, error: 'WRONG_STAGE' };
+  endGame(state, ctx, 'IPO', state.valuation);
+  return { ok: true };
 }

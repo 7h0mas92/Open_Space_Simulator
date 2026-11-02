@@ -190,8 +190,25 @@ export const CampaignStateSchema = z.object({
   rivals: z.array(RivalStateSchema).default([]),
   /** Utilisateurs du joueur à chaque démo, pour comparer les courbes. */
   usersHistory: z.array(z.number()).default([]),
+  /**
+   * Saison libre : l'histoire s'est finie par l'entrée en Bourse et la partie continue sans
+   * limite, la concurrence montant à partir de `fromSprint`. Absent pendant l'histoire.
+   */
+  freeSeason: z
+    .object({ fromSprint: z.number().int().min(1), valuation: z.number().nonnegative() })
+    .optional(),
 });
 export type CampaignState = z.infer<typeof CampaignStateSchema>;
+
+/** Une nouvelle startup rivale arrive tous les combien de sprints en Saison libre. */
+export const FREE_SEASON_NEWCOMER_SPRINTS = 10;
+
+/** Sprint où commence la Saison libre (null pendant l'histoire et hors de l'histoire). */
+export function freeSeasonStart(
+  story: { campaign?: CampaignState | undefined } | null | undefined,
+): number | null {
+  return story?.campaign?.freeSeason?.fromSprint ?? null;
+}
 
 /** Bilan de l'histoire à la fin de la partie (`result.campaign`). */
 export const CampaignResultSchema = z.object({
@@ -201,5 +218,7 @@ export const CampaignResultSchema = z.object({
   failure: z.enum(['TIME', 'BANKRUPTCY', 'SOLD']).nullable(),
   /** Fin écrite atteinte (succès seulement). */
   ending: StoryEndingSchema.nullable(),
+  /** Sprints tenus en Saison libre après l'entrée en Bourse. */
+  freeSeasonSprints: z.number().int().nonnegative().optional(),
 });
 export type CampaignResult = z.infer<typeof CampaignResultSchema>;

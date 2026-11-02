@@ -1,4 +1,10 @@
-import { BALANCE, difficultyOf, endlessCostMultiplier, type GameState } from '@oss/shared';
+import {
+  BALANCE,
+  difficultyOf,
+  endlessCostMultiplier,
+  freeSeasonStart,
+  type GameState,
+} from '@oss/shared';
 import { devIds, teamSize } from './helpers';
 import { hostingSaving } from './serverRoom';
 import { subscriptionsMonthly } from './subscriptions';
@@ -49,7 +55,8 @@ export function hostingCost(state: GameState): number {
  */
 export function fixedCosts(state: GameState): number {
   return (
-    BALANCE.economy.fixedCostsMonthly[state.phase] * endlessCostMultiplier(state.mode, state.sprint)
+    BALANCE.economy.fixedCostsMonthly[state.phase] *
+    endlessCostMultiplier(state.mode, state.sprint, freeSeasonStart(state.story))
   );
 }
 

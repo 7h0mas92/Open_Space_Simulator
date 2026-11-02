@@ -2225,7 +2225,17 @@
         },
         "goals": "Objectifs remplis en tout : {{count}} sur {{total}}",
         "retry": "Reprendre « {{act}} »",
-        "restart": "Recommencer l’histoire"
+        "restart": "Recommencer l’histoire",
+        "freeSeason_one": "Saison libre : {{count}} sprint tenu après l’entrée en Bourse.",
+        "freeSeason_other": "Saison libre : {{count}} sprints tenus après l’entrée en Bourse.",
+        "rivals": "Bilan face aux concurrents",
+        "replayScene": "Revoir la scène de fin"
+      },
+      "freeSeason": {
+        "title": "Saison libre",
+        "text_one": "Histoire finie : {{count}} sprint tenu depuis l’entrée en Bourse. Tous les 10 sprints, une nouvelle startup attaque ton marché.",
+        "text_other": "Histoire finie : {{count}} sprints tenus depuis l’entrée en Bourse. Tous les 10 sprints, une nouvelle startup attaque ton marché.",
+        "end": "Terminer la partie"
       }
     },
     "market": {
@@ -2244,6 +2254,23 @@
         "pivot": "a encore pivoté",
         "clone": "a sorti un clone gratuit de ton produit",
         "adBlitz": "a acheté toutes les pubs du métro"
+      }
+    },
+    "scene": {
+      "next": "Suivant",
+      "skip": "Passer",
+      "close": "À toi de jouer",
+      "freeSeason": "Continuer en Saison libre",
+      "endHere": "Terminer la partie ici",
+      "titles": {
+        "prologue": "Prologue · Le garage",
+        "race": "Acte I · La course",
+        "price-war": "Acte II · La guerre des prix",
+        "giant": "Acte III · Le géant",
+        "bell": "Acte IV · La cloche",
+        "ending-ipo": "Fin · La cloche de la Bourse",
+        "ending-acquisition": "Fin · Le chèque de Gigacorp",
+        "free-season": "Épilogue · Saison libre"
       }
     }
   },

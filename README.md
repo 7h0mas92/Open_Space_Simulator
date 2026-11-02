@@ -650,6 +650,10 @@ sequenceDiagram
   partagent le marché avec le joueur, agissent contre lui (copie, débauche, procès, prix cassés,
   clone) et ont leur enseigne sur un toit de la ville ; panneau « 📈 Marché ». Leur hasard vient
   d'une graine à part (`seed#rival#sprint`).
+  Scènes dialoguées à chaque acte, 10 cartes écrites pour l'histoire (`shared/story/cards.ts`,
+  imposées à un sprint fixé, sans tirage), SMS de Mamie Josette et articles d'Inès Kader dans le
+  Slack, deux fins écrites (rachat par Gigacorp, ou entrée en Bourse puis Saison libre sans limite,
+  avec une nouvelle startup rivale tous les 10 sprints).
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le

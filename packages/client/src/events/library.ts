@@ -1,4 +1,4 @@
-import { EventCardListSchema, type EventCard } from '@oss/shared';
+import { EventCardListSchema, STORY_CARDS, type EventCard } from '@oss/shared';
 
 /**
  * Bibliothèque de cartes chargée au démarrage (depuis l'API, le cache hors ligne ou
@@ -11,7 +11,9 @@ export class CardLibrary {
 
   constructor(cards: readonly EventCard[]) {
     this.cards = cards;
-    this.byId = new Map(cards.map((card) => [card.id, card]));
+    // Les cartes de l'histoire en actes ne sont pas en base : on les retrouve toujours par leur
+    // identifiant (jamais tirées, la longue partie les impose, voir `storyCardSystem`).
+    this.byId = new Map([...STORY_CARDS, ...cards].map((card) => [card.id, card]));
   }
 
   /** Valide des cartes venues de l'extérieur (API, cache) avant de les utiliser. */

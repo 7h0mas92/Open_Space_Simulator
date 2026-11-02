@@ -994,6 +994,10 @@ export interface CampaignView {
   /** Sprints terminés depuis le début de l'acte. */
   readonly sprintsDone: number;
   readonly market: MarketView;
+  /** Saison libre (après l'entrée en Bourse) : la partie continue sans date limite. */
+  readonly freeSeason: boolean;
+  /** Sprints joués en Saison libre (0 avant). */
+  readonly freeSeasonSprints: number;
 }
 
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
@@ -1193,6 +1197,7 @@ export type GameCommand =
   | { readonly type: 'bookTeamBuilding'; readonly outing: OutingId }
   | { readonly type: 'cancelTeamBuilding' }
   | { readonly type: 'launchIpo' }
+  | { readonly type: 'endStory' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }
   | { readonly type: 'fitMeetingRoom'; readonly format: MeetingFormatId }

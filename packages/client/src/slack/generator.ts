@@ -50,6 +50,8 @@ const BOT_NAMES = {
   hr: 'RH Bot',
   investors: 'Board',
   coffee: 'Café 3000',
+  josette: 'Mamie Josette',
+  ines: 'Inès Kader · TechMatin',
 } as const;
 
 const pick = <T>(list: readonly T[], random: Random): T | undefined =>

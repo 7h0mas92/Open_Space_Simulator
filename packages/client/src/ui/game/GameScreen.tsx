@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BuildMode } from '../build/BuildMode';
 import { CareerPanel } from '../career/CareerPanel';
@@ -16,6 +16,7 @@ import { useSettings } from '../store/settings';
 import { Funding } from '../funding/Funding';
 import { Group } from '../group/Group';
 import { DailyMoment } from '../meetings/DailyMoment';
+import { StoryScene, useStoryScene, useStoryScenes } from '../story/StoryScene';
 import { MeetingRoom } from '../meetings/MeetingRoom';
 import { TicketApp } from '../meetings/TicketApp';
 import { Pets } from '../pets/Pets';
@@ -158,21 +159,18 @@ function useShortcuts() {
 
 /** Mode Histoire : le briefing de la mission s'ouvre au lancement (pas à la reprise). */
 function useMissionBriefing() {
-  const opening = useGame((s) => s.view?.mode === 'STORY' && s.view.tick === 0 && !s.replayOf);
+  // La longue partie ouvre ses objectifs après la scène de l'acte (`useStoryScenes`).
+  const opening = useGame(
+    (s) => s.view?.mode === 'STORY' && !s.view.campaign && s.view.tick === 0 && !s.replayOf,
+  );
   const seed = useGame((s) => s.view?.seed);
   useEffect(() => {
     if (opening) useGame.getState().openPanel('mission');
     // Une seule fois par mission lancée.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seed]);
-  // Longue partie : le panneau s'ouvre aussi au début de chaque acte.
-  const act = useGame((s) => (s.replayOf ? null : (s.view?.campaign?.actIndex ?? null)));
-  const lastAct = useRef(act);
-  useEffect(() => {
-    if (act !== null && lastAct.current !== null && act > lastAct.current)
-      useGame.getState().openPanel('mission');
-    lastAct.current = act;
-  }, [act]);
+  // Longue partie : scènes de l'histoire, puis objectifs de l'acte.
+  useStoryScenes();
 }
 
 export function GameScreen() {
@@ -185,6 +183,7 @@ export function GameScreen() {
   const showFps = useSettings((s) => s.showFps);
   const replayOf = useGame((s) => s.replayOf);
   const building = useGame((s) => s.build !== null);
+  const inScene = useStoryScene((s) => s.scene !== null);
   useShortcuts();
   useGameFeeds();
   useMissionBriefing();
@@ -207,6 +206,7 @@ export function GameScreen() {
       <Scene />
       <Alerts view={view} />
       {!building && <DailyMoment view={view} />}
+      <StoryScene />
       <h1 className="visually-hidden">{t('app.title')}</h1>
       {building ? (
         // Construction : le HUD habituel s'efface pour laisser la scène au joueur.
@@ -252,7 +252,8 @@ export function GameScreen() {
       )}
       {panel !== 'slack' && !building && <SlackDock />}
       {/* Le tutoriel s'adapte au mode de jeu (voir tutorial/lessons.ts). */}
-      {!replayOf && <Guide view={view} />}
+      {/* Le guide attend la fin d'une scène de l'histoire. */}
+      {!replayOf && !inScene && <Guide view={view} />}
       <StageScreens view={view} />
       {panel && (
         <Sheet

@@ -254,7 +254,7 @@ export function Clock({ view }: { view: GameView }) {
     <div className="clock" data-tutorial="clock" aria-live="off">
       <p className="clock-line">
         <strong>
-          {isEndless(view.mode)
+          {isEndless(view.mode) || view.campaign?.freeSeason
             ? t('time.sprintEndless', { sprint: time.sprint })
             : t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}
         </strong>

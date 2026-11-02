@@ -837,8 +837,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Histoire ou l'écran de fin. Écran Histoire en 2 onglets : « Histoire » (synopsis, frise et cartes
   des actes) et « Missions » (les 10 missions courtes, gardées jouables : choix de Thomas). Champ
   `story.campaign` optionnel (`missionId` devient optionnel), aucun tirage : les autres modes ne
-  changent pas. Calibrage : `pnpm balance:campaign`. À venir : scènes, fins écrites et Saison
-  libre (PR 3), équilibrage (PR 4).
+  changent pas. Calibrage : `pnpm balance:campaign`. À venir : équilibrage (PR 4).
 - Rivaux de l'histoire en actes (T2, PR 2 sur 4 ; `shared/sim/rivals.ts`,
   `client/src/simulation/rivals.ts`, panneau « 📈 Marché » `ui/story/MarketPanel.tsx`) : 3 startups
   inventées simulées à chaque démo de la longue partie, sur la graine à part `seed#rival#sprint`.
@@ -853,6 +852,22 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   plus larges avec la part de marché, éclairées la nuit, éteintes à la faillite. État
   `campaign.rivals` et `campaign.usersHistory` (vides par défaut). Hors de l'histoire en actes,
   rien ne change.
+- Histoire écrite, fins et Saison libre (T2, PR 3 sur 4 ; `shared/story/scenes.ts`,
+  `shared/story/cards.ts`, `ui/story/StoryScene.tsx`, `events/storyCards.ts`) : scènes dialoguées
+  (Bastien Lemaître, Mamie Josette, Inès Kader de TechMatin, Hugo l'ami dev, Gigacorp) au lancement,
+  au début de chaque acte et à l'entrée en Bourse ; temps arrêté pendant la scène, « Suivant »,
+  « Passer », guide masqué, puis objectifs de l'acte. 10 cartes d'histoire hors base et hors tirage
+  (poids 0), deux par acte, imposées le mardi 10h d'un sprint fixé de l'acte
+  (`STORY_CARD_SCHEDULE`, sans tirage) ; `CardLibrary` les retrouve toujours par identifiant. Effet
+  de carte `rivals` (utilisateurs des rivaux en %, optionnel). Slack : SMS de Mamie Josette et
+  articles d'Inès Kader sur `STORY_ACT`, `STORY_GOAL`, `STORY_END` et `RIVAL_ACTION`. Deux fins
+  écrites : rachat par Gigacorp (fin de partie) ou entrée en Bourse à partir du « Géant », qui
+  ouvre la Saison libre (`campaign.freeSeason`, notification `STORY_END`) : plus de date limite,
+  pression du mode illimité à partir du sprint de l'entrée en Bourse (`freeSeasonStart`, 3e
+  argument des fonctions de `endless.ts`), une nouvelle startup tous les 10 sprints (Quantik,
+  Hyperlane, Blitzly), commande `END_STORY` pour finir sur l'entrée en Bourse
+  (`result.campaign.freeSeasonSprints`). Écran de fin : scène de la fin, bilan face aux rivaux.
+  Aucun tirage sur le RNG de la partie ; hors de l'histoire en actes, rien ne change.
 - Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
   menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
   8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,

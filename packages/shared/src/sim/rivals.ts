@@ -10,7 +10,14 @@ import type { LocalizedText } from '../i18n.js';
  * modes ne les voient pas. Leurs utilisateurs freinent la croissance du joueur (marché partagé).
  */
 
-export const RIVAL_IDS = ['synergix', 'pivotly', 'gigacorp'] as const;
+export const RIVAL_IDS = [
+  'synergix',
+  'pivotly',
+  'gigacorp',
+  'quantik',
+  'hyperlane',
+  'blitzly',
+] as const;
 export const RivalIdSchema = z.enum(RIVAL_IDS);
 export type RivalId = z.infer<typeof RivalIdSchema>;
 
@@ -33,7 +40,7 @@ export interface RivalProfile {
   readonly icon: string;
   /** Son caractère, pour le panneau « Marché ». */
   readonly tagline: LocalizedText;
-  /** Acte où il entre en jeu (0 = dès le prologue). */
+  /** Acte où il entre en jeu (0 = dès le prologue ; `NEWCOMER` : en Saison libre). */
   readonly fromAct: number;
   /** Utilisateurs à son arrivée. */
   readonly startUsers: number;
@@ -48,6 +55,9 @@ export interface RivalProfile {
 }
 
 const t = (fr: string, en: string): LocalizedText => ({ fr, en });
+
+/** `fromAct` des startups de la Saison libre : elles n'arrivent jamais pendant l'histoire. */
+export const NEWCOMER = 99;
 
 export const RIVALS: readonly RivalProfile[] = [
   {
@@ -98,7 +108,58 @@ export const RIVALS: readonly RivalProfile[] = [
     actions: ['clone', 'adBlitz', 'poach'],
     color: '#4aa8ff',
   },
+  {
+    id: 'quantik',
+    name: 'Quantik',
+    icon: '⚛️',
+    tagline: t(
+      'Promet « l’IA quantique » à chaque réunion. Personne ne sait ce que c’est.',
+      'Promises “quantum AI” in every meeting. Nobody knows what it is.',
+    ),
+    fromAct: NEWCOMER,
+    startUsers: 400_000,
+    growth: 0.18,
+    cap: 6_000_000,
+    aggression: 0.4,
+    actions: ['copy', 'adBlitz', 'poach'],
+    color: '#2ed3b7',
+  },
+  {
+    id: 'hyperlane',
+    name: 'Hyperlane',
+    icon: '🚀',
+    tagline: t(
+      'Lève 1 milliard avant d’avoir un produit. Débauche à prix d’or.',
+      'Raises a billion before having a product. Poaches at any price.',
+    ),
+    fromAct: NEWCOMER,
+    startUsers: 600_000,
+    growth: 0.2,
+    cap: 9_000_000,
+    aggression: 0.45,
+    actions: ['poach', 'priceCut', 'adBlitz'],
+    color: '#ff9f1c',
+  },
+  {
+    id: 'blitzly',
+    name: 'Blitzly',
+    icon: '⚡',
+    tagline: t(
+      'Clone tout en 48 h et l’offre gratuitement. Le cauchemar des licornes.',
+      'Clones anything in 48 hours and gives it away. Every unicorn’s nightmare.',
+    ),
+    fromAct: NEWCOMER,
+    startUsers: 900_000,
+    growth: 0.22,
+    cap: 12_000_000,
+    aggression: 0.5,
+    actions: ['clone', 'priceCut', 'lawsuit'],
+    color: '#f15bb5',
+  },
 ];
+
+/** Startups qui arrivent en Saison libre, dans cet ordre. */
+export const NEWCOMER_RIVALS: readonly RivalId[] = ['quantik', 'hyperlane', 'blitzly'];
 
 export const RIVAL_RULES = {
   /** Sprints gardés dans l'historique d'utilisateurs (courbes du panneau « Marché »). */

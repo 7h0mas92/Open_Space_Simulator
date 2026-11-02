@@ -32,6 +32,8 @@ import { GAUGE_ICONS } from './Hud';
 import { moodEmoji, StatBars } from '../team/StatBars';
 import { CareerMilestones } from '../career/CareerPanel';
 import { starsText } from '../career/records';
+import { MarketShares } from '../story/MarketPanel';
+import { SceneTranscript } from '../story/StoryScene';
 
 /**
  * Écrans qui interrompent la partie : carte d'événement, levée de fonds, démo de fin de
@@ -793,6 +795,23 @@ function CampaignEnd({
       <p className="headline">{localized(view.result?.headline ?? act.title, i18n.language)}</p>
       {result.success && result.ending && (
         <p>{t(`story.campaign.endings.${result.ending}.text`)}</p>
+      )}
+      {result.freeSeasonSprints !== undefined && (
+        <p className="mission-reward" data-testid="campaign-free-season-end">
+          {t('story.campaign.end.freeSeason', { count: result.freeSeasonSprints })}
+        </p>
+      )}
+      {result.success && result.ending && (
+        <details className="campaign-end-scene">
+          <summary>{t('story.campaign.end.replayScene')}</summary>
+          <SceneTranscript scene={result.ending === 'IPO' ? 'ending-ipo' : 'ending-acquisition'} />
+        </details>
+      )}
+      {view.campaign && view.campaign.market.rivals.length > 0 && (
+        <section className="campaign-end-market" aria-label={t('story.campaign.end.rivals')}>
+          <h3>{t('story.campaign.end.rivals')}</h3>
+          <MarketShares market={view.campaign.market} />
+        </section>
       )}
       {result.failure && (
         <p className="down">{t(`story.campaign.end.failures.${result.failure}`)}</p>

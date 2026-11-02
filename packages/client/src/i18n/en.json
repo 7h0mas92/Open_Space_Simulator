@@ -2225,7 +2225,17 @@
         },
         "goals": "Goals completed overall: {{count}} of {{total}}",
         "retry": "Replay “{{act}}”",
-        "restart": "Start the story over"
+        "restart": "Start the story over",
+        "freeSeason_one": "Free season: {{count}} sprint survived after the IPO.",
+        "freeSeason_other": "Free season: {{count}} sprints survived after the IPO.",
+        "rivals": "How you finished against your rivals",
+        "replayScene": "Watch the ending scene again"
+      },
+      "freeSeason": {
+        "title": "Free season",
+        "text_one": "Story complete: {{count}} sprint survived since the IPO. Every 10 sprints, a new startup goes after your market.",
+        "text_other": "Story complete: {{count}} sprints survived since the IPO. Every 10 sprints, a new startup goes after your market.",
+        "end": "End the game"
       }
     },
     "market": {
@@ -2244,6 +2254,23 @@
         "pivot": "pivoted again",
         "clone": "released a free clone of your product",
         "adBlitz": "bought every ad in the subway"
+      }
+    },
+    "scene": {
+      "next": "Next",
+      "skip": "Skip",
+      "close": "Your move",
+      "freeSeason": "Keep playing in the Free season",
+      "endHere": "End the game here",
+      "titles": {
+        "prologue": "Prologue · The garage",
+        "race": "Act I · The race",
+        "price-war": "Act II · The price war",
+        "giant": "Act III · The giant",
+        "bell": "Act IV · The bell",
+        "ending-ipo": "Ending · The opening bell",
+        "ending-acquisition": "Ending · Gigacorp's check",
+        "free-season": "Epilogue · Free season"
       }
     }
   },

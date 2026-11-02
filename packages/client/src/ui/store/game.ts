@@ -175,6 +175,7 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   CAREER_MILESTONE: 'success',
   CAREER_MISSED: 'error',
   STORY_ACT: 'success',
+  STORY_END: 'success',
   STORY_GOAL: 'info',
   RIVAL_ACTION: 'info',
   SPRINT_LOST: 'error',

@@ -119,3 +119,26 @@ export function MarketPanel({ market, users }: { market: MarketView; users: numb
     </div>
   );
 }
+
+/** Parts de marché en une ligne par startup (écran de fin de l'histoire). */
+export function MarketShares({ market }: { market: MarketView }) {
+  const { t } = useTranslation();
+  const share = (value: number) => `${Math.round(value * 100)} %`;
+  return (
+    <ul className="market-shares" data-testid="market-shares">
+      <li style={{ ['--rival-color' as string]: YOU_COLOR }}>
+        🚀 {t('story.market.you')} · {share(market.share)}
+      </li>
+      {market.rivals.map((rival) => (
+        <li key={rival.id} style={{ ['--rival-color' as string]: rival.color }}>
+          {rival.icon} {rival.name} ·{' '}
+          {rival.alive
+            ? share(rival.share)
+            : rival.boughtBy
+              ? t('story.market.boughtBy', { name: getRival(rival.boughtBy).name })
+              : t('story.market.bankrupt')}
+        </li>
+      ))}
+    </ul>
+  );
+}
