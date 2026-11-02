@@ -20,6 +20,8 @@ export const COLOR_HEX: Record<Exclude<FurnitureColor, 'natural'>, number> = {
   blue: 0x3f73d0,
   purple: 0x8460c9,
   pink: 0xec8cb0,
+  gold: 0xd4a72c,
+  neon: 0x39ff8a,
 };
 
 /** Teinte CSS d'une pastille du nuancier. */

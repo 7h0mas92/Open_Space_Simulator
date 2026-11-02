@@ -1,4 +1,4 @@
-import { GAME_MODES, type LeaderboardEntry } from '@oss/shared';
+import { MENU_MODES, type LeaderboardEntry } from '@oss/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { metaApi } from '../../api/meta';
@@ -6,7 +6,7 @@ import { formatGauge } from '../game/format';
 import { useGame } from '../store/game';
 
 /** Onglets : global, Daily du jour, puis un classement par mode (hors Daily). */
-const BOARDS = ['GLOBAL', 'DAILY', ...GAME_MODES.filter((mode) => mode !== 'DAILY')] as const;
+const BOARDS = ['GLOBAL', 'DAILY', ...MENU_MODES.filter((mode) => mode !== 'DAILY')] as const;
 type Board = (typeof BOARDS)[number];
 
 function boardQuery(board: Board) {
@@ -77,6 +77,7 @@ function BoardTable({ board }: { board: Board }) {
           commands: replay.commands,
           cards: replay.cards,
           cardsVersion: replay.cardsVersion,
+          unlocks: replay.unlocks,
           pseudo: replay.score.pseudo,
         },
       });
