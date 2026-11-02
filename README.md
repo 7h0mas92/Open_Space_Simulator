@@ -12,7 +12,9 @@ Le rôle et l'emplacement de chaque fichier du dépôt sont dans [`ARBORESCENCE.
 événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),
 Slack simulé (templates ou IA), back-office, PWA hors ligne et configuration de déploiement.
 
-**Jouer en ligne (mode invité) :** <https://7h0mas92.github.io/Open_Space_Simulator/>
+**Jouer en ligne (comptes, classements, Daily) :** <https://open-space-simulator.vercel.app>
+(le serveur gratuit met environ 50 s à se réveiller après 15 min sans visite) · **Mode invité
+seul :** <https://7h0mas92.github.io/Open_Space_Simulator/>
 
 | Menu                               | Partie (ordinateur)                                         | Partie (mobile)                                        |
 | ---------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
@@ -165,7 +167,7 @@ flowchart LR
     API[api/ client HTTP typé]
   end
   API -- "/api (cookies httpOnly)" --> S[Fastify]
-  S --> DB[(PostgreSQL)]
+  S --> DB[(PostgreSQL<br/>Supabase en prod)]
   SH[[shared/ types + schémas Zod]] -.-> UI
   SH -.-> API
   SH -.-> S
@@ -386,6 +388,15 @@ flowchart LR
   formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
   formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
   part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
+- **Daily et Kanbanana** : le Daily de 9h fait le point sur les tickets. Chacun dit où en est
+  son ticket (hier, aujourd'hui) ; un Daily utile donne +5 % de productivité aux participants
+  jusqu'au soir. Sans Daily, ou pour ceux en télétravail, deux devs finissent parfois par coder la
+  même chose à 10h et une partie d'un ticket est à refaire (dès la Seed, graine à part). Dans la
+  salle, un écran se déroule et un projecteur de plafond affiche **Kanbanana**, l'appli de tickets
+  du jeu (nom et logo inventés) ; le bandeau du Daily ou le bouton « 📽️ Voir Kanbanana » du panneau
+  Réunion l'ouvrent en grand. Le temps s'arrête 6 s au début du Daily pour voir l'équipe s'asseoir
+  (option désactivable, jamais en Hardcore ni en replay) (`view/ticketBoard.ts`,
+  `render/dailyBoard.ts`, `ui/meetings/TicketApp.tsx`, `ui/meetings/DailyMoment.tsx`).
 - **Variété des tâches** : le Kanban pioche dans plus de 250 tâches en français et en anglais.
   Le catalogue grandit avec la startup (page de tarifs en Seed, découper le monolithe en Série A,
   certification SOC 2 en Licorne), et pendant chaque période du calendrier une tâche de code sur
@@ -552,14 +563,30 @@ sequenceDiagram
   appareil » (parties terminées ici, même en invité et sans serveur, `save/localScores.ts`).
   Chaque partie a un nom d'entreprise tiré de sa graine par hachage (`companyName`, sans
   tirage) que le serveur retrouve aussi. Onglets global, Daily du jour et par mode ; le global
-  exclut le Facile et l'Illimité ; l'Illimité se classe aux sprints tenus puis à la
+  exclut le Facile, l'Illimité et la Carrière ; l'Illimité se classe aux sprints tenus puis à la
   valorisation (`compareGames`, même règle côté serveur).
+- **Carrière** : refaire le parcours de 8 startups devenues géantes, jamais nommées (Pépin
+  Computer, Matelas & Céréales, Rembobine, MicroMou, Trombinoscope, Orénoque, Centillion, Ampère
+  Motors ; `packages/shared/src/sim/career.ts`). Chaque légende impose son départ (argent, hype,
+  dette, premier profil, parfois un cofondateur) et 4 jalons : une phase, des utilisateurs, une
+  levée ou une équipe avant un sprint donné, puis une façon de finir. Les jalons sont vérifiés à
+  chaque démo, sans un seul tirage (`client/src/simulation/career.ts`) ; à la fin, ★ pour au
+  moins un jalon, ★★ la moitié, ★★★ tous, écrit dans la phrase partageable. La légende est dans
+  la graine (`career:<légende>:<graine>`) : replays, sauvegardes et vérification du score par le
+  serveur marchent sans rien de plus. Bouton 🧭 en haut de l'écran pour suivre les jalons,
+  meilleur résultat de chaque légende gardé sur l'appareil, classement « Carrière » et 2 succès.
+
+| Choix de la légende                                         | Jalons en partie (mobile)                               |
+| ----------------------------------------------------------- | ------------------------------------------------------- |
+| ![Choix de la légende](docs/screenshots/career-desktop.png) | ![Jalons en partie](docs/screenshots/career-mobile.png) |
+
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion. « Continuer » reprend
   la sauvegarde la plus récente d'une partie en cours : à la fin d'une partie, sa sauvegarde
   automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
-  dans « Charger une partie »).
-- **Succès** : 68 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
+  dans « Charger une partie »). Sous « Continuer », le bouton « Nouvelle partie » lance une
+  partie dans le mode suggéré, et les cartes des modes restent disponibles.
+- **Succès** : 70 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
   condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
@@ -646,7 +673,8 @@ financements hors tour de table, organisatrice qui aménage la salle de réunion
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 700 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
-Only, 3 sprints). Une section suit les tâches dynamiques : urgences et tâches de la semaine
+Only, 3 sprints), puis 140 parties par légende du mode Carrière (étoiles et réussite de chaque
+jalon). Une section suit les tâches dynamiques : urgences et tâches de la semaine
 finies à temps, réussite des objectifs par type et difficulté. Le dernier rapport est dans
 [`docs/balance.md`](docs/balance.md).
 
@@ -713,18 +741,53 @@ squash et le merge commit autorisés.
 
 ## Déploiement
 
-Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prêts :
-[`render.yaml`](render.yaml) et [`packages/client/vercel.json`](packages/client/vercel.json)).
+Le client va sur **Vercel**, le serveur sur **Render** et la base PostgreSQL sur **Supabase**
+(fichiers prêts : [`render.yaml`](render.yaml) et
+[`packages/client/vercel.json`](packages/client/vercel.json)). En local, rien ne change : la
+base reste celle de `docker compose`.
 
-1. **Render** → _New_ → _Blueprint_ → ce dépôt. Render crée la base `oss-db` et le service
-   `oss-server` (build, migrations, seed puis démarrage). Il demande :
-   - `CLIENT_URL` : l'URL Vercel du client (par exemple `https://open-space-simulator.vercel.app`) ;
+### Base de données sur Supabase
+
+Le projet Supabase `open-space-simulator` (offre gratuite, région `eu-central-1`, Francfort,
+comme le serveur Render) contient déjà toutes les tables : les migrations Prisma y sont
+appliquées et notées dans `_prisma_migrations`, donc `prisma migrate deploy` ne rejoue que les
+nouvelles. Le serveur ne passe que par Prisma : Supabase sert de PostgreSQL hébergé (pas
+d'auth Supabase, pas de SDK `supabase-js`).
+
+- **Quelle URL ?** _Connect_ → _Session pooler_ (port 5432), en ajoutant `?sslmode=require` :
+  `postgresql://postgres.<ref>:<mot-de-passe>@<hôte>.pooler.supabase.com:5432/postgres?sslmode=require`.
+  La _Direct connection_ n'est joignable qu'en IPv6 sur l'offre gratuite (Render ne l'atteint
+  pas) et le _Transaction pooler_ (6543) ne convient pas aux migrations Prisma. Une seule URL
+  sert donc aux migrations, au seed et au serveur.
+- **Le mot de passe** se choisit dans _Database_ → _Settings_ → _Reset database password_ et ne
+  se saisit que dans Render (variable `DATABASE_URL`) ou dans un `.env` local, jamais dans le
+  dépôt.
+- **SSL** : le driver `pg` lit `sslmode=require` comme `verify-full` et refuserait le certificat
+  de Supabase. `createPrismaClient` (`src/lib/prisma.ts`) ajoute `uselibpqcompat=true` pour lui
+  donner le sens standard de PostgreSQL : connexion chiffrée, comme avec la CLI Prisma.
+- **API publique de Supabase** : Supabase expose le schéma `public` en REST à qui possède la clé
+  publique du projet. La migration `row_level_security` active la RLS sur toutes les tables,
+  sans politique : cette API ne voit aucune ligne, alors que le serveur (rôle propriétaire)
+  n'est pas concerné. Une nouvelle table doit faire de même ; `tests/rls.test.ts` le vérifie.
+- **Remplir la base** (100 cartes, succès, compte administrateur) : c'est fait par le
+  `startCommand` de Render à chaque démarrage (seed idempotent). Depuis un poste, avec l'URL
+  Supabase dans `packages/server/.env` : `pnpm --filter @oss/server db:deploy` puis
+  `SEED_ADMIN_EMAIL=… SEED_ADMIN_PASSWORD=… pnpm --filter @oss/server db:seed`.
+- **Offre gratuite** : 500 Mo, et le projet se met en pause après 7 jours sans requête ; il se
+  relance depuis le tableau de bord Supabase (_Restore project_).
+
+### Serveur sur Render et client sur Vercel
+
+1. **Render** → _New_ → _Blueprint_ → ce dépôt. Render crée le service `oss-server` (build,
+   migrations, seed puis démarrage). Il demande :
+   - `DATABASE_URL` : l'URL Supabase du _Session pooler_ ci-dessus ;
+   - `CLIENT_URL` : l'URL Vercel du client, `https://open-space-simulator.vercel.app` ;
    - `SEED_ADMIN_EMAIL` et `SEED_ADMIN_PASSWORD` : le compte administrateur ;
    - facultatif : `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` (OAuth App GitHub, callback
      `${CLIENT_URL}/api/auth/github/callback`) et `ANTHROPIC_API_KEY` (Slack IA).
      `JWT_SECRET` est généré par Render.
-2. Dans `packages/client/vercel.json`, remplacer `REMPLACER-PAR-L-URL-RENDER` par l'URL du
-   service Render (par exemple `oss-server.onrender.com`).
+2. `packages/client/vercel.json` renvoie `/api` et `/docs` vers le service Render
+   `oss-server-e90i.onrender.com` (à changer si le service est recréé).
 3. **Vercel** → _Add New Project_ → ce dépôt, _Root Directory_ `packages/client`. Les
    commandes d'installation et de build sont dans `vercel.json`.
 
@@ -734,19 +797,19 @@ Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur
 chaque push sur `main`, donc à chaque fusion de `develop` dans `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
 Sans serveur, le jeu se joue en invité avec les 130 cartes intégrées et les sauvegardes
 locales ; le compte, les classements en ligne, le Daily en ligne et le Slack IA demandent le serveur
-(le classement « Sur cet appareil » fonctionne sans)
-Render. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
+Render et sa base Supabase (le classement « Sur cet appareil » fonctionne sans). Dans _Settings_ →
+_Pages_, la source doit être _GitHub Actions_.
 
 Les secrets ne vont jamais dans le dépôt : ils se saisissent dans les tableaux de bord de
-Render et Vercel. Toutes les variables sont décrites dans
+Render et Vercel (le mot de passe de la base, dans Supabase puis dans Render). Toutes les variables sont décrites dans
 [`packages/server/.env.example`](packages/server/.env.example).
 
 ## Ce que l'application fait et ne fait pas
 
-Elle fait : un jeu de gestion solo complet (7 modes dont un mode illimité, 39 sprints, 100 cartes, 8 profils de
+Elle fait : un jeu de gestion solo complet (8 modes dont un mode illimité et la Carrière, 39 sprints, 100 cartes, 8 profils de
 devs et 10 métiers d'une équipe web, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
 anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
-Daily, par mode) et sur l'appareil, replays vérifiés par le serveur, 68 succès (dont 22 secrets), un back-office et un Slack
+Daily, par mode) et sur l'appareil, replays vérifiés par le serveur, 70 succès (dont 22 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 
 Elle ne fait pas : de multijoueur en temps réel, d'achats intégrés ni de publicité, de chat

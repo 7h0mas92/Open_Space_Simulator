@@ -21,5 +21,9 @@ export function compareGames(mode: GameMode | null): (a: RankedGame, b: RankedGa
     a.createdAt.localeCompare(b.createdAt);
 }
 
-/** Modes absents du classement global : le Facile et l'Illimité ont leur propre onglet. */
-export const GLOBAL_EXCLUDED_MODES: readonly GameMode[] = ['EASY', 'ENDLESS'];
+/**
+ * Modes absents du classement global, qui ont leur propre onglet : le Facile, l'Illimité, et la
+ * Carrière (chaque légende part d'une trésorerie différente, donc les valorisations ne se
+ * comparent pas avec le Normal).
+ */
+export const GLOBAL_EXCLUDED_MODES: readonly GameMode[] = ['EASY', 'ENDLESS', 'CAREER'];

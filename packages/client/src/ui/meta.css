@@ -1191,3 +1191,123 @@
     align-self: stretch;
   }
 }
+
+/* --- Mode Carrière : choix de la légende ---------------------------------------------- */
+
+.career-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.career-page .hint {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.career-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.career-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--legend-color);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.career-level-1 {
+  --legend-color: #7bd88f;
+}
+
+.career-level-2 {
+  --legend-color: #f5b942;
+}
+
+.career-level-3 {
+  --legend-color: #ff8a70;
+}
+
+.career-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.career-card-title {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.career-card-title h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.career-card-title small,
+.career-difficulty {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.career-difficulty {
+  flex: none;
+  color: var(--legend-color);
+  font-weight: 600;
+}
+
+.career-story,
+.career-twist {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.career-twist {
+  color: var(--text-muted);
+}
+
+.career-heading {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+}
+
+.career-goals {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.career-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.25rem;
+}
+
+.career-best {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.career-best.muted {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.career-card-foot button {
+  min-height: var(--touch);
+}
