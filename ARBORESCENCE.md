@@ -150,6 +150,7 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 | `funding.ts`    | Autres financements : business angels, prêt, financement participatif, subvention.         |
 | `ventures.ts`   | Filiales : projets, parts, dividendes, revente.                                            |
 | `teamLife.ts`   | Congés payés, jours fériés français, ponts, arrêts maladie et burn-out.                    |
+| `retro.ts`      | Rétrospective : les 10 actions, leurs effets, le vote.                                     |
 | `career.ts`     | Mode Carrière : les 8 légendes, leur départ, leurs jalons, la légende lue dans la graine.  |
 
 ### `src/meta/` : méta-jeu et contrats de l'API
@@ -260,6 +261,7 @@ graine + mêmes commandes = même partie.
 | `financing.ts`    | Business angels, prêt, financement participatif, subvention.                            |
 | `ventures.ts`     | Filiales : création, dividendes, revente (graine à part).                               |
 | `teamLife.ts`     | Congés, jours fériés, ponts, arrêts maladie et burn-out (graine à part).                |
+| `retro.ts`        | Rétrospective : problèmes du sprint, votes des devs (graine à part), action active.     |
 | `raises.ts`       | Demandes d'augmentation (graine à part).                                                |
 | `leadership.ts`   | Effets de l'encadrement et de l'équipe qualité (tech lead, DevOps, QA, managers).       |
 | `meetings.ts`     | Salle de réunion, réunion du matin et réunion de crise.                                 |
