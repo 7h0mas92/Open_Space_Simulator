@@ -16,6 +16,8 @@
     "playHint": "Nouvelle partie en mode {{mode}}",
     "resume": "Continuer",
     "resumeHint": "{{mode}} · {{phase}} · sprint {{sprint}} · {{valuation}}",
+    "newGame": "Nouvelle partie",
+    "newGameHint": "Mode {{mode}}, ou choisis un autre mode",
     "signIn": "Connexion",
     "account": "Compte",
     "nav": "Menu principal",
@@ -300,6 +302,7 @@
     "dashboard": "Dashboard",
     "settings": "Options",
     "credits": "Crédits",
+    "career": "Carrière",
     "close": "Fermer",
     "menu": "Menu",
     "actions": "Actions du jeu",
@@ -1058,6 +1061,11 @@
       "rule": "La même partie pour tout le monde aujourd'hui.",
       "tag": "Classement du jour"
     },
+    "CAREER": {
+      "name": "Carrière",
+      "rule": "Refais le parcours d'une startup devenue géante.",
+      "tag": "8 légendes"
+    },
     "STORY": {
       "name": "Histoire",
       "rule": "10 missions en 4 chapitres, du garage à la Bourse. Chaque mission réussie débloque une récompense.",
@@ -1409,6 +1417,14 @@
           "dailyTips": {
             "title": "Le classement du jour",
             "body": "À la fin de la partie, ton score part dans le classement du jour, si tu es connecté. Le serveur rejoue toute ta partie à partir de la graine et de tes décisions pour vérifier le score : pas de triche possible.\n\nIl n'y a pas de bouton « Rejouer » à la fin : la partie du jour se joue une fois. Reviens demain pour une nouvelle graine."
+          },
+          "career": {
+            "title": "Le mode Carrière",
+            "body": "Tu refais le parcours d'une startup devenue géante. Elle impose son départ (plus ou moins d'argent, de hype, de dette, son premier profil, parfois un cofondateur) et ses jalons : atteindre une phase, un nombre d'utilisateurs ou une levée avant un sprint donné, puis finir comme elle.\n\nLe bouton 🧭 en haut de l'écran montre tes jalons et ta progression. Chaque jalon est vérifié à la démo du sprint : une échéance dépassée, c'est un jalon manqué.\n\nÀ la fin : ★ si tu as tenu au moins un jalon, ★★ la moitié, ★★★ tous."
+          },
+          "careerTips": {
+            "title": "Penser comme la légende",
+            "body": "• Lis les jalons avant le premier sprint : ils disent quand lever, quand recruter et ce qu'il faut viser.\n• Une échéance proche passe avant tout : une levée de fonds tenue au bon sprint vaut une étoile.\n• Le reste des règles est celui du mode Normal : 18 mois, 39 sprints, mêmes cartes.\n\nTon score compte dans le classement du mode Carrière, et ta meilleure note pour chaque légende est gardée sur cet appareil."
           },
           "story": {
             "title": "La mission",
@@ -2011,6 +2027,38 @@
     "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
     "fibreCardReady": "La box fibre est posée : choisis une offre.",
     "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs."
+  },
+  "career": {
+    "intro": "Huit startups parties de rien sont devenues des géants. Leurs noms ont changé, leurs histoires presque pas. Choisis une légende, pars avec les mêmes contraintes qu'elle et tiens ses jalons.",
+    "starsRule": "★ au moins un jalon tenu · ★★ la moitié · ★★★ tous : légende égalée.",
+    "difficulty": {
+      "1": "Abordable",
+      "2": "Coriace",
+      "3": "Légendaire"
+    },
+    "difficultyLabel": "Difficulté : {{level}}",
+    "year": "Inspirée d'une startup née en {{year}}",
+    "start": "Au départ",
+    "milestones": "Jalons",
+    "best": "Meilleur résultat : {{stars}}",
+    "never": "Pas encore tentée",
+    "play": "Relever le défi",
+    "progress": "{{done}} jalons tenus sur {{total}}",
+    "hudButton": "Carrière : {{done}} jalons tenus sur {{total}}",
+    "status": {
+      "PENDING": "À tenir",
+      "DONE": "Tenu au sprint {{sprint}}",
+      "FAILED": "Manqué au sprint {{sprint}}"
+    },
+    "deadline": "Échéance : démo du sprint {{sprint}}",
+    "atEnd": "Jugé à la fin de la partie",
+    "endTitle": "Ta carrière : {{name}}",
+    "stars": {
+      "0": "Aucune étoile",
+      "1": "Une étoile : prometteur",
+      "2": "Deux étoiles : presque une légende",
+      "3": "Trois étoiles : légende égalée !"
+    }
   },
   "story": {
     "title": "Mode Histoire",

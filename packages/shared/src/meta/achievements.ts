@@ -398,6 +398,28 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     ),
     check: (state) => endlessSprintsDone(state) >= ENDLESS.achievementSprints.fiveYears,
   },
+  {
+    id: 'career-first-star',
+    difficulty: 'EASY',
+    icon: '🧭',
+    title: t('Sur les traces des géants', 'In the Footsteps of Giants'),
+    description: t(
+      'Finir une partie Carrière avec au moins une étoile.',
+      'Finish a Career game with at least one star.',
+    ),
+    check: (state) => (state.result?.career?.stars ?? 0) >= 1,
+  },
+  {
+    id: 'career-legend',
+    difficulty: 'LEGENDARY',
+    icon: '🏛️',
+    title: t('Légende égalée', 'Legend Matched'),
+    description: t(
+      'Tenir tous les jalons d’une légende du mode Carrière (trois étoiles).',
+      'Meet every milestone of a Career legend (three stars).',
+    ),
+    check: (state) => state.result?.career?.stars === 3,
+  },
   // ── Ajoutés avec l'écran Succès : plus ou moins faciles, certains secrets ─
   {
     id: 'first-hire',

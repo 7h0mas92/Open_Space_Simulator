@@ -246,3 +246,22 @@ describe('wrapText', () => {
     ]);
   });
 });
+
+describe('sauvegarde automatique', () => {
+  it('se fait encore quand l’application est montée deux fois (StrictMode)', async () => {
+    useSession.setState({ status: 'guest', user: null });
+    // React en développement : montage, démontage, puis nouveau montage.
+    installGameLifecycle()();
+    const uninstall = installGameLifecycle();
+    const running = gameView({ seed: 'tests', step: 'EXECUTION', result: null });
+    useGame.setState({
+      source: fakeSource(running, saveData('tests')),
+      view: running,
+      replayOf: null,
+    });
+
+    useGame.setState({ view: { ...running, step: 'PLANNING' } });
+    await vi.waitFor(async () => expect(await saves.latestResumable(false)).not.toBeNull());
+    uninstall();
+  });
+});

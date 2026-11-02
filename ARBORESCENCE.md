@@ -150,6 +150,7 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 | `pitch.ts`      | Mini-jeu de levée de fonds : questions, arguments, intérêt de l'investisseur.              |
 | `funding.ts`    | Autres financements : business angels, prêt, financement participatif, subvention.         |
 | `ventures.ts`   | Filiales : projets, parts, dividendes, revente.                                            |
+| `career.ts`     | Mode Carrière : les 8 légendes, leur départ, leurs jalons, la légende lue dans la graine.  |
 
 ### `src/meta/` : méta-jeu et contrats de l'API
 
@@ -273,6 +274,7 @@ graine + mêmes commandes = même partie.
 | `achievements.ts` | Succès vérifiés à partir de l'état.                                                     |
 | `endings.ts`      | Fins de partie et phrase partageable de l'écran de fin.                                 |
 | `story.ts`        | Mode Histoire : départ de la mission, suivi des objectifs et contraintes, fin.          |
+| `career.ts`       | Mode Carrière : départ de la légende, jalons vérifiés à chaque démo, étoiles à la fin.  |
 | `unlocks.ts`      | Récompenses du mode Histoire utilisables dans la partie (`state.unlocks`).              |
 | `bots.ts`         | Stratégies automatiques de `pnpm balance` (random, shipper, balanced, investor…).       |
 | `analysis.ts`     | Joue des parties avec les bots et agrège les résultats (rapport d'équilibrage).         |
@@ -475,6 +477,9 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `story/MissionPanel.tsx`          | Panneau « Mission » en jeu : briefing, objectifs en direct, récompense. |
 | `story/MissionGoals.tsx`          | Liste des objectifs et contraintes avec leur avancement.                |
 | `story/goals.ts`                  | Phrase de chaque objectif (« Livrer 3 features »).                      |
+| `career/CareerPage.tsx`           | Page « Carrière » du menu : choix de la légende et de la difficulté.    |
+| `career/CareerPanel.tsx`          | Panneau des jalons en jeu (bouton 🧭) et bilan de fin.                  |
+| `career/records.ts`               | Meilleur résultat par légende sur l'appareil, étoiles en texte.         |
 | `meetings/MeetingRoom.tsx`        | Panneau « Réunion » : choix de la formule.                              |
 | `servers/ServerRoom.tsx`          | Panneau « Serveurs » : état des salles, offres fibre.                   |
 | `lobby/Lobby.tsx`                 | Panneau « Hall d'entrée » : travaux, secrétaires, sécurité.             |
@@ -546,12 +551,12 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 
 ### `prisma/`
 
-| Fichier                                 | Rôle                                                                                                                                                |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `schema.prisma`                         | Modèle de données : User, Save, EventCard, Score, Achievement…                                                                                      |
-| `seed.ts`                               | Données initiales : cartes, succès, compte admin de développement.                                                                                  |
-| `migrations/<date>_<nom>/migration.sql` | Une migration SQL par évolution du schéma (init, meta, easy_mode, character_packs, decor_themes, story_mode). Générées par Prisma, ne pas modifier. |
-| `migrations/migration_lock.toml`        | Fournisseur de base verrouillé (PostgreSQL).                                                                                                        |
+| Fichier                                 | Rôle                                                                                                                                                                                               |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema.prisma`                         | Modèle de données : User, Save, EventCard, Score, Achievement…                                                                                                                                     |
+| `seed.ts`                               | Données initiales : cartes, succès, compte admin de développement.                                                                                                                                 |
+| `migrations/<date>_<nom>/migration.sql` | Une migration SQL par évolution du schéma (init, meta, easy_mode, character_packs, decor_themes, story_mode, endless_mode, career_mode, row_level_security). Générées par Prisma, ne pas modifier. |
+| `migrations/migration_lock.toml`        | Fournisseur de base verrouillé (PostgreSQL).                                                                                                                                                       |
 
 ### `src/`
 
@@ -561,7 +566,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `app.ts`                          | Construit l'application Fastify : plugins et routes.                        |
 | `config/env.ts`                   | Lecture et validation Zod des variables d'environnement.                    |
 | `lib/errors.ts`                   | Erreur métier transformée en `{ error: { code, message } }`.                |
-| `lib/prisma.ts`                   | Création du client Prisma.                                                  |
+| `lib/prisma.ts`                   | Création du client Prisma (SSL compatible Supabase).                        |
 | `lib/schemas.ts`                  | Réponses d'erreur communes pour la doc OpenAPI.                             |
 | `plugins/auth.ts`                 | Vérification du JWT, rôles USER et ADMIN.                                   |
 | `plugins/errors.ts`               | Gestionnaire d'erreurs global au format homogène.                           |
@@ -597,18 +602,20 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 
 ### `tests/`
 
-| Fichier            | Rôle                                                            |
-| ------------------ | --------------------------------------------------------------- |
-| `global-setup.ts`  | Applique les migrations sur la base de test avant la suite.     |
-| `test-database.ts` | Base dédiée aux tests, vidée avant chaque test.                 |
-| `helpers.ts`       | Construit une application de test.                              |
-| `game-fixtures.ts` | Joue une partie complète avec un bot, comme dans le navigateur. |
-| `app.test.ts`      | Santé, format d'erreur, sécurité, OpenAPI.                      |
-| `auth.test.ts`     | Inscription, connexion, refresh, déconnexion, rôles.            |
-| `github.test.ts`   | Connexion GitHub OAuth (appels simulés).                        |
-| `meta.test.ts`     | Sauvegardes, scores, anti-triche, Daily, succès, admin.         |
-| `slack-ai.test.ts` | Slack IA : quota, cache, repli en cas d'erreur.                 |
-| `story.test.ts`    | Mode Histoire : mission rejouée, progression, récompenses.      |
+| Fichier              | Rôle                                                            |
+| -------------------- | --------------------------------------------------------------- |
+| `global-setup.ts`    | Applique les migrations sur la base de test avant la suite.     |
+| `test-database.ts`   | Base dédiée aux tests, vidée avant chaque test.                 |
+| `helpers.ts`         | Construit une application de test.                              |
+| `game-fixtures.ts`   | Joue une partie complète avec un bot, comme dans le navigateur. |
+| `app.test.ts`        | Santé, format d'erreur, sécurité, OpenAPI.                      |
+| `auth.test.ts`       | Inscription, connexion, refresh, déconnexion, rôles.            |
+| `github.test.ts`     | Connexion GitHub OAuth (appels simulés).                        |
+| `meta.test.ts`       | Sauvegardes, scores, anti-triche, Daily, succès, admin.         |
+| `slack-ai.test.ts`   | Slack IA : quota, cache, repli en cas d'erreur.                 |
+| `story.test.ts`      | Mode Histoire : mission rejouée, progression, récompenses.      |
+| `rls.test.ts`        | Chaque table a la sécurité au niveau des lignes (RLS) activée.  |
+| `prisma-url.test.ts` | Mode SSL de l'URL de la base (`withLibpqSslMode`).              |
 
 ---
 

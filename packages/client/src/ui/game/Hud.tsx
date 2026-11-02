@@ -55,6 +55,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   cleaning: '🧹',
   subscriptions: '🧾',
   funding: '💼',
+  career: '🧭',
   mission: '🎯',
   build: '🛠️',
   dashboard: '📈',
@@ -267,9 +268,27 @@ export function SystemButtons({ view }: { view: GameView }) {
   const story = useGame((s) => s.view?.mode === 'STORY');
   const system = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
   const panels: readonly PanelId[] = story ? ['mission', ...system] : system;
+  const career = view.career;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>
       <CleaningButton view={view} />
+      {career && (
+        // Mode Carrière : les jalons de la légende, à portée de clic.
+        <button
+          type="button"
+          className="system-button career-button"
+          aria-pressed={panel === 'career'}
+          aria-label={t('career.hudButton', { done: career.done, total: career.total })}
+          title={t('career.hudButton', { done: career.done, total: career.total })}
+          data-tutorial="panel-career"
+          onClick={() => openPanel(panel === 'career' ? null : 'career')}
+        >
+          <span aria-hidden="true">{PANEL_ICONS.career}</span>
+          <span className="career-button-count" aria-hidden="true">
+            {career.done}/{career.total}
+          </span>
+        </button>
+      )}
       {panels.map((id) => (
         <button
           key={id}
