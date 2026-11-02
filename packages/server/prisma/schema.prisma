@@ -30,6 +30,7 @@ enum GameMode {
   SHIP_IN_3
   DAILY
   STORY
+  CAREER
 }
 
 enum Phase {

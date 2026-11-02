@@ -1,5 +1,6 @@
 import { BALANCE, TIME, type CommandResult, type GameState, type LocalizedText } from '@oss/shared';
 import { BUYERS, FEEDBACK_BAD, FEEDBACK_GOOD, FEEDBACK_NEUTRAL } from './data/flavor';
+import { careerDemo } from './career';
 import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
@@ -164,6 +165,7 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   );
 
   checkPhaseAndOffers(state, ctx);
+  careerDemo(state, ctx);
 }
 
 /** Licorne à 1 Md€ de valorisation ; offres de rachat à partir de la Série A. */

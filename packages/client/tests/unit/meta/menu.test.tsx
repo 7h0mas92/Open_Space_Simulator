@@ -1,5 +1,5 @@
 import { ACHIEVEMENTS, type LeaderboardEntry, type ProfileResponse } from '@oss/shared';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../../src/i18n';
@@ -133,6 +133,7 @@ describe('Leaderboard', () => {
       'Hardcore',
       'Stagiaires Only',
       'Défi 3 sprints',
+      'Carrière',
     ]);
   });
 
@@ -298,6 +299,26 @@ describe('App : menu du méta-jeu', () => {
     await userEvent.click(await screen.findByRole('button', { name: /Profil/ }));
     await userEvent.click(await screen.findByRole('button', { name: /Voir tous les succès/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Succès' })).toBeInTheDocument();
+  });
+
+  it('ouvre le choix des légendes du mode Carrière, puis lance la partie choisie', async () => {
+    mockApi({});
+    const original = useGame.getState().start;
+    const start = vi.fn(() => Promise.resolve());
+    useGame.setState({ start });
+    try {
+      render(<App />);
+      await userEvent.click(await screen.findByTestId('mode-CAREER'));
+      expect(screen.getByRole('heading', { level: 1, name: 'Carrière' })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: 'Relever le défi' })).toHaveLength(8);
+      const legend = screen.getByTestId('legend-trombi');
+      expect(legend).toHaveTextContent('Trombinoscope');
+      expect(legend).toHaveTextContent('Pas encore tentée');
+      await userEvent.click(within(legend).getByRole('button', { name: 'Relever le défi' }));
+      expect(start).toHaveBeenCalledWith({ mode: 'CAREER', legend: 'trombi' });
+    } finally {
+      useGame.setState({ start: original });
+    }
   });
 
   it('réserve le back-office aux administrateurs', async () => {

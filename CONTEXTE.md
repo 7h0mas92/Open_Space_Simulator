@@ -1,8 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec le mode
-> Histoire. Dernier commit de `main` au moment de l'écriture : `9f71139` (PR #122, mode
-> Histoire fusionné).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), fil « Mode
+> Carrière » (PR #121, validée par Thomas et fusionnée). Dernier commit de `main` avant la
+> fusion : `6924163` (PR #136, après le mode Histoire #122).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -63,7 +63,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Sujet                                               | Qui             | État                             |
 | --------------------------------------------------- | --------------- | -------------------------------- |
 | Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122) |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours             |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné le 2 novembre (PR #121) |
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
 10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
@@ -72,9 +72,11 @@ débloque une récompense **nouvelle** (2 papiers peints, 2 sols, 2 couleurs, 2 
 départ : `packages/shared/src/story/rewards.ts`) : aucun objet existant n'a été retiré des
 autres modes. Équilibrage : `pnpm balance:story`.
 
-**Mode Carrière** : essayer de reproduire les performances d'anciennes startups devenues de
-grandes entreprises (Apple, Google…), **sans jamais citer leur nom directement** (noms parodiques
-ou allusions seulement, comme pour les super-héros inventés).
+**Mode Carrière** (PR #121, fusionné le 2 novembre) : 8 légendes jamais nommées
+(Pépin Computer, Matelas & Céréales, Rembobine, MicroMou, Trombinoscope, Orénoque, Centillion,
+Ampère Motors), chacune avec son départ et 4 jalons, étoiles à la fin. Détail dans `CLAUDE.md`.
+Pas de récompense du mode Histoire en Carrière (hors `UNLOCK_MODES`), pour que chaque légende
+se joue pareil pour tous. Migration Prisma `20261102090000_career_mode`, après celle du mode Histoire.
 
 **Proposition à valider pour les deux modes** : les objets débloqués sont utilisables en Normal,
 Facile et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
@@ -83,13 +85,15 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
 
 ## En attente d'une décision
 
-- **GitHub Actions bloqué** : depuis le 13 octobre, chaque job de la CI s'arrête en 3 secondes
-  sans runner ni log, sur toutes les PR (#121 à #135). À vérifier dans les réglages de facturation
-  du compte GitHub (minutes ou limite de dépenses). En attendant, vérifier en local avant de
-  fusionner. Le mode Histoire (#122, mode `STORY`) est dans `main` : les PR ouvertes qui ajoutent
+- **GitHub Actions** : bloqué du 13 octobre au 2 novembre (jobs arrêtés en 3 secondes, sans
+  runner). Le 2 novembre, les jobs démarrent de nouveau sur des runners ; vérifier quand même en
+  local avant de fusionner. Le mode Histoire (#122, mode `STORY`) est dans `main` : les PR ouvertes qui ajoutent
   un mode (#121 Carrière, #135 Illimité, #130 difficulté par mode) doivent intégrer `main` et
   garder `STORY` dans `GAME_MODES` (hors `MENU_MODES` et `UNLOCK_MODES`).
 
+- **Mode Carrière (PR #121, fusionné)** : les jalons ont été calibrés
+  avec les bots de `pnpm balance` (Pépin et Matelas faciles, Centillion, Orénoque et Ampère
+  durs) ; à ajuster si Thomas les trouve trop durs ou trop faciles en jouant.
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
   ~20 % avant). Proposition : réduire un peu le café livré par la cuisine. Thomas n'a pas tranché
@@ -140,27 +144,28 @@ Règles fixées par Thomas (à respecter par tout le monde) :
 
 ## Où sont les choses
 
-| Quoi                                             | Où                                                                                                              |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (branche `main`)                                               |
-| Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                     |
-| Installation, architecture, déploiement, crédits | `README.md`                                                                                                     |
-| Ce relais                                        | `CONTEXTE.md`                                                                                                   |
-| Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                               |
-| Captures du README                               | `docs/screenshots/`                                                                                             |
-| Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                 |
-| Interface de la simulation                       | `packages/client/src/simulation/README.md`                                                                      |
-| Constantes partagées de chaque système           | `packages/shared/src/sim/*.ts` (balance, furniture, pets, floors, serverRoom…)                                  |
-| Succès (65, dont 22 secrets)                     | `packages/shared/src/meta/achievements.ts`                                                                      |
-| 100 cartes d'événements                          | `packages/shared/src/data/cards/`                                                                               |
-| Modes de jeu                                     | `GAME_MODES` dans `packages/shared/src/game.ts` (EASY, NORMAL, HARDCORE, INTERNS_ONLY, SHIP_IN_3, DAILY, STORY) |
-| Mode Histoire (chapitres, missions, récompenses) | `packages/shared/src/story/`, `packages/client/src/simulation/story.ts`, `packages/client/src/ui/story/`        |
-| Bots de `pnpm balance`                           | `packages/client/src/simulation/bots.ts` (random, shipper, balanced, cautious, investor, organizer, financier)  |
-| Assets Kenney (déjà commités)                    | `packages/client/public/assets/kenney/` (Furniture Kit, Blocky Characters)                                      |
-| Musiques et sons                                 | `packages/client/public/assets/music/`, `packages/client/public/assets/sounds/`                                 |
-| Variables d'environnement                        | `packages/server/.env.example`, `packages/client/.env.example`                                                  |
-| Déploiement                                      | `render.yaml`, `packages/client/vercel.json`, `.github/workflows/pages.yml`                                     |
-| CI                                               | `.github/workflows/ci.yml` (lint, format, typecheck, tests, build, e2e)                                         |
+| Quoi                                             | Où                                                                                                                      |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (branche `main`)                                                       |
+| Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                             |
+| Installation, architecture, déploiement, crédits | `README.md`                                                                                                             |
+| Ce relais                                        | `CONTEXTE.md`                                                                                                           |
+| Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                                       |
+| Captures du README                               | `docs/screenshots/`                                                                                                     |
+| Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                         |
+| Interface de la simulation                       | `packages/client/src/simulation/README.md`                                                                              |
+| Constantes partagées de chaque système           | `packages/shared/src/sim/*.ts` (balance, furniture, pets, floors, serverRoom…)                                          |
+| Succès (67, dont 22 secrets)                     | `packages/shared/src/meta/achievements.ts`                                                                              |
+| 100 cartes d'événements                          | `packages/shared/src/data/cards/`                                                                                       |
+| Modes de jeu                                     | `GAME_MODES` dans `packages/shared/src/game.ts` (EASY, NORMAL, HARDCORE, INTERNS_ONLY, SHIP_IN_3, DAILY, STORY, CAREER) |
+| Mode Histoire (chapitres, missions, récompenses) | `packages/shared/src/story/`, `packages/client/src/simulation/story.ts`, `packages/client/src/ui/story/`                |
+| Mode Carrière (légendes, jalons, étoiles)        | `packages/shared/src/sim/career.ts`, `packages/client/src/simulation/career.ts`, `packages/client/src/ui/career/`       |
+| Bots de `pnpm balance`                           | `packages/client/src/simulation/bots.ts` (random, shipper, balanced, cautious, investor, organizer, financier)          |
+| Assets Kenney (déjà commités)                    | `packages/client/public/assets/kenney/` (Furniture Kit, Blocky Characters)                                              |
+| Musiques et sons                                 | `packages/client/public/assets/music/`, `packages/client/public/assets/sounds/`                                         |
+| Variables d'environnement                        | `packages/server/.env.example`, `packages/client/.env.example`                                                          |
+| Déploiement                                      | `render.yaml`, `packages/client/vercel.json`, `.github/workflows/pages.yml`                                             |
+| CI                                               | `.github/workflows/ci.yml` (lint, format, typecheck, tests, build, e2e)                                                 |
 
 ## Installer et lancer
 
@@ -204,6 +209,10 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   réutiliser `nearestValidCell` et `shopStatus` (`view/placement.ts`). Chaque objet du catalogue
   a un rendu distinct (test) ; chaque bureau a une place d'écran (`SCREEN_MOUNTS`, test) ; chaque
   forme Three.js a une entrée `credits.missingItems` en FR et EN.
+- **Nouveau mode de jeu** : l'ajouter à `GAME_MODES`, à l'enum Prisma `GameMode` (migration
+  `ALTER TYPE`), à `MODE_ICONS`, à `ALL_BUT` de `lessons.ts` (avec ses étapes `rules`) et au
+  test des onglets du classement. Un réglage propre à une partie peut s'écrire dans la graine
+  (comme `career:<légende>:<graine>`) : le rejeu serveur le retrouve sans changer l'API.
 - **Serveur** : toutes les routes sous `/api`, erreurs `{ error: { code, message } }`, le serveur
   rejoue graine + commandes pour vérifier un score (il embarque la simulation du client).
 - **Mode Histoire** : une mission est une partie `STORY` (`GameConfig.mission`), terminée par
@@ -235,8 +244,10 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 02/11    | Thomas + Claude | #121        | Mode Carrière repris après la pause : `main` intégré (mode Histoire), modes `STORY` et `CAREER` côte à côte, migrations Prisma dans l'ordre, CI verte. Validé par Thomas et fusionné.                                                            |
 | 02/11    | Thomas + Claude | #122        | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
 | 13/10    | Thomas + Claude | #122        | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
+| 13/10    | Thomas + Claude | #121        | Mode Carrière : 8 légendes parodiques, jalons et étoiles, légende dans la graine, mode `CAREER` + migration Prisma, 2 succès (67 au total). PR à valider par Thomas.                                                                             |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
 | 11/10    | Melvin          | #109 à #119 | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
 | 10–11/10 | Melvin          | #93 à #108  | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |

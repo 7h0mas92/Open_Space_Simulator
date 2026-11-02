@@ -20,6 +20,8 @@ import { useGame } from '../store/game';
 import { formatGauge, formatMoney, localized } from './format';
 import { GAUGE_ICONS } from './Hud';
 import { moodEmoji, StatBars } from '../team/StatBars';
+import { CareerMilestones } from '../career/CareerPanel';
+import { starsText } from '../career/records';
 
 /**
  * Écrans qui interrompent la partie : carte d'événement, levée de fonds, démo de fin de
@@ -578,6 +580,9 @@ function EndScreen({ view }: { view: GameView }) {
           result.mission
             ? t(result.mission.success ? 'story.end.success' : 'story.end.failure')
             : `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
+          ...(view.career && result.career
+            ? [`${localized(view.career.name, i18n.language)} · ${starsText(result.career.stars)}`]
+            : []),
           `${t(`modes.${view.mode}.name`)} · ${t('end.sprints')} ${result.sprint}/${view.time.totalSprints}`,
           t('end.shareAchievements', { count: view.achievements.length }),
         ],
@@ -611,6 +616,19 @@ function EndScreen({ view }: { view: GameView }) {
         <dt>{t('achievements.title')}</dt>
         <dd>{view.achievements.length}</dd>
       </dl>
+      {view.career && result.career && (
+        <section className="career-end" aria-labelledby="career-end-title">
+          <h3 id="career-end-title">
+            <span aria-hidden="true">{view.career.icon} </span>
+            {t('career.endTitle', { name: localized(view.career.name, i18n.language) })}
+          </h3>
+          <p className="career-end-stars">
+            <span aria-hidden="true">{starsText(result.career.stars)} </span>
+            {t(`career.stars.${result.career.stars}` as 'career.stars.0')}
+          </p>
+          <CareerMilestones career={view.career} />
+        </section>
+      )}
       <SubmissionStatus />
       <div className="stage-actions">
         {!replayOf && (
@@ -619,7 +637,10 @@ function EndScreen({ view }: { view: GameView }) {
           </button>
         )}
         {!replayOf && view.mode !== 'DAILY' && (
-          <button type="button" onClick={() => void start({ mode: view.mode })}>
+          <button
+            type="button"
+            onClick={() => void start({ mode: view.mode, legend: view.career?.legend })}
+          >
             {t('end.again')}
           </button>
         )}

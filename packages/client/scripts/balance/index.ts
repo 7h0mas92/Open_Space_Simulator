@@ -4,14 +4,15 @@
  * moyenne, cartes trop fortes).
  *
  * Options : --games 10000 (mode Normal, réparti entre les bots), --mode-games 400 (par autre
- * mode : Facile, Hardcore, Stagiaires Only, 3 sprints), --threads 4, --out reports/balance.md
+ * mode : Facile, Hardcore, Stagiaires Only, 3 sprints), --career-games 140 (par légende du mode
+ * Carrière), --threads 4, --out reports/balance.md
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { Worker } from 'node:worker_threads';
-import type { GameMode } from '@oss/shared';
+import { CAREER_LEGENDS, careerSeed, type GameMode } from '@oss/shared';
 import { defaultCardLibrary } from '../../src/simulation';
 import { aggregate, renderReport, type GameRecord } from '../../src/simulation/analysis';
 import { BOT_NAMES, type BotName } from '../../src/simulation/bots';
@@ -20,6 +21,7 @@ const { values } = parseArgs({
   options: {
     games: { type: 'string', default: '10000' },
     'mode-games': { type: 'string', default: '400' },
+    'career-games': { type: 'string', default: '140' },
     threads: { type: 'string', default: String(availableParallelism()) },
     out: { type: 'string', default: 'reports/balance.md' },
   },
@@ -36,6 +38,9 @@ const addGames = (mode: GameMode, count: number, prefix: string) => {
 addGames('NORMAL', Number(values.games), 'balance');
 for (const mode of OTHER_MODES)
   addGames(mode, Number(values['mode-games']), `balance-${mode.toLowerCase()}`);
+// Mode Carrière : la légende est écrite dans la graine, chaque légende a son lot de parties.
+for (const legend of CAREER_LEGENDS)
+  addGames('CAREER', Number(values['career-games']), careerSeed(legend.id, 'balance'));
 const total = jobs.length;
 const threads = Math.max(1, Math.min(Number(values.threads), total));
 

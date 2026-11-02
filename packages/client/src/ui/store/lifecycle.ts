@@ -7,6 +7,7 @@ import { ApiRequestError } from '../../api/client';
 import { metaApi } from '../../api/meta';
 import { pendingAchievements } from '../../save/achievements';
 import { saves } from '../../save/saves';
+import { recordCareer } from '../career/records';
 import type { GameView } from '../../view/types';
 import { useGame } from './game';
 import { useSession } from './session';
@@ -98,6 +99,7 @@ function onViewChange(view: GameView | null, previous: GameView | null): void {
     void submitScore();
     void recordMission().catch(() => undefined);
     void saves.markFinished(view.seed, isOnline()).catch(() => undefined);
+    if (view.result?.career) recordCareer(view.result.career);
   }
   if (view.achievements.length > previous.achievements.length) {
     const fresh = view.achievements.filter((id) => !previous.achievements.includes(id));

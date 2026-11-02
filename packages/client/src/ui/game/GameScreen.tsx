@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BuildMode } from '../build/BuildMode';
+import { CareerPanel } from '../career/CareerPanel';
 import { SelectionBar } from '../build/SelectionBar';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Kanban } from '../kanban/Kanban';
@@ -55,6 +56,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <ServerRoom view={view} />;
     case 'funding':
       return <Funding view={view} />;
+    case 'career':
+      return <CareerPanel view={view} />;
     case 'mission':
       return <MissionPanel view={view} />;
     case 'dashboard':
@@ -180,7 +183,7 @@ export function GameScreen() {
             <Company view={view} />
             <Gauges view={view} />
             <Clock view={view} />
-            <SystemButtons />
+            <SystemButtons view={view} />
           </header>
           <div className="hud-bottom">
             <SelectionBar view={view} />

@@ -14,7 +14,15 @@ import { useLatestSave } from './useLatestSave';
 
 /** Pages du menu ouvertes depuis l'accueil. */
 export type MenuPage =
-  'story' | 'load' | 'leaderboard' | 'achievements' | 'profile' | 'settings' | 'admin' | 'credits';
+  | 'story'
+  | 'load'
+  | 'leaderboard'
+  | 'achievements'
+  | 'profile'
+  | 'settings'
+  | 'admin'
+  | 'credits'
+  | 'career';
 
 /**
  * Écran d'accueil : titre et bouton Jouer / Continuer, choix du mode en cartes,
@@ -41,7 +49,9 @@ export function HomeMenu({
   const ticker = t('menu.ticker', { returnObjects: true }) as unknown as string[];
   const tickerLine = ticker[Math.floor(tickerIndex * ticker.length)] ?? '';
 
-  const play = (mode: GameMode) => void startGame({ mode });
+  // Le mode Carrière commence par le choix d'une légende.
+  const play = (mode: GameMode) =>
+    mode === 'CAREER' ? onOpen('career') : void startGame({ mode });
   // Premier lancement : le mode Facile et son tutoriel complet. Ensuite, le mode Normal.
   const suggested: GameMode = tutorialDone ? 'NORMAL' : 'EASY';
 
