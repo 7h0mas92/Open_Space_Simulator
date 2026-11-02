@@ -17,8 +17,11 @@ import type {
   FloorMaterialId,
   FloorZone,
   ComputerId,
-  FibrePlanId,
+  CleanerTool,
+  CleaningPlanId,
   ServerRoomNeed,
+  SubscriptionRequirement,
+  SubscriptionService,
   WallFinishId,
   WallZone,
   Birthday,
@@ -539,6 +542,10 @@ export interface MeetingRoomView {
   readonly useless: number;
   /** Réunions de crise tenues quand la prod est tombée. */
   readonly crisis: number;
+  /** Dernier Daily tenu (point sur les tickets), null si aucun. */
+  readonly daily: DailyView | null;
+  /** Tickets en partie recodés pour rien, faute de Daily (travail en double). */
+  readonly duplicates: number;
   /** Dernières réunions (du matin ou de crise), de la plus récente à la plus ancienne. */
   readonly recent: readonly {
     readonly tick: number;
@@ -546,6 +553,29 @@ export interface MeetingRoomView {
     readonly crisis: boolean;
     readonly text: LocalizedText;
   }[];
+}
+
+/** Le point d'un participant du Daily sur son ticket. */
+export interface DailyEntryView {
+  readonly devId: string;
+  readonly taskId: string;
+  /** Avancement au Daily (0 à 1), et au Daily précédent si le ticket y était déjà. */
+  readonly progress: number;
+  readonly before: number | null;
+}
+
+/** Le Daily du matin : qui y était, utile ou non, et le point de chacun sur son ticket. */
+export interface DailyView {
+  readonly tick: number;
+  /** Tenu aujourd'hui (le bonus de concentration court jusqu'au soir). */
+  readonly today: boolean;
+  /** La réunion se tient en ce moment : le projecteur de la salle affiche l'appli de tickets. */
+  readonly live: boolean;
+  readonly useful: boolean;
+  /** Bonus de productivité des participants jusqu'au soir, en % (0 si inutile ou passé). */
+  readonly focus: number;
+  readonly attendees: readonly string[];
+  readonly entries: readonly DailyEntryView[];
 }
 
 /** Un chat du bureau. */
@@ -583,19 +613,7 @@ export interface ServerRoomView {
   readonly slots: number;
 }
 
-/** Une offre fibre et pourquoi on ne peut pas y souscrire maintenant. */
-export interface FibrePlanView {
-  readonly id: FibrePlanId;
-  readonly name: LocalizedText;
-  readonly description: LocalizedText;
-  readonly speed: LocalizedText;
-  readonly weeklyPrice: number;
-  readonly minPhase: Phase;
-  /** `CURRENT` : c'est l'offre en cours ; `NO_BOX` : aucune box fibre dans une salle. */
-  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'NO_BOX' | 'CURRENT' | 'WRONG_STAGE' | null;
-}
-
-/** Salles des serveurs et abonnement fibre. */
+/** Salles des serveurs (l'abonnement fibre est dans `GameView.subscriptions`). */
 export interface ServersView {
   readonly rooms: readonly ServerRoomView[];
   /** Part de la facture d'hébergement épargnée grâce aux serveurs (0.18 = -18 %). */
@@ -603,17 +621,110 @@ export interface ServersView {
   readonly hostingSavingMax: number;
   /** Une box fibre est posée dans une salle des serveurs. */
   readonly hasBox: boolean;
-  /** Abonnement en cours, sinon null. */
-  readonly fibre: {
-    readonly plan: FibrePlanId;
-    /** La ligne arrive dans une box : ses effets comptent. */
-    readonly connected: boolean;
+}
+
+/**
+ * Pourquoi on ne peut pas souscrire à une offre maintenant. `CURRENT` : c'est l'offre en cours ;
+ * `REQUIREMENT` : l'installation demandée (`requires`) manque.
+ */
+export type SubscriptionBlocker =
+  'LOCKED' | 'NOT_ENOUGH_MONEY' | 'REQUIREMENT' | 'CURRENT' | 'WRONG_STAGE' | null;
+
+/** Une offre d'abonnement. */
+export interface SubscriptionOfferView {
+  readonly id: string;
+  readonly service: SubscriptionService;
+  readonly name: LocalizedText;
+  readonly description: LocalizedText;
+  readonly detail: LocalizedText | null;
+  /** Prix d'une période, et sa durée en jours de jeu. */
+  readonly price: number;
+  readonly periodDays: number;
+  readonly minPhase: Phase;
+  readonly requires: SubscriptionRequirement | null;
+  readonly blocker: SubscriptionBlocker;
+}
+
+/** L'abonnement en cours d'un service. */
+export interface CurrentSubscriptionView {
+  readonly offer: SubscriptionOfferView;
+  /** L'installation demandée est là : ses effets comptent (sinon il est payé pour rien). */
+  readonly active: boolean;
+  /** Jours de jeu avant le prochain prélèvement. */
+  readonly nextBillDays: number;
+  /** Sprint de la souscription. */
+  readonly since: number;
+  readonly totalPaid: number;
+  /** Coût ramené à 30 jours de jeu. */
+  readonly monthly: number;
+}
+
+/** Un service (internet, ménage…), son abonnement en cours et ses offres. */
+export interface SubscriptionServiceView {
+  readonly id: SubscriptionService;
+  readonly icon: string;
+  readonly current: CurrentSubscriptionView | null;
+  readonly offers: readonly SubscriptionOfferView[];
+}
+
+/** Rubrique « Abonnements ». */
+export interface SubscriptionsView {
+  readonly services: readonly SubscriptionServiceView[];
+  /** Nombre d'abonnements en cours. */
+  readonly count: number;
+  /** Total des abonnements ramené à 30 jours de jeu. */
+  readonly monthlyTotal: number;
+}
+
+/** Une formule d'abonnement de ménage, son prix pour le bureau actuel et ce qui bloque. */
+export interface CleaningPlanView {
+  readonly id: CleaningPlanId;
+  readonly name: LocalizedText;
+  readonly description: LocalizedText;
+  /** Jours de passage, de 1 (lundi) à 5 (vendredi). */
+  readonly days: readonly number[];
+  readonly weeklyPrice: number;
+  /** Remise par rapport au prix d'un passage (0.25 = -25 %). */
+  readonly discount: number;
+  /** `CURRENT` : c'est la formule en cours. */
+  readonly blocker: 'NOT_ENOUGH_MONEY' | 'CURRENT' | 'WRONG_STAGE' | null;
+}
+
+/** Saleté du bureau et entreprise de nettoyage. */
+export interface CleaningView {
+  /** Saleté de 0 à 100 %. */
+  readonly dirt: number;
+  /** Seuil d'alerte (%). */
+  readonly alert: number;
+  /** Part du travail gardée par un dev présent au bureau (0.8 = -20 %). */
+  readonly productivity: number;
+  /** Jours de semaine sans ménage (la saleté monte de plus en plus vite). */
+  readonly daysSinceClean: number;
+  /** Ménage en cours : avancement de 0 à 1. */
+  readonly visit: { readonly express: boolean; readonly progress: number } | null;
+  /** Appel réservé : dans combien d'heures de jeu l'équipe arrive. */
+  readonly booking: { readonly express: boolean; readonly inHours: number } | null;
+  readonly plan: {
+    readonly plan: CleaningPlanId;
+    readonly weeklyPrice: number;
     /** Jours de jeu avant le prochain prélèvement. */
     readonly nextBillDays: number;
-    readonly weeklyPrice: number;
     readonly totalPaid: number;
   } | null;
-  readonly plans: readonly FibrePlanView[];
+  readonly plans: readonly CleaningPlanView[];
+  /** Prix d'un passage (base des tarifs), d'un appel pour ce soir et d'un appel express. */
+  readonly visitPrice: number;
+  readonly callPrice: number;
+  readonly expressPrice: number;
+  /** Ce qui empêche d'appeler l'équipe maintenant (`BUSY` : déjà réservée ou sur place). */
+  readonly callBlocker: 'BUSY' | 'WRONG_STAGE' | 'NOT_ENOUGH_MONEY' | null;
+  readonly crew: readonly {
+    readonly id: string;
+    readonly name: string;
+    readonly tool: CleanerTool;
+  }[];
+  readonly visits: number;
+  readonly spent: number;
 }
 
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
@@ -741,8 +852,12 @@ export interface GameView {
   readonly pets: PetsView;
   /** Peintures et papiers peints des murs. */
   readonly walls: WallsView;
-  /** Salles des serveurs et abonnement fibre. */
+  /** Salles des serveurs. */
+  /** Saleté du bureau et entreprise de nettoyage. */
+  readonly cleaning: CleaningView;
   readonly servers: ServersView;
+  /** Abonnements (internet…). */
+  readonly subscriptions: SubscriptionsView;
   /** Sols des pièces. */
   readonly floors: FloorsView;
   readonly canIpo: boolean;
@@ -844,9 +959,13 @@ export type GameCommand =
   | { readonly type: 'coverFloor'; readonly zone: FloorZone; readonly finish: FloorFinish }
   | { readonly type: 'adoptPet'; readonly coat: PetCoat }
   | { readonly type: 'rehomePet'; readonly petId: string }
-  /** Souscrit à une offre fibre (ou en change). */
-  | { readonly type: 'subscribeFibre'; readonly plan: FibrePlanId }
-  | { readonly type: 'cancelFibre' };
+  /** Souscrit à une offre (ou change d'offre pour son service). */
+  | { readonly type: 'subscribe'; readonly offer: string }
+  | { readonly type: 'cancelSubscription'; readonly service: SubscriptionService }
+  /** Appelle l'entreprise de nettoyage (ce soir, ou en express). */
+  | { readonly type: 'callCleaning'; readonly express: boolean }
+  | { readonly type: 'subscribeCleaning'; readonly plan: CleaningPlanId }
+  | { readonly type: 'cancelCleaning' };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

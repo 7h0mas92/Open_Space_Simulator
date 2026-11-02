@@ -21,9 +21,10 @@ import {
   text,
   type SimContext,
 } from '../helpers';
+import { dirtMultiplier } from '../cleaning';
 import { leadershipEffects, NO_LEADERSHIP, type LeadershipEffects } from '../leadership';
 import { recordTaskDone, recordWork } from '../performance';
-import { isTeamMeetingTime } from '../meetings';
+import { checkDuplicateWork, dailyFocus, isTeamMeetingTime } from '../meetings';
 import { completeSpecialTask } from '../taskFlow';
 import { getClock, type SimClock } from '../time';
 
@@ -64,6 +65,8 @@ export function productivity(
   rate *= 0.6 + (0.5 * mood.moral) / 100;
   if (mood.energy < 30) rate *= 0.75;
   rate *= 1 - state.gauges.debt / BALANCE.work.debtProductivityDivider;
+  // Bureau sale (emballages, gobelets, pizzas…) : on travaille moins bien, sauf de chez soi.
+  rate *= dirtMultiplier(state, devId);
   // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf écouteurs à réduction de bruit) ;
   // la salle de réunion rend ce malus plus léger (stand-up) ou plus lourd (brainstorming).
   // Avec un scrum master, ces réunions pèsent moitié moins.
@@ -75,7 +78,9 @@ export function productivity(
     1 +
     ctx.office.teamProductivity +
     (ctx.office.seatProductivity[devId] ?? 0) +
-    leadership.productivity;
+    leadership.productivity +
+    // Sorti d'un Daily utile ce matin : il sait exactement où il en est sur son ticket.
+    dailyFocus(state, devId);
   if (identity.role === 'SENIOR_BEARD' && task.shinyFramework)
     rate *= BALANCE.roles.seniorShinyMalus;
   if (thinksInRust(state, devId)) {
@@ -281,4 +286,6 @@ export function workSystem(
     gainXp(state, ctx, devId, rate);
     if (task.progress >= task.work) completeTask(state, ctx, taskId, devId, leadership);
   }
+  // Sans Daily ce matin, deux devs finissent par coder la même chose.
+  checkDuplicateWork(state, ctx, clock);
 }

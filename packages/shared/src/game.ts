@@ -26,6 +26,7 @@ export const GAME_MODES = [
   'HARDCORE',
   'INTERNS_ONLY',
   'SHIP_IN_3',
+  'ENDLESS',
   'DAILY',
   'STORY',
 ] as const;
@@ -51,6 +52,7 @@ export const UNLOCK_MODES: readonly GameMode[] = [
   'HARDCORE',
   'INTERNS_ONLY',
   'SHIP_IN_3',
+  'ENDLESS',
 ];
 
 export const PHASES = ['GARAGE', 'SEED', 'SERIES_A', 'UNICORN', 'END'] as const;

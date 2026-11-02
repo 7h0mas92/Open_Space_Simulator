@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { LocalizedTextSchema, type LocalizedText } from '../i18n.js';
 import type { DevRole } from '../sim/components.js';
+import { ENDLESS } from '../sim/endless.js';
 import type { FurnitureId } from '../sim/furniture.js';
 import type { GameState } from '../sim/state.js';
 
@@ -35,6 +36,14 @@ const t = (fr: string, en: string): LocalizedText => ({ fr, en });
 /** La partie est-elle terminée sans faillite ? */
 const survived = (state: GameState) =>
   state.result !== null && state.result.outcome !== 'BANKRUPTCY';
+
+/** Sprints menés jusqu'au bout en mode illimité (0 dans les autres modes). */
+const endlessSprintsDone = (state: GameState) =>
+  state.mode !== 'ENDLESS'
+    ? 0
+    : state.stage === 'ENDED' || state.stage === 'DEMO'
+      ? state.sprint
+      : state.sprint - 1;
 
 /** Nombre de devs d'un profil donné dans l'équipe actuelle. */
 const countRole = (state: GameState, role: DevRole) =>
@@ -354,6 +363,40 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     title: t('Rituel du matin', 'Morning Ritual'),
     description: t('Terminer une partie Daily.', 'Finish a Daily game.'),
     check: (state) => state.mode === 'DAILY' && state.result !== null,
+  },
+  // ── Mode illimité : tenir le plus longtemps possible ────────────────────
+  {
+    id: 'endless-two-years',
+    difficulty: 'MEDIUM',
+    icon: '♾️',
+    title: t('Toujours debout', 'Still Standing'),
+    description: t(
+      'Tenir 2 ans (52 sprints) en mode illimité.',
+      'Last 2 years (52 sprints) in Endless mode.',
+    ),
+    check: (state) => endlessSprintsDone(state) >= ENDLESS.achievementSprints.twoYears,
+  },
+  {
+    id: 'endless-three-years',
+    difficulty: 'HARD',
+    icon: '🏔️',
+    title: t('Marathonien', 'Marathon Runner'),
+    description: t(
+      'Tenir 3 ans (78 sprints) en mode illimité.',
+      'Last 3 years (78 sprints) in Endless mode.',
+    ),
+    check: (state) => endlessSprintsDone(state) >= ENDLESS.achievementSprints.threeYears,
+  },
+  {
+    id: 'endless-five-years',
+    difficulty: 'LEGENDARY',
+    icon: '🗿',
+    title: t('Increvable', 'Unkillable'),
+    description: t(
+      'Tenir 5 ans (130 sprints) en mode illimité.',
+      'Last 5 years (130 sprints) in Endless mode.',
+    ),
+    check: (state) => endlessSprintsDone(state) >= ENDLESS.achievementSprints.fiveYears,
   },
   // ── Ajoutés avec l'écran Succès : plus ou moins faciles, certains secrets ─
   {

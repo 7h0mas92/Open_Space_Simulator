@@ -1,4 +1,4 @@
-import { BALANCE, type GameState } from '@oss/shared';
+import { BALANCE, endlessExtraChurn, type GameState } from '@oss/shared';
 import { resignDev } from '../devs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from '../economy';
 import {
@@ -29,14 +29,20 @@ function economy(state: GameState): void {
   repayLoan(state, 1);
 }
 
-/** Croissance organique (hype) et départs (churn, aggravé par l'instabilité). */
+/**
+ * Croissance organique (hype) et départs (churn, aggravé par l'instabilité et, en mode
+ * illimité, par la concurrence après les 18 mois).
+ */
 function users(state: GameState): void {
   const { users: u } = BALANCE;
   const { hype, stability } = state.gauges;
   const instability = 1 - stability / 100;
   const growth = state.gauges.users * u.organicDailyGrowth * (hype / 100);
   const churn =
-    state.gauges.users * (u.baseDailyChurn + u.instabilityDailyChurn * instability * instability);
+    state.gauges.users *
+    (u.baseDailyChurn +
+      u.instabilityDailyChurn * instability * instability +
+      endlessExtraChurn(state.mode, state.sprint));
   addUsers(state, growth);
   addUsers(state, -churn);
 }

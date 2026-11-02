@@ -1,7 +1,11 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin), avec le placement à
-> la demi-case. Dernier commit de `develop` au moment de l'écriture : `2716f45` (PR #132).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin) : partage du travail
+> en cours entre Thomas et Melvin, voir [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md).
+> Dernier commit de `develop` : `a77f906` (PR #144), puis la doc du placement à la demi-case
+> (PR #141) ; dernier commit de `main` : `d28c381`
+> (PR #143). **`main` a 5 PR absentes de `develop`** (#121, #137, #138, #142, #143) : à
+> réintégrer en premier (tâche T1 de la passation).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -59,10 +63,21 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 
 ## Travaux en cours
 
-| Sujet                                               | Qui             | État                             |
-| --------------------------------------------------- | --------------- | -------------------------------- |
-| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122) |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours             |
+| Sujet                                               | Qui             | État                                              |
+| --------------------------------------------------- | --------------- | ------------------------------------------------- |
+| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                  |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Dans `main` (#121), pas encore dans `develop`     |
+| Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135)   |
+| Offres internet et température des salles (#129)    | Melvin + Claude | À rebrancher sur le modèle des abonnements (#126) |
+| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation         |
+| Remettre `main` dans `develop` (T1)                 | Thomas          | À faire en premier (13 fichiers en conflit)       |
+| Histoire longue, rivaux, arbres devs et R&D (T2-T4) | Thomas          | Proposition prête, rien de codé                   |
+| Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                        |
+| Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                               |
+
+**Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
+progression et la vie de l'équipe. Détail, dépendances, fichiers à éviter et prompts prêts à coller
+dans [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md).
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
 10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
@@ -76,18 +91,11 @@ grandes entreprises (Apple, Google…), **sans jamais citer leur nom directement
 ou allusions seulement, comme pour les super-héros inventés).
 
 **Proposition à valider pour les deux modes** : les objets débloqués sont utilisables en Normal,
-Facile et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
+Facile, Illimité et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
 rejeu anti-triche du serveur équitables). Déblocages gardés sur le compte, et en local pour les
 invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shared/src/game.ts`).
 
 ## En attente d'une décision
-
-- **GitHub Actions bloqué** : depuis le 13 octobre, chaque job de la CI s'arrête en 3 secondes
-  sans runner ni log, sur toutes les PR (#121 à #135). À vérifier dans les réglages de facturation
-  du compte GitHub (minutes ou limite de dépenses). En attendant, vérifier en local avant de
-  fusionner. Le mode Histoire (#122, mode `STORY`) est dans `main` : les PR ouvertes qui ajoutent
-  un mode (#121 Carrière, #135 Illimité, #130 difficulté par mode) doivent intégrer `main` et
-  garder `STORY` dans `GAME_MODES` (hors `MENU_MODES` et `UNLOCK_MODES`).
 
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
@@ -193,6 +201,14 @@ pnpm dev   # jeu sur localhost:5173, API et Swagger sur localhost:3000/docs
 
 Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 
+- **Abonnements** (`shared/sim/subscriptions.ts`, `client/src/simulation/subscriptions.ts`) : tout
+  service payé à intervalle régulier y passe. Ajouter un service = son id dans
+  `SUBSCRIPTION_SERVICES`, sa fiche dans `SUBSCRIPTION_SERVICE_INFO`, ses offres dans
+  `SUBSCRIPTION_OFFERS`, une installation éventuelle dans `REQUIREMENT_CHECKS`, ses textes dans
+  `subscriptions.services.<id>`. Les autres systèmes lisent `activeOffer(state, service)`.
+- **Difficulté d'un mode** : toujours via `difficultyOf(mode)` (`shared/sim/difficulty.ts`),
+  jamais un `mode === 'EASY'` codé en dur ; le profil neutre (1 partout) garde le Normal et le
+  Daily identiques au bit près.
 - **Simulation déterministe** (`packages/client/src/simulation`, ECS en TypeScript pur) : RNG
   sfc32 dans l'état, 1 pas = 30 min, 672 pas par sprint, 39 sprints. ESLint y interdit three,
   React, le DOM, `Math.random`, `Date.now`, `Math.log/exp/pow/sin`.
@@ -200,6 +216,7 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   graine à part (`seed#tasks#…`, `seed#meeting#tick`, `seed#pet#n`, `seed#web-roles#sprint`…).
   Sinon les replays, le Daily, les sauvegardes et les scores déjà enregistrés cassent. Les PR
   l'écrivent « aucun tirage » ou « graine à part ».
+- **Abonnements payés à la semaine** (fibre, ménage) : tick `paidUntil`, facture dans un système, ligne coupée si la trésorerie manque, coût mensuel ajouté au calcul des mois de trésorerie (`runwayMonths`).
 - **Nouveaux champs d'état** : optionnels ou `.default()` en Zod (anciennes sauvegardes) ; un
   identifiant d'objet renommé passe par une table de traduction (`LEGACY_FURNITURE_IDS`,
   `LEGACY_KITCHEN_ITEMS`).
@@ -242,28 +259,27 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 
 Le plus récent en haut. Une ligne par travail terminé.
 
-| Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
-| -------- | --------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 02/11    | Melvin + Claude | #132              | Placement à la demi-case : objets décalables d'une demi-case, demi-case libre le long des murs fins utilisable, centrage d'un objet de 3 cases dans 4.                                                                                           |
-| 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
-| 17/10    | Melvin + Claude | #123              | Branche `develop` créée depuis `main` : les PR vont vers `develop`, puis `develop` → `main` après les tests de Thomas et Melvin.                                                                                                                 |
-| 17/10    | Melvin + Claude | à venir           | Ajout de `ARBORESCENCE.md` : rôle de chaque fichier. Toute PR qui ajoute ou déplace un fichier met sa ligne à jour.                                                                                                                              |
-| 17/10    | Melvin + Claude | fix/objet_fantome | Plus de décorations de saison au sol (fantôme, chaudron, sapin…) : ni déplaçables ni rangeables. Restent guirlandes et objets sur les bureaux. À valider par Thomas (fonctionnalité retirée).                                                    |
-| 17/10    | Melvin + Claude | fix/sol_couleur   | Sol d'origine identique dans toutes les pièces (`BASE_FLOOR_COLORS`), plus de décor de sol tiré de la graine ; seul le rayon Sols le change.                                                                                                     |
-| 13/10    | Thomas + Claude | #122              | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
-| 13/10    | Thomas + Claude | #120              | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
-| 13/10    | Thomas + Claude | #122              | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
-| 13/10    | Thomas + Claude | #120              | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
-| 11/10    | Melvin          | #109 à #119       | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
-| 10–11/10 | Melvin          | #93 à #108        | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |
-| 11/10    | Melvin          | #109 à #119       | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
-| 10–11/10 | Melvin          | #93 à #108        | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |
-| 9–10/10  | Melvin          | #37 à #92         | Filtres d'équipe, pause pendant les cartes, augmentations, levées de fonds, tâches dynamiques et par métier, réunions, fenêtres, chats, équipe web, musiques, meubles détaillés, papiers peints, mise à jour du jeu installé, New York réaliste. |
-| 9–10/10  | Melvin          | #37 à #92         | Filtres d'équipe, pause pendant les cartes, augmentations, levées de fonds, tâches dynamiques et par métier, réunions, fenêtres, chats, équipe web, musiques, meubles détaillés, papiers peints, mise à jour du jeu installé, New York réaliste. |
-| 8/10     | Thomas + Claude | #18 à #36         | Équilibrage, HUD, télétravail, back-office, personnages et packs, horloge continue, saisons, filiales, pauses.                                                                                                                                   |
-| 8/10     | Thomas + Claude | #18 à #36         | Équilibrage, HUD, télétravail, back-office, personnages et packs, horloge continue, saisons, filiales, pauses.                                                                                                                                   |
-| 6–7/10   | Thomas + Claude | #1 à #17          | Les 12 étapes du plan, construction, succès, menu.                                                                                                                                                                                               |
-| 6–7/10   | Thomas + Claude | #1 à #17          | Les 12 étapes du plan, construction, succès, menu.                                                                                                                                                                                               |
+| Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                             |
+| -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/11    | Melvin + Claude | #132              | Placement à la demi-case : objets décalables d'une demi-case, demi-case libre le long des murs fins utilisable, centrage d'un objet de 3 cases dans 4.                                                                                                                                                                                                                                 |
+| 02/11    | Melvin + Claude | (cette PR)        | Partage du travail : `docs/PASSATION-THOMAS.md` (tâches T1 à T6 pour Thomas avec un prompt chacune, M1 à M4 pour Melvin) et `docs/proposition-mode-histoire.md`. `main` a 5 PR absentes de `develop` : à réintégrer d'abord.                                                                                                                                                           |
+| 02/11    | Thomas + Claude | #123 à #135       | CI de nouveau active. `develop` avancé jusqu'à `main` (mode Histoire), puis 11 PR de Melvin fusionnées dans `develop` après résolution des conflits : #123 à #128, #130 à #133, #135. Ménage à côté du modèle des abonnements, frais de l'illimité et du Hardcore cumulés, doublons du journal retirés. Restent #129 (à refaire sur les abonnements) et #134 (brouillon).              |
+| 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                                                                                                                                                                 |
+| 18/10    | Melvin + Claude | (PR develop)      | Saleté du bureau (0 à 100 %, -20 % de travail à 50 %) et entreprise de nettoyage Nickel Chrome : appel, express, abonnement hebdo (`shared/sim/cleaning.ts`, `simulation/cleaning.ts`, `render/cleaning.ts`, bouton 🧹). Champ `cleaning` par défaut ; règle qui change toutes les parties (anciens replays de scores divergent). À brancher sur le futur modèle commun d'abonnements. |
+| 18/10    | Melvin + Claude | develop           | Difficulté par mode (`difficultyOf`) : Facile moins généreux, Hardcore vraiment dur. Normal et Daily inchangés.                                                                                                                                                                                                                                                                        |
+| 18/10    | Melvin + Claude | develop           | Mode illimité `ENDLESS` (pression après 18 mois) et classement des entreprises (menu et jeu, en ligne ou appareil). Un mode non comparable va dans `GLOBAL_EXCLUDED_MODES`.                                                                                                                                                                                                            |
+| 17/10    | Melvin + Claude | #123              | Branche `develop` créée depuis `main` : les PR vont vers `develop`, puis `develop` → `main` après les tests de Thomas et Melvin.                                                                                                                                                                                                                                                       |
+| 17/10    | Melvin + Claude | à venir           | Ajout de `ARBORESCENCE.md` : rôle de chaque fichier. Toute PR qui ajoute ou déplace un fichier met sa ligne à jour.                                                                                                                                                                                                                                                                    |
+| 17/10    | Melvin + Claude | fix/objet_fantome | Plus de décorations de saison au sol (fantôme, chaudron, sapin…) : ni déplaçables ni rangeables. Restent guirlandes et objets sur les bureaux. À valider par Thomas (fonctionnalité retirée).                                                                                                                                                                                          |
+| 17/10    | Melvin + Claude | fix/sol_couleur   | Sol d'origine identique dans toutes les pièces (`BASE_FLOOR_COLORS`), plus de décor de sol tiré de la graine ; seul le rayon Sols le change.                                                                                                                                                                                                                                           |
+| 17/10    | Melvin + Claude | (develop)         | Rubrique Abonnements (🧾 en haut) : modèle commun `subscriptions` (un abonnement par service, facturation à l'échéance, coupure si impayé, `requires`). La fibre y est passée ; ménage, internet et sécurité s'y branchent.                                                                                                                                                            |
+| 13/10    | Thomas + Claude | #122              | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                                                                                                                                                            |
+| 13/10    | Thomas + Claude | #120              | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                                                                                                                                                                    |
+| 11/10    | Melvin          | #109 à #119       | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                                                                                                                                                        |
+| 10–11/10 | Melvin          | #93 à #108        | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                                                                                                                                                                     |
+| 9–10/10  | Melvin          | #37 à #92         | Filtres d'équipe, pause pendant les cartes, augmentations, levées de fonds, tâches dynamiques et par métier, réunions, fenêtres, chats, équipe web, musiques, meubles détaillés, papiers peints, mise à jour du jeu installé, New York réaliste.                                                                                                                                       |
+| 8/10     | Thomas + Claude | #18 à #36         | Équilibrage, HUD, télétravail, back-office, personnages et packs, horloge continue, saisons, filiales, pauses.                                                                                                                                                                                                                                                                         |
+| 6–7/10   | Thomas + Claude | #1 à #17          | Les 12 étapes du plan, construction, succès, menu.                                                                                                                                                                                                                                                                                                                                     |
 
 ## Historique des PR
 

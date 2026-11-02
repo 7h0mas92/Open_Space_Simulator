@@ -1,8 +1,10 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import {
   STORY_MISSION_IDS,
+  companyName,
   getStoryMission,
   getStoryReward,
+  isEndless,
   type SprintObjective,
 } from '@oss/shared';
 import { MissionGoals } from '../story/MissionGoals';
@@ -566,6 +568,10 @@ function EndScreen({ view }: { view: GameView }) {
   if (!result) return null;
   const headline = localized(result.headline, i18n.language);
   const valuation = formatGauge('treasury', result.valuation, i18n.language);
+  const endless = isEndless(view.mode);
+  const company = companyName(view.seed);
+  const sprints = endless ? String(result.sprint) : `${result.sprint}/${view.time.totalSprints}`;
+  const sprintsLabel = endless ? t('end.sprintsEndless') : t('end.sprints');
 
   async function share() {
     if (!result) return;
@@ -578,7 +584,7 @@ function EndScreen({ view }: { view: GameView }) {
           result.mission
             ? t(result.mission.success ? 'story.end.success' : 'story.end.failure')
             : `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
-          `${t(`modes.${view.mode}.name`)} · ${t('end.sprints')} ${result.sprint}/${view.time.totalSprints}`,
+          `${company} · ${t(`modes.${view.mode}.name`)} · ${sprintsLabel} ${sprints}`,
           t('end.shareAchievements', { count: view.achievements.length }),
         ],
         footer: window.location.host,
@@ -600,14 +606,14 @@ function EndScreen({ view }: { view: GameView }) {
       <h2>{t(`end.outcomes.${result.outcome}`)}</h2>
       <p className="headline">{headline}</p>
       <dl className="demo-stats">
+        <dt>{t('leaderboard.company')}</dt>
+        <dd>{company}</dd>
         <dt>{t('demo.valuation')}</dt>
         <dd>{valuation}</dd>
         <dt>{t('end.ownership')}</dt>
         <dd>{Math.round(result.ownership * 100)} %</dd>
-        <dt>{t('end.sprints')}</dt>
-        <dd>
-          {result.sprint}/{view.time.totalSprints}
-        </dd>
+        <dt>{sprintsLabel}</dt>
+        <dd>{sprints}</dd>
         <dt>{t('achievements.title')}</dt>
         <dd>{view.achievements.length}</dd>
       </dl>

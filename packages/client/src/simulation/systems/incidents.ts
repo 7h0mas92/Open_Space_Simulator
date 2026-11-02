@@ -1,4 +1,10 @@
-import { BALANCE, type EntityId, type GameState, type LocalizedText } from '@oss/shared';
+import {
+  BALANCE,
+  difficultyOf,
+  type EntityId,
+  type GameState,
+  type LocalizedText,
+} from '@oss/shared';
 import { forceCard } from '../../events/draw';
 import { addGauge, addUsers, devsWithRole, notify, text, type SimContext } from '../helpers';
 import { holdCrisisMeeting } from '../meetings';
@@ -62,7 +68,9 @@ export function incidentSystem(state: GameState, ctx: SimContext, clock: SimCloc
 
   if (clock.hour === 15) {
     const debt = state.gauges.debt / 100;
-    if (rng.chance(BALANCE.stability.debtOutageMax * debt * debt)) {
+    if (
+      rng.chance(BALANCE.stability.debtOutageMax * debt * debt * difficultyOf(state.mode).outages)
+    ) {
       prodDown(
         state,
         ctx,
@@ -84,7 +92,10 @@ export function incidentSystem(state: GameState, ctx: SimContext, clock: SimCloc
         'Friday, 5pm. Nobody deploys. Nobody.',
       ]),
     );
-    const odds = BALANCE.stability.fridayOutageMax * (1 - state.gauges.stability / 100);
+    const odds =
+      BALANCE.stability.fridayOutageMax *
+      (1 - state.gauges.stability / 100) *
+      difficultyOf(state.mode).outages;
     if (rng.chance(odds)) {
       state.stats.fridayOutages += 1;
       state.stats.fridayOutageStreak += 1;
