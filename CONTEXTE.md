@@ -235,6 +235,9 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 - Captures headless : Chromium logiciel tourne à ~2 fps ; le jeu passe en qualité basse quand
   WebGL n'a pas de carte graphique.
 - GitHub Pages : source « GitHub Actions », `BASE_PATH=/Open_Space_Simulator/`.
+- Un abonnement global branché dans un `useEffect` doit renvoyer un nettoyage qui permet de le
+  rebrancher : en `pnpm dev`, StrictMode monte l'application deux fois (c'est ce qui coupait la
+  sauvegarde automatique, voir `installGameLifecycle`).
 
 ---
 
@@ -244,6 +247,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 02/11    | Thomas + Claude | #137        | Bouton « Nouvelle partie » sous « Continuer ». Sauvegarde auto rétablie en `pnpm dev` (StrictMode). À valider.                                                                                                                                   |
 | 02/11    | Thomas + Claude | #121        | Mode Carrière repris après la pause : `main` intégré (mode Histoire), modes `STORY` et `CAREER` côte à côte, migrations Prisma dans l'ordre, CI verte. Validé par Thomas et fusionné.                                                            |
 | 02/11    | Thomas + Claude | #122        | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
 | 13/10    | Thomas + Claude | #122        | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |

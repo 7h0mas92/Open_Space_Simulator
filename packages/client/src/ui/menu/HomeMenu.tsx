@@ -25,8 +25,9 @@ export type MenuPage =
   | 'career';
 
 /**
- * Écran d'accueil : titre et bouton Jouer / Continuer, choix du mode en cartes,
- * navigation vers les pages du méta-jeu, compte et langue en haut.
+ * Écran d'accueil : titre et bouton Jouer (ou Continuer et Nouvelle partie quand une partie
+ * est en cours), choix du mode en cartes, navigation vers les pages du méta-jeu, compte et
+ * langue en haut.
  */
 export function HomeMenu({
   onOpen,
@@ -124,6 +125,22 @@ export function HomeMenu({
                   <span className="cta-text">
                     <strong>{t('menu.play')}</strong>
                     <small>{t('menu.playHint', { mode: t(`modes.${suggested}.name`) })}</small>
+                  </span>
+                </button>
+              )}
+              {/* Une partie en cours ne doit pas cacher le lancement d'une nouvelle. */}
+              {latest && (
+                <button
+                  type="button"
+                  className="cta cta-secondary"
+                  disabled={loading}
+                  onClick={() => play(suggested)}
+                  data-testid="new-game"
+                >
+                  <span aria-hidden="true">＋</span>
+                  <span className="cta-text">
+                    <strong>{t('menu.newGame')}</strong>
+                    <small>{t('menu.newGameHint', { mode: t(`modes.${suggested}.name`) })}</small>
                   </span>
                 </button>
               )}

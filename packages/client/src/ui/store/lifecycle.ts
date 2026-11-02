@@ -109,10 +109,17 @@ function onViewChange(view: GameView | null, previous: GameView | null): void {
 
 let installed: (() => void) | null = null;
 
-/** Branche les effets de bord (une seule fois, au démarrage de l'application). */
+/**
+ * Branche les effets de bord (une seule fois, au démarrage de l'application). Le retour les
+ * débranche et permet de les rebrancher : en développement, React (StrictMode) monte deux fois
+ * l'application, et sans cela la sauvegarde automatique ne se faisait plus.
+ */
 export function installGameLifecycle(): () => void {
   installed ??= useGame.subscribe((state, previous) => onViewChange(state.view, previous.view));
-  return installed;
+  return () => {
+    installed?.();
+    installed = null;
+  };
 }
 
 /** À la connexion : envoie les sauvegardes et les succès faits hors ligne. */

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../../src/i18n';
 import { pendingAchievements } from '../../../src/save/achievements';
+import { AUTOSAVE_SLOT, saves } from '../../../src/save/saves';
 import { MemoryStore, setLocalStore } from '../../../src/save/storage';
 import { App } from '../../../src/ui/App';
 import { AchievementsPage } from '../../../src/ui/meta/Achievements';
@@ -11,7 +12,7 @@ import { Leaderboard } from '../../../src/ui/meta/Leaderboard';
 import { Profile } from '../../../src/ui/meta/Profile';
 import { useGame } from '../../../src/ui/store/game';
 import { useSession } from '../../../src/ui/store/session';
-import { calls, mockApi } from './helpers';
+import { calls, mockApi, saveData } from './helpers';
 
 const USER = {
   id: 'u1',
@@ -333,5 +334,23 @@ describe('App : menu du méta-jeu', () => {
     render(<App />);
     expect(await screen.findByRole('button', { name: /Back-office/ })).toBeInTheDocument();
     expect(screen.getByText('Administrateur')).toBeInTheDocument();
+  });
+});
+
+describe('Accueil avec une partie en cours', () => {
+  it('propose de continuer et de lancer une nouvelle partie', async () => {
+    mockApi({});
+    await saves.write(AUTOSAVE_SLOT, saveData('en-cours'), 'builtin', false);
+    const start = vi.fn(async () => undefined);
+    const original = useGame.getState().start;
+    useGame.setState({ start });
+    try {
+      render(<App />);
+      expect(await screen.findByRole('button', { name: /Continuer.*sprint 1/ })).toBeVisible();
+      await userEvent.click(screen.getByRole('button', { name: /Nouvelle partie/ }));
+      expect(start).toHaveBeenCalledWith({ mode: 'EASY' });
+    } finally {
+      useGame.setState({ start: original });
+    }
   });
 });
