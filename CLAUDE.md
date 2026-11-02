@@ -771,9 +771,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   ne crée plus de base Render. En local, docker compose ne change pas.
 
 Reste à faire :
-- Comptes en ligne : choisir le mot de passe de la base Supabase, déployer le serveur sur Render
-  (`render.yaml`, `DATABASE_URL` Supabase) et créer l'application GitHub OAuth (étapes dans le
-  README, section Déploiement). Le jeu invité est en ligne sur
+- Comptes en ligne : le serveur tourne sur Render (`https://oss-server-e90i.onrender.com`,
+  base Supabase remplie par le seed) et `vercel.json` pointe dessus. Restent le projet Vercel,
+  `CLIENT_URL` sur Render et l'application GitHub OAuth (étapes dans le README, section
+  Déploiement). Le jeu invité est en ligne sur
   https://7h0mas92.github.io/Open_Space_Simulator/ et se redéploie à chaque fusion.
 - Effets sonores et ambiance : le lecteur Howler est prêt (`audio/manifest.ts`), les fichiers
   restent à déposer (les bruits de clavier et de souris sont faits).
