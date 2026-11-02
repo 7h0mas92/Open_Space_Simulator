@@ -51,6 +51,7 @@ export const PANELS = [
   'meetings',
   'pets',
   'servers',
+  'subscriptions',
   'funding',
   'mission',
   'dashboard',

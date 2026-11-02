@@ -17,6 +17,7 @@ import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { FibreSubscriptionSchema } from './serverRoom.js';
+import { SubscriptionsSchema } from './subscriptions.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
 import { FloorFinishesSchema } from './floors.js';
@@ -288,7 +289,7 @@ export const NOTIFICATION_KINDS = [
   'CRISIS_MEETING',
   'PET_ADOPTED',
   'PET_REHOMED',
-  /** Abonnement fibre souscrit, changé ou résilié. */
+  /** Abonnement internet (fibre) souscrit, changé ou résilié. */
   'FIBRE_SUBSCRIBED',
   'FIBRE_CANCELLED',
   /** L'opérateur coupe la ligne : la trésorerie ne couvrait plus la semaine. */
@@ -404,8 +405,13 @@ export const GameStateSchema = z.object({
   pets: z.array(PetSchema).max(PETS.max).default([]),
   /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */
   raises: RaisesStateSchema.default(emptyRaisesState),
-  /** Abonnement fibre en cours (null : pas d'abonnement, ou sauvegarde d'avant son ajout). */
+  /**
+   * Ancien champ de l'abonnement fibre, d'avant la rubrique Abonnements : repris dans
+   * `subscriptions` au chargement (`migrateLegacyFibre`), toujours null ensuite.
+   */
   fibre: FibreSubscriptionSchema.nullable().default(null),
+  /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */
+  subscriptions: SubscriptionsSchema.default([]),
   /**
    * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
    * les mêmes idées. Absent des vieilles sauvegardes.

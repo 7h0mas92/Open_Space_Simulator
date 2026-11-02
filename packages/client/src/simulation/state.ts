@@ -103,6 +103,7 @@ export function createEmptyState(config: GameConfig): GameState {
     pets: [],
     raises: emptyRaisesState(),
     fibre: null,
+    subscriptions: [],
     recentTaskTitles: [],
     story: mission ? { missionId: mission.id, startSprint: 1 } : null,
     unlocks: gameUnlocks(config),

@@ -30,7 +30,8 @@ import { meetingFormat } from './meetings';
 import { petEffects } from './pets';
 import { projectionEffects } from './projection';
 import { floorEffects } from './floors';
-import { fibreEffects, serverGearEffects } from './serverRoom';
+import { serverGearEffects } from './serverRoom';
+import { subscriptionEffects } from './subscriptions';
 import { wallEffects } from './walls';
 import { colorUnlocked, hasUnlock } from './unlocks';
 
@@ -648,10 +649,11 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.quality += e.quality ?? 0;
     effects.hypePerDay += e.hypePerDay ?? 0;
   }
-  // Matériel des salles des serveurs qui tournent, et fibre si elle arrive dans une box.
-  const fibre = fibreEffects(state);
-  for (const e of fibre ? [...serverGearEffects(state), fibre] : serverGearEffects(state)) {
+  // Matériel des salles des serveurs qui tournent, et abonnements actifs (fibre arrivée dans une
+  // box, etc.).
+  for (const e of [...serverGearEffects(state), ...subscriptionEffects(state)]) {
     effects.moral += e.moral ?? 0;
+    effects.quality += e.quality ?? 0;
     effects.teamProductivity += e.teamProductivity ?? 0;
     effects.hypePerDay += e.hypePerDay ?? 0;
     effects.stabilityPerDay += e.stabilityPerDay ?? 0;

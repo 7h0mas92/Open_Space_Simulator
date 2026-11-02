@@ -194,6 +194,11 @@ pnpm dev   # jeu sur localhost:5173, API et Swagger sur localhost:3000/docs
 
 Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 
+- **Abonnements** (`shared/sim/subscriptions.ts`, `client/src/simulation/subscriptions.ts`) : tout
+  service payé à intervalle régulier y passe. Ajouter un service = son id dans
+  `SUBSCRIPTION_SERVICES`, sa fiche dans `SUBSCRIPTION_SERVICE_INFO`, ses offres dans
+  `SUBSCRIPTION_OFFERS`, une installation éventuelle dans `REQUIREMENT_CHECKS`, ses textes dans
+  `subscriptions.services.<id>`. Les autres systèmes lisent `activeOffer(state, service)`.
 - **Simulation déterministe** (`packages/client/src/simulation`, ECS en TypeScript pur) : RNG
   sfc32 dans l'état, 1 pas = 30 min, 672 pas par sprint, 39 sprints. ESLint y interdit three,
   React, le DOM, `Math.random`, `Date.now`, `Math.log/exp/pow/sin`.
@@ -247,6 +252,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 | 17/10    | Melvin + Claude | à venir           | Ajout de `ARBORESCENCE.md` : rôle de chaque fichier. Toute PR qui ajoute ou déplace un fichier met sa ligne à jour.                                                                                                                              |
 | 17/10    | Melvin + Claude | fix/objet_fantome | Plus de décorations de saison au sol (fantôme, chaudron, sapin…) : ni déplaçables ni rangeables. Restent guirlandes et objets sur les bureaux. À valider par Thomas (fonctionnalité retirée).                                                    |
 | 17/10    | Melvin + Claude | fix/sol_couleur   | Sol d'origine identique dans toutes les pièces (`BASE_FLOOR_COLORS`), plus de décor de sol tiré de la graine ; seul le rayon Sols le change.                                                                                                     |
+| 17/10    | Melvin + Claude | (develop)         | Rubrique Abonnements (🧾 en haut) : modèle commun `subscriptions` (un abonnement par service, facturation à l'échéance, coupure si impayé, `requires`). La fibre y est passée ; ménage, internet et sécurité s'y branchent.                      |
 | 13/10    | Thomas + Claude | #122              | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
 | 13/10    | Thomas + Claude | #120              | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
 | 13/10    | Thomas + Claude | #122              | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
