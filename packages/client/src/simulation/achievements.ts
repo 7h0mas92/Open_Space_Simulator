@@ -17,6 +17,9 @@ export function unlockAchievement(state: GameState, ctx: SimContext, id: string)
  * l'état : le rejeu côté serveur retrouve donc exactement les mêmes succès.
  */
 export function checkAchievements(state: GameState, ctx: SimContext): void {
+  // Une mission du mode Histoire s'arrête en « zombie » : les succès liés à l'issue de la
+  // partie (rachat, IPO, zombie, faillite…) n'y ont pas de sens.
+  if (state.mode === 'STORY' && state.result) return;
   for (const achievement of CHECKED) {
     if (!state.achievements.includes(achievement.id) && achievement.check?.(state))
       unlockAchievement(state, ctx, achievement.id);
