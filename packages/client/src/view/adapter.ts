@@ -56,6 +56,8 @@ import {
   cleaningCallPrice,
   dirtProductivity,
   HOSTING_SAVING_MAX,
+  saturationPenalty,
+  firstPayment,
   SUBSCRIPTION_SERVICES,
   SUBSCRIPTION_SERVICE_INFO,
   hasFibreBox,
@@ -106,14 +108,21 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
+import { visitPrice } from '../simulation/cleaning';
 import {
+  offerLoad,
   offerPrice,
   requirementMet,
+  serviceUsers,
   subscriptionOf,
   subscriptionsMonthly,
 } from '../simulation/subscriptions';
-import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
-import { visitPrice } from '../simulation/cleaning';
+import {
+  hostingSaving,
+  isSummer,
+  serverRoomItems,
+  serverRoomStatuses,
+} from '../simulation/serverRoom';
 import type {
   StoryView,
   CandidateView,
@@ -803,11 +812,18 @@ function serversView(state: GameState): ServersView {
       kind: room.itemId,
       running: room.running,
       missing: [...room.missing],
+      heat: room.heat,
+      cooling: room.cooling,
+      temperature: room.temperature,
+      level: room.level,
+      monitored: room.monitored,
+      efficiency: room.efficiency,
       gear: room.gear.length,
       slots: getFurniture(room.itemId)?.surfaceSlots ?? 0,
     })),
     hostingSaving: hostingSaving(state),
     hostingSavingMax: HOSTING_SAVING_MAX,
+    summer: isSummer(state),
     hasBox: hasFibreBox(serverRoomItems(state)),
   };
 }
@@ -827,6 +843,9 @@ function subscriptionOfferView(
     price,
     periodDays: offer.periodDays,
     minPhase: offer.minPhase,
+    setupFee: offer.setupFee ?? 0,
+    firstPayment: firstPayment(offer, price),
+    maxUsers: offer.maxUsers ?? null,
     requires: offer.requires ?? null,
     blocker:
       currentId === offer.id
@@ -837,7 +856,7 @@ function subscriptionOfferView(
             ? 'WRONG_STAGE'
             : !requirementMet(state, offer)
               ? 'REQUIREMENT'
-              : state.gauges.treasury < price
+              : state.gauges.treasury < firstPayment(offer, price)
                 ? 'NOT_ENOUGH_MONEY'
                 : null,
   };
@@ -861,6 +880,7 @@ function subscriptionsView(state: GameState): SubscriptionsView {
             since: current.subscription.since,
             totalPaid: current.subscription.totalPaid,
             monthly: monthlyPrice(current.offer, offerPrice(state, current.offer)),
+            penalty: saturationPenalty(offerLoad(state, current.offer)),
           }
         : null,
       offers: offersOf(service).map((offer) => subscriptionOfferView(state, offer, currentId)),
@@ -868,6 +888,7 @@ function subscriptionsView(state: GameState): SubscriptionsView {
   });
   return {
     services,
+    users: serviceUsers(state),
     count: services.filter((service) => service.current !== null).length,
     monthlyTotal: subscriptionsMonthly(state),
   };
