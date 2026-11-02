@@ -5,6 +5,7 @@ import { SelectionBar } from '../build/SelectionBar';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Kanban } from '../kanban/Kanban';
 import { Credits } from '../settings/Credits';
+import { Leaderboard } from '../meta/Leaderboard';
 import { SaveSlots } from '../menu/SaveSlots';
 import { SlackPanel } from '../slack/SlackPanel';
 import { SlackDock } from '../slack/SlackDock';
@@ -74,6 +75,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <SlackPanel />;
     case 'saves':
       return <SaveSlots mode="save" />;
+    case 'leaderboard':
+      return <Leaderboard inGame />;
     case 'settings':
       return <SettingsPanel />;
     case 'credits':

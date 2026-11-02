@@ -281,6 +281,8 @@ export const NOTIFICATION_KINDS = [
   'PITCH_FAILED',
   'PHASE_UP',
   'SEASON_STARTED',
+  /** Mode illimité : la concurrence se renforce (tous les 6 mois après les 18 premiers). */
+  'COMPETITION_RISES',
   'ACQUISITION_OFFER',
   'VENTURE_FOUNDED',
   'VENTURE_DIED',

@@ -279,6 +279,7 @@
   },
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
+    "sprintEndless": "Sprint {{sprint}}",
     "day": "{{day}} {{time}}",
     "birthday": "Anniversaire de {{names}} : gâteau au bureau !",
     "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
@@ -323,7 +324,8 @@
     "mission": "Mission",
     "subscriptions": "Abonnements",
     "cleaning": "Ménage",
-    "tickets": "Kanbanana, l’appli de tickets"
+    "tickets": "Kanbanana, l’appli de tickets",
+    "leaderboard": "Classement"
   },
   "kanban": {
     "columns": {
@@ -1001,6 +1003,7 @@
     },
     "ownership": "Ta part du capital",
     "sprints": "Sprints joués",
+    "sprintsEndless": "Sprints tenus",
     "again": "Rejouer",
     "menu": "Menu principal",
     "share": "Partager",
@@ -1038,6 +1041,11 @@
       "name": "Défi 3 sprints",
       "rule": "Cette app doit sortir en 3 sprints.",
       "tag": "Partie courte"
+    },
+    "ENDLESS": {
+      "name": "Illimité",
+      "rule": "Pas de fin : tiens le plus longtemps possible, la concurrence monte après 18 mois.",
+      "tag": "Jusqu'où ?"
     },
     "DAILY": {
       "name": "Daily",
@@ -1081,7 +1089,19 @@
     "watch": "Revoir la partie de {{pseudo}}",
     "empty": "Personne n'a encore publié de score ici.",
     "error": "Impossible de joindre le serveur.",
-    "replayError": "Impossible de charger ce replay."
+    "replayError": "Impossible de charger ce replay.",
+    "local": "Sur cet appareil",
+    "localHint": "Tes meilleures entreprises, gardées sur cet appareil, même sans compte.",
+    "localEmpty": "Termine une partie pour inscrire ta première entreprise ici.",
+    "onlineHint": "Les meilleures entreprises de tous les joueurs connectés.",
+    "offline": "Le classement en ligne a besoin du serveur du jeu, qui n'est pas joignable ici. Le classement de cet appareil fonctionne toujours.",
+    "company": "Entreprise",
+    "mode": "Mode",
+    "date": "Date",
+    "endlessHint": "En mode illimité, le classement suit les sprints tenus, puis la valorisation.",
+    "you": "toi",
+    "online": "En ligne",
+    "sources": "Origine du classement"
   },
   "replay": {
     "banner": "Replay de {{pseudo}} : commande {{played}}/{{total}}",
@@ -1367,6 +1387,14 @@
           "shipTips": {
             "title": "Livrer, livrer, livrer",
             "body": "Seules les features comptent pour les 5 : le refacto, le bugfix et l'infra n'en font pas partie.\n\n• Remplis « À faire » de petites features dès le premier sprint.\n• Recrute dès le premier sprint : chaque dev en plus, ce sont des points livrés.\n• Ne t'inquiète pas trop de la dette : tu n'auras pas le temps d'en payer le prix.\n\nLe bilan de chaque démo indique combien de features le sprint a livrées."
+          },
+          "endless": {
+            "title": "Le mode illimité",
+            "body": "Ici, la partie ne s'arrête pas au bout de 18 mois (39 sprints). Elle dure tant que ta trésorerie tient.\n\nAprès le 39e sprint, la concurrence se réveille :\n\n• les frais fixes montent à chaque sprint, de plus en plus vite ;\n• les utilisateurs partent un peu plus vite ;\n• les investisseurs se lassent : chaque levée rapporte moins.\n\nTu peux encore entrer en Bourse ou accepter un rachat, mais la partie s'arrête alors."
+          },
+          "endlessTips": {
+            "title": "Aller le plus loin possible",
+            "body": "Le classement du mode illimité compte d'abord les sprints tenus, puis la valorisation.\n\n• Garde une trésorerie confortable : la pression monte sans arrêt.\n• Fais grossir les revenus plus vite que les frais : les utilisateurs paient les salaires.\n• Surveille la stabilité : avec la concurrence, chaque panne fait fuir plus de monde.\n\nSuccès à la clé : 2, 3 et 5 ans tenus."
           },
           "daily": {
             "title": "Le Daily",
@@ -1672,7 +1700,7 @@
     }
   },
   "hud": {
-    "company": "Ta startup",
+    "company": "Entreprise : {{name}}",
     "phase": "Phase : {{phase}}",
     "mode": "Mode {{mode}}",
     "team": "Équipe : {{count}} sur {{max}} postes",

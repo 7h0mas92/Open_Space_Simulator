@@ -1,6 +1,7 @@
 import {
   BUILTIN_CARDS_VERSION,
   CHARACTER_PACKS,
+  companyName,
   DECOR_THEMES,
   dailySeed,
   EVENT_CARDS,
@@ -296,6 +297,63 @@ describe('mode Facile', () => {
     const global = (await app.inject({ url: '/api/scores/top' })).json();
     expect(global.entries).toHaveLength(1);
     expect(global.entries[0]).toMatchObject({ mode: 'SHIP_IN_3' });
+  }, 60_000);
+});
+
+describe('mode illimité', () => {
+  it('classe aux sprints tenus puis à la valorisation, hors du classement global', async () => {
+    const dana = await player('dana');
+    const game = playGame('reference-seed');
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/scores',
+      cookies: dana,
+      payload: {
+        mode: 'SHIP_IN_3',
+        seed: 'reference-seed',
+        commands: game.commands,
+        cardsVersion: BUILTIN_CARDS_VERSION,
+      },
+    });
+    expect(response.statusCode).toBe(201);
+    // Des parties illimitées déjà vérifiées (une vraie partie illimitée dure des centaines de
+    // sprints : trop long pour un test).
+    const reference = await app.prisma.score.findFirstOrThrow();
+    const endless = async (pseudo: string, sprintsPlayed: number, valuation: number) => {
+      const { id } = await app.prisma.user.create({
+        data: { email: `${pseudo}@startup.io`, pseudo, role: 'USER', locale: 'fr' },
+      });
+      await app.prisma.score.create({
+        data: {
+          ...reference,
+          id: undefined,
+          userId: id,
+          mode: 'ENDLESS',
+          seed: `endless-${pseudo}`,
+          outcome: 'BANKRUPTCY',
+          sprintsPlayed,
+          valuation,
+          commandsLog: [],
+          unlocks: [],
+          stats: reference.stats ?? {},
+          createdAt: undefined,
+        },
+      });
+    };
+    await endless('long', 140, 0);
+    await endless('riche', 90, 5e9);
+    await endless('egal', 140, 2e6);
+
+    const board = (await app.inject({ url: '/api/scores/top?mode=ENDLESS' })).json();
+    expect(board.entries.map((e: { pseudo: string }) => e.pseudo)).toEqual([
+      'egal',
+      'long',
+      'riche',
+    ]);
+    expect(board.entries[0]).toMatchObject({ company: companyName('endless-egal'), rank: 1 });
+
+    const global = (await app.inject({ url: '/api/scores/top' })).json();
+    expect(global.entries.map((e: { mode: string }) => e.mode)).toEqual(['SHIP_IN_3']);
   }, 60_000);
 });
 

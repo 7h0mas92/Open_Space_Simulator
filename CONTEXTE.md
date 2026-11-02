@@ -60,10 +60,11 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 
 ## Travaux en cours
 
-| Sujet                                               | Qui             | État                             |
-| --------------------------------------------------- | --------------- | -------------------------------- |
-| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122) |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours             |
+| Sujet                                               | Qui             | État                                                |
+| --------------------------------------------------- | --------------- | --------------------------------------------------- |
+| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                    |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours                                |
+| Mode **illimité** et classement des entreprises     | Melvin + Claude | PR ouverte vers `develop`, en attente de validation |
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
 10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
@@ -253,6 +254,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 | 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                                                                                                                                                                 |
 | 18/10    | Melvin + Claude | (PR develop)      | Saleté du bureau (0 à 100 %, -20 % de travail à 50 %) et entreprise de nettoyage Nickel Chrome : appel, express, abonnement hebdo (`shared/sim/cleaning.ts`, `simulation/cleaning.ts`, `render/cleaning.ts`, bouton 🧹). Champ `cleaning` par défaut ; règle qui change toutes les parties (anciens replays de scores divergent). À brancher sur le futur modèle commun d'abonnements. |
 | 18/10    | Melvin + Claude | develop           | Difficulté par mode (`difficultyOf`) : Facile moins généreux, Hardcore vraiment dur. Normal et Daily inchangés.                                                                                                                                                                                                                                                                        |
+| 18/10    | Melvin + Claude | develop           | Mode illimité `ENDLESS` (pression après 18 mois) et classement des entreprises (menu et jeu, en ligne ou appareil). Un mode non comparable va dans `GLOBAL_EXCLUDED_MODES`.                                                                                                                                                                                                            |
 | 17/10    | Melvin + Claude | #123              | Branche `develop` créée depuis `main` : les PR vont vers `develop`, puis `develop` → `main` après les tests de Thomas et Melvin.                                                                                                                                                                                                                                                       |
 | 17/10    | Melvin + Claude | à venir           | Ajout de `ARBORESCENCE.md` : rôle de chaque fichier. Toute PR qui ajoute ou déplace un fichier met sa ligne à jour.                                                                                                                                                                                                                                                                    |
 | 17/10    | Melvin + Claude | fix/objet_fantome | Plus de décorations de saison au sol (fantôme, chaudron, sapin…) : ni déplaçables ni rangeables. Restent guirlandes et objets sur les bureaux. À valider par Thomas (fonctionnalité retirée).                                                                                                                                                                                          |

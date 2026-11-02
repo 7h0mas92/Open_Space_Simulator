@@ -1,4 +1,4 @@
-import { BALANCE, difficultyOf, type GameState } from '@oss/shared';
+import { BALANCE, difficultyOf, endlessCostMultiplier, type GameState } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
 import { hostingSaving } from './serverRoom';
 import { subscriptionsMonthly } from './subscriptions';
@@ -44,6 +44,16 @@ export function hostingCost(state: GameState): number {
 }
 
 /**
+ * Frais fixes mensuels de la phase (loyer, marketing...). En mode illimité, ils montent à
+ * chaque sprint au-delà des 18 mois : la concurrence fait grimper les prix.
+ */
+export function fixedCosts(state: GameState): number {
+  return (
+    BALANCE.economy.fixedCostsMonthly[state.phase] * endlessCostMultiplier(state.mode, state.sprint)
+  );
+}
+
+/**
  * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. Les
  * abonnements, payés à part à chaque échéance, n'y sont pas. Plus chères
  * en Hardcore (`difficultyOf`).
@@ -52,7 +62,7 @@ export function monthlyExpenses(state: GameState): number {
   return (
     (monthlyPayroll(state) +
       teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
-      BALANCE.economy.fixedCostsMonthly[state.phase] +
+      fixedCosts(state) +
       hostingCost(state) +
       loanPayment(state)) *
     difficultyOf(state.mode).expenses

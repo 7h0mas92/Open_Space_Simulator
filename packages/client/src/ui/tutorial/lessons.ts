@@ -117,6 +117,8 @@ export const LESSONS: readonly Lesson[] = [
       { id: 'internsTips', modes: ['INTERNS_ONLY'] },
       { id: 'ship', modes: ['SHIP_IN_3'] },
       { id: 'shipTips', modes: ['SHIP_IN_3'] },
+      { id: 'endless', modes: ['ENDLESS'] },
+      { id: 'endlessTips', modes: ['ENDLESS'] },
       { id: 'daily', modes: ['DAILY'] },
       { id: 'dailyTips', modes: ['DAILY'] },
       { id: 'story', modes: ['STORY'] },

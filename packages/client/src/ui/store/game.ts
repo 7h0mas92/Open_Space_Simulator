@@ -60,6 +60,7 @@ export const PANELS = [
   'dashboard',
   'slack',
   'saves',
+  'leaderboard',
   'settings',
   'credits',
 ] as const;
