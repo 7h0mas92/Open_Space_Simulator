@@ -100,12 +100,12 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
   ~20 % avant). Proposition : réduire un peu le café livré par la cuisine. Thomas n'a pas tranché
   (question du 8 octobre) ; ne rien changer sans son accord.
 - **Comptes en ligne** (actions de Thomas, étapes dans le README, section Déploiement) : la base
-  est prête sur Supabase (projet `open-space-simulator`, compte de Thomas, région
-  `eu-central-1`, tables créées, pas encore de données : le seed tourne au démarrage de Render).
-  Reste : mot de passe de la base dans Supabase, Render (Blueprint `render.yaml`, `DATABASE_URL`
-  = URL du _Session pooler_ + `?sslmode=require`), URL Render dans `packages/client/vercel.json`, projet Vercel (Root
-  Directory `packages/client`), OAuth App GitHub. En attendant, la version GitHub Pages n'a ni
-  comptes, ni classements, ni Daily en ligne, ni Slack IA, ni packs, ni back-office.
+  Supabase (projet `open-space-simulator`, `eu-central-1`) et le serveur Render
+  (`https://oss-server-e90i.onrender.com`) tournent depuis le 2 novembre ; le seed a rempli la
+  base. `packages/client/vercel.json` pointe sur Render. Reste : projet Vercel (Root Directory
+  `packages/client`), puis `CLIENT_URL` sur Render = l'adresse Vercel, et l'OAuth App GitHub. En
+  attendant, la version GitHub Pages n'a ni comptes, ni classements, ni Daily en ligne, ni Slack
+  IA, ni packs, ni back-office.
 - **Effets sonores et ambiance** : le lecteur Howler est prêt mais `SOUND_FILES` est vide dans
   `packages/client/src/audio/manifest.ts`. Les musiques (7 MP3 dans
   `packages/client/public/assets/music/`) et les bruits de clavier et de souris sont faits.
@@ -260,6 +260,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 02/11    | Thomas + Claude | #PRNUM      | Serveur Render en ligne (`oss-server-e90i.onrender.com`), branché sur Supabase et rempli par le seed (130 cartes, 67 succès, admin). `vercel.json` pointe dessus. Reste : projet Vercel, `CLIENT_URL` sur Render, OAuth GitHub.                  |
 | 02/11    | Thomas + Claude | #138        | Base de production sur Supabase : projet créé, migrations appliquées, RLS sur toutes les tables (nouvelle migration + test), correctif SSL de `pg`, `render.yaml` sans base Render. Reste le mot de passe et Render (Thomas).                    |
 | 02/11    | Thomas + Claude | #137        | Bouton « Nouvelle partie » sous « Continuer ». Sauvegarde auto rétablie en `pnpm dev` (StrictMode). À valider.                                                                                                                                   |
 | 02/11    | Thomas + Claude | #121        | Mode Carrière repris après la pause : `main` intégré (mode Histoire), modes `STORY` et `CAREER` côte à côte, migrations Prisma dans l'ordre, CI verte. Validé par Thomas et fusionné.                                                            |

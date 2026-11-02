@@ -710,8 +710,8 @@ d'auth Supabase, pas de SDK `supabase-js`).
    - facultatif : `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` (OAuth App GitHub, callback
      `${CLIENT_URL}/api/auth/github/callback`) et `ANTHROPIC_API_KEY` (Slack IA).
      `JWT_SECRET` est généré par Render.
-2. Dans `packages/client/vercel.json`, remplacer `REMPLACER-PAR-L-URL-RENDER` par l'URL du
-   service Render (par exemple `oss-server.onrender.com`).
+2. `packages/client/vercel.json` renvoie `/api` et `/docs` vers le service Render
+   `oss-server-e90i.onrender.com` (à changer si le service est recréé).
 3. **Vercel** → _Add New Project_ → ce dépôt, _Root Directory_ `packages/client`. Les
    commandes d'installation et de build sont dans `vercel.json`.
 
