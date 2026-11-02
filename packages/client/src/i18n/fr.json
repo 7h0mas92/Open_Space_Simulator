@@ -320,7 +320,10 @@
     "funding": "Lever des fonds",
     "pets": "Chats du bureau",
     "servers": "Salle des serveurs",
-    "mission": "Mission"
+    "mission": "Mission",
+    "subscriptions": "Abonnements",
+    "cleaning": "Ménage",
+    "tickets": "Kanbanana, l’appli de tickets"
   },
   "kanban": {
     "columns": {
@@ -769,7 +772,8 @@
       "ambienceVolume": "Ambiance"
     },
     "slackAi": "Slack piloté par l'IA",
-    "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques."
+    "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques.",
+    "dailyPause": "Arrêter le temps quelques secondes au Daily du matin"
   },
   "credits": {
     "title": "Crédits",
@@ -838,6 +842,8 @@
       "catTreeMedium": "Arbre à chat double (2 cases, moquette grise) : niche, panier et souris",
       "catTreeLarge": "Arbre à chat géant (3 cases, moquette mauve) : niche, passerelle et souris",
       "officeCats": "Chats du bureau : six robes construites en formes Three.js, animées par le code (marche, sieste, repas)",
+      "cleaningCrew": "Équipe de ménage : trois agents en uniforme construits comme les devs (clips Kenney), chariot, aspirateur et serpillière en formes Three.js",
+      "officeLitter": "Déchets au sol : papiers froissés, emballages, canettes, gobelets, boîtes de pizza, peaux de banane et taches",
       "windowSmall": "Petite fenêtre et son pan de mur",
       "windowMedium": "Fenêtre de deux cases",
       "windowLarge": "Grande fenêtre de trois cases",
@@ -1231,7 +1237,7 @@
       "off": "Désactivé"
     },
     "decor": {
-      "intro": "Chaque thème décore le bureau : guirlandes aux murs, objets au sol et sur les bureaux. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
+      "intro": "Chaque thème décore le bureau : guirlandes aux murs et un petit objet sur chaque bureau. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
       "legend": "Réglage du thème {{theme}}",
       "previewAlt": "Un coin de bureau décoré pour le thème {{theme}}",
       "live": "Affiché en ce moment",
@@ -1566,7 +1572,7 @@
           },
           "manage": {
             "title": "Tourner, peindre, déplacer, revendre",
-            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
+            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne, les flèches le décalent d'une demi-case et Échap le repose dans le catalogue. Les objets se posent à la demi-case près : contre un mur fin, la moitié de case libre se meuble, et un objet de 3 cases se centre dans une pièce de 4 (les murs fins et les fenêtres restent sur des cases entières). « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
           },
           "items": {
             "title": "Les objets utiles",
@@ -1779,6 +1785,7 @@
   },
   "meetings": {
     "intro": "Aménage la salle de réunion du bureau. Chaque formule a un bonus et un malus, et l'équipe s'y retrouve chaque matin de semaine à {{hour}}, dès son arrivée, pendant {{minutes}} minutes : une réunion utile rapporte quelque chose, une réunion inutile coûte du moral.",
+    "dailyIntro": "Le Daily, c'est le point sur les tickets : chacun dit où il en est et ce qu'il fait aujourd'hui, et l'appli de tickets s'affiche au projecteur de la salle. Réunion utile : les participants avancent de {{focus}} % plus vite jusqu'au soir. Sans Daily ce matin-là (salle vide) ou pour ceux qui n'y étaient pas (télétravail), deux devs finissent par coder la même chose et une partie d'un ticket est à refaire.",
     "crisisIntro": "Quand la prod tombe, la salle devient une cellule de crise : le coupable s'il y en a un, les {{count}} devs les plus solides (DevOps et Tech Lead d'abord, coupable compris) et le Product Owner ou un manager s'y réunissent une demi-heure. En sortant, le meilleur prend « Réparer la prod », déjà avancée.",
     "crisis": "Réunions de crise",
     "crisisOne": "Réunion de crise",
@@ -1943,26 +1950,7 @@
     "fibreCard": "Abonnement fibre",
     "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
     "fibreCardReady": "La box fibre est posée : choisis une offre.",
-    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs.",
-    "fibre": {
-      "title": "Abonnement fibre",
-      "intro": "La fibre se paie chaque semaine (tous les 7 jours de jeu) et arrive dans la box fibre de ta salle des serveurs. Changer d’offre repart pour une semaine payée tout de suite ; si la trésorerie ne couvre plus la facture, l’opérateur coupe la ligne.",
-      "none": "Pas d’abonnement : choisis une offre ci-dessous.",
-      "needBox": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
-      "needBoxShort": "Il faut une box fibre dans une salle des serveurs.",
-      "connected": "La ligne arrive dans la box : l’offre donne ses effets.",
-      "noBox": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien.",
-      "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
-      "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
-      "totalPaid": "{{price}} € payés en tout",
-      "perWeek": "{{price}} € / semaine",
-      "subscribe": "S’abonner ({{price}} € la 1re semaine)",
-      "switch": "Passer à cette offre ({{price}} €)",
-      "currentPlan": "Ton offre actuelle",
-      "cancel": "Résilier",
-      "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
-      "cancelConfirm": "Résilier la fibre"
-    }
+    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs."
   },
   "story": {
     "title": "Mode Histoire",
@@ -2088,6 +2076,113 @@
         "TIME": "Le temps de la mission est écoulé avant d’avoir rempli tous les objectifs.",
         "SOLD": "La startup a été vendue avant la fin de la mission."
       }
+    }
+  },
+  "subscriptions": {
+    "intro": "Les services payés à intervalle régulier. La première période se paie à la souscription, puis à chaque échéance ; changer d’offre repart pour une période payée tout de suite. Si la trésorerie ne couvre plus une échéance, le prestataire coupe le service. Résilier l’arrête tout de suite, sans remboursement.",
+    "summaryNone": "Aucun abonnement en cours.",
+    "summary_one": "{{count}} abonnement en cours · environ {{price}} € par mois",
+    "summary_other": "{{count}} abonnements en cours · environ {{price}} € par mois",
+    "services": {
+      "internet": {
+        "name": "Internet",
+        "intro": "La fibre arrive dans la box fibre de ta salle des serveurs et se paie chaque semaine (tous les 7 jours de jeu)."
+      }
+    },
+    "requires": {
+      "fibreBox": {
+        "long": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
+        "short": "Il faut une box fibre dans une salle des serveurs.",
+        "inactive": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien."
+      }
+    },
+    "none": "Pas d’abonnement : choisis une offre ci-dessous.",
+    "active": "Actif : l’offre donne ses effets.",
+    "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
+    "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
+    "totalPaid": "{{price}} € payés en tout",
+    "since": "depuis le sprint {{sprint}}",
+    "perWeek": "{{price}} € / semaine",
+    "perMonth": "{{price}} € / mois",
+    "perDays_one": "{{price}} € / jour",
+    "perDays_other": "{{price}} € / {{count}} jours",
+    "subscribe": "S’abonner ({{price}} € la 1re période)",
+    "switch": "Passer à cette offre ({{price}} €)",
+    "currentOffer": "Ton offre actuelle",
+    "cancel": "Résilier",
+    "cancelWarning": "Le service s’arrête tout de suite, sans remboursement de la période entamée.",
+    "cancelConfirm": "Résilier {{offer}}",
+    "manageAll": "Voir tous les abonnements"
+  },
+  "cleaning": {
+    "intro": "Chaque jour de semaine, l’équipe présente au bureau le salit : emballages, gobelets, canettes, boîtes de pizza… Plus tu attends, plus la saleté monte vite, et un bureau sale ralentit tous ceux qui y travaillent (pas les télétravailleurs). Appelle l’entreprise de nettoyage Nickel Chrome ou prends un abonnement.",
+    "dirtTitle": "Saleté du bureau",
+    "dirt": "{{percent}} % de saleté",
+    "levels": {
+      "clean": "Propre",
+      "warn": "À surveiller",
+      "dirty": "Sale"
+    },
+    "loss": "L’équipe sur place travaille {{percent}} % moins vite.",
+    "noLoss": "Bureau impeccable : aucun travail perdu.",
+    "days_one": "{{count}} jour sans ménage",
+    "days_other": "{{count}} jours sans ménage",
+    "crewTitle": "Nickel Chrome, entreprise de nettoyage",
+    "tools": {
+      "cart": "cheffe d’équipe, chariot",
+      "vacuum": "aspirateur",
+      "mop": "serpillière"
+    },
+    "status": {
+      "visit": "Ménage en cours ({{percent}} %)",
+      "express": "L’équipe express arrive tout de suite",
+      "booked_one": "L’équipe passe dans {{count}} heure",
+      "booked_other": "L’équipe passe dans {{count}} heures"
+    },
+    "call": "Appeler pour ce soir ({{price}} €)",
+    "express": "Express, tout de suite ({{price}} €)",
+    "callHint": "Un appel est payé à la réservation : l’équipe passe le soir à 19h, ou tout de suite en express.",
+    "history_one": "{{count}} passage, {{price}} € dépensés",
+    "history_other": "{{count}} passages, {{price}} € dépensés",
+    "planTitle": "Abonnement de ménage",
+    "none": "Pas d’abonnement : l’équipe ne vient que si tu l’appelles.",
+    "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
+    "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
+    "totalPaid": "{{price}} € payés en tout",
+    "discount": "(-{{percent}} % par passage)",
+    "cancel": "Résilier",
+    "cancelWarning": "L’équipe ne viendra plus, sans remboursement de la semaine entamée.",
+    "cancelConfirm": "Résilier le ménage",
+    "button": "Ménage : {{percent}} % de saleté"
+  },
+  "daily": {
+    "liveUseful": "Daily en salle de réunion : chacun fait le point sur son ticket. Utile, +{{focus}} % jusqu’au soir.",
+    "liveUseless": "Daily en salle de réunion : ça aurait pu être un mail.",
+    "open": "Voir {{app}}",
+    "resume": "Reprendre"
+  },
+  "tickets": {
+    "intro": "L’appli de tickets du bureau, projetée dans la salle de réunion pendant le Daily. Lecture seule : les tickets se déplacent dans le Kanban.",
+    "sprint": "Sprint {{sprint}}",
+    "pointsDone": "{{done}} / {{total}} points terminés",
+    "dailyTitle": "Daily de ce matin",
+    "noDaily": "Pas encore de Daily : aménage la salle de réunion, l’équipe s’y retrouvera chaque matin de semaine à 9h.",
+    "useful": "Daily utile : les participants savent où ils en sont, +{{focus}} % de productivité jusqu’au soir.",
+    "usefulPast": "Daily utile.",
+    "useless": "Daily inutile : du moral en moins, mais au moins personne ne code la même chose.",
+    "notToday": "(dernier Daily, pas aujourd’hui)",
+    "started": "commencé, {{now}} %",
+    "moved": "{{before}} % → {{now}} %",
+    "nothing": "Rien en cours.",
+    "duplicates": "Sans Daily, deux devs finissent par coder la même chose. Tickets en partie recodés pour rien depuis le début : {{count}}.",
+    "empty": "Aucun ticket.",
+    "backlog": "{{count}} idées restent au backlog.",
+    "unassigned": "Personne",
+    "progress": "Avancement",
+    "points": "Points",
+    "kinds": {
+      "URGENT": "Urgent",
+      "WEEKLY": "Semaine"
     }
   }
 }

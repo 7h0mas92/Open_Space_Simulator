@@ -27,7 +27,7 @@ import {
 } from '../view/types';
 import { findPath } from './astar';
 import { action, condition, selector, sequence, type BTNode, type Status } from './behaviorTree';
-import { accessCell, buildNavGrid, type ItemPlacement, type NavGrid } from './grid';
+import { accessCell, accessPoint, buildNavGrid, type ItemPlacement, type NavGrid } from './grid';
 import { hashString, Random } from './random';
 import { pickThought } from './thoughts';
 
@@ -111,6 +111,8 @@ interface Agent {
   goal: Cell | null;
   /** Point vers lequel se tourner une fois arrivé. */
   lookAt: { x: number; z: number } | null;
+  /** Arrivé devant un objet décalé d'une demi-case : le point exact où il se tient. */
+  seat: { x: number; z: number } | null;
   /** Objet visé par le dernier déplacement (point d'intérêt). */
   heading: string | null;
   /** Objet utilisé une fois arrivé : posé par l'action de pose, effacé à chaque pas. */
@@ -134,6 +136,8 @@ interface Agent {
 interface PointOfInterest {
   readonly item: ItemPlacement;
   readonly access: Cell;
+  /** Point exact devant l'objet, quand il n'est pas au centre de `access` (demi-case). */
+  readonly seat?: { readonly x: number; readonly z: number };
   readonly center: { x: number; z: number };
 }
 
@@ -161,7 +165,11 @@ function goTo(name: string, target: (context: BrainContext) => PointOfInterest |
     const goal = world.freeCellNear(wanted, agent);
     if (!goal) return 'failure';
     agent.lookAt = 'access' in found ? found.center : null;
-    return world.moveTowards(agent, goal);
+    const status = world.moveTowards(agent, goal);
+    // Devant un meuble décalé d'une demi-case, on se tient au point exact (sur sa chaise).
+    const seat = 'access' in found && sameCell(goal, found.access) ? found.seat : undefined;
+    agent.seat = status === 'success' && seat ? seat : null;
+    return status;
   });
 }
 
@@ -409,8 +417,8 @@ export class AgentWorld {
   snapshot(): AgentSnapshot[] {
     return this.agents.map((agent) => ({
       id: agent.id,
-      x: agent.x,
-      z: agent.z,
+      x: agent.seat?.x ?? agent.x,
+      z: agent.seat?.z ?? agent.z,
       facing: agent.facing,
       pose: agent.pose,
       visible: agent.visible,
@@ -570,6 +578,7 @@ export class AgentWorld {
     agent.activity = activity;
     agent.pending = null;
     agent.goal = null;
+    agent.seat = null;
     agent.path = [];
     agent.spot = null;
     agent.lingerSteps = 0;
@@ -612,6 +621,7 @@ export class AgentWorld {
       path: [],
       goal: null,
       lookAt: null,
+      seat: null,
       heading: null,
       using: null,
       waitTicks: 0,
@@ -636,7 +646,10 @@ export class AgentWorld {
       const hostId = item.host?.id;
       const spot = hostId ? items.find((other) => other.id === hostId) : item;
       if (!spot) continue;
-      const poi = { item: spot, access: accessCell(spot), center: itemCenter(spot) };
+      const access = accessCell(spot);
+      const point = accessPoint(spot);
+      const seat = point.x !== access.x || point.z !== access.z ? point : undefined;
+      const poi = { item: spot, access, center: itemCenter(spot), ...(seat ? { seat } : {}) };
       const list = this.pois.get(use) ?? [];
       list.push(poi);
       this.pois.set(use, list);

@@ -12,6 +12,7 @@ import {
   BALANCE,
   DEFAULT_COMPUTER,
   hasComputer,
+  DAILY_SYNC,
   MEETING_FORMATS,
   PETS,
   FUNDING_TIERS,
@@ -50,10 +51,18 @@ import {
   WALL_FINISHES,
   floorZones,
   wallZones,
-  FIBRE_PLANS,
+  CLEANING,
+  CLEANING_CREW,
+  CLEANING_PLANS,
+  cleaningCallPrice,
+  dirtProductivity,
   HOSTING_SAVING_MAX,
-  getFibrePlan,
+  SUBSCRIPTION_SERVICES,
+  SUBSCRIPTION_SERVICE_INFO,
   hasFibreBox,
+  monthlyPrice,
+  offersOf,
+  type SubscriptionOffer,
 } from '@oss/shared';
 import { wallOffice } from '../simulation/walls';
 import { completedSprints, missionProgress } from '../simulation/story';
@@ -67,7 +76,7 @@ import { softSigmoid } from '../simulation/math';
 import { countDesks, monitorOf, RESALE_RATIO } from '../simulation/furniture';
 import { activeProjections } from '../simulation/projection';
 import { leadershipEffects, teamShape } from '../simulation/leadership';
-import { devIds, teamMax } from '../simulation/helpers';
+import { clamp, devIds, teamMax } from '../simulation/helpers';
 import {
   expectedProductivity,
   expectedQuality,
@@ -95,12 +104,9 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
-import {
-  fibreConnected,
-  hostingSaving,
-  serverRoomItems,
-  serverRoomStatuses,
-} from '../simulation/serverRoom';
+import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
+import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulation/subscriptions';
+import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
 import type {
   StoryView,
   CandidateView,
@@ -117,8 +123,13 @@ import type {
   GroupView,
   GameView,
   MeetingRoomView,
+  DailyView,
   PetsView,
   ServersView,
+  CleaningView,
+  SubscriptionOfferView,
+  SubscriptionServiceView,
+  SubscriptionsView,
   WallsView,
   FloorsView,
   GaugeName,
@@ -432,7 +443,7 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
  */
 function annexDecorViews(state: GameState, furniture: readonly PlacedItemView[]): PlacedItemView[] {
   const { phase, annexes, wings } = wallOffice(state);
-  const layout = officeLayout(phase, wings, annexes, state.seed);
+  const layout = officeLayout(phase, wings, annexes);
   const view = (fixture: Fixture): PlacedItemView => {
     const moved = state.annexDecor[fixture.key];
     return {
@@ -670,6 +681,22 @@ function groupView(state: GameState): GroupView {
 /** Nombre de réunions récentes affichées dans le panneau de la salle. */
 const RECENT_MEETINGS = 4;
 
+function dailyView(state: GameState): DailyView | null {
+  const sync = state.morningSync;
+  if (!sync) return null;
+  const today = sync.day === getClock(state).day;
+  return {
+    tick: sync.tick,
+    today,
+    // Le snapshot qui suit le tick du Daily : l'équipe est en salle, l'appli est projetée.
+    live: state.stage === 'EXECUTION' && sync.tick === state.tick - 1,
+    useful: sync.useful,
+    focus: sync.useful && today ? Math.round(DAILY_SYNC.focusBonus * 100) : 0,
+    attendees: [...sync.attendees],
+    entries: sync.entries.map((entry) => ({ ...entry })),
+  };
+}
+
 function meetingRoomView(state: GameState): MeetingRoomView {
   const recent = state.notifications
     .filter(
@@ -706,6 +733,8 @@ function meetingRoomView(state: GameState): MeetingRoomView {
     useful: state.stats.meetingsUseful,
     useless: state.stats.meetingsUseless,
     crisis: state.stats.crisisMeetings,
+    daily: dailyView(state),
+    duplicates: state.stats.duplicateWork,
     recent,
   };
 }
@@ -722,9 +751,6 @@ function petsView(state: GameState): PetsView {
 }
 
 function serversView(state: GameState): ServersView {
-  const hasBox = hasFibreBox(serverRoomItems(state));
-  const phase = PHASES.indexOf(state.phase);
-  const fibre = state.fibre;
   return {
     rooms: serverRoomStatuses(state).map((room) => ({
       id: room.id,
@@ -736,36 +762,136 @@ function serversView(state: GameState): ServersView {
     })),
     hostingSaving: hostingSaving(state),
     hostingSavingMax: HOSTING_SAVING_MAX,
-    hasBox,
-    fibre: fibre
+    hasBox: hasFibreBox(serverRoomItems(state)),
+  };
+}
+
+function subscriptionOfferView(
+  state: GameState,
+  offer: SubscriptionOffer,
+  currentId: string | undefined,
+): SubscriptionOfferView {
+  return {
+    id: offer.id,
+    service: offer.service,
+    name: offer.name,
+    description: offer.description,
+    detail: offer.detail ?? null,
+    price: offer.price,
+    periodDays: offer.periodDays,
+    minPhase: offer.minPhase,
+    requires: offer.requires ?? null,
+    blocker:
+      currentId === offer.id
+        ? 'CURRENT'
+        : PHASES.indexOf(offer.minPhase) > PHASES.indexOf(state.phase)
+          ? 'LOCKED'
+          : state.stage === 'PITCH'
+            ? 'WRONG_STAGE'
+            : !requirementMet(state, offer)
+              ? 'REQUIREMENT'
+              : state.gauges.treasury < offer.price
+                ? 'NOT_ENOUGH_MONEY'
+                : null,
+  };
+}
+
+function subscriptionsView(state: GameState): SubscriptionsView {
+  const services = SUBSCRIPTION_SERVICES.map((service): SubscriptionServiceView => {
+    const current = subscriptionOf(state, service);
+    const currentId = current?.offer.id;
+    return {
+      id: service,
+      icon: SUBSCRIPTION_SERVICE_INFO[service].icon,
+      current: current
+        ? {
+            offer: subscriptionOfferView(state, current.offer, currentId),
+            active: requirementMet(state, current.offer),
+            nextBillDays: Math.max(
+              0,
+              (current.subscription.paidUntil - state.tick) / TIME.ticksPerDay,
+            ),
+            since: current.subscription.since,
+            totalPaid: current.subscription.totalPaid,
+            monthly: monthlyPrice(current.offer),
+          }
+        : null,
+      offers: offersOf(service).map((offer) => subscriptionOfferView(state, offer, currentId)),
+    };
+  });
+  return {
+    services,
+    count: services.filter((service) => service.current !== null).length,
+    monthlyTotal: subscriptionsMonthly(state),
+  };
+}
+
+function cleaningView(state: GameState): CleaningView {
+  const cleaning = state.cleaning;
+  const visitCost = visitPrice(state);
+  const callPrice = cleaningCallPrice(visitCost, false);
+  const expressPrice = cleaningCallPrice(visitCost, true);
+  const busy = cleaning.booking !== null || cleaning.visit !== null;
+  const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
+  const plan = cleaning.plan;
+  const visit = cleaning.visit;
+  return {
+    dirt: cleaning.dirt,
+    alert: CLEANING.dirtyAlert,
+    productivity: dirtProductivity(cleaning.dirt),
+    daysSinceClean: cleaning.daysSinceClean,
+    visit: visit
       ? {
-          plan: fibre.plan,
-          connected: fibreConnected(state),
-          nextBillDays: Math.max(0, (fibre.paidUntil - state.tick) / TIME.ticksPerDay),
-          weeklyPrice: getFibrePlan(fibre.plan).weeklyPrice,
-          totalPaid: fibre.totalPaid,
+          express: visit.express,
+          progress: clamp((state.tick - visit.start) / Math.max(1, visit.end - visit.start), 0, 1),
         }
       : null,
-    plans: FIBRE_PLANS.map((plan) => ({
-      id: plan.id,
-      name: plan.name,
-      description: plan.description,
-      speed: plan.speed,
-      weeklyPrice: plan.weeklyPrice,
-      minPhase: plan.minPhase,
-      blocker:
-        fibre?.plan === plan.id
-          ? 'CURRENT'
-          : PHASES.indexOf(plan.minPhase) > phase
-            ? 'LOCKED'
-            : state.stage === 'PITCH'
+    booking: cleaning.booking
+      ? {
+          express: cleaning.booking.express,
+          inHours: Math.max(0, (cleaning.booking.start - state.tick) / TIME.ticksPerHour),
+        }
+      : null,
+    plan: plan
+      ? {
+          plan: plan.plan,
+          weeklyPrice: planWeeklyPrice(state, plan.plan),
+          nextBillDays: Math.max(0, (plan.paidUntil - state.tick) / TIME.ticksPerDay),
+          totalPaid: plan.totalPaid,
+        }
+      : null,
+    plans: CLEANING_PLANS.map((option) => {
+      const weeklyPrice = planWeeklyPrice(state, option.id);
+      return {
+        id: option.id,
+        name: option.name,
+        description: option.description,
+        days: [...option.days],
+        weeklyPrice,
+        discount: option.discount,
+        blocker:
+          plan?.plan === option.id
+            ? 'CURRENT'
+            : wrongStage
               ? 'WRONG_STAGE'
-              : !hasBox
-                ? 'NO_BOX'
-                : state.gauges.treasury < plan.weeklyPrice
-                  ? 'NOT_ENOUGH_MONEY'
-                  : null,
-    })),
+              : state.gauges.treasury < weeklyPrice
+                ? 'NOT_ENOUGH_MONEY'
+                : null,
+      };
+    }),
+    visitPrice: visitCost,
+    callPrice,
+    expressPrice,
+    callBlocker: busy
+      ? 'BUSY'
+      : wrongStage
+        ? 'WRONG_STAGE'
+        : state.gauges.treasury < callPrice
+          ? 'NOT_ENOUGH_MONEY'
+          : null,
+    crew: CLEANING_CREW.map((member) => ({ ...member })),
+    visits: cleaning.visits,
+    spent: cleaning.spent,
   };
 }
 
@@ -883,6 +1009,8 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    cleaning: cleaningView(state),
+    subscriptions: subscriptionsView(state),
     floors: floorsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
@@ -1068,9 +1196,15 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'ADOPT_PET', coat: command.coat };
     case 'rehomePet':
       return { type: 'REHOME_PET', petId: command.petId };
-    case 'subscribeFibre':
-      return { type: 'SUBSCRIBE_FIBRE', plan: command.plan };
-    case 'cancelFibre':
-      return { type: 'CANCEL_FIBRE' };
+    case 'subscribe':
+      return { type: 'SUBSCRIBE', offer: command.offer };
+    case 'cancelSubscription':
+      return { type: 'CANCEL_SUBSCRIPTION', service: command.service };
+    case 'callCleaning':
+      return { type: 'CALL_CLEANING', express: command.express };
+    case 'subscribeCleaning':
+      return { type: 'SUBSCRIBE_CLEANING', plan: command.plan };
+    case 'cancelCleaning':
+      return { type: 'CANCEL_CLEANING' };
   }
 }
