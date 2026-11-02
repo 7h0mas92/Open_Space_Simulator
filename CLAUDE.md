@@ -835,6 +835,21 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   chevauchée ; chaise et dev assis au point exact devant un bureau décalé (`accessPoint`). Positions
   entières toujours valides : anciennes sauvegardes, replays, Daily et scores inchangés, aucun tirage.
 
+- Internet et clim de la salle des serveurs (`shared/sim/serverRoom.ts`, `shared/sim/subscriptions.ts`,
+  `client/src/simulation/serverRoom.ts`), remplace les 3 offres fibre ci-dessus : 6 offres du
+  service `internet` des abonnements (`FIBRE_PLANS` : box 4G 39 €/mois 3 salariés, box 5G 59 € 6,
+  Fibre Pro 49 € 10, Fibre Pro+ 119 € 25 en Seed, fibre dédiée 1 Gb/s 890 € 60 en Série A, 10 Gb/s
+  2 600 € 200 en Licorne), prix mensuels HT prélevés chaque semaine (`weeklyPrice`), mise en
+  service payée à la souscription (`setupFee`, `firstPayment`), box fibre exigée seulement pour la
+  fibre dédiée. Salariés connectés = toute l'équipe (`serviceUsers`) ; au-delà de `maxUsers`,
+  réseau saturé : plus d'effet et jusqu'à -12 % de productivité (`saturationPenalty`), alertes
+  `INTERNET_SATURATED` / `INTERNET_OK`, champ `saturated` optionnel. Chaleur et froid en kW (`heat`,
+  `cooling` du catalogue) : climatiseur mural 5 kW (Seed), clim de précision 15 kW, clim en rangée
+  35 kW (Série A), sonde de supervision (Seed). Température 18 + 10 x chaleur / froid (+3 °C de
+  juin à août) : au-delà de 27 °C la moitié des effets (75 % avec sonde), au-delà de 32 °C plus
+  rien et -stabilité ; la sonde affiche la température et prévient quand le niveau change
+  (`serverHeatSystem`, état `serverHeat` vide par défaut). Aucun tirage.
+
 - Hall d'entrée (`shared/sim/lobby.ts`, `client/src/simulation/lobby.ts`, rayon « 🛎️ Accueil » du
   mode construction, panneau « Hall d'entrée », `ui/lobby/Lobby.tsx`) : dès la Seed, 18 000 €
   pour un hall au rez-de-chaussée devant toutes les pièces (pièce `lobby`, `LobbyPlan` dans

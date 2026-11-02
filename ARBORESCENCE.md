@@ -140,7 +140,7 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 | `floors.ts`     | Sols : matières, teintes, prix et effets par pièce.                                        |
 | `walls.ts`      | Peintures et papiers peints, zones de mur.                                                 |
 | `projection.ts` | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                |
-| `serverRoom.ts` | Salle des serveurs, équipements et offres fibre.                                           |
+| `serverRoom.ts` | Salle des serveurs, équipements, température et offres internet.                           |
 | `lobby.ts`      | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                     |
 | `meetings.ts`   | Formules de salle de réunion, réunion du matin, réunion de crise.                          |
 | `pets.ts`       | Chats du bureau : équipement requis, prix, effets.                                         |
@@ -268,7 +268,7 @@ graine + mêmes commandes = même partie.
 | `floors.ts`       | Pose des sols et effets par pièce.                                                      |
 | `walls.ts`        | Pose des peintures et papiers peints et effets par mur.                                 |
 | `projection.ts`   | Interrupteur des projecteurs et effets des projections.                                 |
-| `serverRoom.ts`   | Effets des salles de serveurs, abonnement et facturation de la fibre.                   |
+| `serverRoom.ts`   | Effets des salles de serveurs selon leur température, alertes de la sonde.              |
 | `lobby.ts`        | Aménagement du hall, secrétaires de l'accueil et leurs effets.                          |
 | `pets.ts`         | Adoption des chats, départ, effets sur l'équipe.                                        |
 | `achievements.ts` | Succès vérifiés à partir de l'état.                                                     |
