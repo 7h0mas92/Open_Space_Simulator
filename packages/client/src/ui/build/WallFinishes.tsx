@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { storyLockedReason } from './storyLock';
 import type { TFunction } from 'i18next';
 import { WALL_FINISHES, type WallFinish, type WallFinishId, type WallZone } from '@oss/shared';
 import type { GameView } from '../../view/types';
@@ -60,7 +61,8 @@ export function WallFinishes({ view }: { view: GameView }) {
   if (!finish) return null;
   const money = (value: number) => formatMoney(value, i18n.language);
   const name = (f: WallFinish) => localized(f.name, i18n.language);
-  const locked = view.walls.locked.includes(finish.id);
+  const locked =
+    view.walls.locked.includes(finish.id) || view.walls.storyLocked.includes(finish.id);
   const todo = view.walls.zones.filter((zone) => zone.finish !== finish.id);
   const allPrice = todo.length * finish.price;
   const cover = (zones: readonly WallZone[]) => {
@@ -125,7 +127,8 @@ export function WallFinishes({ view }: { view: GameView }) {
       </div>
       <ul className="catalog-items" aria-label={t('build.categories.walls')}>
         {WALL_FINISHES.map((f) => {
-          const isLocked = view.walls.locked.includes(f.id);
+          const storyLocked = view.walls.storyLocked.includes(f.id);
+          const isLocked = storyLocked || view.walls.locked.includes(f.id);
           return (
             <li key={f.id}>
               <button
@@ -146,9 +149,11 @@ export function WallFinishes({ view }: { view: GameView }) {
                   </span>
                 </span>
                 <span className={isLocked ? 'catalog-card-text locked' : 'catalog-card-text'}>
-                  {isLocked
-                    ? t('build.locked', { phase: t(`phases.${f.minPhase}`) })
-                    : `${effectSummary(f, t)} · ${localized(f.description, i18n.language)}`}
+                  {storyLocked
+                    ? storyLockedReason(t, view.mode)
+                    : isLocked
+                      ? t('build.locked', { phase: t(`phases.${f.minPhase}`) })
+                      : `${effectSummary(f, t)} · ${localized(f.description, i18n.language)}`}
                 </span>
               </button>
             </li>

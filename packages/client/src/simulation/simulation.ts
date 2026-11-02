@@ -31,6 +31,7 @@ import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
 import { fibreSystem } from './serverRoom';
+import { checkMission } from './story';
 
 /** Un système = une fonction qui fait évoluer l'état pendant un tick. */
 export type System = (state: GameState, ctx: SimContext, clock: SimClock) => void;
@@ -137,6 +138,7 @@ export class Simulation {
         endGame(state, ctx, 'BANKRUPTCY');
       else if (state.sprintTick >= TIME.ticksPerSprint) endSprint(state, ctx);
     }
+    checkMission(state, ctx);
     checkAchievements(state, ctx);
     return ctx.outbox;
   }
@@ -158,6 +160,7 @@ export class Simulation {
     const result = applyCommand(this.state, ctx, command);
     if (result.ok) {
       this.commands.push({ tick: this.state.tick, command });
+      checkMission(this.state, ctx);
       checkAchievements(this.state, ctx);
     }
     return { result, notifications: ctx.outbox };

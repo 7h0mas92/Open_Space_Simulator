@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { COLOR_UNLOCKS } from '@oss/shared';
 import { FURNITURE_COLORS, swatchCss, type FurnitureColor } from '../../view/colors';
+import { useGame } from '../store/game';
+
+const NO_UNLOCKS: readonly string[] = [];
 
 /**
  * Nuancier du mode construction : un bouton qui montre la couleur actuelle et ouvre une grille
@@ -20,6 +24,12 @@ export function ColorPicker({
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const colorName = t(`build.colors.${value}`);
+  // Or et Néon : récompenses du mode Histoire, proposées seulement une fois débloquées.
+  const unlocks = useGame((s) => s.view?.unlocks ?? NO_UNLOCKS);
+  const colors = FURNITURE_COLORS.filter((color) => {
+    const reward = COLOR_UNLOCKS[color];
+    return reward === undefined || unlocks.includes(reward);
+  });
 
   // Un clic en dehors du nuancier le referme.
   useEffect(() => {
@@ -56,7 +66,7 @@ export function ColorPicker({
       </button>
       {open && (
         <div className="color-swatches" role="radiogroup" aria-label={t('build.color')}>
-          {FURNITURE_COLORS.map((color) => (
+          {colors.map((color) => (
             <button
               key={color}
               type="button"
