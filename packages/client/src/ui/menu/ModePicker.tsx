@@ -9,6 +9,7 @@ export const MODE_ICONS: Record<GameMode, string> = {
   SHIP_IN_3: '⏱️',
   ENDLESS: '♾️',
   DAILY: '📅',
+  CAREER: '🧭',
   STORY: '📖',
 };
 

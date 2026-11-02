@@ -1,12 +1,7 @@
-# Blueprint Render : base PostgreSQL + serveur Fastify.
+# Blueprint Render : serveur Fastify. La base PostgreSQL est hébergée sur Supabase
+# (projet `open-space-simulator`, région eu-central-1, voir README § Déploiement).
 # Render → New → Blueprint → choisir ce dépôt. Les valeurs marquées `sync: false` sont
 # demandées au moment de la création et ne sont jamais écrites dans le dépôt.
-databases:
-  - name: oss-db
-    databaseName: oss
-    user: oss
-    plan: free
-
 services:
   - type: web
     name: oss-server
@@ -33,10 +28,11 @@ services:
         value: '22'
       - key: LOG_LEVEL
         value: info
+      # URL du « Session pooler » Supabase (IPv4, port 5432), suivie de ?sslmode=require :
+      # postgresql://postgres.<ref>:<mot-de-passe>@<hôte>.pooler.supabase.com:5432/postgres?sslmode=require
+      # Elle sert aux migrations, au seed et au serveur.
       - key: DATABASE_URL
-        fromDatabase:
-          name: oss-db
-          property: connectionString
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       # URL du client Vercel, par exemple https://open-space-simulator.vercel.app
