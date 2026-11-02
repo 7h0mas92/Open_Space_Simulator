@@ -29,6 +29,7 @@ export const GAME_MODES = [
   'ENDLESS',
   'DAILY',
   'STORY',
+  'CAREER',
 ] as const;
 export const GameModeSchema = z.enum(GAME_MODES);
 export type GameMode = z.infer<typeof GameModeSchema>;
