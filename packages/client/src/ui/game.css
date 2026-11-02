@@ -4451,3 +4451,18 @@ legend {
     padding: 4px 3px;
   }
 }
+
+/*
+ * Entre 1024 et 1279 px, six boutons système et le nom de la phase ne laissent plus de place
+ * aux valeurs des jauges : la phase et l'autonomie restent dans l'infobulle de l'icône.
+ */
+@media (min-width: 1024px) and (max-width: 1279px) and (min-height: 501px) {
+  .company-text,
+  .company-facts {
+    display: none;
+  }
+
+  .hud-company {
+    padding-right: 8px;
+  }
+}
