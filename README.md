@@ -446,7 +446,8 @@ flowchart LR
   carrelage, parquet en lames ou en chevrons, terrazzo, marbre poli), dont certaines se débloquent
   avec les levées, chacune en plusieurs teintes neutres ou essences de bois. On choisit la pièce à
   refaire ou « Toutes les pièces » ; chaque pièce refaite donne un peu de moral, parfois de la
-  qualité ou de la hype.
+  qualité ou de la hype. Tant qu'on n'y touche pas, toutes les pièces ont le même sol d'origine,
+  y compris celles qui apparaissent quand le bureau grandit.
 - **Salle des serveurs et fibre** : le rayon Serveurs propose un local serveur (dès la Seed) et
   une salle des serveurs vitrée (dès la Série A), à équiper au choix : serveurs rack, lames ou
   GPU, switch, box fibre, climatisation, onduleur, NAS de sauvegarde, pare-feu et extinction
