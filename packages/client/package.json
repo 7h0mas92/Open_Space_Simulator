@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "balance": "tsx scripts/balance/index.ts"
+    "balance": "tsx scripts/balance/index.ts",
+    "balance:story": "tsx scripts/story-check.ts"
   },
   "dependencies": {
     "@oss/shared": "workspace:*",

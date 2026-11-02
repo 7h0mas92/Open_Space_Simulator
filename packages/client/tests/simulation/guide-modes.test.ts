@@ -1,4 +1,4 @@
-import { BALANCE, GAME_MODES, type GameMode } from '@oss/shared';
+import { BALANCE, GAME_MODES, MENU_MODES, type GameMode } from '@oss/shared';
 import { describe, expect, it } from 'vitest';
 import { defaultCardLibrary } from '../../src/events/defaultCards';
 import { createBot } from '../../src/simulation/bots';
@@ -118,7 +118,7 @@ describe('Chaque chapitre a du contenu dans chaque mode', () => {
   });
 });
 
-describe.each(GAME_MODES)('Tutoriel complet en partie réelle : %s', (mode) => {
+describe.each(MENU_MODES)('Tutoriel complet en partie réelle : %s', (mode) => {
   const games = SEEDS.map((seed) => playWithGuide(mode, seed));
 
   it('ouvre tous les chapitres, dans l’ordre du sommaire', () => {

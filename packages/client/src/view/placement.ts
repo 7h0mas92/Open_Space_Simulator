@@ -345,7 +345,8 @@ export function nearestValidCell(
 }
 
 /** Pourquoi un objet ne peut pas être acheté (ou `null` s'il est disponible). */
-export type ShopBlock = 'locked' | 'soldOut' | 'tooExpensive';
+/** `storyLocked` : récompense du mode Histoire pas débloquée (ou pas utilisable dans ce mode). */
+export type ShopBlock = 'locked' | 'storyLocked' | 'soldOut' | 'tooExpensive';
 
 export interface ShopStatus {
   readonly owned: number;
@@ -359,12 +360,14 @@ export function shopStatus(item: CatalogItem, view: GameView): ShopStatus {
     view.items.filter((placed) => placed.kind === item.kind && !placed.annexDecor).length +
     view.inventory.reduce((sum, stored) => sum + (stored.kind === item.kind ? stored.count : 0), 0);
   const block: ShopBlock | null =
-    PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
-      ? 'locked'
-      : owned >= item.maxCount
-        ? 'soldOut'
-        : view.gauges.treasury < item.price
-          ? 'tooExpensive'
-          : null;
+    item.unlock !== null && !view.unlocks.includes(item.unlock)
+      ? 'storyLocked'
+      : PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
+        ? 'locked'
+        : owned >= item.maxCount
+          ? 'soldOut'
+          : view.gauges.treasury < item.price
+            ? 'tooExpensive'
+            : null;
   return { owned, block };
 }
