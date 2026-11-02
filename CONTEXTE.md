@@ -1,8 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec le mode
-> Histoire. Dernier commit de `main` au moment de l'écriture : `9f71139` (PR #122, mode
-> Histoire fusionné).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin), après la toile du
+> projecteur toute blanche. Dernier commit de `develop` au moment de l'écriture : `f655d95`
+> (PR #127) ; dernier commit de `main` : `9f71139` (PR #122, mode Histoire).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -83,12 +83,14 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
 
 ## En attente d'une décision
 
-- **GitHub Actions bloqué** : depuis le 13 octobre, chaque job de la CI s'arrête en 3 secondes
-  sans runner ni log, sur toutes les PR (#121 à #135). À vérifier dans les réglages de facturation
-  du compte GitHub (minutes ou limite de dépenses). En attendant, vérifier en local avant de
-  fusionner. Le mode Histoire (#122, mode `STORY`) est dans `main` : les PR ouvertes qui ajoutent
-  un mode (#121 Carrière, #135 Illimité, #130 difficulté par mode) doivent intégrer `main` et
-  garder `STORY` dans `GAME_MODES` (hors `MENU_MODES` et `UNLOCK_MODES`).
+- **GitHub Actions bloqué** : la CI tourne de nouveau le 2 novembre (PR #127 verte : lint, tests,
+  build, end-to-end). Vérifier sur les autres PR avant de retirer ce point. Depuis le 13 octobre,
+  chaque job de la CI s'arrêtait en 3 secondes sans runner ni log, sur toutes les PR (#121 à #135).
+  À vérifier dans les réglages de facturation du compte GitHub (minutes ou limite de dépenses). En
+  attendant, vérifier en local avant de fusionner. Le mode Histoire (#122, mode `STORY`) est dans
+  `main` : les PR ouvertes qui ajoutent un mode (#121 Carrière, #135 Illimité, #130 difficulté par
+  mode) doivent intégrer `main` et garder `STORY` dans `GAME_MODES` (hors `MENU_MODES` et
+  `UNLOCK_MODES`).
 
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
@@ -241,6 +243,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 02/11    | Melvin + Claude | #127              | Toile du projecteur toute blanche à l'ouverture et à la fermeture (plus de cadre noir, `FABRIC_WHITE`). Fusionnée dans `develop` avec la CI verte.                                                                                               |
 | 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
 | 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
 | 17/10    | Melvin + Claude | #123              | Branche `develop` créée depuis `main` : les PR vont vers `develop`, puis `develop` → `main` après les tests de Thomas et Melvin.                                                                                                                 |

@@ -661,9 +661,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   posé sur un meuble, bouton « ⏻ Allumer / Éteindre ») et 3 écrans de projection posés au sol
   (petit 2 cases 450 €, moyen 3 cases 1 100 € en Seed, grand 4 cases 2 400 € en Série A). Allumé et
   tourné vers un écran (cône de 50°, 1,5 à 10 cases, devant la toile), il déroule la toile, puis
-  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule. Un écran
-  par projecteur, le plus proche, projecteurs servis dans l'ordre d'achat (`projectionPairs`, même
-  calcul pour la simulation et le rendu). Effets seulement pendant la projection : écran +qualité,
+  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule ; la toile
+  reste toute blanche, sans cadre noir (`FABRIC_WHITE`). Un écran par projecteur, le plus proche,
+  projecteurs servis dans l'ordre d'achat (`projectionPairs`, même calcul pour la simulation et le
+  rendu). Effets seulement pendant la projection : écran +qualité,
   +hype (+moral moyen et grand), projecteur +moral et -0,4 % de productivité. Commande
   `SWITCH_PROJECTOR`, champ `on` optionnel (absent = éteint), `GameView.projections`, rendu animé
   dans `render/projection.ts` (sans animation si « réduire les animations »). Aucun tirage.

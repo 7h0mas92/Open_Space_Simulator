@@ -430,9 +430,9 @@ flowchart LR
 - **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble, un
   projecteur fixé au plafond (sans prendre de place au sol ni sur un bureau) et
   trois écrans de projection déroulants (2, 3 et 4 cases). Allumé et tourné vers un écran, le
-  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. Projecteur et
-  écran ne donnent leur effet (moral, qualité, hype, léger malus de productivité) que pendant la
-  projection.
+  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. La toile reste
+  toute blanche, sans cadre noir, quand elle monte ou descend. Projecteur et écran ne donnent leur
+  effet (moral, qualité, hype, léger malus de productivité) que pendant la projection.
 - **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
   fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
   au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
