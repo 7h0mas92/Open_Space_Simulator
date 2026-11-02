@@ -81,7 +81,10 @@
     "DAILY_INVALID": "Ce Daily n'est plus ouvert.",
     "DAILY_ALREADY_PLAYED": "Tu as déjà publié un score pour ce Daily.",
     "AI_UNAVAILABLE": "Le Slack IA est indisponible.",
-    "AI_QUOTA_EXCEEDED": "Quota IA du jour atteint."
+    "AI_QUOTA_EXCEEDED": "Quota IA du jour atteint.",
+    "MISSION_NOT_COMPLETED": "Cette mission n’est pas réussie au rejeu.",
+    "UNLOCK_NOT_EARNED": "Cette partie utilise une récompense du mode Histoire pas encore gagnée sur ton compte.",
+    "STORY_NOT_RANKED": "Les missions du mode Histoire n’ont pas de classement."
   },
   "thoughts": {
     "whyWorks": "Pourquoi ça marche ??",
@@ -317,6 +320,7 @@
     "funding": "Lever des fonds",
     "pets": "Chats du bureau",
     "servers": "Salle des serveurs",
+    "mission": "Mission",
     "tickets": "Kanbanana, l’appli de tickets"
   },
   "kanban": {
@@ -673,7 +677,9 @@
       "teal": "Turquoise",
       "blue": "Bleu",
       "purple": "Violet",
-      "pink": "Rose"
+      "pink": "Rose",
+      "gold": "Or",
+      "neon": "Néon"
     },
     "placedCount_one": "{{count}} posé",
     "placedCount_other": "{{count}} posés",
@@ -697,7 +703,9 @@
     "fromInventory": "depuis l’inventaire",
     "sellStored": "Revendre un {{item}} ({{price}} €)",
     "stopInventory": "{{item}} : plus rien en stock, retour à l’inventaire.",
-    "monitor": "Écran"
+    "monitor": "Écran",
+    "storyLocked": "🔒 Récompense du mode Histoire : réussis sa mission pour l’acheter.",
+    "storyLockedMode": "🔒 Récompense du mode Histoire, indisponible dans ce mode."
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -878,7 +886,9 @@
       "zenFountain": "Fontaine zen : vasque en pierre, eau lumineuse et jet",
       "smallStage": "Petite scène en bois avec son micro sur pied",
       "lectern": "Pupitre de conférence en bois, plateau incliné et micro",
-      "auditoriumScreen": "Écran géant d'auditorium : dalle lumineuse sur deux mâts"
+      "auditoriumScreen": "Écran géant d'auditorium : dalle lumineuse sur deux mâts",
+      "unicornStatue": "Statue de licorne : socle de marbre à moulures, licorne dorée cabrée, corne et crinière",
+      "ipoBell": "Cloche de la Bourse : portique en bois, cloche de bronze tournée, battant et corde à pompon"
     },
     "back": "Retour"
   },
@@ -1029,6 +1039,11 @@
       "name": "Daily",
       "rule": "La même partie pour tout le monde aujourd'hui.",
       "tag": "Classement du jour"
+    },
+    "STORY": {
+      "name": "Histoire",
+      "rule": "10 missions en 4 chapitres, du garage à la Bourse. Chaque mission réussie débloque une récompense.",
+      "tag": "Campagne"
     }
   },
   "saves": {
@@ -1273,6 +1288,9 @@
             },
             "SHIP_IN_3": {
               "body": "Ta startup vient de lever des fonds. Tu n'as que 3 sprints de deux semaines pour sortir ton app.\n\nCe tutoriel t'accompagne pendant toute la partie : chaque chapitre s'ouvre au moment où tu en as besoin. Pendant les explications, la partie est en pause : prends ton temps."
+            },
+            "STORY": {
+              "body": "Bienvenue dans le mode Histoire. Chaque mission est une vraie partie, avec son point de départ, sa durée et ses objectifs.\n\nCe tutoriel t'accompagne pendant la mission : chaque chapitre s'ouvre au moment où tu en as besoin. Pendant les explications, la partie est en pause."
             }
           },
           "goal": {
@@ -1280,6 +1298,9 @@
             "body": "La partie se termine de quatre façons :\n\n• Faillite : la trésorerie tombe à zéro. C'est perdu.\n• IPO : tu entres en Bourse, la plus belle fin. Il faut être une Licorne (valorisation d'un milliard) avec une prod stable.\n• Rachat : une grande entreprise achète ta startup.\n• Zombie : au bout des 18 mois, tu survis sans avoir vraiment grandi.\n\nTon score, c'est la valorisation finale de ta startup.",
             "SHIP_IN_3": {
               "body": "Dans le défi 3 sprints, la partie se termine de trois façons :\n\n• Faillite : la trésorerie tombe à zéro. C'est perdu.\n• Rachat : à la fin du 3e sprint, tu as livré au moins 5 features.\n• Zombie : à la fin du 3e sprint, tu en as livré moins de 5.\n\nTon score, c'est la valorisation finale de ta startup."
+            },
+            "STORY": {
+              "body": "Une mission se gagne dès que tous ses objectifs sont remplis en même temps. Elle se perd si une contrainte est enfreinte, si la trésorerie tombe à zéro ou si le temps est écoulé.\n\nLe bouton 🎯 en haut de l'écran montre les objectifs en direct."
             }
           },
           "gauges": {
@@ -1350,6 +1371,14 @@
           "dailyTips": {
             "title": "Le classement du jour",
             "body": "À la fin de la partie, ton score part dans le classement du jour, si tu es connecté. Le serveur rejoue toute ta partie à partir de la graine et de tes décisions pour vérifier le score : pas de triche possible.\n\nIl n'y a pas de bouton « Rejouer » à la fin : la partie du jour se joue une fois. Reviens demain pour une nouvelle graine."
+          },
+          "story": {
+            "title": "La mission",
+            "body": "Lis bien le briefing : il donne le point de départ (phase, équipe, trésorerie), la durée en sprints et les objectifs.\n\n• ✓ : objectif rempli ;\n• ○ : objectif à remplir ;\n• 🛡️ : contrainte à respecter jusqu'au bout.\n\nUne mission réussie débloque la suivante et une récompense."
+          },
+          "storyTips": {
+            "title": "Les récompenses",
+            "body": "Chaque récompense (papier peint, sol, couleur, objet ou bonus de départ) sert ensuite dans les modes Facile, Normal, Hardcore, Stagiaires Only et Défi 3 sprints.\n\nPas dans le Daily : la partie du jour reste la même pour tout le monde. Les missions n'ont pas de classement."
           }
         }
       },
@@ -1594,6 +1623,9 @@
             "body": "Au bout des 18 mois, ta phase décide de la fin :\n\n• Licorne : IPO, la meilleure fin.\n• Série A : rachat, à prix cassé.\n• Seed : rachat si tu vaux plus de 100 M€, sinon zombie.\n• Garage : zombie.\n\nEt si la trésorerie tombe à zéro avant, c'est la faillite.",
             "SHIP_IN_3": {
               "body": "Le défi s'arrête à la fin du 3e sprint :\n\n• au moins 5 features livrées : ta startup est rachetée ;\n• moins de 5 : c'est la fin « zombie ».\n\nEt si la trésorerie tombe à zéro avant, c'est la faillite. Les bilans des démos indiquent combien de features chaque sprint a livrées."
+            },
+            "STORY": {
+              "body": "En mode Histoire, ce sont les objectifs qui décident de la fin :\n\n• tous remplis en même temps : mission réussie ;\n• une contrainte enfreinte, ou le temps écoulé : mission ratée ;\n• trésorerie à zéro : faillite, mission ratée.\n\nUne mission ratée se rejoue autant de fois que tu veux."
             }
           },
           "offer": {
@@ -1870,7 +1902,7 @@
     "notPlaced": "à poser",
     "needsHint": "Les objets rangés dans l’inventaire ne comptent pas : ils doivent être posés dans l’open space.",
     "adoptTitle": "Adopter un chat ({{count}}/{{max}})",
-    "effects": "Chaque chat heureux : +moral pour toute l’équipe chaque jour, un peu de hype, et −0,4\u00a0% de productivité (il dort sur les claviers).",
+    "effects": "Chaque chat heureux : +moral pour toute l’équipe chaque jour, un peu de hype, et −0,4 % de productivité (il dort sur les claviers).",
     "coat": "Robe",
     "adopt": "Adopter ({{price}})",
     "full": "Le bureau a déjà {{max}} chats, c’est le maximum.",
@@ -1933,6 +1965,132 @@
       "cancel": "Résilier",
       "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
       "cancelConfirm": "Résilier la fibre"
+    }
+  },
+  "story": {
+    "title": "Mode Histoire",
+    "intro": "Ta startup, du garage à la cloche de la Bourse, en 10 missions. Chaque mission réussie ouvre la suivante et débloque une récompense pour les autres modes.",
+    "progress": "{{done}} missions réussies sur {{total}}",
+    "savedDevice": "Progression gardée sur cet appareil. Connecte-toi pour la garder sur ton compte.",
+    "savedAccount": "Progression gardée sur ton compte : chaque mission réussie est vérifiée par le serveur.",
+    "continue": "Jouer « {{mission}} »",
+    "allDone": "🏆 Campagne terminée ! Toutes les récompenses sont à toi.",
+    "chapterNumber": "Chapitre {{number}}",
+    "chapterDone": "Chapitre terminé : tu gagnes le titre « {{title}} ».",
+    "status": {
+      "done": "✓ Réussie",
+      "available": "À jouer",
+      "locked": "Verrouillée"
+    },
+    "sprints_one": "{{count}} sprint",
+    "sprints_other": "{{count}} sprints",
+    "play": "Jouer la mission",
+    "replay": "Rejouer",
+    "lockedHint": "Réussis d’abord « {{mission}} ».",
+    "rewardLine": "Récompense : {{reward}}",
+    "rewardsTitle": "Récompenses",
+    "rewardsHint": "Utilisables en Facile, Normal, Hardcore, Stagiaires Only et Défi 3 sprints. Pas dans le Daily, pour que la partie du jour reste la même pour tout le monde.",
+    "rewardFrom": "À gagner avec la mission « {{mission}} ».",
+    "rewardKinds": {
+      "wall": "Mur",
+      "floor": "Sol",
+      "color": "Couleur",
+      "item": "Objet",
+      "perk": "Bonus"
+    },
+    "goalsTitle": "Objectifs",
+    "constraintsTitle": "Contraintes",
+    "goalMet": "(rempli)",
+    "goalTodo": "(à remplir)",
+    "constraintBroken": "(enfreinte)",
+    "noMission": "Pas de mission en cours.",
+    "progressLine": "{{done}}/{{total}} objectifs remplis · sprint {{sprint}} sur {{sprints}}",
+    "goals": {
+      "phase": "Atteindre la phase {{phase}}",
+      "gaugeMin": "{{gauge}} à {{value}} au moins",
+      "gaugeMax": "{{gauge}} à {{value}} au plus",
+      "team_one": "Une équipe d’au moins {{count}} personne",
+      "team_other": "Une équipe d’au moins {{count}} personnes",
+      "moral": "Moral moyen de {{value}} au moins",
+      "valuation": "Valorisation de {{value}} au moins",
+      "serverRoom": "Une salle des serveurs qui tourne",
+      "meetingRoom": "Une salle de réunion aménagée",
+      "pets_one": "{{count}} chat heureux",
+      "pets_other": "{{count}} chats heureux",
+      "sprints_one": "Tenir {{count}} sprint",
+      "sprints_other": "Tenir {{count}} sprints",
+      "stat": {
+        "featuresShipped": {
+          "min_one": "Livrer {{count}} feature",
+          "min_other": "Livrer {{count}} features",
+          "max_one": "Livrer {{count}} feature au plus",
+          "max_other": "Livrer {{count}} features au plus",
+          "none": "Ne livrer aucune feature"
+        },
+        "prodOutages": {
+          "min_one": "Subir {{count}} panne de prod",
+          "min_other": "Subir {{count}} pannes de prod",
+          "max_one": "{{count}} panne de prod au plus",
+          "max_other": "{{count}} pannes de prod au plus",
+          "none": "Aucune panne de prod"
+        },
+        "coffeeShortageDays": {
+          "min_one": "{{count}} jour sans café",
+          "min_other": "{{count}} jours sans café",
+          "max_one": "{{count}} jour sans café au plus",
+          "max_other": "{{count}} jours sans café au plus",
+          "none": "Ne jamais manquer de café"
+        },
+        "meetingsUseful": {
+          "min_one": "Tenir {{count}} réunion utile",
+          "min_other": "Tenir {{count}} réunions utiles",
+          "max_one": "{{count}} réunion utile au plus",
+          "max_other": "{{count}} réunions utiles au plus",
+          "none": "Aucune réunion utile"
+        },
+        "urgentDone": {
+          "min_one": "Terminer {{count}} urgence à temps",
+          "min_other": "Terminer {{count}} urgences à temps",
+          "max_one": "{{count}} urgence terminée au plus",
+          "max_other": "{{count}} urgences terminées au plus",
+          "none": "Aucune urgence terminée"
+        },
+        "urgentMissed": {
+          "min_one": "Rater {{count}} urgence",
+          "min_other": "Rater {{count}} urgences",
+          "max_one": "Rater {{count}} urgence au plus",
+          "max_other": "Rater {{count}} urgences au plus",
+          "none": "Ne rater aucune urgence"
+        },
+        "resignations": {
+          "min_one": "{{count}} démission",
+          "min_other": "{{count}} démissions",
+          "max_one": "{{count}} démission au plus",
+          "max_other": "{{count}} démissions au plus",
+          "none": "Aucune démission"
+        },
+        "hired": {
+          "min_one": "Recruter {{count}} personne",
+          "min_other": "Recruter {{count}} personnes",
+          "max_one": "Recruter {{count}} personne au plus",
+          "max_other": "Recruter {{count}} personnes au plus",
+          "none": "Ne recruter personne"
+        }
+      }
+    },
+    "end": {
+      "success": "Mission réussie !",
+      "failure": "Mission ratée",
+      "unlocked": "Récompense débloquée : {{reward}}. Elle t’attend dans les autres modes.",
+      "next": "Mission suivante : {{mission}}",
+      "retry": "Réessayer",
+      "chapters": "Retour aux chapitres",
+      "failures": {
+        "CONSTRAINT": "Une contrainte de la mission a été enfreinte.",
+        "BANKRUPTCY": "La trésorerie est tombée à zéro : faillite.",
+        "TIME": "Le temps de la mission est écoulé avant d’avoir rempli tous les objectifs.",
+        "SOLD": "La startup a été vendue avant la fin de la mission."
+      }
     }
   },
   "daily": {

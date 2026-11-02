@@ -9,6 +9,9 @@
  * l'interface envoie des `GameCommand` pour demander un changement.
  */
 import type {
+  MissionGoal,
+  StoryMissionId,
+  StoryRewardId,
   AcquisitionOffer,
   FloorFinish,
   FloorMaterialId,
@@ -653,6 +656,8 @@ export interface WallsView {
   readonly zones: readonly WallZoneView[];
   /** Revêtements pas encore débloqués à cette phase. */
   readonly locked: readonly WallFinishId[];
+  /** Récompenses du mode Histoire pas débloquées dans cette partie. */
+  readonly storyLocked: readonly WallFinishId[];
 }
 
 /** Une pièce et son sol. */
@@ -668,6 +673,26 @@ export interface FloorsView {
   readonly zones: readonly FloorZoneView[];
   /** Matières pas encore débloquées à cette phase. */
   readonly locked: readonly FloorMaterialId[];
+  /** Récompenses du mode Histoire pas débloquées dans cette partie. */
+  readonly storyLocked: readonly FloorMaterialId[];
+}
+
+/** Un objectif (ou une contrainte) de la mission en cours et où il en est. */
+export interface MissionGoalView {
+  readonly goal: MissionGoal;
+  /** Valeur actuelle (1 ou 0 pour un objectif à cocher). */
+  readonly value: number;
+  readonly met: boolean;
+}
+
+/** Mode Histoire : la mission en cours. */
+export interface StoryView {
+  readonly missionId: StoryMissionId;
+  readonly goals: readonly MissionGoalView[];
+  readonly constraints: readonly MissionGoalView[];
+  /** Sprints terminés depuis le début de la mission, et durée de la mission. */
+  readonly sprintsDone: number;
+  readonly sprints: number;
 }
 
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
@@ -749,6 +774,10 @@ export interface GameView {
   readonly floors: FloorsView;
   readonly canIpo: boolean;
   readonly result: GameResult | null;
+  /** Mode Histoire : la mission en cours (null dans les autres modes). */
+  readonly story: StoryView | null;
+  /** Récompenses du mode Histoire utilisables dans cette partie. */
+  readonly unlocks: readonly StoryRewardId[];
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */
   readonly achievements: readonly string[];
   /** Replay d'une partie du classement : commandes rejouées sur le total. */

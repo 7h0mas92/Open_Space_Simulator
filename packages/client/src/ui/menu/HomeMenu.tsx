@@ -9,12 +9,12 @@ import { useGame } from '../store/game';
 import { useSession } from '../store/session';
 import { useSettings } from '../store/settings';
 import { AccountBar } from './AccountBar';
-import { ModePicker } from './ModePicker';
+import { MODE_ICONS, ModePicker } from './ModePicker';
 import { useLatestSave } from './useLatestSave';
 
 /** Pages du menu ouvertes depuis l'accueil. */
 export type MenuPage =
-  'load' | 'leaderboard' | 'achievements' | 'profile' | 'settings' | 'admin' | 'credits';
+  'story' | 'load' | 'leaderboard' | 'achievements' | 'profile' | 'settings' | 'admin' | 'credits';
 
 /**
  * Écran d'accueil : titre et bouton Jouer / Continuer, choix du mode en cartes,
@@ -137,6 +137,23 @@ export function HomeMenu({
           <section className="home-modes" aria-labelledby="modes-title">
             <h2 id="modes-title">{t('modes.title')}</h2>
             <p className="hint">{t('menu.modesHint')}</p>
+            <button
+              type="button"
+              className="mode-card mode-story"
+              onClick={() => onOpen('story')}
+              data-testid="mode-STORY"
+            >
+              <span className="mode-icon" aria-hidden="true">
+                {MODE_ICONS.STORY}
+              </span>
+              <span className="mode-text">
+                <span className="mode-name">
+                  <strong>{t('modes.STORY.name')}</strong>
+                  <span className="mode-tag">{t('modes.STORY.tag')}</span>
+                </span>
+                <small>{t('modes.STORY.rule')}</small>
+              </span>
+            </button>
             <ModePicker onPick={play} disabled={loading} />
           </section>
         )}

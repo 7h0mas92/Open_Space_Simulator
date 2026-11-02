@@ -1,4 +1,4 @@
-import { GAME_MODES, type GameMode } from '@oss/shared';
+import { MENU_MODES, type GameMode } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 
 export const MODE_ICONS: Record<GameMode, string> = {
@@ -8,9 +8,13 @@ export const MODE_ICONS: Record<GameMode, string> = {
   INTERNS_ONLY: '🎒',
   SHIP_IN_3: '⏱️',
   DAILY: '📅',
+  STORY: '📖',
 };
 
-/** Choix du mode de jeu : une carte par mode, avec son étiquette et sa règle en une ligne. */
+/**
+ * Choix du mode de jeu : une carte par mode, avec son étiquette et sa règle en une ligne. Le
+ * mode Histoire a sa propre carte, qui ouvre l'écran des chapitres.
+ */
 export function ModePicker({
   onPick,
   disabled,
@@ -21,7 +25,7 @@ export function ModePicker({
   const { t } = useTranslation();
   return (
     <ul className="mode-grid" aria-label={t('modes.title')}>
-      {GAME_MODES.map((mode) => (
+      {MENU_MODES.map((mode) => (
         <li key={mode}>
           <button
             type="button"
