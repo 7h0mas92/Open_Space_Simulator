@@ -55,6 +55,9 @@ import type {
   TaskKind,
   TaskStack,
   TaskTrade,
+  SkillBranch,
+  SkillId,
+  TrainingKind,
 } from '@oss/shared';
 
 /**
@@ -174,6 +177,49 @@ export interface CareerView {
   readonly currentTask: LocalizedText | null;
 }
 
+/** Un nœud de l'arbre de compétences, tel que la fiche l'affiche. */
+export interface SkillNodeView {
+  readonly id: SkillId;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly effect: LocalizedText;
+  /** Appris, accessible maintenant (un point et le nœud précédent), ou verrouillé. */
+  readonly status: 'LEARNED' | 'AVAILABLE' | 'LOCKED';
+  /** Nœud de métier (propre au profil du dev). */
+  readonly roleNode: boolean;
+  /** Pouvoir à déclencher (le Crunch). */
+  readonly active: boolean;
+}
+
+export interface SkillBranchView {
+  readonly branch: SkillBranch;
+  readonly nodes: readonly SkillNodeView[];
+}
+
+/** Formation proposée dans la fiche (planification seulement). */
+export interface TrainingView {
+  readonly kind: TrainingKind;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly effect: LocalizedText;
+  readonly price: number;
+}
+
+/** Arbre de compétences d'un dev (null : candidat, encadrement ou mode Daily). */
+export interface DevSkillsView {
+  readonly earned: number;
+  readonly spent: number;
+  readonly available: number;
+  readonly branches: readonly SkillBranchView[];
+  /** Formation déjà suivie ce sprint. */
+  readonly trainedThisSprint: boolean;
+  readonly trainings: readonly TrainingView[];
+  /** Prix d'une réinitialisation (un mois de salaire). */
+  readonly resetCost: number;
+  /** Crunch : appris, déclenchable maintenant, en cours. */
+  readonly crunch: { readonly learned: boolean; readonly ready: boolean; readonly active: boolean };
+}
+
 export interface DevView {
   readonly id: string;
   readonly name: string;
@@ -214,6 +260,8 @@ export interface DevView {
   readonly career: CareerView | null;
   /** A démissionné après un refus d'augmentation : sprint de son départ, sinon null. */
   readonly leavingAtSprint: number | null;
+  /** Arbre de compétences (null : candidat, encadrement ou mode Daily). */
+  readonly skills: DevSkillsView | null;
 }
 
 export const TASK_TYPES = ['FEATURE', 'REFACTOR', 'BUGFIX', 'INFRA'] as const;
@@ -1045,7 +1093,11 @@ export type GameCommand =
   /** Appelle l'entreprise de nettoyage (ce soir, ou en express). */
   | { readonly type: 'callCleaning'; readonly express: boolean }
   | { readonly type: 'subscribeCleaning'; readonly plan: CleaningPlanId }
-  | { readonly type: 'cancelCleaning' };
+  | { readonly type: 'cancelCleaning' }
+  | { readonly type: 'learnSkill'; readonly devId: string; readonly skill: SkillId }
+  | { readonly type: 'resetSkills'; readonly devId: string }
+  | { readonly type: 'trainDev'; readonly devId: string; readonly kind: TrainingKind }
+  | { readonly type: 'useCrunch'; readonly devId: string };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

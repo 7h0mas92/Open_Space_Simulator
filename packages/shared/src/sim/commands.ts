@@ -8,6 +8,7 @@ import { PetCoatSchema } from './pets.js';
 import { FloorMaterialIdSchema, FloorTintSchema, FloorZoneSchema } from './floors.js';
 import { CleaningPlanIdSchema } from './cleaning.js';
 import { FibrePlanIdSchema } from './serverRoom.js';
+import { SkillIdSchema, TrainingKindSchema } from './skills.js';
 import { SubscriptionServiceSchema } from './subscriptions.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
 
@@ -184,6 +185,14 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('SUBSCRIBE'), offer: z.string().max(64) }),
   /** Résilie l'abonnement d'un service (la période entamée n'est pas remboursée). */
   z.object({ type: z.literal('CANCEL_SUBSCRIPTION'), service: SubscriptionServiceSchema }),
+  /** Arbre de compétences : le dev dépense un point dans ce nœud (voir `skills.ts`). */
+  z.object({ type: z.literal('LEARN_SKILL'), devId: EntityIdSchema, skill: SkillIdSchema }),
+  /** Rend tous les points du dev, contre un mois de son salaire. */
+  z.object({ type: z.literal('RESET_SKILLS'), devId: EntityIdSchema }),
+  /** Livre, formation ou conférence : de l'XP contre de l'argent (planification, 1 par sprint). */
+  z.object({ type: z.literal('TRAIN_DEV'), devId: EntityIdSchema, kind: TrainingKindSchema }),
+  /** Pouvoir « Crunch » : +50 % de vitesse pendant 24 h, une fois par sprint. */
+  z.object({ type: z.literal('USE_CRUNCH'), devId: EntityIdSchema }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export type CommandType = Command['type'];

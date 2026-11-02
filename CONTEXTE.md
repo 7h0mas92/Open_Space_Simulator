@@ -1,7 +1,8 @@
 # Contexte de passation
 
 > **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : socle du mode Histoire
-> en 5 actes (T2, PR 1 sur 4), PR ouverte vers `develop` (base `8f30b1f`).
+> en 5 actes (T2, PR 1 sur 4, #157), PR ouverte vers `develop` (base `7745370`, après l'arbre
+> de compétences T3, PR #150).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -61,19 +62,20 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 
 ## Travaux en cours
 
-| Sujet                                               | Qui             | État                                                  |
-| --------------------------------------------------- | --------------- | ----------------------------------------------------- |
-| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                      |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné (#121), réintégré dans `develop` (T1)        |
-| Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135)       |
-| Offres internet et température des salles (#129)    | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #129)       |
-| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation             |
-| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | PR ouverte, 13 conflits résolus, à valider            |
-| **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                      |
-| Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | Socle en PR (1 sur 4), puis rivaux, fins, équilibrage |
-| Arbres devs et R&D (T3, T4)                         | Thomas          | T3 en cours dans son fil, T4 après T2                 |
-| Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                            |
-| Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                                   |
+| Sujet                                               | Qui             | État                                            |
+| --------------------------------------------------- | --------------- | ----------------------------------------------- |
+| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné (#121), réintégré dans `develop` (T1)  |
+| Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135) |
+| Offres internet et température des salles (#129)    | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #129) |
+| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation       |
+| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné dans `develop` (PR #148)               |
+| **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                |
+| **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                |
+| Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | Socle en PR #157 (1 sur 4), puis rivaux, fins   |
+| Arbre R&D des objets (T4)                           | Thomas          | Après T2                                        |
+| Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                      |
+| Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                             |
 
 **Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
 progression et la vie de l'équipe. Détail, dépendances, fichiers à éviter et prompts prêts à coller
@@ -233,6 +235,9 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   Sinon les replays, le Daily, les sauvegardes et les scores déjà enregistrés cassent. Les PR
   l'écrivent « aucun tirage » ou « graine à part ».
 - **Abonnements payés à la semaine** (fibre, ménage) : tick `paidUntil`, facture dans un système, ligne coupée si la trésorerie manque, coût mensuel ajouté au calcul des mois de trésorerie (`runwayMonths`).
+- **Bonus sans tirage** (arbre de compétences, encadrement) : sans le bonus, le multiplicateur
+  vaut exactement 1 (multiplier par 1 ne change aucun bit). Un bonus qui change une probabilité
+  garde le même appel `rng.chance(p)` avec un autre `p`, jamais un tirage de plus ou de moins.
 - **Nouveaux champs d'état** : optionnels ou `.default()` en Zod (anciennes sauvegardes) ; un
   identifiant d'objet renommé passe par une table de traduction (`LEGACY_FURNITURE_IDS`,
   `LEGACY_KITCHEN_ITEMS`).
@@ -294,6 +299,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | -------- | --------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 02/11    | Thomas + Claude | T2, PR 1 sur 4    | Histoire en 5 actes, socle : `mission: 'campaign'`, 60 sprints, actes et dates limites dans `shared/story/acts.ts`, les 10 missions deviennent les objectifs secondaires (mêmes récompenses), `POST /api/story/complete` avec `campaign: true`, point de sauvegarde par acte sur l'appareil, onglets Histoire et Missions. Champ `story.campaign` optionnel, `story.missionId` devenu optionnel, aucun tirage. Réponses aux questions de la proposition : partir de #122, arbre des devs dans tous les modes sauf Daily (fil T3), 60 sprints, noms tels quels, missions courtes gardées. |
+| 02/11    | Thomas + Claude | #150              | Tâche T3 : arbre de compétences des devs (1 point par niveau, 3 branches de 5 nœuds, nœud de métier, formations, réinitialisation, Crunch), ouvert partout sauf en Daily. Commandes `LEARN_SKILL`, `RESET_SKILLS`, `TRAIN_DEV`, `USE_CRUNCH`, composant `skills`. Aucun tirage : 48 parties sans arbre identiques à `develop`. Bot « coach ». Fichiers communs : `state.ts`, `bots.ts`, `view/*`, i18n.                                                                                                                                                                                  |
 | 02/11    | Melvin + Claude | #129              | Internet de la salle des serveurs branché sur les abonnements : 6 offres aux prix réels, capacité en salariés (`maxUsers`), mise en service (`setupFee`), saturation. Température des salles (chaleur et clim en kW, sonde de supervision). Champs `saturated` et `serverHeat` par défaut, aucun tirage. Un champ ajouté à l'état initial suit l'ordre du schéma Zod, sinon le test de sauvegarde échoue.                                                                                                                                                                                |
 | 02/11    | Melvin + Claude | #127, #140        | Toile du projecteur toute blanche quand elle monte ou descend (plus de cadre noir, `FABRIC_WHITE`), état d'avancement et README à jour.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 02/11    | Thomas + Claude | #148              | Tâche T1 : `main` réintégré dans `develop` (merge commit). 13 conflits résolus en gardant les deux côtés : Carrière et Illimité, trésorerie de la légende multipliée par `difficultyOf`, ménage et abonnements à côté de `career`, succès de l'Illimité et de la Carrière (70). Carrière ajoutée à `GLOBAL_EXCLUDED_MODES`.                                                                                                                                                                                                                                                              |

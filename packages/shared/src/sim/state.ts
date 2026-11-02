@@ -241,6 +241,10 @@ export const GameStatsSchema = z.object({
   crisisMeetings: z.number().int().default(0),
   /** Tickets en partie recodés pour rien, faute de Daily (travail en double). */
   duplicateWork: z.number().int().default(0),
+  /** Arbre de compétences : nœuds appris, formations suivies, Crunchs déclenchés. */
+  skillsLearned: z.number().int().default(0),
+  trainings: z.number().int().default(0),
+  crunches: z.number().int().default(0),
   /** Tâches urgentes et hebdomadaires terminées à temps ou ratées, objectifs de sprint. */
   urgentDone: z.number().int().default(0),
   urgentMissed: z.number().int().default(0),
@@ -276,6 +280,11 @@ export const NOTIFICATION_KINDS = [
   /** Démission annoncée : le dev part quelques planifications plus tard. */
   'DEV_NOTICE',
   'DEV_LEVEL_UP',
+  /** Arbre de compétences : nœud appris, arbre réinitialisé, formation suivie, Crunch lancé. */
+  'SKILL_LEARNED',
+  'SKILLS_RESET',
+  'DEV_TRAINED',
+  'CRUNCH',
   'DEV_BIRTHDAY',
   'DEV_REMOTE',
   'RUST_CONVERT',
