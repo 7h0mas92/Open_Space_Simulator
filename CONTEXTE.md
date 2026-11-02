@@ -1,8 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), fil « Mode
-> Carrière » (PR #121, validée par Thomas et fusionnée). Dernier commit de `main` avant la
-> fusion : `6924163` (PR #136, après le mode Histoire #122).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec la base de
+> données sur Supabase (PR #138), après le mode Carrière (PR #121) et le bouton « Nouvelle
+> partie » (PR #137). Dernier commit de `main` avant la fusion : `70a4b84` (PR #137).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -64,6 +64,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | --------------------------------------------------- | --------------- | -------------------------------- |
 | Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122) |
 | Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné le 2 novembre (PR #121) |
+| **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138) |
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
 10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
@@ -98,8 +99,11 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
   ~20 % avant). Proposition : réduire un peu le café livré par la cuisine. Thomas n'a pas tranché
   (question du 8 octobre) ; ne rien changer sans son accord.
-- **Comptes en ligne** (actions de Thomas, étapes dans le README, section Déploiement) : Render
-  (Blueprint `render.yaml`), URL Render dans `packages/client/vercel.json`, projet Vercel (Root
+- **Comptes en ligne** (actions de Thomas, étapes dans le README, section Déploiement) : la base
+  est prête sur Supabase (projet `open-space-simulator`, compte de Thomas, région
+  `eu-central-1`, tables créées, pas encore de données : le seed tourne au démarrage de Render).
+  Reste : mot de passe de la base dans Supabase, Render (Blueprint `render.yaml`, `DATABASE_URL`
+  = URL du _Session pooler_ + `?sslmode=require`), URL Render dans `packages/client/vercel.json`, projet Vercel (Root
   Directory `packages/client`), OAuth App GitHub. En attendant, la version GitHub Pages n'a ni
   comptes, ni classements, ni Daily en ligne, ni Slack IA, ni packs, ni back-office.
 - **Effets sonores et ambiance** : le lecteur Howler est prêt mais `SOUND_FILES` est vide dans
@@ -221,6 +225,11 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   (`unlocks`) : le serveur vérifie qu'elles sont gagnées et les rejoue. Un contenu réservé porte
   un champ `unlock` (meuble, papier peint, sol) ou est dans `COLOR_UNLOCKS`. `MENU_MODES` = les
   modes du menu et des classements (sans STORY).
+- **Base de production sur Supabase** : seulement un PostgreSQL hébergé, le serveur passe par
+  Prisma (pas d'auth ni de SDK Supabase). Toute nouvelle table active la RLS dans sa migration
+  (`ALTER TABLE "X" ENABLE ROW LEVEL SECURITY;`), sinon l'API REST publique de Supabase la
+  lirait ; `tests/rls.test.ts` échoue sinon. Ne jamais modifier une migration déjà appliquée
+  (somme de contrôle dans `_prisma_migrations`).
 - **Textes** : toujours en FR et EN (`packages/client/src/i18n/fr.json`, `en.json`).
 - **Versions figées** : TypeScript 6.0, Prisma 7.10 (`@prisma/adapter-pg`), Zod 4, Fastify 5,
   Vite 8, Vitest 5, Playwright 1.56.1, Node 22, pnpm 10.28, PostgreSQL 16.
@@ -238,6 +247,10 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 - Un abonnement global branché dans un `useEffect` doit renvoyer un nettoyage qui permet de le
   rebrancher : en `pnpm dev`, StrictMode monte l'application deux fois (c'est ce qui coupait la
   sauvegarde automatique, voir `installGameLifecycle`).
+- Supabase : « self-signed certificate in certificate chain » = le driver `pg` lit
+  `sslmode=require` comme `verify-full` ; `createPrismaClient` ajoute `uselibpqcompat=true`.
+  Prendre l'URL du _Session pooler_ (5432), pas la _Direct connection_ (IPv6 seulement) ni le
+  _Transaction pooler_ (6543). Projet gratuit en pause après 7 jours sans requête.
 
 ---
 
@@ -247,6 +260,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 02/11    | Thomas + Claude | #138        | Base de production sur Supabase : projet créé, migrations appliquées, RLS sur toutes les tables (nouvelle migration + test), correctif SSL de `pg`, `render.yaml` sans base Render. Reste le mot de passe et Render (Thomas).                    |
 | 02/11    | Thomas + Claude | #137        | Bouton « Nouvelle partie » sous « Continuer ». Sauvegarde auto rétablie en `pnpm dev` (StrictMode). À valider.                                                                                                                                   |
 | 02/11    | Thomas + Claude | #121        | Mode Carrière repris après la pause : `main` intégré (mode Histoire), modes `STORY` et `CAREER` côte à côte, migrations Prisma dans l'ordre, CI verte. Validé par Thomas et fusionné.                                                            |
 | 02/11    | Thomas + Claude | #122        | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |

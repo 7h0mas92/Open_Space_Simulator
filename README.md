@@ -164,7 +164,7 @@ flowchart LR
     API[api/ client HTTP typé]
   end
   API -- "/api (cookies httpOnly)" --> S[Fastify]
-  S --> DB[(PostgreSQL)]
+  S --> DB[(PostgreSQL<br/>Supabase en prod)]
   SH[[shared/ types + schémas Zod]] -.-> UI
   SH -.-> API
   SH -.-> S
@@ -665,11 +665,46 @@ Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
 
 ## Déploiement
 
-Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prêts :
-[`render.yaml`](render.yaml) et [`packages/client/vercel.json`](packages/client/vercel.json)).
+Le client va sur **Vercel**, le serveur sur **Render** et la base PostgreSQL sur **Supabase**
+(fichiers prêts : [`render.yaml`](render.yaml) et
+[`packages/client/vercel.json`](packages/client/vercel.json)). En local, rien ne change : la
+base reste celle de `docker compose`.
 
-1. **Render** → _New_ → _Blueprint_ → ce dépôt. Render crée la base `oss-db` et le service
-   `oss-server` (build, migrations, seed puis démarrage). Il demande :
+### Base de données sur Supabase
+
+Le projet Supabase `open-space-simulator` (offre gratuite, région `eu-central-1`, Francfort,
+comme le serveur Render) contient déjà toutes les tables : les migrations Prisma y sont
+appliquées et notées dans `_prisma_migrations`, donc `prisma migrate deploy` ne rejoue que les
+nouvelles. Le serveur ne passe que par Prisma : Supabase sert de PostgreSQL hébergé (pas
+d'auth Supabase, pas de SDK `supabase-js`).
+
+- **Quelle URL ?** _Connect_ → _Session pooler_ (port 5432), en ajoutant `?sslmode=require` :
+  `postgresql://postgres.<ref>:<mot-de-passe>@<hôte>.pooler.supabase.com:5432/postgres?sslmode=require`.
+  La _Direct connection_ n'est joignable qu'en IPv6 sur l'offre gratuite (Render ne l'atteint
+  pas) et le _Transaction pooler_ (6543) ne convient pas aux migrations Prisma. Une seule URL
+  sert donc aux migrations, au seed et au serveur.
+- **Le mot de passe** se choisit dans _Database_ → _Settings_ → _Reset database password_ et ne
+  se saisit que dans Render (variable `DATABASE_URL`) ou dans un `.env` local, jamais dans le
+  dépôt.
+- **SSL** : le driver `pg` lit `sslmode=require` comme `verify-full` et refuserait le certificat
+  de Supabase. `createPrismaClient` (`src/lib/prisma.ts`) ajoute `uselibpqcompat=true` pour lui
+  donner le sens standard de PostgreSQL : connexion chiffrée, comme avec la CLI Prisma.
+- **API publique de Supabase** : Supabase expose le schéma `public` en REST à qui possède la clé
+  publique du projet. La migration `row_level_security` active la RLS sur toutes les tables,
+  sans politique : cette API ne voit aucune ligne, alors que le serveur (rôle propriétaire)
+  n'est pas concerné. Une nouvelle table doit faire de même ; `tests/rls.test.ts` le vérifie.
+- **Remplir la base** (100 cartes, succès, compte administrateur) : c'est fait par le
+  `startCommand` de Render à chaque démarrage (seed idempotent). Depuis un poste, avec l'URL
+  Supabase dans `packages/server/.env` : `pnpm --filter @oss/server db:deploy` puis
+  `SEED_ADMIN_EMAIL=… SEED_ADMIN_PASSWORD=… pnpm --filter @oss/server db:seed`.
+- **Offre gratuite** : 500 Mo, et le projet se met en pause après 7 jours sans requête ; il se
+  relance depuis le tableau de bord Supabase (_Restore project_).
+
+### Serveur sur Render et client sur Vercel
+
+1. **Render** → _New_ → _Blueprint_ → ce dépôt. Render crée le service `oss-server` (build,
+   migrations, seed puis démarrage). Il demande :
+   - `DATABASE_URL` : l'URL Supabase du _Session pooler_ ci-dessus ;
    - `CLIENT_URL` : l'URL Vercel du client (par exemple `https://open-space-simulator.vercel.app`) ;
    - `SEED_ADMIN_EMAIL` et `SEED_ADMIN_PASSWORD` : le compte administrateur ;
    - facultatif : `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` (OAuth App GitHub, callback
@@ -686,10 +721,10 @@ Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur
 chaque push sur `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
 Sans serveur, le jeu se joue en invité avec les 130 cartes intégrées et les sauvegardes
 locales ; le compte, les classements, le Daily en ligne et le Slack IA demandent le serveur
-Render. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
+Render et sa base Supabase. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
 
 Les secrets ne vont jamais dans le dépôt : ils se saisissent dans les tableaux de bord de
-Render et Vercel. Toutes les variables sont décrites dans
+Render et Vercel (le mot de passe de la base, dans Supabase puis dans Render). Toutes les variables sont décrites dans
 [`packages/server/.env.example`](packages/server/.env.example).
 
 ## Ce que l'application fait et ne fait pas
