@@ -2242,6 +2242,52 @@
         "COOLDOWN": "Déjà changé ce sprint : les clients ont besoin d’un peu de stabilité. Réessaie au prochain sprint.",
         "WRONG_STAGE": "Pas pendant une levée de fonds."
       }
+    },
+    "clients": {
+      "title": "Clients B2B",
+      "intro": "Des entreprises veulent ton produit, à condition que tu fasses le travail qu’elles demandent avant l’échéance. Elles paient une prime à la signature, un forfait chaque mois et une prime à la livraison. Chaque panne de prod te coûte une pénalité (SLA), et une échéance ratée coûte cher. Les points se gagnent à la démo, avec les tâches du bon type terminées.",
+      "slots": "Contrats en cours : {{used}}/{{max}}",
+      "monthly": "{{price}} par mois",
+      "record": "{{delivered}} livré(s), {{lost}} perdu(s)",
+      "contracts": "Contrats signés",
+      "offers": "Offres de ce sprint",
+      "noOffers": "Aucune offre pour l’instant : de nouveaux clients se présentent à chaque planification.",
+      "sizes": {
+        "SMALL": "petit contrat",
+        "MEDIUM": "contrat moyen",
+        "LARGE": "gros contrat"
+      },
+      "needs": {
+        "FEATURE": "feature",
+        "INFRA": "infra",
+        "BUGFIX": "bugfix"
+      },
+      "need_one": "Livrer {{count}} point de {{type}} en {{sprints}} sprints",
+      "need_other": "Livrer {{count}} points de {{type}} en {{sprints}} sprints",
+      "fee": "Forfait mensuel",
+      "signing": "À la signature",
+      "delivery": "À la livraison",
+      "users_one": "{{users}} utilisateur",
+      "users_other": "{{users}} utilisateurs",
+      "risks": "Risques",
+      "riskText": "{{penalty}} si raté, {{sla}} par panne",
+      "sign": "Signer le contrat",
+      "blockers": {
+        "NO_SLOT": "Plus de place pour un contrat en cours : livre ou romps d’abord un contrat.",
+        "WRONG_STAGE": "Pas pendant une levée de fonds."
+      },
+      "progress": "{{done}}/{{total}} points livrés",
+      "left_one": "dernier sprint pour livrer",
+      "left_other": "{{count}} sprints pour livrer",
+      "maintenance_one": "Livré, en maintenance encore {{count}} sprint",
+      "maintenance_other": "Livré, en maintenance encore {{count}} sprints",
+      "paying": "Paie {{price}} par mois",
+      "breaches": "{{count}}/{{max}} pannes tolérées",
+      "drop": "Rompre le contrat",
+      "end": "Arrêter la maintenance",
+      "dropWarning": "Rompre maintenant coûte {{penalty}} de pénalités et de la hype.",
+      "endWarning": "Le client part sans frais : plus de forfait, plus de pénalité de panne.",
+      "dropConfirm": "Confirmer"
     }
   }
 }

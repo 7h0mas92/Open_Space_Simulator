@@ -10,15 +10,16 @@ import { hostingSaving } from './serverRoom';
 import { subscriptionsMonthly } from './subscriptions';
 import { cleaningMonthly } from './cleaning';
 import { currentPricing } from './pricing';
+import { clientsMonthly } from './clients';
 
 /** Revenu mensuel par utilisateur, selon le modèle économique et le niveau de prix. */
 export function arpuMonthly(state: GameState): number {
   return BALANCE.economy.arpuMonthly * currentPricing(state).arpu;
 }
 
-/** Revenu récurrent annuel (ARR), en euros. */
+/** Revenu récurrent annuel (ARR), en euros : utilisateurs et contrats des clients B2B. */
 export function annualRevenue(state: GameState): number {
-  return state.gauges.users * arpuMonthly(state) * 12;
+  return (state.gauges.users * arpuMonthly(state) + clientsMonthly(state)) * 12;
 }
 
 /** Masse salariale mensuelle chargée. */
@@ -126,7 +127,8 @@ export function runwayMonths(state: GameState): number {
     monthlyExpenses(state) +
     subscriptionsMonthly(state) +
     cleaningMonthly(state) -
-    monthlyRevenue(state);
+    monthlyRevenue(state) -
+    clientsMonthly(state) * difficultyOf(state.mode).revenue;
   if (burn <= 0) return Number.POSITIVE_INFINITY;
   return state.gauges.treasury / burn;
 }

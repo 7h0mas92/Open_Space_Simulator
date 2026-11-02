@@ -183,6 +183,10 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('CANCEL_CLEANING') }),
   /** Change le modèle économique et le niveau de prix (une fois par sprint). */
   z.object({ type: z.literal('SET_PRICING'), model: PricingModelSchema, tier: PriceTierSchema }),
+  /** Signe l'offre d'un client B2B (prime tout de suite, échéance en sprints). */
+  z.object({ type: z.literal('SIGN_CLIENT'), offerId: z.string().max(64) }),
+  /** Rompt un contrat B2B (pénalité s'il n'est pas encore livré). */
+  z.object({ type: z.literal('DROP_CLIENT'), contractId: z.string().max(64) }),
   /** Souscrit à une offre, ou change d'offre pour ce service : la 1re période est payée. */
   z.object({ type: z.literal('SUBSCRIBE'), offer: z.string().max(64) }),
   /** Résilie l'abonnement d'un service (la période entamée n'est pas remboursée). */

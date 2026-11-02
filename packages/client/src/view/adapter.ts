@@ -10,6 +10,11 @@
 import {
   ANNEXES,
   BALANCE,
+  CLIENT_COMPANIES,
+  CLIENT_SLOTS,
+  CLIENTS,
+  contractMonthly,
+  type ClientOffer,
   difficultyOf,
   oneTimePrice,
   PRICE_TIERS,
@@ -115,10 +120,13 @@ import {
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
 import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
+import { clientsMonthly, freeClientSlots } from '../simulation/clients';
 import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulation/subscriptions';
 import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
 import type {
   StoryView,
+  ClientDealView,
+  ClientsView,
   PricingChoiceView,
   PricingView,
   CandidateView,
@@ -861,6 +869,59 @@ function pricingChoiceView(
   };
 }
 
+function clientDealView(deal: ClientOffer): ClientDealView {
+  const company = CLIENT_COMPANIES[deal.company];
+  return {
+    id: deal.id,
+    company: company?.name ?? '?',
+    icon: company?.icon ?? '🏢',
+    sector: company?.sector ?? { fr: '', en: '' },
+    size: deal.size,
+    need: deal.need,
+    points: deal.points,
+    sprints: deal.sprints,
+    monthlyFee: deal.monthlyFee,
+    users: deal.users,
+    signingBonus: deal.monthlyFee * CLIENTS.signingMonths,
+    deliveryBonus: deal.monthlyFee * CLIENTS.deliveryMonths,
+    penalty: deal.monthlyFee * CLIENTS.penaltyMonths,
+    slaPenalty: deal.monthlyFee * CLIENTS.slaPenaltyMonths,
+  };
+}
+
+function clientsView(state: GameState): ClientsView {
+  const clients = state.clients;
+  const free = freeClientSlots(state);
+  const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
+  return {
+    offers: clients.offers.map((offer) => ({
+      ...clientDealView(offer),
+      blocker: wrongStage ? 'WRONG_STAGE' : free === 0 ? 'NO_SLOT' : null,
+    })),
+    contracts: clients.contracts.map((contract) => ({
+      ...clientDealView(contract),
+      status: contract.status,
+      progress: contract.progress,
+      sprintsLeft:
+        contract.status === 'ACTIVE' ? Math.max(0, contract.dueSprint - state.sprint + 1) : 0,
+      maintenanceLeft:
+        contract.deliveredSprint === null
+          ? 0
+          : Math.max(0, CLIENTS.maintenanceSprints - (state.sprint - contract.deliveredSprint)),
+      breaches: contract.breaches,
+      maxBreaches: CLIENTS.maxBreaches,
+      monthly: contractMonthly(contract),
+    })),
+    slots: CLIENT_SLOTS[state.phase],
+    freeSlots: free,
+    monthlyTotal: clientsMonthly(state),
+    signed: clients.signed,
+    delivered: clients.delivered,
+    lost: clients.lost,
+    earned: clients.earned,
+  };
+}
+
 function pricingView(state: GameState): PricingView {
   const { model, tier, changedSprint, changes } = state.pricing;
   return {
@@ -1061,6 +1122,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     servers: serversView(state),
     cleaning: cleaningView(state),
     pricing: pricingView(state),
+    clients: clientsView(state),
     subscriptions: subscriptionsView(state),
     floors: floorsView(state),
     canIpo:
@@ -1259,5 +1321,9 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'CANCEL_CLEANING' };
     case 'setPricing':
       return { type: 'SET_PRICING', model: command.model, tier: command.tier };
+    case 'signClient':
+      return { type: 'SIGN_CLIENT', offerId: command.offerId };
+    case 'dropClient':
+      return { type: 'DROP_CLIENT', contractId: command.contractId };
   }
 }

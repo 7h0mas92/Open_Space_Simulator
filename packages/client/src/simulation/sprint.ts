@@ -4,6 +4,7 @@ import {
   TIME,
   endlessCostMultiplier,
   endlessPressure,
+  type ClientNeed,
   type CommandResult,
   type GameState,
   type LocalizedText,
@@ -31,6 +32,7 @@ import { rollObjective, settleObjective } from './taskFlow';
 import { refillBacklog } from './tasks';
 import { raisePlanning } from './raises';
 import { acquireUsers, currentPricing } from './pricing';
+import { clientsDemo, payClients, refreshClientOffers } from './clients';
 import { emergencySale, ventureSprint } from './ventures';
 
 /** Remise à zéro des compteurs du sprint. */
@@ -57,6 +59,7 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
   resetTracker(state);
   rollObjective(state, ctx);
   raisePlanning(state, ctx);
+  refreshClientOffers(state);
   announceCompetition(state, ctx);
 }
 
@@ -144,9 +147,13 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   const hypeFactor = 0.5 + state.gauges.hype / 100;
   const stabilityFactor = 0.5 + state.gauges.stability / 200;
   const designer = hasRole(state, 'DESIGNER') ? 1 + u.designerBonus : 1;
+  // Points livrés par type, pour les contrats des clients B2B.
+  const delivered: Partial<Record<ClientNeed, number>> = {};
   for (const task of done) {
     // Les urgences et tâches de la semaine ont leur propre récompense, pas d'effet à la démo.
     if (!task || task.kind) continue;
+    if (task.type !== 'REFACTO' && !task.hallucinated)
+      delivered[task.type] = (delivered[task.type] ?? 0) + task.size;
     if (task.type === 'REFACTO') refactoPoints += task.size;
     if (task.type !== 'FEATURE') continue;
     if (task.hallucinated) {
@@ -166,6 +173,7 @@ export function endSprint(state: GameState, ctx: SimContext): void {
     'hype',
     featurePoints * u.hypePerFeaturePoint * hypeRoom + refactoPoints * u.hypePerRefactoPoint,
   );
+  clientsDemo(state, ctx, delivered);
   const objective = settleObjective(state, ctx);
   ventureSprint(state, ctx);
   state.valuation = computeValuation(state);
@@ -253,11 +261,13 @@ function loseSprint(state: GameState, ctx: SimContext): void {
   const days = TIME.daysPerSprint;
   addMoney(state, (-monthlyExpenses(state) * days) / 30);
   addMoney(state, (monthlyRevenue(state) * days) / 30);
+  payClients(state, days);
   repayLoan(state, days);
   const churn =
     state.gauges.users * BALANCE.users.baseDailyChurn * currentPricing(state).churn * days;
   addUsers(state, -churn);
   for (let day = 0; day < days; day++) addGauge(state, 'hype', hypeDrift(state.gauges.hype));
+  clientsDemo(state, ctx, {});
   ventureSprint(state, ctx);
   state.valuation = computeValuation(state);
   state.history.sprints.push({
