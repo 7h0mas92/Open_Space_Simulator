@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CareerPage } from './career/CareerPage';
 import { HomeMenu, type MenuPage } from './menu/HomeMenu';
 import { SaveSlots } from './menu/SaveSlots';
+import { StoryPage } from './story/StoryPage';
 import { AchievementsPage } from './meta/Achievements';
 import { Leaderboard } from './meta/Leaderboard';
 import { MetaPage } from './meta/MetaPage';
@@ -85,6 +86,13 @@ export function App() {
     ) : null;
 
   switch (screen) {
+    case 'story':
+      return (
+        <MetaPage title={t('story.title')} onBack={back} wide>
+          <StoryPage />
+          {menuToast}
+        </MetaPage>
+      );
     case 'load':
       return (
         <MetaPage title={t('saves.title')} onBack={back}>

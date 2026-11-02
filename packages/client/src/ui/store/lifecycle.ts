@@ -11,6 +11,7 @@ import { recordCareer } from '../career/records';
 import type { GameView } from '../../view/types';
 import { useGame } from './game';
 import { useSession } from './session';
+import { useStory } from './story';
 
 const isOnline = () => useSession.getState().status === 'authenticated';
 
@@ -30,6 +31,8 @@ export async function saveGame(slot: number): Promise<boolean> {
 export async function submitScore(): Promise<void> {
   const { source, view, replayOf } = useGame.getState();
   if (!source || !view?.result || replayOf !== null) return;
+  // Les missions du mode Histoire n'ont pas de classement (voir `recordMission`).
+  if (view.mode === 'STORY') return;
   if (!isOnline()) {
     useGame.setState({ submission: { status: 'guest' } });
     return;
@@ -43,6 +46,8 @@ export async function submitScore(): Promise<void> {
       commands: data.commands,
       cardsVersion: source.cardsVersion,
       dailyDate: view.mode === 'DAILY' ? dailyDateOf(view.seed) : undefined,
+      // Les récompenses du mode Histoire de la partie, pour que le serveur la rejoue pareil.
+      unlocks: [...view.unlocks],
       claimed: { outcome: view.result.outcome, valuation: view.result.valuation },
     });
     if (useGame.getState().source !== source) return;
@@ -63,6 +68,23 @@ export async function submitScore(): Promise<void> {
   }
 }
 
+/** Mission du mode Histoire réussie : gardée avec de quoi la rejouer, envoyée au serveur. */
+export async function recordMission(): Promise<void> {
+  const { source, view, replayOf } = useGame.getState();
+  const mission = view?.result?.mission;
+  if (!source || !view || !mission?.success || replayOf !== null) return;
+  const data = await source.save();
+  await useStory.getState().complete(
+    {
+      missionId: mission.id,
+      seed: view.seed,
+      commands: data.commands,
+      cardsVersion: source.cardsVersion,
+    },
+    isOnline(),
+  );
+}
+
 async function rememberAchievements(ids: readonly string[]): Promise<void> {
   await pendingAchievements.add(ids);
   if (isOnline()) await pendingAchievements.sync().catch(() => undefined);
@@ -75,6 +97,7 @@ function onViewChange(view: GameView | null, previous: GameView | null): void {
   }
   if (view.step === 'ENDED' && previous.step !== 'ENDED') {
     void submitScore();
+    void recordMission().catch(() => undefined);
     void saves.markFinished(view.seed, isOnline()).catch(() => undefined);
     if (view.result?.career) recordCareer(view.result.career);
   }
@@ -96,4 +119,5 @@ export function installGameLifecycle(): () => void {
 export async function syncOfflineProgress(): Promise<void> {
   await saves.syncPending().catch(() => 0);
   await pendingAchievements.sync().catch(() => []);
+  await useStory.getState().sync();
 }

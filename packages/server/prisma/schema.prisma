@@ -29,6 +29,7 @@ enum GameMode {
   INTERNS_ONLY
   SHIP_IN_3
   DAILY
+  STORY
   CAREER
 }
 
@@ -64,6 +65,7 @@ model User {
   scores        Score[]
   achievements  UserAchievement[]
   aiQuotas      AiQuota[]
+  storyMissions StoryMission[]
 }
 
 /// Refresh token opaque : seul son empreinte SHA-256 est stockée.
@@ -133,6 +135,8 @@ model Score {
   cardSet       CardSet   @relation(fields: [cardsVersion], references: [version])
   /// Statistiques de fin de partie (GameStats) : profil et statistiques cumulées.
   stats         Json
+  /// Récompenses du mode Histoire utilisées par la partie (rejouées avec la graine).
+  unlocks       Json      @default("[]")
   dailyDate     DateTime? @db.Date
   createdAt     DateTime  @default(now())
 
@@ -180,6 +184,20 @@ model EventStat {
   count       Int       @default(0)
 
   @@id([cardId, choiceIndex])
+}
+
+/// Mission du mode Histoire réussie par un joueur, vérifiée par rejeu de sa graine et de ses
+/// commandes. Les récompenses du joueur se déduisent de ses missions réussies.
+model StoryMission {
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missionId    String
+  seed         String
+  commandsLog  Json
+  cardsVersion String
+  completedAt  DateTime @default(now())
+
+  @@id([userId, missionId])
 }
 
 /// Quota quotidien d'appels au Slack IA par utilisateur.

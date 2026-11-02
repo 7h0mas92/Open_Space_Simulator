@@ -27,10 +27,32 @@ export const GAME_MODES = [
   'INTERNS_ONLY',
   'SHIP_IN_3',
   'DAILY',
+  'STORY',
   'CAREER',
 ] as const;
 export const GameModeSchema = z.enum(GAME_MODES);
 export type GameMode = z.infer<typeof GameModeSchema>;
+
+/**
+ * Modes proposés en cartes dans le menu. Le mode Histoire a son propre écran (chapitres et
+ * missions, voir `story/campaign.ts`) et n'a pas de classement.
+ */
+export const MENU_MODES = GAME_MODES.filter(
+  (mode): mode is Exclude<GameMode, 'STORY'> => mode !== 'STORY',
+);
+
+/**
+ * Modes où les récompenses du mode Histoire sont utilisables (objets, couleurs, bonus de
+ * départ). Ni le Daily (même partie pour tout le monde), ni les missions elles-mêmes (elles
+ * restent équilibrées pareil pour tous).
+ */
+export const UNLOCK_MODES: readonly GameMode[] = [
+  'EASY',
+  'NORMAL',
+  'HARDCORE',
+  'INTERNS_ONLY',
+  'SHIP_IN_3',
+];
 
 export const PHASES = ['GARAGE', 'SEED', 'SERIES_A', 'UNICORN', 'END'] as const;
 export const PhaseSchema = z.enum(PHASES);

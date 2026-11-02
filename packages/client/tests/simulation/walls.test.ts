@@ -25,7 +25,8 @@ const view = (state: GameState) =>
 describe('Murs : catalogue', () => {
   it('8 peintures au même prix, puis des papiers peints de plus en plus chers', () => {
     const paints = WALL_FINISHES.filter((f) => f.kind === 'paint');
-    const papers = WALL_FINISHES.filter((f) => f.kind === 'wallpaper');
+    // Les papiers peints gagnés en mode Histoire viennent en plus.
+    const papers = WALL_FINISHES.filter((f) => f.kind === 'wallpaper' && !f.unlock);
     expect(paints).toHaveLength(8);
     expect(new Set(paints.map((f) => f.price)).size).toBe(1);
     expect(papers.length).toBeGreaterThanOrEqual(8);

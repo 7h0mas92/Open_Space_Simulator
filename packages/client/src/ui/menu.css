@@ -233,6 +233,13 @@ button.cta small {
   --mode-color: #ffd966;
 }
 
+/* Carte du mode Histoire, au-dessus des autres modes : elle ouvre la campagne. */
+.mode-story {
+  --mode-color: #ff9ecf;
+
+  margin-bottom: 0.75rem;
+}
+
 .mode-icon {
   flex: none;
   display: grid;

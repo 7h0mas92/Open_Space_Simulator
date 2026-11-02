@@ -6,11 +6,14 @@
  * lien et convertit chaque snapshot en `GameView`.
  */
 import {
+  UNLOCK_MODES,
   dailySeed,
   isoDate,
   utcDate,
   careerSeed,
   type CareerLegendId,
+  type StoryMissionId,
+  type StoryRewardId,
   type EventCard,
   type FurnitureColor,
   type GameMode,
@@ -21,6 +24,7 @@ import {
 } from '@oss/shared';
 import { create } from 'zustand';
 import { metaApi } from '../../api/meta';
+import { storyProgress } from '../../save/story';
 import i18n from '../../i18n';
 import type { PickTarget } from '../../render/GameRenderer';
 import { catalogItem } from '../../view/catalog';
@@ -51,6 +55,7 @@ export const PANELS = [
   'servers',
   'funding',
   'career',
+  'mission',
   'dashboard',
   'slack',
   'saves',
@@ -162,6 +167,8 @@ export interface StartOptions {
   mode?: GameMode;
   /** Mode Carrière : la légende à suivre (écrite dans la graine). */
   legend?: CareerLegendId;
+  /** Mode Histoire : la mission à jouer. */
+  mission?: StoryMissionId;
   /** Source déjà prête (tests). */
   source?: GameSource;
   /** Reprendre une sauvegarde. */
@@ -173,6 +180,8 @@ export interface StartOptions {
     commands: readonly LoggedCommand[];
     cards: readonly EventCard[];
     cardsVersion: string;
+    /** Récompenses du mode Histoire utilisées par la partie. */
+    unlocks?: readonly StoryRewardId[];
     pseudo: string;
   };
 }
@@ -268,8 +277,11 @@ async function createSource(options: StartOptions): Promise<GameSource> {
     import('../../save/cards'),
   ]);
   if (options.replay) {
-    const { seed, mode, commands, cards, cardsVersion } = options.replay;
-    return EngineSource.start({ seed, mode, commands }, { cards, cardsVersion });
+    const { seed, mode, commands, cards, cardsVersion, unlocks } = options.replay;
+    return EngineSource.start(
+      { seed, mode, commands, ...(unlocks ? { unlocks } : {}) },
+      { cards, cardsVersion },
+    );
   }
   if (options.save) {
     const set = await cardsModule.cardsForVersion(options.save.cardsVersion);
@@ -287,7 +299,17 @@ async function createSource(options: StartOptions): Promise<GameSource> {
         ? careerSeed(options.legend ?? 'pepin', randomSeed())
         : randomSeed());
   const set = await cardsModule.currentCards();
-  return EngineSource.start({ seed, mode }, { cards: set.cards, cardsVersion: set.version });
+  // Récompenses du mode Histoire : seulement dans les modes qui les acceptent.
+  const unlocks = UNLOCK_MODES.includes(mode) ? await storyProgress.unlocks().catch(() => []) : [];
+  return EngineSource.start(
+    {
+      seed,
+      mode,
+      ...(mode === 'STORY' && options.mission ? { mission: options.mission } : {}),
+      ...(unlocks.length > 0 ? { unlocks } : {}),
+    },
+    { cards: set.cards, cardsVersion: set.version },
+  );
 }
 
 export const useGame = create<GameStore>((set, get) => ({
