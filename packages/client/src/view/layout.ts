@@ -12,7 +12,6 @@ import {
   ANNEX_KINDS,
   annexDecorKey,
   VENTURES,
-  hashString,
   officeDepthWithAnnexes,
   officeWidthWithWings,
   type FurnitureId,
@@ -37,30 +36,12 @@ export const ROOM_KINDS = [
 ] as const;
 export type RoomKind = (typeof ROOM_KINDS)[number];
 
-/** Nombre de décors de sol (`FLOOR_STYLES` dans render/office.ts) par type de pièce. */
-export const ROOM_STYLES: Record<RoomKind, number> = {
-  open: 4,
-  meeting: 3,
-  kitchen: 3,
-  lounge: 3,
-  canteen: 3,
-  incubator: 3,
-  arcade: 1,
-  garden: 1,
-  auditorium: 1,
-};
-
 export interface Room {
   readonly kind: RoomKind;
   readonly x: number;
   readonly z: number;
   readonly width: number;
   readonly depth: number;
-  /**
-   * Décor de la pièce (sol), tiré de la graine de la partie : d'une partie à l'autre, la
-   * cuisine peut être en damier ou en terre cuite. 0 = décor d'origine.
-   */
-  readonly style?: number;
 }
 
 /**
@@ -174,21 +155,13 @@ function annexDoors(width: number, blocked: (cell: Cell) => boolean, z: number):
   return [2, width - 4].map((x) => (blocked({ x, z: z - 1 }) ? Math.min(width - 2, x + 1) : x));
 }
 
-/** Petit hachage stable (graine + pièce) pour choisir un décor sans toucher au hasard du jeu. */
-function roomStyle(seed: string, kind: RoomKind, index: number): number {
-  if (!seed) return 0;
-  return hashString(`${seed}#room#${kind}#${index}`) % ROOM_STYLES[kind];
-}
-
 /**
  * Plan du bureau. Chaque filiale fondée ajoute une aile « incubateur » à droite du bureau :
  * une cloison percée de deux portes, puis une salle de toute la profondeur. Chaque tour de
  * table à partir de la Série B ajoute une annexe à l'avant, sur toute la largeur : salle
  * d'arcade, puis jardin intérieur, puis auditorium, chacune avec son décor fixe.
- *
- * `seed` (facultatif) varie le décor de sol de chaque pièce d'une partie à l'autre.
  */
-export function officeLayout(phase: Phase, wings = 0, annexes = 0, seed = ''): OfficeLayout {
+export function officeLayout(phase: Phase, wings = 0, annexes = 0): OfficeLayout {
   const base = LAYOUTS[phase];
   const count = Math.max(0, Math.min(wings, VENTURES.maxFounded));
   const annexCount = Math.max(0, Math.min(annexes, ANNEXES.max));
@@ -230,13 +203,13 @@ export function officeLayout(phase: Phase, wings = 0, annexes = 0, seed = ''): O
         fixtures.push({ key: annexDecorKey(i, index), kind: fixture, x: slot, z: wall + 1 });
     });
   }
-  if (count === 0 && annexCount === 0 && !seed) return base;
+  if (count === 0 && annexCount === 0) return base;
   return {
     ...base,
     width,
     depth: officeDepthWithAnnexes(base.depth, annexCount),
     maxTeam: base.maxTeam + count * VENTURES.teamPerWing + annexCount * ANNEXES.teamPerAnnex,
-    rooms: rooms.map((room, index) => ({ ...room, style: roomStyle(seed, room.kind, index) })),
+    rooms,
     partitions,
     fixtures,
   };
@@ -379,16 +352,15 @@ export function settleFixtures(
 }
 
 /**
- * Plan du bureau d'un instantané : phase, ailes des filiales, annexes et décor des pièces,
+ * Plan du bureau d'un instantané : phase, ailes des filiales, annexes,
  * dont les cloisons cèdent la place au mobilier déjà posé (voir `yieldToItems`).
  */
 export function layoutOf(view: {
   readonly phase: Phase;
-  readonly seed: string;
   readonly group: { readonly wings: number };
   readonly funding: { readonly annexes: number };
   readonly items?: readonly FloorItem[];
 }): OfficeLayout {
-  const layout = officeLayout(view.phase, view.group.wings, view.funding.annexes, view.seed);
+  const layout = officeLayout(view.phase, view.group.wings, view.funding.annexes);
   return view.items ? yieldToItems(layout, view.items) : layout;
 }

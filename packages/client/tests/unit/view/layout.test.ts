@@ -3,12 +3,10 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { buildNavGrid } from '../../../src/ai/grid';
 import { ANNEX_DECOR_PRIMITIVES } from '../../../src/render/annexDecor';
-import { FLOOR_STYLES } from '../../../src/render/office';
+import { BASE_FLOOR_COLORS } from '../../../src/render/office';
 import { checkPlacement } from '../../../src/view/placement';
 import type { PlacedItemView } from '../../../src/view/types';
 import {
-  ROOM_KINDS,
-  ROOM_STYLES,
   officeLayout,
   settleFixtures,
   yieldToItems,
@@ -56,7 +54,7 @@ describe('Annexes du bureau', () => {
 
   it('toutes les salles restent accessibles, ailes et annexes comprises', () => {
     for (const phase of ['SERIES_A', 'UNICORN'] as const) {
-      const layout = officeLayout(phase, 2, 3, 'graine');
+      const layout = officeLayout(phase, 2, 3);
       const seen = reachable(layout);
       for (const room of layout.rooms) {
         const inside = [...seen].some((k) => {
@@ -106,22 +104,13 @@ describe('Annexes du bureau', () => {
   });
 });
 
-describe('Décor des pièces', () => {
-  it('chaque type de pièce a autant de sols que de styles annoncés', () => {
-    for (const kind of ROOM_KINDS) expect(FLOOR_STYLES[kind]).toHaveLength(ROOM_STYLES[kind]);
-  });
-
-  it('le décor dépend de la graine, et reste celui d’origine sans graine', () => {
+describe('Sol d’origine', () => {
+  it('a la même couleur dans toutes les pièces, quelles que soient la graine et la phase', () => {
+    expect(BASE_FLOOR_COLORS).toEqual([0xd9cbb4, 0xd0c1a8]);
+    // Le plan ne porte plus de décor par pièce : ajouter ou agrandir une pièce ne repeint rien.
     for (const phase of PHASES) {
-      expect(officeLayout(phase).rooms.every((room) => (room.style ?? 0) === 0)).toBe(true);
+      for (const room of officeLayout(phase, 2, 3).rooms) expect(room).not.toHaveProperty('style');
     }
-    const styles = (seed: string) =>
-      officeLayout('UNICORN', 0, 0, seed)
-        .rooms.map((room) => room.style)
-        .join('');
-    expect(styles('a')).toBe(styles('a'));
-    const seeds = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(styles);
-    expect(new Set(seeds).size).toBeGreaterThan(1);
   });
 });
 
@@ -139,8 +128,8 @@ describe('Le plan cède la place aux meubles posés', () => {
 
   it('une aile de filiale ne pose plus le banc du jardin dans un mur vitré', () => {
     // Avec une filiale, la case est libre : le mur vitré y est accepté.
-    const before = officeLayout('UNICORN', 1, 2, 'graine');
-    const after = officeLayout('UNICORN', 2, 2, 'graine');
+    const before = officeLayout('UNICORN', 1, 2);
+    const after = officeLayout('UNICORN', 2, 2);
     const target = benchOf(after)!;
     expect(benchOf(before)).not.toEqual(target);
     const wall = glass(target.x, target.z);
@@ -184,7 +173,7 @@ describe('Le plan cède la place aux meubles posés', () => {
   });
 
   it('sans conflit, le plan reste celui d’origine', () => {
-    const layout = officeLayout('UNICORN', 1, 2, 'graine');
+    const layout = officeLayout('UNICORN', 1, 2);
     expect(yieldToItems(layout, [])).toBe(layout);
     expect(yieldToItems(layout, [glass(3, 3)])).toBe(layout);
   });

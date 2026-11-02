@@ -34,16 +34,16 @@ const SLIDE_SECONDS = 8;
 
 // --- Images projetées ----------------------------------------------------------------------
 
-/** Bordure noire des toiles de projection, en pixels de texture. */
+/** Blanc de la toile, sans bordure : elle reste toute blanche quand elle monte ou descend. */
+export const FABRIC_WHITE = 0xf4f4f0;
+/** Marge blanche autour des diapositives, en pixels de texture. */
 const BORDER = 6;
 
 function framed(width: number, height: number): PixelCanvas {
-  const canvas = new PixelCanvas(width, height).fill(0x15171c);
-  canvas.rect(BORDER, BORDER, width - BORDER * 2, height - BORDER * 2, 0xf4f4f0);
-  return canvas;
+  return new PixelCanvas(width, height).fill(FABRIC_WHITE);
 }
 
-/** Toile vierge (non projetée) : blanche, bordée de noir. */
+/** Toile vierge (non projetée) : toute blanche, à l'ouverture comme à la fermeture. */
 export function blankFabric(): THREE.DataTexture {
   return framed(64, 40).texture();
 }
