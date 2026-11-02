@@ -53,7 +53,6 @@ import {
   wallZones,
   CLEANING,
   CLEANING_CREW,
-  CLEANING_PLANS,
   cleaningCallPrice,
   dirtProductivity,
   HOSTING_SAVING_MAX,
@@ -104,9 +103,14 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
-import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
-import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulation/subscriptions';
+import {
+  offerPrice,
+  requirementMet,
+  subscriptionOf,
+  subscriptionsMonthly,
+} from '../simulation/subscriptions';
 import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
+import { visitPrice } from '../simulation/cleaning';
 import type {
   StoryView,
   CandidateView,
@@ -771,13 +775,14 @@ function subscriptionOfferView(
   offer: SubscriptionOffer,
   currentId: string | undefined,
 ): SubscriptionOfferView {
+  const price = offerPrice(state, offer);
   return {
     id: offer.id,
     service: offer.service,
     name: offer.name,
     description: offer.description,
     detail: offer.detail ?? null,
-    price: offer.price,
+    price,
     periodDays: offer.periodDays,
     minPhase: offer.minPhase,
     requires: offer.requires ?? null,
@@ -790,7 +795,7 @@ function subscriptionOfferView(
             ? 'WRONG_STAGE'
             : !requirementMet(state, offer)
               ? 'REQUIREMENT'
-              : state.gauges.treasury < offer.price
+              : state.gauges.treasury < price
                 ? 'NOT_ENOUGH_MONEY'
                 : null,
   };
@@ -813,7 +818,7 @@ function subscriptionsView(state: GameState): SubscriptionsView {
             ),
             since: current.subscription.since,
             totalPaid: current.subscription.totalPaid,
-            monthly: monthlyPrice(current.offer),
+            monthly: monthlyPrice(current.offer, offerPrice(state, current.offer)),
           }
         : null,
       offers: offersOf(service).map((offer) => subscriptionOfferView(state, offer, currentId)),
@@ -833,7 +838,6 @@ function cleaningView(state: GameState): CleaningView {
   const expressPrice = cleaningCallPrice(visitCost, true);
   const busy = cleaning.booking !== null || cleaning.visit !== null;
   const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
-  const plan = cleaning.plan;
   const visit = cleaning.visit;
   return {
     dirt: cleaning.dirt,
@@ -852,33 +856,6 @@ function cleaningView(state: GameState): CleaningView {
           inHours: Math.max(0, (cleaning.booking.start - state.tick) / TIME.ticksPerHour),
         }
       : null,
-    plan: plan
-      ? {
-          plan: plan.plan,
-          weeklyPrice: planWeeklyPrice(state, plan.plan),
-          nextBillDays: Math.max(0, (plan.paidUntil - state.tick) / TIME.ticksPerDay),
-          totalPaid: plan.totalPaid,
-        }
-      : null,
-    plans: CLEANING_PLANS.map((option) => {
-      const weeklyPrice = planWeeklyPrice(state, option.id);
-      return {
-        id: option.id,
-        name: option.name,
-        description: option.description,
-        days: [...option.days],
-        weeklyPrice,
-        discount: option.discount,
-        blocker:
-          plan?.plan === option.id
-            ? 'CURRENT'
-            : wrongStage
-              ? 'WRONG_STAGE'
-              : state.gauges.treasury < weeklyPrice
-                ? 'NOT_ENOUGH_MONEY'
-                : null,
-      };
-    }),
     visitPrice: visitCost,
     callPrice,
     expressPrice,
@@ -1202,9 +1179,5 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'CANCEL_SUBSCRIPTION', service: command.service };
     case 'callCleaning':
       return { type: 'CALL_CLEANING', express: command.express };
-    case 'subscribeCleaning':
-      return { type: 'SUBSCRIBE_CLEANING', plan: command.plan };
-    case 'cancelCleaning':
-      return { type: 'CANCEL_CLEANING' };
   }
 }

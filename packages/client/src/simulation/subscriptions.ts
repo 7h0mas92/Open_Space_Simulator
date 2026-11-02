@@ -6,9 +6,13 @@
 import {
   SUBSCRIPTION_SERVICE_INFO,
   TIME,
+  cleaningVisitPrice,
+  cleaningWeeklyPrice,
+  getCleaningPlan,
   getSubscriptionOffer,
   hasFibreBox,
   monthlyPrice,
+  officeExtraRooms,
   type CommandResult,
   type GameState,
   type LocalizedText,
@@ -31,6 +35,26 @@ export const REQUIREMENT_CHECKS: Readonly<
 > = {
   fibreBox: (state) => hasFibreBox(serverRoomItems(state)),
 };
+
+/**
+ * Prix d'une période qui suit la partie, service par service. Sans règle, c'est le prix de
+ * l'offre (`price`).
+ */
+export const PRICE_RULES: Partial<
+  Record<SubscriptionService, (state: GameState, offer: SubscriptionOffer) => number>
+> = {
+  // Ménage : selon la phase (taille du bureau) et les ailes ou annexes ouvertes.
+  cleaning: (state, offer) => {
+    const plan = getCleaningPlan(offer.id);
+    const visit = cleaningVisitPrice(state.phase, officeExtraRooms(state));
+    return plan ? cleaningWeeklyPrice(plan, visit) : offer.price;
+  },
+};
+
+/** Prix d'une période de cette offre, pour la partie en cours. */
+export function offerPrice(state: GameState, offer: SubscriptionOffer): number {
+  return PRICE_RULES[offer.service]?.(state, offer) ?? offer.price;
+}
 
 export function requirementMet(state: GameState, offer: SubscriptionOffer): boolean {
   return offer.requires === undefined || REQUIREMENT_CHECKS[offer.requires](state);
@@ -72,7 +96,7 @@ export function subscriptionEffects(state: GameState): SubscriptionEffects[] {
 export function subscriptionsMonthly(state: GameState): number {
   return state.subscriptions.reduce((sum, subscription) => {
     const offer = getSubscriptionOffer(subscription.offer);
-    return sum + (offer ? monthlyPrice(offer) : 0);
+    return sum + (offer ? monthlyPrice(offer, offerPrice(state, offer)) : 0);
   }, 0);
 }
 
@@ -95,13 +119,14 @@ export function subscribe(state: GameState, ctx: SimContext, offerId: string): C
   const previous = subscriptionOf(state, offer.service);
   if (previous?.offer.id === offer.id) return { ok: false, error: 'NOT_ELIGIBLE' };
   if (!requirementMet(state, offer)) return { ok: false, error: 'NOT_ELIGIBLE' };
-  if (state.gauges.treasury < offer.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
-  addMoney(state, -offer.price);
+  const price = offerPrice(state, offer);
+  if (state.gauges.treasury < price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
+  addMoney(state, -price);
   const next: Subscription = {
     offer: offer.id,
     paidUntil: state.tick + offer.periodDays * TIME.ticksPerDay,
     since: previous?.subscription.since ?? state.sprint,
-    totalPaid: (previous?.subscription.totalPaid ?? 0) + offer.price,
+    totalPaid: (previous?.subscription.totalPaid ?? 0) + price,
   };
   // Changer d'offre garde la place du service dans la liste (ordre de facturation).
   const index = previous ? state.subscriptions.indexOf(previous.subscription) : -1;
@@ -110,7 +135,7 @@ export function subscribe(state: GameState, ctx: SimContext, offerId: string): C
   const params = {
     offer: offer.name,
     detail: offer.detail ?? offer.name,
-    price: moneyText(offer.price),
+    price: moneyText(price),
     period: periodText(offer.periodDays),
   };
   notify(
@@ -160,7 +185,8 @@ export function subscriptionSystem(state: GameState, ctx: SimContext): void {
   for (const subscription of [...state.subscriptions]) {
     if (state.tick < subscription.paidUntil) continue;
     const offer = getSubscriptionOffer(subscription.offer);
-    if (!offer || state.gauges.treasury < offer.price) {
+    const price = offer ? offerPrice(state, offer) : 0;
+    if (!offer || state.gauges.treasury < price) {
       state.subscriptions.splice(state.subscriptions.indexOf(subscription), 1);
       if (!offer) continue;
       notify(
@@ -177,9 +203,9 @@ export function subscriptionSystem(state: GameState, ctx: SimContext): void {
       );
       continue;
     }
-    addMoney(state, -offer.price);
+    addMoney(state, -price);
     subscription.paidUntil += offer.periodDays * TIME.ticksPerDay;
-    subscription.totalPaid += offer.price;
+    subscription.totalPaid += price;
   }
 }
 

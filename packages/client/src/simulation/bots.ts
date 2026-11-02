@@ -24,6 +24,7 @@ import { devIds, teamMax, teamMoral, teamSize } from './helpers';
 import { meetingFormatBlocker } from './meetings';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
+import { subscriptionOf } from './subscriptions';
 import { tasksInColumn } from './tasks';
 import { activeVentures, investableCash, ventureBlocker, ventureOffers } from './ventures';
 
@@ -224,8 +225,8 @@ class PlannerBot implements Bot {
     if (style.buysFurniture) {
       commands.push(...this.furniture(state));
       const plan = sensibleCleaningPlan(state);
-      if (plan && plan !== state.cleaning.plan?.plan && runway > 6)
-        commands.push({ type: 'SUBSCRIBE_CLEANING', plan });
+      if (plan && plan !== subscriptionOf(state, 'cleaning')?.offer.id && runway > 6)
+        commands.push({ type: 'SUBSCRIBE', offer: plan });
     }
 
     // 5. Kanban : on remplit TODO selon la capacité estimée de chaque métier (un 10x ou une
