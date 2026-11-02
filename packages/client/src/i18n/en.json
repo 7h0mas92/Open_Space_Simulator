@@ -901,7 +901,10 @@
       "lectern": "Wooden lectern with a slanted top and a microphone",
       "auditoriumScreen": "Auditorium screen: glowing panel on two poles",
       "unicornStatue": "Unicorn statue: moulded marble plinth, rearing golden unicorn, horn and mane",
-      "ipoBell": "Stock exchange bell: wooden frame, turned bronze bell, clapper and tasselled rope"
+      "ipoBell": "Stock exchange bell: wooden frame, turned bronze bell, clapper and tasselled rope",
+      "splitAc": "Wall air conditioner: white indoor unit with a flap, on a bracket, outdoor unit and pipes",
+      "inrowCooling": "In-row cooling: perforated black cabinet, fans and blue screen",
+      "serverMonitoring": "Monitoring: desk stand, temperature chart screen, probe and beacon"
     },
     "back": "Back"
   },
@@ -1973,7 +1976,7 @@
     "adoptCardReady": "All set: pick a coat and adopt."
   },
   "servers": {
-    "intro": "A server room hosts part of the product: the hosting bill goes down and prod holds up better. Buy a room (Servers aisle of build mode), then choose the hardware to install in it.",
+    "intro": "A server room hosts part of the product: the hosting bill goes down and prod holds up better. Buy a room (Servers aisle of build mode), then choose the hardware to install in it. Every device runs hot: plan enough cooling.",
     "roomsTitle": "Your rooms",
     "noRoom": "No server room yet: buy a server closet (Seed) or a server room (Series A) in the Servers aisle.",
     "slots": "{{count}}/{{max}} slots",
@@ -1982,7 +1985,7 @@
     "needs": {
       "server": "At least one server (rack, blades or GPU)",
       "network": "Networking (switch or fibre router)",
-      "cooling": "A precision air conditioner"
+      "cooling": "Air conditioning (wall unit, precision or in-row)"
     },
     "needsShort": {
       "server": "a server",
@@ -1994,11 +1997,26 @@
     "saving": "Hosting bill: −{{percent}}% thanks to your servers ({{max}}% at most).",
     "statusRunning": "Running · {{count}}/{{max}} slots",
     "statusMissing": "Not running: missing {{missing}}.",
-    "open": "Room and fibre",
-    "fibreCard": "Fibre subscription",
+    "open": "Room and internet",
+    "fibreCard": "Internet subscription",
     "fibreCardCurrent": "Subscribed: {{plan}}. Tap to change plan or cancel.",
-    "fibreCardReady": "The fibre router is installed: pick a plan.",
-    "fibreCardMissing": "First install a fibre router in a server room."
+    "fibreCardReady": "From a 4G box to dedicated fibre: pick the plan that fits your team.",
+    "warm": "It’s running hot: the servers throttle and give only {{percent}}% of their effects.",
+    "overheat": "Overheating: the servers crash, no effects at all and prod suffers. Add cooling or remove hardware.",
+    "statusWarm": "Running hot · {{count}}/{{max}} slots",
+    "statusOverheat": "Overheating: more cooling needed.",
+    "heat": {
+      "load": "Heat {{heat}} kW · cooling {{cooling}} kW",
+      "summer": "summer, +3 °C",
+      "meter": "Cooling load",
+      "temperature": "🌡️ {{temp}} °C · {{level}}",
+      "unmonitored": "🌡️ Temperature unknown: install a monitoring probe to track it and be warned when it climbs.",
+      "levels": {
+        "cool": "all good",
+        "warm": "running hot (above 27 °C)",
+        "overheat": "overheating (above 32 °C)"
+      }
+    }
   },
   "career": {
     "intro": "Eight startups that started from nothing became giants. Their names have changed, their stories barely. Pick a legend, start with the same constraints and hit its milestones.",
@@ -2166,14 +2184,14 @@
     "services": {
       "internet": {
         "name": "Internet",
-        "intro": "Fibre comes into the fibre router of your server room and is paid every week (every 7 game days)."
+        "intro": "From a 4G router to dedicated fibre. Each plan supports a number of employees: beyond that, the network saturates and the whole team slows down. Monthly prices excluding VAT, as charged by French operators to businesses (2026), billed every week (every 7 game days); the setup fee is paid when you subscribe."
       }
     },
     "requires": {
       "fibreBox": {
-        "long": "To subscribe, install a fibre router in a server room (Servers aisle).",
-        "short": "You need a fibre router in a server room.",
-        "inactive": "No fibre router in a room: you pay for the line but it does nothing."
+        "long": "Dedicated fibre comes into a fibre router: install one in a server room (Servers aisle).",
+        "short": "Dedicated fibre needs a fibre router in a server room.",
+        "inactive": "No fibre router in a room: you pay for dedicated fibre but it goes nowhere."
       }
     },
     "none": "No subscription: pick a plan below.",
@@ -2186,13 +2204,21 @@
     "perMonth": "€{{price}} / month",
     "perDays_one": "€{{price}} / day",
     "perDays_other": "€{{price}} / {{count}} days",
-    "subscribe": "Subscribe (€{{price}} for the 1st period)",
+    "subscribe": "Subscribe (€{{price}} now)",
     "switch": "Switch to this plan (€{{price}})",
     "currentOffer": "Your current plan",
     "cancel": "Cancel",
     "cancelWarning": "The service stops right away, with no refund for the current period.",
     "cancelConfirm": "Cancel {{offer}}",
-    "manageAll": "See all subscriptions"
+    "manageAll": "See all subscriptions",
+    "users_one": "{{count}} employee uses the connection (remote workers included, over the VPN).",
+    "users_other": "{{count}} employees use the connection (remote workers included, over the VPN).",
+    "activeUsers": "The line handles the load: {{count}}/{{max}} employees.",
+    "saturated": "Network saturated: {{count}} employees for {{max}} planned, −{{percent}}% productivity. Move to a bigger plan.",
+    "maxUsers_one": "Up to {{count}} employee",
+    "maxUsers_other": "Up to {{count}} employees",
+    "tooSmall": "too small for your team",
+    "setupFee": "Setup fee: €{{price}}, paid when you subscribe"
   },
   "cleaning": {
     "intro": "Every weekday, the team in the office makes a mess: wrappers, cups, cans, pizza boxes… The longer you wait, the faster it gets dirty, and a dirty office slows down everyone working there (not remote workers). Call the Nickel Chrome cleaning company or take a subscription.",

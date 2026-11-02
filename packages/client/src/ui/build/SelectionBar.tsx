@@ -67,13 +67,20 @@ export function SelectionBar({ view }: { view: GameView }) {
           )}
           {serverRoom && (
             <span className="item-status" data-testid="server-room-status">
-              {serverRoom.running
-                ? t('servers.statusRunning', { count: serverRoom.gear, max: serverRoom.slots })
-                : t('servers.statusMissing', {
+              {serverRoom.missing.length > 0
+                ? t('servers.statusMissing', {
                     missing: serverRoom.missing
                       .map((need) => t(`servers.needsShort.${need}`))
                       .join(', '),
-                  })}
+                  })
+                : serverRoom.level === 'overheat'
+                  ? t('servers.statusOverheat')
+                  : serverRoom.level === 'warm'
+                    ? t('servers.statusWarm', { count: serverRoom.gear, max: serverRoom.slots })
+                    : t('servers.statusRunning', {
+                        count: serverRoom.gear,
+                        max: serverRoom.slots,
+                      })}
             </span>
           )}
         </div>

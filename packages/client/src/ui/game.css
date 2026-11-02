@@ -4076,6 +4076,57 @@ legend {
   margin-top: auto;
 }
 
+/* Température des salles et offres internet. */
+
+.server-heat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.server-heat p,
+.sub-users {
+  margin: 0;
+}
+
+.server-heat-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--border);
+}
+
+.server-heat-bar span {
+  display: block;
+  height: 100%;
+  background: #6fb7e8;
+}
+
+.server-heat-bar.warm span {
+  background: #f0b44c;
+}
+
+.server-heat-bar.overheat span {
+  background: #ff7b6b;
+}
+
+.server-temp.cool {
+  color: #7fd18b;
+}
+
+.server-temp.warm {
+  color: #f0c46c;
+}
+
+.server-temp.overheat,
+.sub-users.down {
+  color: #ff9b8f;
+}
+
+.server-summer {
+  color: #f0c46c;
+}
+
 /* Daily du matin : bandeau au-dessus du dock (et du bandeau des urgences), le temps de la pause. */
 .daily-moment {
   position: absolute;
