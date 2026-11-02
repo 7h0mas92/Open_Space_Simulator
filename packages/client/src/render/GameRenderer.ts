@@ -45,6 +45,7 @@ import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
 import { interpolateAgent } from './interpolation';
 import { PetsView } from './pets';
+import { CleaningView3D } from './cleaning';
 import {
   cameraDirection,
   clampTarget,
@@ -157,6 +158,8 @@ export class GameRenderer {
   /** Les chats du bureau : leur IA (déplacements) et leurs modèles. */
   private readonly cats = new CatWorld(1);
   private readonly pets = new PetsView();
+  /** Déchets au sol et équipe de ménage. */
+  private readonly cleaning = new CleaningView3D(this.assets);
   private previousCats = new Map<string, CatSnapshot>();
   private currentCats: CatSnapshot[] = [];
   private readonly gestures = new GestureRecognizer();
@@ -236,6 +239,7 @@ export class GameRenderer {
       this.screens.root,
       this.projection.root,
       this.pets.root,
+      this.cleaning.root,
     );
 
     this.smoke = new SmokeEffect(preset.maxParticles);
@@ -304,6 +308,7 @@ export class GameRenderer {
     this.world.sync(view);
     this.cats.sync(view, this.decorPlan?.blocked ?? []);
     this.pets.sync(view.pets.pets);
+    this.cleaning.sync(view.seed, this.layout, view.items, view.cleaning);
     if (phaseChanged) this.fitCamera();
 
     const ids = new Set(view.devs.map((dev) => dev.id));
@@ -490,6 +495,9 @@ export class GameRenderer {
     roomLights: number;
     /** Chats visibles dans la scène. */
     cats: number;
+    /** Déchets dessinés au sol, et l'équipe de ménage est-elle là ? */
+    litter: number;
+    cleaners: boolean;
   } {
     const tile = this.footprintTile;
     let ghost: { x: number; y: number } | null = null;
@@ -513,6 +521,8 @@ export class GameRenderer {
       screens: this.screens.count,
       roomLights: this.roomLights.realLights,
       cats: this.currentCats.filter((cat) => cat.visible).length,
+      litter: this.cleaning.litterShown,
+      cleaners: this.cleaning.crewVisible,
     };
   }
 
@@ -530,6 +540,7 @@ export class GameRenderer {
     this.screens.dispose();
     this.projection.dispose();
     this.pets.dispose();
+    this.cleaning.dispose();
     this.composer?.dispose();
     this.renderer.dispose();
   }
@@ -591,6 +602,7 @@ export class GameRenderer {
     if (this.currentCats.length === 0 && view && view.pets.pets.length > 0)
       this.currentCats = this.cats.snapshot();
     this.pets.update(this.previousCats, this.currentCats, alpha, delta * speed, this.reducedMotion);
+    this.cleaning.update(delta * speed, this.reducedMotion);
 
     if (view) {
       const minute = liveSprintMinutes(view.time, now) % 1440;

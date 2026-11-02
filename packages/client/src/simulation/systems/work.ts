@@ -21,6 +21,7 @@ import {
   text,
   type SimContext,
 } from '../helpers';
+import { dirtMultiplier } from '../cleaning';
 import { leadershipEffects, NO_LEADERSHIP, type LeadershipEffects } from '../leadership';
 import { recordTaskDone, recordWork } from '../performance';
 import { isTeamMeetingTime } from '../meetings';
@@ -64,6 +65,8 @@ export function productivity(
   rate *= 0.6 + (0.5 * mood.moral) / 100;
   if (mood.energy < 30) rate *= 0.75;
   rate *= 1 - state.gauges.debt / BALANCE.work.debtProductivityDivider;
+  // Bureau sale (emballages, gobelets, pizzas…) : on travaille moins bien, sauf de chez soi.
+  rate *= dirtMultiplier(state, devId);
   // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf écouteurs à réduction de bruit) ;
   // la salle de réunion rend ce malus plus léger (stand-up) ou plus lourd (brainstorming).
   // Avec un scrum master, ces réunions pèsent moitié moins.

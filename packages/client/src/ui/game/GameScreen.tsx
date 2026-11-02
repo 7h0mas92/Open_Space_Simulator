@@ -16,6 +16,7 @@ import { Group } from '../group/Group';
 import { MeetingRoom } from '../meetings/MeetingRoom';
 import { Pets } from '../pets/Pets';
 import { ServerRoom } from '../servers/ServerRoom';
+import { Cleaning } from '../cleaning/Cleaning';
 import { SubscriptionsPanel } from '../subscriptions/Subscriptions';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
@@ -55,6 +56,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Pets view={view} />;
     case 'servers':
       return <ServerRoom view={view} />;
+    case 'cleaning':
+      return <Cleaning view={view} />;
     case 'subscriptions':
       return <SubscriptionsPanel view={view} />;
     case 'funding':
@@ -186,7 +189,7 @@ export function GameScreen() {
             <Company view={view} />
             <Gauges view={view} />
             <Clock view={view} />
-            <SystemButtons />
+            <SystemButtons view={view} />
           </header>
           <div className="hud-bottom">
             <SelectionBar view={view} />

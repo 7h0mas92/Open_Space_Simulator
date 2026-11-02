@@ -17,6 +17,8 @@ import type {
   FloorMaterialId,
   FloorZone,
   ComputerId,
+  CleanerTool,
+  CleaningPlanId,
   ServerRoomNeed,
   SubscriptionRequirement,
   SubscriptionService,
@@ -647,6 +649,57 @@ export interface SubscriptionsView {
   readonly monthlyTotal: number;
 }
 
+/** Une formule d'abonnement de ménage, son prix pour le bureau actuel et ce qui bloque. */
+export interface CleaningPlanView {
+  readonly id: CleaningPlanId;
+  readonly name: LocalizedText;
+  readonly description: LocalizedText;
+  /** Jours de passage, de 1 (lundi) à 5 (vendredi). */
+  readonly days: readonly number[];
+  readonly weeklyPrice: number;
+  /** Remise par rapport au prix d'un passage (0.25 = -25 %). */
+  readonly discount: number;
+  /** `CURRENT` : c'est la formule en cours. */
+  readonly blocker: 'NOT_ENOUGH_MONEY' | 'CURRENT' | 'WRONG_STAGE' | null;
+}
+
+/** Saleté du bureau et entreprise de nettoyage. */
+export interface CleaningView {
+  /** Saleté de 0 à 100 %. */
+  readonly dirt: number;
+  /** Seuil d'alerte (%). */
+  readonly alert: number;
+  /** Part du travail gardée par un dev présent au bureau (0.8 = -20 %). */
+  readonly productivity: number;
+  /** Jours de semaine sans ménage (la saleté monte de plus en plus vite). */
+  readonly daysSinceClean: number;
+  /** Ménage en cours : avancement de 0 à 1. */
+  readonly visit: { readonly express: boolean; readonly progress: number } | null;
+  /** Appel réservé : dans combien d'heures de jeu l'équipe arrive. */
+  readonly booking: { readonly express: boolean; readonly inHours: number } | null;
+  readonly plan: {
+    readonly plan: CleaningPlanId;
+    readonly weeklyPrice: number;
+    /** Jours de jeu avant le prochain prélèvement. */
+    readonly nextBillDays: number;
+    readonly totalPaid: number;
+  } | null;
+  readonly plans: readonly CleaningPlanView[];
+  /** Prix d'un passage (base des tarifs), d'un appel pour ce soir et d'un appel express. */
+  readonly visitPrice: number;
+  readonly callPrice: number;
+  readonly expressPrice: number;
+  /** Ce qui empêche d'appeler l'équipe maintenant (`BUSY` : déjà réservée ou sur place). */
+  readonly callBlocker: 'BUSY' | 'WRONG_STAGE' | 'NOT_ENOUGH_MONEY' | null;
+  readonly crew: readonly {
+    readonly id: string;
+    readonly name: string;
+    readonly tool: CleanerTool;
+  }[];
+  readonly visits: number;
+  readonly spent: number;
+}
+
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
 export interface WallZoneView {
   readonly zone: WallZone;
@@ -773,6 +826,8 @@ export interface GameView {
   /** Peintures et papiers peints des murs. */
   readonly walls: WallsView;
   /** Salles des serveurs. */
+  /** Saleté du bureau et entreprise de nettoyage. */
+  readonly cleaning: CleaningView;
   readonly servers: ServersView;
   /** Abonnements (internet…). */
   readonly subscriptions: SubscriptionsView;
@@ -879,7 +934,11 @@ export type GameCommand =
   | { readonly type: 'rehomePet'; readonly petId: string }
   /** Souscrit à une offre (ou change d'offre pour son service). */
   | { readonly type: 'subscribe'; readonly offer: string }
-  | { readonly type: 'cancelSubscription'; readonly service: SubscriptionService };
+  | { readonly type: 'cancelSubscription'; readonly service: SubscriptionService }
+  /** Appelle l'entreprise de nettoyage (ce soir, ou en express). */
+  | { readonly type: 'callCleaning'; readonly express: boolean }
+  | { readonly type: 'subscribeCleaning'; readonly plan: CleaningPlanId }
+  | { readonly type: 'cancelCleaning' };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

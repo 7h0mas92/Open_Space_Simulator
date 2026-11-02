@@ -321,7 +321,8 @@
     "pets": "Office cats",
     "servers": "Server room",
     "mission": "Mission",
-    "subscriptions": "Subscriptions"
+    "subscriptions": "Subscriptions",
+    "cleaning": "Cleaning"
   },
   "kanban": {
     "columns": {
@@ -839,6 +840,8 @@
       "catTreeMedium": "Double cat tree (2 tiles, grey carpet): cubby, basket and mouse",
       "catTreeLarge": "Giant cat tree (3 tiles, mauve carpet): cubby, rope bridge and mouse",
       "officeCats": "Office cats: six coats built from Three.js shapes, animated in code (walking, napping, eating)",
+      "cleaningCrew": "Cleaning crew: three uniformed cleaners built like the devs (Kenney clips), cart, vacuum and mop in Three.js shapes",
+      "officeLitter": "Floor litter: crumpled paper, wrappers, cans, cups, pizza boxes, banana peels and stains",
       "windowSmall": "Small window and its wall section",
       "windowMedium": "Two-tile window",
       "windowLarge": "Large three-tile window",
@@ -2107,5 +2110,46 @@
     "cancelWarning": "The service stops right away, with no refund for the current period.",
     "cancelConfirm": "Cancel {{offer}}",
     "manageAll": "See all subscriptions"
+  },
+  "cleaning": {
+    "intro": "Every weekday, the team in the office makes a mess: wrappers, cups, cans, pizza boxes… The longer you wait, the faster it gets dirty, and a dirty office slows down everyone working there (not remote workers). Call the Nickel Chrome cleaning company or take a subscription.",
+    "dirtTitle": "Office dirt",
+    "dirt": "{{percent}}% dirty",
+    "levels": {
+      "clean": "Clean",
+      "warn": "Watch out",
+      "dirty": "Dirty"
+    },
+    "loss": "The team on site works {{percent}}% slower.",
+    "noLoss": "Spotless office: no work lost.",
+    "days_one": "{{count}} day without cleaning",
+    "days_other": "{{count}} days without cleaning",
+    "crewTitle": "Nickel Chrome, cleaning company",
+    "tools": {
+      "cart": "team lead, cart",
+      "vacuum": "vacuum cleaner",
+      "mop": "mop"
+    },
+    "status": {
+      "visit": "Cleaning in progress ({{percent}}%)",
+      "express": "The express crew is on its way",
+      "booked_one": "The crew comes in {{count}} hour",
+      "booked_other": "The crew comes in {{count}} hours"
+    },
+    "call": "Book for tonight (€{{price}})",
+    "express": "Express, right now (€{{price}})",
+    "callHint": "A call is paid when booked: the crew comes at 7 pm, or right away for express.",
+    "history_one": "{{count}} visit, €{{price}} spent",
+    "history_other": "{{count}} visits, €{{price}} spent",
+    "planTitle": "Cleaning subscription",
+    "none": "No subscription: the crew only comes when you call.",
+    "nextBill_one": "Next €{{price}} payment in {{count}} day",
+    "nextBill_other": "Next €{{price}} payment in {{count}} days",
+    "totalPaid": "€{{price}} paid in total",
+    "discount": "(-{{percent}}% per visit)",
+    "cancel": "Cancel",
+    "cancelWarning": "The crew won’t come any more; the current week isn’t refunded.",
+    "cancelConfirm": "Cancel cleaning",
+    "button": "Cleaning: {{percent}}% dirty"
   }
 }
