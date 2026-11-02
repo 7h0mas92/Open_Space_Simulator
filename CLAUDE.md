@@ -678,9 +678,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   posé sur un meuble, bouton « ⏻ Allumer / Éteindre ») et 3 écrans de projection posés au sol
   (petit 2 cases 450 €, moyen 3 cases 1 100 € en Seed, grand 4 cases 2 400 € en Série A). Allumé et
   tourné vers un écran (cône de 50°, 1,5 à 10 cases, devant la toile), il déroule la toile, puis
-  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule. Un écran
-  par projecteur, le plus proche, projecteurs servis dans l'ordre d'achat (`projectionPairs`, même
-  calcul pour la simulation et le rendu). Effets seulement pendant la projection : écran +qualité,
+  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule ; la toile
+  reste toute blanche, sans cadre noir (`FABRIC_WHITE`). Un écran par projecteur, le plus proche,
+  projecteurs servis dans l'ordre d'achat (`projectionPairs`, même calcul pour la simulation et le
+  rendu). Effets seulement pendant la projection : écran +qualité,
   +hype (+moral moyen et grand), projecteur +moral et -0,4 % de productivité. Commande
   `SWITCH_PROJECTOR`, champ `on` optionnel (absent = éteint), `GameView.projections`, rendu animé
   dans `render/projection.ts` (sans animation si « réduire les animations »). Aucun tirage.
@@ -838,6 +839,28 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   « 📽️ » en grand, lecture seule. Le temps s'arrête 6 s au début du Daily (option « Pause pendant
   le Daily », active par défaut, jamais en Hardcore ni en replay). État `morningSync` (null par
   défaut). `pnpm balance` : aménager la salle rapporte plus (bot organizer 352 → 434 M€ médians).
+- Placement à la demi-case (`GridPositionSchema` dans `shared/sim/components.ts`, `view/partitions.ts`) :
+  tous les objets se posent et se déplacent d'une demi-case (souris, doigt, flèches du clavier) ;
+  la demi-case libre de part et d'autre d'un mur fin (cloison du plan ou mur posé) se meuble tant
+  que l'objet ne traverse pas le trait du mur, et un objet de 3 cases se centre dans une pièce de 4.
+  Murs fins et fenêtres restent sur des cases entières. La grille de navigation bloque chaque case
+  chevauchée ; chaise et dev assis au point exact devant un bureau décalé (`accessPoint`). Positions
+  entières toujours valides : anciennes sauvegardes, replays, Daily et scores inchangés, aucun tirage.
+
+- Internet et clim de la salle des serveurs (`shared/sim/serverRoom.ts`, `shared/sim/subscriptions.ts`,
+  `client/src/simulation/serverRoom.ts`), remplace les 3 offres fibre ci-dessus : 6 offres du
+  service `internet` des abonnements (`FIBRE_PLANS` : box 4G 39 €/mois 3 salariés, box 5G 59 € 6,
+  Fibre Pro 49 € 10, Fibre Pro+ 119 € 25 en Seed, fibre dédiée 1 Gb/s 890 € 60 en Série A, 10 Gb/s
+  2 600 € 200 en Licorne), prix mensuels HT prélevés chaque semaine (`weeklyPrice`), mise en
+  service payée à la souscription (`setupFee`, `firstPayment`), box fibre exigée seulement pour la
+  fibre dédiée. Salariés connectés = toute l'équipe (`serviceUsers`) ; au-delà de `maxUsers`,
+  réseau saturé : plus d'effet et jusqu'à -12 % de productivité (`saturationPenalty`), alertes
+  `INTERNET_SATURATED` / `INTERNET_OK`, champ `saturated` optionnel. Chaleur et froid en kW (`heat`,
+  `cooling` du catalogue) : climatiseur mural 5 kW (Seed), clim de précision 15 kW, clim en rangée
+  35 kW (Série A), sonde de supervision (Seed). Température 18 + 10 x chaleur / froid (+3 °C de
+  juin à août) : au-delà de 27 °C la moitié des effets (75 % avec sonde), au-delà de 32 °C plus
+  rien et -stabilité ; la sonde affiche la température et prévient quand le niveau change
+  (`serverHeatSystem`, état `serverHeat` vide par défaut). Aucun tirage.
 
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback

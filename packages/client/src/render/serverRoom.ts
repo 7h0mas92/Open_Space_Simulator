@@ -1,7 +1,8 @@
 /**
  * Salle des serveurs en formes Three.js : le local (sol technique, cloisons vitrées, porte à
- * badge, chemin de câbles) et les dix équipements qu'on y installe (baies de serveurs, lames,
- * GPU, switch, box fibre, climatisation, onduleur, sauvegardes, pare-feu, extinction au gaz).
+ * badge, chemin de câbles) et les treize équipements qu'on y installe (baies de serveurs, lames,
+ * GPU, switch, box fibre, trois climatisations, supervision, onduleur, sauvegardes, pare-feu,
+ * extinction au gaz).
  * Aucun de ces modèles n'existe dans les packs Kenney (voir `assetManifest.ts`).
  *
  * Chaque équipement est une armoire d'environ 0,55 x 0,65 posée sur le sol technique, façade
@@ -358,6 +359,83 @@ export function precisionCooling(): THREE.Group {
   // Bandeau bleu « froid » sur le flanc.
   p.box(0.004, 0.06, D - 0.1, PALETTE.blue, [w / 2 + 0.002, h - 0.2, 0]);
   return p.build('precisionCooling');
+}
+
+/** Climatiseur mural : unité intérieure blanche à volet sur un mât, groupe extérieur au sol. */
+export function splitAc(): THREE.Group {
+  const p = new Pieces();
+  // Groupe extérieur au sol : caisson gris, grille ronde du ventilateur.
+  p.box(W, 0.42, 0.3, 0xd9dce1, [0, 0, -0.12]);
+  p.shape(new THREE.CylinderGeometry(0.15, 0.15, 0.012, 16), 0x7d8494, [-0.08, 0.21, 0.035], {
+    x: Math.PI / 2,
+  });
+  for (let i = 0; i < 4; i += 1)
+    p.box(0.28, 0.008, 0.01, 0x5b6170, [-0.08, 0.13 + i * 0.05, 0.045]);
+  p.box(0.1, 0.18, 0.012, 0xb8bdc6, [0.17, 0.12, 0.035]);
+  // Mât et tuyaux de cuivre isolés qui montent vers l'unité intérieure.
+  p.box(0.05, 1.4, 0.05, FRAME, [0.2, 0.42, -0.22]);
+  p.bar([0.14, 0.35, -0.22], [0.14, 1.62, -0.22], 0.018, 0xf2f2f2, 6);
+  // Unité intérieure : coque blanche, volet sombre, voyant bleu et affichage.
+  p.box(W + 0.05, 0.26, 0.2, 0xf4f5f7, [0, 1.62, -0.15]);
+  p.box(W - 0.02, 0.03, 0.04, 0x9aa1ae, [0, 1.63, -0.04]);
+  p.box(W - 0.06, 0.012, 0.01, 0xd9dce1, [0, 1.72, -0.048]);
+  p.light(0.05, 0.014, 0.004, 0x7cc8f4, [0.18, 1.8, -0.048]);
+  p.light(0.012, 0.012, 0.004, PALETTE.green, [0.12, 1.8, -0.048]);
+  return p.build('splitAc');
+}
+
+/** Climatisation en rangée : armoire noire perforée, trois ventilateurs, écran bleu. */
+export function inrowCooling(): THREE.Group {
+  const p = new Pieces();
+  const h = 1.95;
+  p.box(W, 0.06, D, RACK_DARK, [0, 0, 0]);
+  p.box(W, h - 0.06, D, 0x2a2e38, [0, 0.06, 0]);
+  const z = D / 2 + 0.003;
+  // Porte perforée : une grille de petits trous plus sombres.
+  for (let row = 0; row < 14; row += 1)
+    for (let col = 0; col < 6; col += 1)
+      p.box(0.035, 0.035, 0.004, 0x15171c, [-0.19 + col * 0.076, 0.2 + row * 0.08, z]);
+  // Trois ventilateurs ronds derrière la grille, moyeu bleu.
+  for (let i = 0; i < 3; i += 1) {
+    const y = 0.45 + i * 0.42;
+    p.shape(new THREE.CylinderGeometry(0.15, 0.15, 0.01, 16), 0x3a4156, [0, y, z + 0.002], {
+      x: Math.PI / 2,
+    });
+    p.light(0.04, 0.04, 0.004, 0x7cc8f4, [0, y, z + 0.012]);
+  }
+  // Écran de contrôle et bandeau bleu « froid ».
+  p.box(0.2, 0.09, 0.01, 0x15171c, [0, h - 0.17, z + 0.004]);
+  p.light(0.15, 0.04, 0.004, 0x7cc8f4, [0, h - 0.16, z + 0.012]);
+  p.light(W - 0.06, 0.02, 0.004, PALETTE.blue, [0, h - 0.06, z + 0.004]);
+  return p.build('inrowCooling');
+}
+
+/** Supervision : pupitre, écran de courbes de température, sonde sur câble et gyrophare. */
+export function serverMonitoring(): THREE.Group {
+  const p = new Pieces();
+  // Pied et pupitre incliné.
+  p.box(0.36, 0.04, 0.3, FRAME, [0, 0, 0]);
+  p.box(0.06, 0.95, 0.06, FRAME, [0, 0.04, -0.04]);
+  p.box(0.44, 0.03, 0.26, RACK, [0, 0.98, 0.0]);
+  // Écran : fond sombre, courbes de température (bleu, orange, rouge) et seuils.
+  p.box(0.5, 0.32, 0.03, 0x1c1f29, [0, 1.06, -0.1]);
+  p.box(0.46, 0.27, 0.004, 0x0e1016, [0, 1.085, -0.083]);
+  p.light(0.42, 0.004, 0.003, PALETTE.red, [0, 1.3, -0.08]);
+  p.light(0.42, 0.004, 0.003, PALETTE.orange, [0, 1.24, -0.08]);
+  const curves: readonly [number, number][] = [
+    [0x7cc8f4, 1.13],
+    [PALETTE.green, 1.16],
+    [PALETTE.yellow, 1.2],
+  ];
+  for (const [color, y] of curves)
+    for (let i = 0; i < 7; i += 1)
+      p.light(0.055, 0.008, 0.003, color, [-0.18 + i * 0.06, y + ((i * 7) % 5) * 0.008, -0.079]);
+  // Sonde de température au bout d'un câble, posée sur le pupitre.
+  p.bar([0.18, 1.0, 0.0], [0.15, 1.02, 0.1], 0.006, 0x15171c, 4);
+  p.box(0.04, 0.02, 0.06, PALETTE.white, [0.15, 1.0, 0.1]);
+  // Gyrophare d'alerte sur le haut de l'écran.
+  p.post(0.035, 0.035, 0.05, PALETTE.orange, [0.2, 1.38, -0.1], 10);
+  return p.build('serverMonitoring');
 }
 
 /** Onduleur : armoire noire trapue, écran vert, tiroirs de batteries. */

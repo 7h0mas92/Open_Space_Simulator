@@ -123,6 +123,7 @@ export function createEmptyState(config: GameConfig): GameState {
     cleaning: emptyCleaningState(),
     subscriptions: [],
     career: legend ? createCareerState(config.seed) : null,
+    serverHeat: {},
     recentTaskTitles: [],
     story: mission ? { missionId: mission.id, startSprint: 1 } : null,
     unlocks: gameUnlocks(config),
