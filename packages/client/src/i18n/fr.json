@@ -2260,5 +2260,37 @@
       "URGENT": "Urgent",
       "WEEKLY": "Semaine"
     }
+  },
+  "skills": {
+    "tabs": "Fiche du dev",
+    "tabSheet": "Fiche",
+    "tabSkills": "Compétences",
+    "badge_one": "{{count}} point de compétence à dépenser",
+    "badge_other": "{{count}} points de compétence à dépenser",
+    "pointsAvailable_one": "⭐ {{count}} point à dépenser.",
+    "pointsAvailable_other": "⭐ {{count}} points à dépenser.",
+    "noPoints": "Aucun point à dépenser : le prochain niveau en donnera un.",
+    "pointsHint": "1 point par niveau gagné, {{spent}} dépensé(s). Chaque nœud demande le précédent.",
+    "branches": {
+      "TECH": "🛠️ Technique",
+      "SPEED": "⚡ Vitesse",
+      "HUMAN": "🤝 Humain"
+    },
+    "roleNode": "Métier",
+    "power": "Pouvoir",
+    "learn": "Apprendre « {{name}} » (1 point)",
+    "learned": "Appris",
+    "locked": "Verrouillé",
+    "crunch": "Lancer le Crunch",
+    "crunchActive": "Crunch en cours",
+    "crunchHint": "+50 % de vitesse pendant 24 h, -10 de moral. Une fois par sprint.",
+    "crunchActiveHint": "Pizza froide et Red Bull : il code à fond jusqu'à demain.",
+    "crunchUnavailable": "Pendant un sprint seulement, une fois par sprint.",
+    "trainings": "Formations",
+    "trainingsHint": "Une formation par dev et par sprint.",
+    "trainingsPlanningOnly": "Les formations se réservent pendant la planification.",
+    "trainedThisSprint": "Déjà en formation ce sprint.",
+    "reset": "Réinitialiser l'arbre ({{cost}})",
+    "resetConfirm": "Rendre tous les points de {{name}} pour {{cost}} (un mois de salaire) ?"
   }
 }

@@ -21,6 +21,7 @@ export * from './sim/pitch.js';
 export * from './sim/projection.js';
 export * from './sim/raises.js';
 export * from './sim/serverRoom.js';
+export * from './sim/skills.js';
 export * from './sim/state.js';
 export * from './sim/endless.js';
 export * from './sim/subscriptions.js';

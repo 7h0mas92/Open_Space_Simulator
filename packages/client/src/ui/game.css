@@ -4403,3 +4403,142 @@ legend {
   color: var(--accent);
   font-weight: 700;
 }
+
+/* ─── Arbre de compétences (onglet « Compétences » de la fiche d'un dev) ─── */
+
+.skill-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skill-points {
+  margin: 0;
+  font-weight: 600;
+}
+
+.skill-points .hint {
+  display: block;
+  font-weight: 400;
+}
+
+.skill-badge {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.skill-crunch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Une colonne sur mobile, trois côte à côte dès que la place le permet. */
+.skill-branches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 12px;
+}
+
+.skill-branch h4,
+.skill-trainings h4 {
+  margin: 0 0 6px;
+}
+
+.skill-branch ol,
+.skill-trainings ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--touch);
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.skill-node.learned {
+  border-color: var(--accent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.skill-node.locked {
+  opacity: 0.6;
+}
+
+button.skill-node.available {
+  border-style: dashed;
+  border-color: var(--accent);
+  cursor: pointer;
+}
+
+.skill-node.role-node {
+  border-width: 2px;
+}
+
+.skill-icon {
+  flex: none;
+  font-size: 1.3rem;
+}
+
+.skill-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+
+.skill-text > span {
+  color: var(--text-muted);
+}
+
+.skill-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.skill-cta {
+  flex: none;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.skill-trainings button {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 2px 8px;
+  width: 100%;
+  min-height: var(--touch);
+  text-align: left;
+}
+
+.skill-trainings button .hint {
+  grid-column: 2 / 4;
+  margin: 0;
+}
+
+.skill-price {
+  font-weight: 600;
+}
