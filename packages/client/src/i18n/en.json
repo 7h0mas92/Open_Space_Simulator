@@ -2311,5 +2311,68 @@
       "ARMISTICE": "Armistice Day",
       "CHRISTMAS": "Christmas Day"
     }
+  },
+  "retro": {
+    "title": "Retrospective",
+    "kicker": "End of sprint, sticky notes and lukewarm coffee",
+    "intro": "The team suggests one action for the next sprint. Follow their vote: +{{follow}} morale for everyone. Impose something else: −{{impose}} morale for those who voted otherwise.",
+    "teamChoice": "team’s pick",
+    "votes_one": "1 vote: {{names}}",
+    "votes_other": "{{count}} votes: {{names}}",
+    "noVote": "No votes",
+    "skip": "Skip the retro",
+    "active": "Retro action: {{action}}",
+    "actions": {
+      "MORE_TESTS": {
+        "name": "More tests",
+        "problem": "Prod went down several times.",
+        "effect": "−15% debt on shipped features"
+      },
+      "CODE_REVIEW": {
+        "name": "Mandatory code review",
+        "problem": "Tech debt is high.",
+        "effect": "+5% quality, −5% speed"
+      },
+      "COFFEE_BAR": {
+        "name": "Self-service coffee",
+        "problem": "We ran out of coffee.",
+        "effect": "−30% coffee consumption"
+      },
+      "NO_MEETING_WEDNESDAY": {
+        "name": "No-meeting Wednesday",
+        "problem": "Too many meetings.",
+        "effect": "No meetings and no meeting penalty on Wednesdays"
+      },
+      "MEDIATION": {
+        "name": "Mediation",
+        "problem": "Some colleagues are in conflict.",
+        "effect": "+15 affinity for every strained relationship, right away"
+      },
+      "ON_CALL": {
+        "name": "Organised on-call",
+        "problem": "Urgent tasks were missed.",
+        "effect": "+25% speed on urgent tasks"
+      },
+      "FLEX_HOURS": {
+        "name": "Flexible hours",
+        "problem": "The team is tired.",
+        "effect": "−15% fatigue at work"
+      },
+      "SMALLER_TICKETS": {
+        "name": "Smaller tickets",
+        "problem": "Almost nothing shipped.",
+        "effect": "+8% speed on small tasks (2 points or less)"
+      },
+      "KUDOS": {
+        "name": "Friday kudos",
+        "problem": "Morale is low.",
+        "effect": "+1 morale per working day"
+      },
+      "KEEP_GOING": {
+        "name": "Keep it up",
+        "problem": "Nothing serious to report.",
+        "effect": "+3% speed"
+      }
+    }
   }
 }

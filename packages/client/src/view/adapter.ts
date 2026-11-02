@@ -108,11 +108,13 @@ import {
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
 import { holidayOf, leaveSlots, sprintHasBridge } from '../simulation/teamLife';
+import { activeRetro, retroWinner } from '../simulation/retro';
 import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
 import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulation/subscriptions';
 import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
 import type {
   AbsenceView,
+  RetroView,
   StoryView,
   CandidateView,
   DevActivity,
@@ -307,6 +309,20 @@ function devView(state: GameState, id: string): DevView | null {
       state.teamLife && identity.role !== 'GHOST' && identity.role !== 'AI_AGENT'
         ? (state.teamLife.leave[id] ?? 0)
         : null,
+  };
+}
+
+function retroView(state: GameState): RetroView | null {
+  const pending = state.retro.pending;
+  if (!pending || pending.sprint !== state.sprint || state.stage !== 'PLANNING') return null;
+  return {
+    options: pending.options.map((action) => ({
+      action,
+      voters: Object.entries(pending.votes)
+        .filter(([id, vote]) => vote === action && state.components.identity[id])
+        .map(([id]) => id),
+    })),
+    winner: retroWinner(pending.options, pending.votes),
   };
 }
 
@@ -1049,6 +1065,8 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     devs: devIds(state)
       .map((id) => devView(state, id))
       .filter((dev): dev is DevView => dev !== null),
+    retro: retroView(state),
+    retroAction: activeRetro(state),
     teamLife: state.teamLife
       ? {
           slots: leaveSlots(state),
@@ -1260,6 +1278,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'CANCEL_LEAVE', devId: command.devId };
     case 'refuseBridges':
       return { type: 'REFUSE_BRIDGES', refuse: command.refuse };
+    case 'holdRetro':
+      return { type: 'HOLD_RETRO', action: command.action };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
     case 'foundVenture':

@@ -220,6 +220,17 @@ function CalendarLine({ view }: { view: GameView }) {
           </span>
         );
       })}
+      {view.retroAction && (
+        <span
+          className="clock-season"
+          title={t('retro.active', { action: t(`retro.actions.${view.retroAction}.name`) })}
+        >
+          <span aria-hidden="true">🔁</span>
+          <span className="visually-hidden">
+            {t('retro.active', { action: t(`retro.actions.${view.retroAction}.name`) })}
+          </span>
+        </span>
+      )}
       {names.length > 0 && (
         <span className="clock-season" title={t('time.birthday', { names: names.join(', ') })}>
           <span aria-hidden="true">🎂</span>

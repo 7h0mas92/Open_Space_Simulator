@@ -25,6 +25,7 @@ import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
 import { bookLeave, cancelLeave, refuseBridges } from './teamLife';
+import { holdRetro } from './retro';
 import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
@@ -177,6 +178,8 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return cancelLeave(state, command.devId);
     case 'REFUSE_BRIDGES':
       return refuseBridges(state, command.refuse);
+    case 'HOLD_RETRO':
+      return holdRetro(state, ctx, command.action);
     case 'LAUNCH_IPO':
       if (state.stage !== 'PLANNING' && state.stage !== 'DEMO') return fail('WRONG_STAGE');
       if (state.phase !== 'UNICORN' || state.gauges.stability < BALANCE.phases.ipoMinStability) {

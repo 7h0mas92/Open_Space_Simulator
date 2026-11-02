@@ -1,4 +1,5 @@
-import { BALANCE, endlessExtraChurn, type GameState } from '@oss/shared';
+import { BALANCE, RETRO, endlessExtraChurn, type GameState } from '@oss/shared';
+import { retroActive } from '../retro';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from '../economy';
 import {
   addDevLog,
@@ -80,6 +81,7 @@ function gauges(state: GameState, ctx: SimContext): void {
 function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
   const { moral: m } = BALANCE;
   const coffeeEmpty = state.gauges.coffee <= 0;
+  const kudos = retroActive(state, 'KUDOS');
   for (const id of devIds(state)) {
     const identity = state.components.identity[id];
     const mood = state.components.mood[id];
@@ -102,6 +104,8 @@ function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
       loss += 1;
     if (identity.trait === 'ZEN') loss /= 2;
     if (identity.trait === 'WORKAHOLIC') gain += 0.3;
+    // Rétro « kudos du vendredi » : on se dit merci, même le lundi.
+    if (kudos && !clock.isWeekend) gain += RETRO.kudosDailyMoral;
     mood.moral = clamp(mood.moral + gain - loss, 0, 100);
   }
   for (const id of devIds(state)) {

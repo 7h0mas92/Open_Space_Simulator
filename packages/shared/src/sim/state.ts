@@ -26,6 +26,7 @@ import { FloorFinishesSchema } from './floors.js';
 import { WallFinishesSchema } from './walls.js';
 import { AnnexDecorSchema } from './annexDecor.js';
 import { TeamLifeStateSchema } from './teamLife.js';
+import { emptyRetroState, RetroStateSchema } from './retro.js';
 import { StoryMissionIdSchema } from '../story/campaign.js';
 import { StoryRewardIdSchema } from '../story/rewards.js';
 
@@ -288,6 +289,8 @@ export const NOTIFICATION_KINDS = [
   'DEV_BURNOUT',
   'DEV_BACK',
   'PUBLIC_HOLIDAY',
+  /** Rétrospective tenue : action choisie par l'équipe ou imposée. */
+  'RETRO_HELD',
   'RUST_CONVERT',
   'FUNDS_RAISED',
   'PITCH_FAILED',
@@ -445,6 +448,8 @@ export const GameStateSchema = z.object({
    * moral à 0 mène directement à la démission).
    */
   teamLife: TeamLifeStateSchema.nullable().default(null),
+  /** Rétrospective de sprint : proposée, et action en vigueur (absente des vieilles sauvegardes). */
+  retro: RetroStateSchema.default(emptyRetroState),
   /**
    * Ancien champ de l'abonnement fibre, d'avant la rubrique Abonnements : repris dans
    * `subscriptions` au chargement (`migrateLegacyFibre`), toujours null ensuite.

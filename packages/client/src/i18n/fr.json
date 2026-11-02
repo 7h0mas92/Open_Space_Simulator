@@ -2311,5 +2311,68 @@
       "ARMISTICE": "Armistice",
       "CHRISTMAS": "Noël"
     }
+  },
+  "retro": {
+    "title": "Rétrospective",
+    "kicker": "Fin de sprint, post-it et café tiède",
+    "intro": "L’équipe propose une action pour le prochain sprint. Suivre son vote : +{{follow}} moral pour tous. Imposer autre chose : −{{impose}} moral pour ceux qui ont voté autrement.",
+    "teamChoice": "choix de l’équipe",
+    "votes_one": "1 voix : {{names}}",
+    "votes_other": "{{count}} voix : {{names}}",
+    "noVote": "Aucune voix",
+    "skip": "Passer la rétro",
+    "active": "Action de la rétro : {{action}}",
+    "actions": {
+      "MORE_TESTS": {
+        "name": "Plus de tests",
+        "problem": "La prod est tombée plusieurs fois.",
+        "effect": "−15 % de dette sur les features livrées"
+      },
+      "CODE_REVIEW": {
+        "name": "Revue de code obligatoire",
+        "problem": "La dette technique est haute.",
+        "effect": "+5 % de qualité, −5 % de vitesse"
+      },
+      "COFFEE_BAR": {
+        "name": "Café en libre-service",
+        "problem": "Le café a manqué.",
+        "effect": "−30 % de consommation de café"
+      },
+      "NO_MEETING_WEDNESDAY": {
+        "name": "Mercredi sans réunion",
+        "problem": "Trop de réunions.",
+        "effect": "Pas de réunion ni de malus de réunion le mercredi"
+      },
+      "MEDIATION": {
+        "name": "Médiation",
+        "problem": "Des collègues sont en conflit.",
+        "effect": "+15 d’affinité pour chaque relation tendue, tout de suite"
+      },
+      "ON_CALL": {
+        "name": "Astreinte organisée",
+        "problem": "Des urgences ont été ratées.",
+        "effect": "+25 % de vitesse sur les urgences"
+      },
+      "FLEX_HOURS": {
+        "name": "Horaires flexibles",
+        "problem": "L’équipe est fatiguée.",
+        "effect": "−15 % de fatigue au travail"
+      },
+      "SMALLER_TICKETS": {
+        "name": "Découper les tickets",
+        "problem": "Presque rien n’a été livré.",
+        "effect": "+8 % de vitesse sur les petites tâches (2 points au plus)"
+      },
+      "KUDOS": {
+        "name": "Kudos du vendredi",
+        "problem": "Le moral est bas.",
+        "effect": "+1 moral par jour ouvré"
+      },
+      "KEEP_GOING": {
+        "name": "Continuer comme ça",
+        "problem": "Rien de grave à signaler.",
+        "effect": "+3 % de vitesse"
+      }
+    }
   }
 }

@@ -11,6 +11,7 @@ import { clamp, devIds, devsWithRole, type SimContext } from '../helpers';
 import { holdTeamMeeting, isTeamMeetingTime } from '../meetings';
 import { autoAssign, devQueueKey, devTrade, hasFreeTask } from '../tasks';
 import { isAbsent } from '../teamLife';
+import { retroActive } from '../retro';
 import type { SimClock } from '../time';
 
 /** Le dev est-il au bureau (ou connecté, pour le Dev Fantôme) à cette heure ? */
@@ -121,7 +122,11 @@ function pickColleague(
 export function activitySystem(state: GameState, ctx: SimContext, clock: SimClock): void {
   const ids = devIds(state);
   const hasPO = devsWithRole(state, 'PRODUCT_OWNER').length > 0;
-  const meeting = hasPO && isMeetingTime(clock);
+  // Rétro « mercredi sans réunion » : le Product Owner garde ses réunions pour les autres jours.
+  const meeting =
+    hasPO &&
+    isMeetingTime(clock) &&
+    !(clock.dayOfWeek === 3 && retroActive(state, 'NO_MEETING_WEDNESDAY'));
   if (meeting) state.stats.meetings += 1;
   // Réunion d'équipe du matin, dès que la salle de réunion est aménagée.
   const teamMeeting = isTeamMeetingTime(state, clock);

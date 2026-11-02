@@ -10,6 +10,7 @@
  */
 import type {
   AbsenceKind,
+  RetroAction,
   PublicHoliday,
   MissionGoal,
   StoryMissionId,
@@ -231,6 +232,14 @@ export interface AbsenceView {
   readonly week: 0 | 1 | null;
   /** Date réelle du retour au bureau. */
   readonly returnDate: CalendarDate;
+}
+
+/** Rétrospective proposée en début de planification. */
+export interface RetroView {
+  /** Actions proposées, avec les devs qui ont voté pour chacune. */
+  readonly options: readonly { readonly action: RetroAction; readonly voters: readonly string[] }[];
+  /** Action qui a le plus de voix. */
+  readonly winner: RetroAction | null;
 }
 
 /** Congés et ponts du sprint (null : vieilles sauvegardes et défi « 3 sprints »). */
@@ -870,6 +879,10 @@ export interface GameView {
   /** Historique des jauges, un point par jour simulé. */
   readonly history: readonly Gauges[];
   readonly devs: readonly DevView[];
+  /** Rétrospective en attente de décision (null : aucune). */
+  readonly retro: RetroView | null;
+  /** Action de la dernière rétro en vigueur ce sprint (null : aucune). */
+  readonly retroAction: RetroAction | null;
   /** Congés, ponts et arrêts maladie (null : vieilles sauvegardes, défi « 3 sprints »). */
   readonly teamLife: TeamLifeView | null;
   /** Ce que l'encadrement apporte à l'équipe, et les postes ouverts au recrutement. */
@@ -1022,6 +1035,7 @@ export type GameCommand =
     }
   | { readonly type: 'cancelLeave'; readonly devId: string }
   | { readonly type: 'refuseBridges'; readonly refuse: boolean }
+  | { readonly type: 'holdRetro'; readonly action: RetroAction | null }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }

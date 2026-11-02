@@ -1132,6 +1132,26 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── RETRO_HELD ───────────────────────────────────────────────────────────
+  {
+    trigger: 'RETRO_HELD',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} J’ai pris une photo du tableau de post-it, je la range avec les 14 autres.',
+      '{event} I took a photo of the sticky-note board, filing it with the other 14.',
+    ),
+  },
+  {
+    trigger: 'RETRO_HELD',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Qui a écrit « moins de rétros » sur un post-it ? Courageux.',
+      '{event} Who wrote "fewer retros" on a sticky note? Brave.',
+    ),
+  },
+
   // ─── DEV_BIRTHDAY ─────────────────────────────────────────────────────────
   {
     trigger: 'DEV_BIRTHDAY',

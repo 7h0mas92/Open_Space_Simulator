@@ -27,6 +27,7 @@ import { Rng } from './rng';
 import type { Simulation } from './simulation';
 import { tasksInColumn } from './tasks';
 import { leaveSlots } from './teamLife';
+import { retroWinner } from './retro';
 import { activeVentures, investableCash, ventureBlocker, ventureOffers } from './ventures';
 
 /**
@@ -110,6 +111,8 @@ interface PlanningStyle {
   finances?: boolean;
   /** Pose des congés à ceux qui ont 5 jours en réserve (vie d'équipe). */
   booksLeave?: boolean;
+  /** Tient la rétrospective et suit le vote de l'équipe. */
+  holdsRetro?: boolean;
 }
 
 /** Bot « raisonnable », paramétré par un style de jeu. */
@@ -139,6 +142,11 @@ class PlannerBot implements Bot {
               accept: runwayMonths(state as GameState) >= this.style.hireRunway / 2,
             },
           ];
+        // Rétrospective : l'action votée par l'équipe (moral pour tous, bonus au sprint).
+        if (this.style.holdsRetro && state.retro.pending?.sprint === state.sprint) {
+          const { options, votes } = state.retro.pending;
+          return [{ type: 'HOLD_RETRO', action: retroWinner(options, votes) }, ...this.plan(state)];
+        }
         return this.plan(state);
       default:
         return [];
@@ -419,6 +427,7 @@ export const BOT_NAMES = [
   'organizer',
   'financier',
   'rested',
+  'retro',
 ] as const;
 export type BotName = (typeof BOT_NAMES)[number];
 
@@ -548,6 +557,17 @@ export function createBot(name: BotName, seed: string): Bot {
         pitchRunway: 10,
         buysFurniture: true,
         booksLeave: true,
+      });
+    case 'retro':
+      // Comme « balanced », mais il tient la rétrospective et suit le vote de l'équipe.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        holdsRetro: true,
       });
     case 'cautious':
       // Code propre, petite équipe, levées tardives.
