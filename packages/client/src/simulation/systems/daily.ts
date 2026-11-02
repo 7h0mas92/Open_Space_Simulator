@@ -16,6 +16,7 @@ import {
   type SimContext,
 } from '../helpers';
 import { applyDailyLeadership } from '../leadership';
+import { applyDailySkills, skillTeamEffects, type SkillTeamEffects } from '../skills';
 import { log10Approx, round } from '../math';
 import type { SimClock } from '../time';
 import { burnOut, isAbsent } from '../teamLife';
@@ -78,7 +79,7 @@ function gauges(state: GameState, ctx: SimContext): void {
 }
 
 /** Moral quotidien de chaque dev ; à 0, il démissionne (faux post LinkedIn). */
-function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
+function moral(state: GameState, ctx: SimContext, clock: SimClock, skills: SkillTeamEffects): void {
   const { moral: m } = BALANCE;
   const coffeeEmpty = state.gauges.coffee <= 0;
   const kudos = retroActive(state, 'KUDOS');
@@ -108,6 +109,8 @@ function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
     if (kudos && !clock.isWeekend) gain += RETRO.kudosDailyMoral;
     mood.moral = clamp(mood.moral + gain - loss, 0, 100);
   }
+  // Un Leader dans l'équipe (arbre de compétences) : personne ne démissionne pour un moral à 0.
+  if (skills.leader) return;
   for (const id of devIds(state)) {
     const mood = state.components.mood[id];
     if (mood && mood.moral <= BALANCE.moral.resignationThreshold)
@@ -188,7 +191,9 @@ export function dailySystem(state: GameState, ctx: SimContext, clock: SimClock):
   users(state);
   gauges(state, ctx);
   applyDailyLeadership(state);
-  moral(state, ctx, clock);
+  const skills = skillTeamEffects(state);
+  applyDailySkills(state, skills);
+  moral(state, ctx, clock, skills);
   relations(state);
   rustConversion(state, ctx);
   if (state.gauges.coffee <= 0) state.stats.coffeeShortageDays += 1;

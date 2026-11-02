@@ -6,6 +6,9 @@ import {
   OUTING_DEFINITIONS,
   getMeetingFormat,
   ROLE_TRADE,
+  TRAININGS,
+  branchNodes,
+  skillsEnabled,
   taskTrade,
   type CardEffects,
   type CleaningPlanId,
@@ -15,6 +18,8 @@ import {
   type FinancingKind,
   type GameState,
   type MeetingFormatId,
+  type SkillBranch,
+  type SkillId,
   type TaskTrade,
   type TaskType,
 } from '@oss/shared';
@@ -25,6 +30,7 @@ import { expectedAnswer } from './fundraising';
 import { canPlace, findFreeSlot, phaseIndex } from './furniture';
 import { devIds, teamMax, teamMoral, teamSize } from './helpers';
 import { meetingFormatBlocker } from './meetings';
+import { hasSkillTree, skillPoints } from './skills';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
 import { tasksInColumn } from './tasks';
@@ -118,6 +124,8 @@ interface PlanningStyle {
   holdsRetro?: boolean;
   /** Réserve une sortie d'équipe quand le moral moyen passe sous 50. */
   teamBuilds?: boolean;
+  /** Dépense les points de compétence et paie des formations (arbre de compétences). */
+  skills?: boolean;
 }
 
 /** Bot « raisonnable », paramétré par un style de jeu. */
@@ -281,6 +289,8 @@ class PlannerBot implements Bot {
       commands.push({ type: 'MOVE_TASK', taskId: id, column: 'TODO' });
       planned[trade] += task.size;
     }
+    // 6. Arbre de compétences : points dépensés, et un livre ou une formation si on a de la marge.
+    if (style.skills) commands.push(...skillCommands(state, runway));
     commands.push({ type: 'START_SPRINT' });
     return commands;
   }
@@ -435,6 +445,73 @@ export function teamOuting(state: Readonly<GameState>, runway: number): Command[
 
 const fixPriority = (state: Readonly<GameState>) => state.gauges.stability < 60;
 
+/** Branches préférées d'un profil, dans l'ordre : ce qu'un joueur logique choisirait. */
+export function preferredBranches(role: DevRole): SkillBranch[] {
+  switch (role) {
+    case 'PRODUCT_OWNER':
+    case 'DESIGNER':
+      return ['HUMAN', 'SPEED', 'TECH'];
+    case 'TEN_X':
+    case 'AI_AGENT':
+    case 'GHOST':
+    case 'FRONTEND':
+    case 'BACKEND':
+    case 'FULLSTACK':
+      return ['SPEED', 'TECH', 'HUMAN'];
+    default:
+      return ['TECH', 'HUMAN', 'SPEED'];
+  }
+}
+
+/**
+ * Choix de compétences d'un bot : chaque point va au premier nœud libre de la branche préférée
+ * (le nœud de métier dès qu'il est accessible). Le Crunch est laissé de côté : c'est un pouvoir
+ * à déclencher pendant le sprint, et le bot ne joue que quand la partie est bloquée. Puis un
+ * livre (ou une formation, avec beaucoup de marge) pour le dev le moins expérimenté.
+ */
+export function skillCommands(state: Readonly<GameState>, runway: number): Command[] {
+  if (!skillsEnabled(state.mode)) return [];
+  const commands: Command[] = [];
+  const devs = devIds(state).filter((id) => hasSkillTree(state as GameState, id));
+  for (const devId of devs) {
+    const role = state.components.identity[devId]?.role;
+    if (!role) continue;
+    const learned = new Set<SkillId>(state.components.skills[devId]?.learned ?? []);
+    let points = skillPoints(state as GameState, devId).available;
+    while (points > 0) {
+      const next = preferredBranches(role)
+        .flatMap((branch) => {
+          const nodes = branchNodes(branch, role);
+          const own = nodes.filter((node) => node.role !== undefined || node.id === 'versatile');
+          return [...own, ...nodes.filter((node) => !own.includes(node))];
+        })
+        .find(
+          (node) =>
+            !node.active &&
+            !learned.has(node.id) &&
+            (node.requires === null || learned.has(node.requires)),
+        );
+      if (!next) break;
+      learned.add(next.id);
+      points -= 1;
+      commands.push({ type: 'LEARN_SKILL', devId, skill: next.id });
+    }
+  }
+  if (devs.length > 0 && runway > 12) {
+    const levelOf = (id: string) => state.components.employment[id]?.level ?? 1;
+    const student = [...devs]
+      .filter((id) => state.components.skills[id]?.trainedSprint !== state.sprint)
+      .sort((a, b) => levelOf(a) - levelOf(b))[0];
+    const book = TRAININGS[0];
+    const course = TRAININGS[1];
+    if (student && book && course) {
+      const kind = runway > 24 && state.gauges.treasury > course.price * 50 ? course : book;
+      commands.push({ type: 'TRAIN_DEV', devId: student, kind: kind.kind });
+    }
+  }
+  return commands;
+}
+
 export const BOT_NAMES = [
   'random',
   'shipper',
@@ -446,6 +523,7 @@ export const BOT_NAMES = [
   'rested',
   'retro',
   'teambuilder',
+  'coach',
 ] as const;
 export type BotName = (typeof BOT_NAMES)[number];
 
@@ -597,6 +675,17 @@ export function createBot(name: BotName, seed: string): Bot {
         pitchRunway: 10,
         buysFurniture: true,
         teamBuilds: true,
+      });
+    case 'coach':
+      // Comme « balanced », mais il fait progresser l'équipe : arbre de compétences et formations.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        skills: true,
       });
     case 'cautious':
       // Code propre, petite équipe, levées tardives.

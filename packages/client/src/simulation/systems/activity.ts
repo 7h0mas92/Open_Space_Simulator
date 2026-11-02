@@ -1,5 +1,6 @@
 import {
   BALANCE,
+  SKILLS,
   TIME,
   type Activity,
   type DevTrait,
@@ -13,6 +14,7 @@ import { autoAssign, devQueueKey, devTrade, hasFreeTask } from '../tasks';
 import { isAbsent } from '../teamLife';
 import { retroActive } from '../retro';
 import { awayOnOuting } from '../teamBuilding';
+import { hasSkill } from '../skills';
 import type { SimClock } from '../time';
 
 /** Le dev est-il au bureau (ou connecté, pour le Dev Fantôme) à cette heure ? */
@@ -266,7 +268,12 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
         setActivity(state, id, 'ARGUING', 1, enemy.id);
         setActivity(state, enemy.id, 'ARGUING', 1, id);
         available.delete(enemy.id);
-        changeAffinity(state, id, enemy.id, -BALANCE.relations.argueLoss);
+        // Nœud « Diplomate » (de l'un ou de l'autre) : la dispute fait 2 fois moins de dégâts.
+        const diplomat =
+          hasSkill(state, id, 'diplomat') || hasSkill(state, enemy.id, 'diplomat')
+            ? SKILLS.diplomatConflict
+            : 1;
+        changeAffinity(state, id, enemy.id, -BALANCE.relations.argueLoss * diplomat);
         continue;
       }
     }

@@ -1,6 +1,7 @@
-import { BALANCE, RETRO, type GameState } from '@oss/shared';
+import { BALANCE, RETRO, SKILLS, type GameState } from '@oss/shared';
 import { retroActive } from '../retro';
 import { addGauge, addMoney, clamp, devIds, notify, text, type SimContext } from '../helpers';
+import { hasSkill } from '../skills';
 import type { SimClock } from '../time';
 
 /**
@@ -72,7 +73,9 @@ export function energySystem(state: GameState, ctx: SimContext): void {
         const workaholic = identity.trait === 'WORKAHOLIC' ? 1.2 : 1;
         // Pas de transports pour les télétravailleurs : on se fatigue moins.
         const home = id in state.components.remote ? 1 - BALANCE.remote.energySaving : 1;
-        delta = -energy.drainPerWorkTick * endurance * saving * workaholic * home;
+        // Nœud « Endurance » de l'arbre de compétences : -15 % de fatigue.
+        const stamina = hasSkill(state, id, 'stamina') ? SKILLS.staminaFatigue : 1;
+        delta = -energy.drainPerWorkTick * endurance * saving * workaholic * home * stamina;
         // Rétro « horaires flexibles » : chacun travaille à son rythme.
         if (flexHours) delta *= RETRO.flexHoursFatigue;
         break;

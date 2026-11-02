@@ -7,6 +7,7 @@ import { useGame } from '../store/game';
 import { conflictsOf, CONFLICT_AFFINITY, FRIEND_AFFINITY, filterTeam } from './filters';
 import { LeadershipSummary, SpecialtyLine } from './Leadership';
 import { GradeBadge, PerformancePanel, SprintProductivity, Strengths } from './Performance';
+import { SkillTree } from './SkillTree';
 import { moodEmoji, StatBars } from './StatBars';
 import { TeamFilterBar } from './TeamFilterBar';
 import { BridgeNotice, LeaveSection, useAbsenceLabel } from './Leave';
@@ -103,6 +104,17 @@ function DevRowActivity({ dev }: { dev: DevView }) {
         : dev.remoteReason
           ? `${t('team.remoteBadge')} · ${t(`remoteShort.${dev.remoteReason}`)}`
           : t(`activities.${dev.activity}`)}
+      {(dev.skills?.available ?? 0) > 0 && (
+        <span
+          className="skill-badge"
+          title={t('skills.badge', { count: dev.skills?.available ?? 0 })}
+        >
+          {' · '}⭐ {dev.skills?.available}
+          <span className="visually-hidden">
+            {t('skills.badge', { count: dev.skills?.available ?? 0 })}
+          </span>
+        </span>
+      )}
     </span>
   );
 }
@@ -129,16 +141,7 @@ function ConflictTag({ dev, team }: { dev: DevView; team: readonly DevView[] }) 
 
 function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack: () => void }) {
   const { t, i18n } = useTranslation();
-  const dispatch = useGame((s) => s.dispatch);
-  const [confirming, setConfirming] = useState(false);
-  const colleagues = view.devs.filter((other) => other.id !== dev.id);
-  const { career } = dev;
-  const ranked = colleagues
-    .map((other) => ({ other, value: dev.relations[other.id] ?? 0 }))
-    .sort((a, b) => b.value - a.value);
-  const bestFriend = ranked[0] && ranked[0].value > FRIEND_AFFINITY ? ranked[0].other : null;
-  const rival =
-    ranked.at(-1) && (ranked.at(-1)?.value ?? 0) < CONFLICT_AFFINITY ? ranked.at(-1)?.other : null;
+  const [tab, setTab] = useState<'sheet' | 'skills'>('sheet');
 
   return (
     <article className="dev-sheet" aria-labelledby={`dev-${dev.id}`}>
@@ -166,6 +169,59 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
         <p className="hint">{t(`roleDescriptions.${dev.role}`)}</p>
         <SpecialtyLine dev={dev} />
       </header>
+      {dev.skills && (
+        <div className="tabs" role="tablist" aria-label={t('skills.tabs')}>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'sheet'}
+            onClick={() => setTab('sheet')}
+          >
+            {t('skills.tabSheet')}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'skills'}
+            onClick={() => setTab('skills')}
+          >
+            {t('skills.tabSkills')}
+            {dev.skills.available > 0 && ` ⭐ ${dev.skills.available}`}
+          </button>
+        </div>
+      )}
+      {dev.skills && tab === 'skills' ? (
+        <SkillTree dev={dev} skills={dev.skills} step={view.step} treasury={view.gauges.treasury} />
+      ) : (
+        <DevSheetDetails dev={dev} view={view} onBack={onBack} />
+      )}
+    </article>
+  );
+}
+
+/** Onglet « Fiche » : performance, faits, XP, statistiques, relations, historique. */
+function DevSheetDetails({
+  dev,
+  view,
+  onBack,
+}: {
+  dev: DevView;
+  view: GameView;
+  onBack: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const [confirming, setConfirming] = useState(false);
+  const colleagues = view.devs.filter((other) => other.id !== dev.id);
+  const { career } = dev;
+  const ranked = colleagues
+    .map((other) => ({ other, value: dev.relations[other.id] ?? 0 }))
+    .sort((a, b) => b.value - a.value);
+  const bestFriend = ranked[0] && ranked[0].value > FRIEND_AFFINITY ? ranked[0].other : null;
+  const rival =
+    ranked.at(-1) && (ranked.at(-1)?.value ?? 0) < CONFLICT_AFFINITY ? ranked.at(-1)?.other : null;
+  return (
+    <>
       <PerformancePanel performance={dev.performance} />
       <SprintProductivity performance={dev.performance} />
       <dl className="facts">
@@ -321,6 +377,6 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
           {t('team.fire')}
         </button>
       )}
-    </article>
+    </>
   );
 }

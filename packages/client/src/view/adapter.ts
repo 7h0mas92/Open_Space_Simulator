@@ -70,11 +70,24 @@ import {
   type SubscriptionOffer,
   careerLegend,
   careerMilestoneLabel,
+  SKILL_BRANCHES,
+  TRAININGS,
+  branchNodes,
+  isRoleSkill,
+  skillsEnabled,
 } from '@oss/shared';
 import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
 import { completedSprints, missionProgress } from '../simulation/story';
 import { hasUnlock } from '../simulation/unlocks';
+import {
+  hasSkill,
+  hasSkillTree,
+  isCrunching,
+  resetCost,
+  skillBlocker,
+  skillPoints,
+} from '../simulation/skills';
 import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
@@ -137,6 +150,7 @@ import type {
   CandidateView,
   DevActivity,
   DevView,
+  DevSkillsView,
   PerformanceView,
   PitchAnswerView,
   PitchArgumentView,
@@ -273,6 +287,47 @@ export function performanceView(
   };
 }
 
+/** Arbre de compétences d'un dev, prêt à afficher (null : pas d'arbre pour lui ici). */
+function devSkillsView(state: GameState, id: string): DevSkillsView | null {
+  const role = state.components.identity[id]?.role;
+  if (!role || !skillsEnabled(state.mode) || !hasSkillTree(state, id)) return null;
+  const points = skillPoints(state, id);
+  const skills = state.components.skills[id];
+  const crunchLearned = hasSkill(state, id, 'crunch');
+  return {
+    ...points,
+    branches: SKILL_BRANCHES.map((branch) => ({
+      branch,
+      nodes: branchNodes(branch, role).map((node) => {
+        const blocker = skillBlocker(state, id, node.id);
+        return {
+          id: node.id,
+          icon: node.icon,
+          name: node.name,
+          effect: node.effect,
+          status: blocker === 'LEARNED' ? 'LEARNED' : blocker === null ? 'AVAILABLE' : 'LOCKED',
+          roleNode: isRoleSkill(node.id),
+          active: node.active === true,
+        };
+      }),
+    })),
+    trainedThisSprint: skills?.trainedSprint === state.sprint,
+    trainings: TRAININGS.map(({ kind, icon, name, effect, price }) => ({
+      kind,
+      icon,
+      name,
+      effect,
+      price,
+    })),
+    resetCost: resetCost(state, id),
+    crunch: {
+      learned: crunchLearned,
+      ready: crunchLearned && state.stage === 'EXECUTION' && skills?.crunchSprint !== state.sprint,
+      active: isCrunching(state, id),
+    },
+  };
+}
+
 function devView(state: GameState, id: string): DevView | null {
   const c = state.components;
   const identity = c.identity[id];
@@ -327,6 +382,7 @@ function devView(state: GameState, id: string): DevView | null {
       state.teamLife && identity.role !== 'GHOST' && identity.role !== 'AI_AGENT'
         ? (state.teamLife.leave[id] ?? 0)
         : null,
+    skills: devSkillsView(state, id),
   };
 }
 
@@ -553,6 +609,7 @@ function candidateViews(state: GameState): CandidateView[] {
         leavingAtSprint: null,
         absence: null,
         leave: null,
+        skills: null,
       },
     }));
 }
@@ -1374,5 +1431,13 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SUBSCRIBE_CLEANING', plan: command.plan };
     case 'cancelCleaning':
       return { type: 'CANCEL_CLEANING' };
+    case 'learnSkill':
+      return { type: 'LEARN_SKILL', devId: command.devId, skill: command.skill };
+    case 'resetSkills':
+      return { type: 'RESET_SKILLS', devId: command.devId };
+    case 'trainDev':
+      return { type: 'TRAIN_DEV', devId: command.devId, kind: command.kind };
+    case 'useCrunch':
+      return { type: 'USE_CRUNCH', devId: command.devId };
   }
 }
