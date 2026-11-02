@@ -1,7 +1,7 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : rétrospective de
-> sprint (tâche T5, 2e des 3 PR, empilée sur celle des congés #149). Base : `develop` au commit
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : team building
+> (tâche T5, 3e des 3 PR, empilée sur la rétro et les congés #149). Base : `develop` au commit
 > `b4353a7` (PR #148).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
@@ -72,7 +72,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné le 2 novembre (PR #148)                  |
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                  |
 | Histoire longue, rivaux, arbres devs et R&D (T2-T4) | Thomas          | Proposition prête, rien de codé                   |
-| Congés, rétrospective, team building (T5)           | Thomas + Claude | Congés en PR ; rétro et team building prêts       |
+| Congés, rétrospective, team building (T5)           | Thomas + Claude | 3 PR ouvertes vers `develop`, à valider           |
 | Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                               |
 
 **Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
@@ -289,6 +289,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                             |
 | -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/11    | Thomas + Claude | T5 (3/3)          | Team building : 5 sorties réservées en planification, effets à 18h le dernier jour, hasard sur `seed#teambuilding#sprint`. État `teamBuilding` par défaut. Fusionner les 3 PR de T5 dans l'ordre : congés, rétro, team building.                                                                                                                                                       |
 | 02/11    | Thomas + Claude | T5 (2/3)          | Rétrospective de sprint : 3 actions selon les problèmes du sprint, vote des devs sur `seed#retro#sprint`, effet pendant un sprint. Passer la rétro ne coûte rien (écart avec la proposition, pour garder la partie identique). État `retro` par défaut. Bot « retro » : valorisation médiane 297 M€ contre 266 M€ pour « balanced ».                                                   |
 | 02/11    | Thomas + Claude | T5 (1/3)          | Congés payés, 11 jours fériés, ponts de mai, arrêts maladie, burn-out au lieu de la démission. État `teamLife` (null = ancienne sauvegarde ou défi 3 sprints : rien ne change), hasard sur `seed#leave#jour`. Les replays des anciens scores Normal et Daily ne rejouent plus à l'identique (comme pour les autres mécaniques automatiques).                                           |
 | 02/11    | Thomas + Claude | #148              | Tâche T1 : `main` réintégré dans `develop` (merge commit). 13 conflits résolus en gardant les deux côtés : Carrière et Illimité, trésorerie de la légende multipliée par `difficultyOf`, ménage et abonnements à côté de `career`, succès de l'Illimité et de la Carrière (70). Carrière ajoutée à `GLOBAL_EXCLUDED_MODES`.                                                            |

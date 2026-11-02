@@ -487,6 +487,17 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   son caractère (`seed#retro#sprint`). Suivre le vote : +3 moral pour tous ; imposer autre chose :
   -3 pour ceux qui ont voté autrement ; passer la rétro ne coûte rien. L'action dure un sprint
   (🔁 dans le HUD). Commande `HOLD_RETRO`, état `retro` (vide par défaut), bot « retro ».
+- Team building (`shared/sim/teamBuilding.ts`, `client/src/simulation/teamBuilding.ts`, bloc
+  « 🎉 Team building » du panneau Équipe, `ui/team/TeamBuilding.tsx`) : une sortie par sprint,
+  réservée et payée en planification (prix par participant, sans Dev Fantôme ni IA Agent), en fin
+  de 2e semaine. Afterwork (40 €, jeudi 18h, aucune heure perdue, -15 énergie), escape game (90 €,
+  vendredi 14h, +25 d'affinité pour les paires en conflit, 15 % de chance que ça empire), laser
+  game (70 €, Seed, gros egos perdants qui boudent), séminaire au vert (600 €, Série A, journée,
+  +énergie, +hype), off-site à Lisbonne (2 500 €, Licorne, 2 jours, +hype, -dette). Effets à 18h le
+  dernier jour (moral selon le caractère, affinités) ; même sortie deux sprints de suite : moitié
+  moins de moral ; annulation remboursée à 50 %. Hasard sur `seed#teambuilding#sprint`. Commandes
+  `BOOK_TEAM_BUILDING` / `CANCEL_TEAM_BUILDING`, état `teamBuilding` (vide par défaut), 2 succès,
+  bot « teambuilder ».
 - Levées de fonds (`shared/sim/pitch.ts`, `shared/sim/funding.ts`, panneau « Lever des fonds ») :
   6 tours de plus en plus durs (Seed à pré-IPO : 3 à 5 questions, 3 à 4 réponses, barre plus
   haute, bluffs démasqués plus souvent, gros fonds, départ de l'investisseur dès la Série B) ;

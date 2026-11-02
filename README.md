@@ -425,6 +425,12 @@ flowchart LR
   de chacun. Suivre le vote remonte le moral de tous, imposer autre chose vexe ceux qui ont voté
   autrement. L'action choisie vaut pour le sprint qui commence (🔁 dans le HUD). On peut passer la
   rétro sans pénalité (`client/src/simulation/retro.ts`).
+- **Team building** : pendant la planification, le panneau Équipe propose une sortie pour la fin
+  du sprint : afterwork, escape game, laser game (Seed), séminaire au vert (Série A) ou off-site à
+  Lisbonne (Licorne). Elle se paie par participant et coûte des heures de travail, mais remonte
+  le moral et rapproche l'équipe ; l'escape game peut réconcilier deux devs en conflit, ou
+  empirer les choses. Refaire la même sortie au sprint suivant rapporte moitié moins
+  (`client/src/simulation/teamBuilding.ts`).
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une
