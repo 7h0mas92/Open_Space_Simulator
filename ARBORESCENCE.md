@@ -149,6 +149,7 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 | `pitch.ts`      | Mini-jeu de levée de fonds : questions, arguments, intérêt de l'investisseur.              |
 | `funding.ts`    | Autres financements : business angels, prêt, financement participatif, subvention.         |
 | `ventures.ts`   | Filiales : projets, parts, dividendes, revente.                                            |
+| `teamLife.ts`   | Congés payés, jours fériés français, ponts, arrêts maladie et burn-out.                    |
 | `career.ts`     | Mode Carrière : les 8 légendes, leur départ, leurs jalons, la légende lue dans la graine.  |
 
 ### `src/meta/` : méta-jeu et contrats de l'API
@@ -258,6 +259,7 @@ graine + mêmes commandes = même partie.
 | `fundraising.ts`  | Tour de table : palier, intérêt de l'investisseur, force des arguments.                 |
 | `financing.ts`    | Business angels, prêt, financement participatif, subvention.                            |
 | `ventures.ts`     | Filiales : création, dividendes, revente (graine à part).                               |
+| `teamLife.ts`     | Congés, jours fériés, ponts, arrêts maladie et burn-out (graine à part).                |
 | `raises.ts`       | Demandes d'augmentation (graine à part).                                                |
 | `leadership.ts`   | Effets de l'encadrement et de l'équipe qualité (tech lead, DevOps, QA, managers).       |
 | `meetings.ts`     | Salle de réunion, réunion du matin et réunion de crise.                                 |
@@ -453,6 +455,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `kanban/Objective.tsx`            | Objectif de sprint affiché en haut du Kanban.                           |
 | `kanban/useDragAndDrop.ts`        | Glisser-déposer souris et tactile du Kanban.                            |
 | `team/Team.tsx`                   | Liste de l'équipe et fiche détaillée d'un dev.                          |
+| `team/Leave.tsx`                  | Congés d'un dev, avis de pont, libellés des absences.                   |
 | `team/TeamFilterBar.tsx`          | Tri et filtres de l'équipe.                                             |
 | `team/filters.ts`                 | Logique des filtres et du tri (fonctions pures).                        |
 | `team/Hiring.tsx`                 | Recrutement : candidats, offre, risque de refus.                        |
