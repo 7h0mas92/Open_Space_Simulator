@@ -388,6 +388,15 @@ flowchart LR
   formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
   formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
   part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
+- **Daily et Kanbanana** : le Daily de 9h fait le point sur les tickets. Chacun dit où en est
+  son ticket (hier, aujourd'hui) ; un Daily utile donne +5 % de productivité aux participants
+  jusqu'au soir. Sans Daily, ou pour ceux en télétravail, deux devs finissent parfois par coder la
+  même chose à 10h et une partie d'un ticket est à refaire (dès la Seed, graine à part). Dans la
+  salle, un écran se déroule et un projecteur de plafond affiche **Kanbanana**, l'appli de tickets
+  du jeu (nom et logo inventés) ; le bandeau du Daily ou le bouton « 📽️ Voir Kanbanana » du panneau
+  Réunion l'ouvrent en grand. Le temps s'arrête 6 s au début du Daily pour voir l'équipe s'asseoir
+  (option désactivable, jamais en Hardcore ni en replay) (`view/ticketBoard.ts`,
+  `render/dailyBoard.ts`, `ui/meetings/TicketApp.tsx`, `ui/meetings/DailyMoment.tsx`).
 - **Variété des tâches** : le Kanban pioche dans plus de 250 tâches en français et en anglais.
   Le catalogue grandit avec la startup (page de tarifs en Seed, découper le monolithe en Série A,
   certification SOC 2 en Licorne), et pendant chaque période du calendrier une tâche de code sur
