@@ -1,8 +1,7 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec le mode
-> Histoire. Dernier commit de `main` au moment de l'écriture : `9f71139` (PR #122, mode
-> Histoire fusionné).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin), avec le placement à
+> la demi-case. Dernier commit de `develop` au moment de l'écriture : `2716f45` (PR #132).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -210,6 +209,10 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   réutiliser `nearestValidCell` et `shopStatus` (`view/placement.ts`). Chaque objet du catalogue
   a un rendu distinct (test) ; chaque bureau a une place d'écran (`SCREEN_MOUNTS`, test) ; chaque
   forme Three.js a une entrée `credits.missingItems` en FR et EN.
+- **Positions à la demi-case** : `x` / `y` des objets sont des multiples de 0,5
+  (`GridPositionSchema`). Murs fins et fenêtres restent entiers (`snapsToHalf`, `canPlace`). Pour
+  une emprise, utiliser `itemBounds` (bords) ou `itemCells` (cases chevauchées) de `ai/grid.ts`,
+  jamais `x + dx` sur des entiers ; un mur fin ne compte que par son trait (`segmentCrosses`).
 - **Serveur** : toutes les routes sous `/api`, erreurs `{ error: { code, message } }`, le serveur
   rejoue graine + commandes pour vérifier un score (il embarque la simulation du client).
 - **Mode Histoire** : une mission est une partie `STORY` (`GameConfig.mission`), terminée par
@@ -241,7 +244,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
+| 02/11    | Melvin + Claude | #132              | Placement à la demi-case : objets décalables d'une demi-case, demi-case libre le long des murs fins utilisable, centrage d'un objet de 3 cases dans 4.                                                                                           |
 | 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
 | 17/10    | Melvin + Claude | #123              | Branche `develop` créée depuis `main` : les PR vont vers `develop`, puis `develop` → `main` après les tests de Thomas et Melvin.                                                                                                                 |
 | 17/10    | Melvin + Claude | à venir           | Ajout de `ARBORESCENCE.md` : rôle de chaque fichier. Toute PR qui ajoute ou déplace un fichier met sa ligne à jour.                                                                                                                              |

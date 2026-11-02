@@ -761,6 +761,14 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `UNLOCK_NOT_EARNED`). Champs `story` (null) et `unlocks` ([]) par défaut, aucun tirage de plus.
   Calibrage par les bots : `pnpm balance:story` (chapitre 1 facile, chapitres 3 et 4 difficiles).
 
+- Placement à la demi-case (`GridPositionSchema` dans `shared/sim/components.ts`, `view/partitions.ts`) :
+  tous les objets se posent et se déplacent d'une demi-case (souris, doigt, flèches du clavier) ;
+  la demi-case libre de part et d'autre d'un mur fin (cloison du plan ou mur posé) se meuble tant
+  que l'objet ne traverse pas le trait du mur, et un objet de 3 cases se centre dans une pièce de 4.
+  Murs fins et fenêtres restent sur des cases entières. La grille de navigation bloque chaque case
+  chevauchée ; chaise et dev assis au point exact devant un bureau décalé (`accessPoint`). Positions
+  entières toujours valides : anciennes sauvegardes, replays, Daily et scores inchangés, aucun tirage.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
