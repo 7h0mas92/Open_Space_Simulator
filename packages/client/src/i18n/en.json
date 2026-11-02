@@ -16,6 +16,8 @@
     "playHint": "New game in {{mode}} mode",
     "resume": "Continue",
     "resumeHint": "{{mode}} · {{phase}} · sprint {{sprint}} · {{valuation}}",
+    "newGame": "New game",
+    "newGameHint": "{{mode}} mode, or pick another mode",
     "signIn": "Sign in",
     "account": "Account",
     "nav": "Main menu",

@@ -137,6 +137,17 @@ button.cta small {
   opacity: 0.85;
 }
 
+/* Nouvelle partie à côté de Continuer : même forme, en retrait. */
+button.cta-secondary {
+  min-height: 3.25rem;
+  font-size: 1.05rem;
+  box-shadow: 0 3px 0 rgb(0 0 0 / 35%);
+}
+
+button.cta-secondary:active:not(:disabled) {
+  box-shadow: 0 1px 0 rgb(0 0 0 / 35%);
+}
+
 /* --- Navigation : charger, classements, succès, profil, options, crédits ---------------- */
 
 .home-nav {
