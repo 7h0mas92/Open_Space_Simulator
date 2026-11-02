@@ -467,6 +467,18 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salaire relevé, +20 moral, 2 compétences +1. Refusé : 50 % de démission (départ 2 planifications
   plus tard, badge dans l'équipe), sinon -15 moral et 2 compétences -1. Commande `ANSWER_RAISE`,
   hasard sur une graine à part, état `raises` par défaut pour les anciennes sauvegardes.
+- Congés, jours fériés et arrêts maladie (`shared/sim/teamLife.ts`, `client/src/simulation/teamLife.ts`,
+  bloc « Congés » de la fiche d'un dev, `ui/team/Leave.tsx`) : 11 jours fériés français (Pâques
+  calculé), personne au bureau ce jour-là. 1 jour de congé par sprint dès le 2e (10 au plus), posé
+  en planification sur la 1re ou la 2e semaine (1 à 5 jours, 1 dev absent pour 4 en même temps) :
+  +4 moral par jour au retour (20 au plus). Réserve pleine : -1 moral par jour, et après 2 sprints
+  le dev pose 5 jours tout seul. Ponts de mai (vendredi après un jeudi férié, lundi avant un mardi
+  férié) : faits par défaut, refusés en un clic (-5 moral pour tous). Arrêt maladie de 1 à 3 jours
+  (0,5 % par jour, double l'hiver, moins avec l'endurance). Moral à 0 : arrêt de 10 jours ouvrés
+  pour burn-out au lieu de la démission, retour à 40 de moral ; rechute dans les 10 sprints :
+  démission. Un absent n'a ni tâche ni bureau, filtre 🏖️ de l'équipe. Commandes `BOOK_LEAVE`,
+  `CANCEL_LEAVE`, `REFUSE_BRIDGES`, état `teamLife` (null pour les anciennes sauvegardes et le défi
+  3 sprints = comportement d'avant), hasard sur `seed#leave#jour`. 2 succès, bot « rested ».
 - Levées de fonds (`shared/sim/pitch.ts`, `shared/sim/funding.ts`, panneau « Lever des fonds ») :
   6 tours de plus en plus durs (Seed à pré-IPO : 3 à 5 questions, 3 à 4 réponses, barre plus
   haute, bluffs démasqués plus souvent, gros fonds, départ de l'investisseur dès la Série B) ;

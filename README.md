@@ -410,6 +410,15 @@ flowchart LR
   démissionner une fois sur deux (il part deux planifications plus tard, badge « 🚪 » dans
   l'équipe), sinon il reste démotivé et perd deux compétences. Réglages dans `BALANCE.raises` ;
   le hasard est tiré sur une graine à part, sans toucher au tirage du jeu.
+- **Congés, jours fériés et arrêts maladie** : les 11 jours fériés français ferment le bureau.
+  Chaque dev gagne un jour de congé par sprint (10 au plus) et le joueur les pose pendant la
+  planification, dans la fiche du dev (1 à 5 jours, un absent pour 4 devs à la fois) : le dev
+  revient reposé et de meilleure humeur. Celui qui garde trop longtemps une réserve pleine râle,
+  puis pose ses jours tout seul. Les ponts de mai sont faits par défaut ; les refuser garde la
+  semaine entière mais vexe l'équipe. Des arrêts maladie de 1 à 3 jours tombent au hasard (plus
+  souvent l'hiver). Un dev à bout ne démissionne plus aussitôt : il part 10 jours en arrêt pour
+  burn-out et ne démissionne qu'en cas de rechute. Hasard sur une graine à part ; les anciennes
+  sauvegardes et le défi « 3 sprints » restent sans congés (`client/src/simulation/teamLife.ts`).
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une

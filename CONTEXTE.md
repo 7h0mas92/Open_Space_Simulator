@@ -1,9 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : `main` réintégré
-> dans `develop` (tâche T1 de [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md)). Base :
-> `develop` au commit `5e65463` (PR #145) et `main` au commit `d28c381` (PR #143). Une fois cette
-> PR fusionnée, `develop` contient tout `main` : Carrière, Nouvelle partie, Supabase, Vercel.
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : congés, jours
+> fériés et arrêts maladie (tâche T5, 1re des 3 PR). Base : `develop` au commit `b4353a7` (PR #148,
+> `main` réintégré). Rétrospective et team building suivent dans deux PR à part.
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -70,10 +69,10 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135)   |
 | Offres internet et température des salles (#129)    | Melvin + Claude | À rebrancher sur le modèle des abonnements (#126) |
 | Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation         |
-| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | PR ouverte, 13 conflits résolus, à valider        |
+| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné le 2 novembre (PR #148)                  |
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                  |
 | Histoire longue, rivaux, arbres devs et R&D (T2-T4) | Thomas          | Proposition prête, rien de codé                   |
-| Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                        |
+| Congés, rétrospective, team building (T5)           | Thomas + Claude | Congés en PR ; rétro et team building prêts       |
 | Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                               |
 
 **Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
@@ -290,6 +289,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                             |
 | -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/11    | Thomas + Claude | T5 (1/3)          | Congés payés, 11 jours fériés, ponts de mai, arrêts maladie, burn-out au lieu de la démission. État `teamLife` (null = ancienne sauvegarde ou défi 3 sprints : rien ne change), hasard sur `seed#leave#jour`. Les replays des anciens scores Normal et Daily ne rejouent plus à l'identique (comme pour les autres mécaniques automatiques).                                           |
 | 02/11    | Thomas + Claude | #148              | Tâche T1 : `main` réintégré dans `develop` (merge commit). 13 conflits résolus en gardant les deux côtés : Carrière et Illimité, trésorerie de la légende multipliée par `difficultyOf`, ménage et abonnements à côté de `career`, succès de l'Illimité et de la Carrière (70). Carrière ajoutée à `GLOBAL_EXCLUDED_MODES`.                                                            |
 | 02/11    | Melvin + Claude | #146              | Daily et Kanbanana (#133) décrits dans `CLAUDE.md` et le README. Nouveau champ `morningSync` et stat `duplicateWork` (défauts pour les anciennes sauvegardes). Idées de suite proposées à Melvin pour le Daily : blocage signalé, pair programming, Daily qui dérape, retard, rétro de fin de sprint, succès.                                                                          |
 | 02/11    | Melvin + Claude | #145              | Partage du travail : `docs/PASSATION-THOMAS.md` (tâches T1 à T6 pour Thomas avec un prompt chacune, M1 à M4 pour Melvin) et `docs/proposition-mode-histoire.md`. `main` a 5 PR absentes de `develop` : à réintégrer d'abord.                                                                                                                                                           |
