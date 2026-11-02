@@ -1,7 +1,7 @@
 import { BALANCE, type GameState } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
-import { fibreMonthly, hostingSaving } from './serverRoom';
-import { cleaningMonthly } from './cleaning';
+import { hostingSaving } from './serverRoom';
+import { subscriptionsMonthly } from './subscriptions';
 
 /** Revenu récurrent annuel (ARR), en euros. */
 export function annualRevenue(state: GameState): number {
@@ -43,8 +43,8 @@ export function hostingCost(state: GameState): number {
 }
 
 /**
- * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. La
- * fibre, payée chaque semaine à part, n'y est pas.
+ * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. Les
+ * abonnements, payés à part à chaque échéance, n'y sont pas.
  */
 export function monthlyExpenses(state: GameState): number {
   return (
@@ -93,8 +93,7 @@ export function portfolioValue(state: GameState): number {
 
 /** Nombre de mois de trésorerie restants au rythme actuel (Infinity si rentable). */
 export function runwayMonths(state: GameState): number {
-  const burn =
-    monthlyExpenses(state) + fibreMonthly(state) + cleaningMonthly(state) - monthlyRevenue(state);
+  const burn = monthlyExpenses(state) + subscriptionsMonthly(state) - monthlyRevenue(state);
   if (burn <= 0) return Number.POSITIVE_INFINITY;
   return state.gauges.treasury / burn;
 }

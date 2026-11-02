@@ -1,13 +1,13 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CleaningPlanView, CleaningView, GameView } from '../../view/types';
-import { formatMoney, localized } from '../game/format';
+import type { CleaningView, GameView } from '../../view/types';
+import { formatMoney } from '../game/format';
 import { useGame } from '../store/game';
+import { ServiceSubscription } from '../subscriptions/Subscriptions';
 
 /*
  * Panneau « Ménage » (bouton 🧹 en haut de l'écran) : la saleté du bureau et ce qu'elle coûte en
- * travail, l'entreprise de nettoyage (appel pour ce soir ou en express), puis l'abonnement payé
- * chaque semaine.
+ * travail, l'entreprise de nettoyage (appel pour ce soir ou en express), puis l'abonnement
+ * « Ménage » de la rubrique Abonnements, repris ici.
  */
 
 const TOOL_ICONS = { cart: '🛒', vacuum: '🌀', mop: '🧽' } as const;
@@ -57,7 +57,7 @@ export function Cleaning({ view }: { view: GameView }) {
       </section>
 
       <Crew view={view} />
-      <Subscription view={view} />
+      <ServiceSubscription view={view} service="cleaning" />
     </div>
   );
 }
@@ -123,128 +123,5 @@ function Crew({ view }: { view: GameView }) {
           ` · ${t('cleaning.history', { count: cleaning.visits, price: money(cleaning.spent) })}`}
       </p>
     </section>
-  );
-}
-
-function Subscription({ view }: { view: GameView }) {
-  const { t, i18n } = useTranslation();
-  const dispatch = useGame((s) => s.dispatch);
-  const replay = useGame((s) => s.replayOf !== null);
-  const [confirming, setConfirming] = useState(false);
-  const { plan, plans } = view.cleaning;
-  const current = plan ? plans.find((option) => option.id === plan.plan) : undefined;
-  const money = (amount: number) => formatMoney(amount, i18n.language);
-  return (
-    <section className="fibre" aria-labelledby="cleaning-plan-title">
-      <h3 id="cleaning-plan-title" className="group-heading">
-        {t('cleaning.planTitle')}
-      </h3>
-      {plan && current ? (
-        <div className="fibre-current" data-testid="cleaning-current">
-          <p>
-            <strong>🗓️ {localized(current.name, i18n.language)}</strong>
-          </p>
-          <p className="hint">
-            {t('cleaning.nextBill', {
-              price: money(plan.weeklyPrice),
-              count: Math.max(1, Math.ceil(plan.nextBillDays)),
-            })}{' '}
-            · {t('cleaning.totalPaid', { price: money(plan.totalPaid) })}
-          </p>
-          {confirming ? (
-            <div className="fibre-actions">
-              <p className="hint">{t('cleaning.cancelWarning')}</p>
-              <button
-                type="button"
-                className="danger"
-                onClick={() => {
-                  setConfirming(false);
-                  void dispatch({ type: 'cancelCleaning' });
-                }}
-                data-testid="cleaning-cancel-confirm"
-              >
-                {t('cleaning.cancelConfirm')}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)}>
-                {t('group.cancel')}
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              disabled={replay || view.step === 'PITCH'}
-              onClick={() => setConfirming(true)}
-              data-testid="cleaning-cancel"
-            >
-              ✂️ {t('cleaning.cancel')}
-            </button>
-          )}
-        </div>
-      ) : (
-        <p className="hint" data-testid="cleaning-none">
-          {t('cleaning.none')}
-        </p>
-      )}
-      <ul className="fibre-plans">
-        {plans.map((option) => (
-          <li key={option.id}>
-            <PlanCard plan={option} subscribed={plan !== null} disabled={replay} />
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function PlanCard({
-  plan,
-  subscribed,
-  disabled,
-}: {
-  plan: CleaningPlanView;
-  subscribed: boolean;
-  disabled: boolean;
-}) {
-  const { t, i18n } = useTranslation();
-  const dispatch = useGame((s) => s.dispatch);
-  const days = t('time.days', { returnObjects: true }) as unknown as string[];
-  const price = formatMoney(plan.weeklyPrice, i18n.language);
-  const current = plan.blocker === 'CURRENT';
-  const reason = plan.blocker === null || current ? null : t(`results.${plan.blocker}`);
-  return (
-    <article
-      className={`fibre-plan${current ? ' current' : ''}`}
-      data-testid={`cleaning-plan-${plan.id}`}
-    >
-      <h4>
-        {localized(plan.name, i18n.language)}{' '}
-        <span className="fibre-speed">
-          {plan.days.map((day) => days[day - 1] ?? '').join(', ')}
-        </span>
-      </h4>
-      <p className="fibre-price">
-        {t('servers.fibre.perWeek', { price })}{' '}
-        <span className="fibre-speed">
-          {t('cleaning.discount', { percent: Math.round(plan.discount * 100) })}
-        </span>
-      </p>
-      <p className="hint">{localized(plan.description, i18n.language)}</p>
-      {current ? (
-        <p className="server-state up">{t('servers.fibre.currentPlan')}</p>
-      ) : (
-        <button
-          type="button"
-          className="primary"
-          disabled={disabled || plan.blocker !== null}
-          onClick={() => void dispatch({ type: 'subscribeCleaning', plan: plan.id })}
-          data-testid={`cleaning-subscribe-${plan.id}`}
-        >
-          {subscribed
-            ? t('servers.fibre.switch', { price })
-            : t('servers.fibre.subscribe', { price })}
-        </button>
-      )}
-      {reason && <p className="hint">{reason}</p>}
-    </article>
   );
 }

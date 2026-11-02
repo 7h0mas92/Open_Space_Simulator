@@ -105,6 +105,7 @@ export function createEmptyState(config: GameConfig): GameState {
     raises: emptyRaisesState(),
     fibre: null,
     cleaning: emptyCleaningState(),
+    subscriptions: [],
     recentTaskTitles: [],
     story: mission ? { missionId: mission.id, startSprint: 1 } : null,
     unlocks: gameUnlocks(config),

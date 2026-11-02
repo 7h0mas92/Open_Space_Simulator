@@ -1,6 +1,6 @@
 /**
- * Aperçu d'un thème de décoration pour le back-office : un coin de bureau décoré (mur, guirlande,
- * objets au sol et sur un bureau), rendu hors écran en une image PNG. Chargé à la demande.
+ * Aperçu d'un thème de décoration pour le back-office : un coin de bureau décoré (mur,
+ * guirlande et objet sur un bureau), rendu hors écran en une image PNG. Chargé à la demande.
  */
 import type { DecorTheme } from '@oss/shared';
 import * as THREE from 'three';
@@ -36,11 +36,6 @@ export async function decorPreview(
     if (child.rotation.y !== 0 && child.parent !== decor) child.visible = child.position.x > -0.3;
   });
   scene.add(decor);
-  models.floor.forEach((build, index) => {
-    const object = build();
-    object.position.set([0, 3.1, 4][index] ?? index, 0, 0.05);
-    scene.add(object);
-  });
   const small = models.desk();
   small.position.set(2.2, 0.745, 0.15);
   scene.add(small);

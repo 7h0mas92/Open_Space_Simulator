@@ -8,6 +8,8 @@ import {
   resolveAccessory,
   shopStatus,
   slotPosition,
+  snapsToHalf,
+  snapToGrid,
 } from '../../../src/view/placement';
 import type { PlacedItemView } from '../../../src/view/types';
 import { officeSimulation, SEED_OFFICE, viewOf } from '../fixtures/game';
@@ -279,5 +281,85 @@ describe('murs fins', () => {
     expect(
       checkPlacement(garage, items, { kind: 'thin-wall', x: 2, z: 2, rotation: 1 }),
     ).toBeNull();
+  });
+});
+
+describe('Placement à la demi-case', () => {
+  const item = (id: string, kind: string, x: number, z: number, rotation = 0): PlacedItemView => ({
+    id,
+    kind,
+    x,
+    z,
+    rotation: rotation as PlacedItemView['rotation'],
+    resale: 0,
+    color: 'natural',
+    host: null,
+  });
+
+  it('pose un objet ordinaire à la demi-case, mais pas un mur fin ni une fenêtre', () => {
+    expect(checkPlacement(layout, [], { ...plant, x: 3.5, z: 2.5 })).toBeNull();
+    expect(checkPlacement(layout, [], { kind: 'thin-wall', rotation: 0, x: 3.5, z: 3 })).toBe(
+      'outOfBounds',
+    );
+    expect(snapsToHalf('plant')).toBe(true);
+    expect(snapsToHalf('thin-wall')).toBe(false);
+    expect(snapsToHalf('window-small')).toBe(false);
+    expect(snapToGrid('plant', { x: 3.3, z: 2.8 })).toEqual({ x: 3.5, z: 3 });
+    expect(snapToGrid('thin-wall', { x: 3.3, z: 2.8 })).toEqual({ x: 3, z: 3 });
+  });
+
+  it('deux objets se touchent par un bord à la demi-case sans se chevaucher', () => {
+    const items = [item('a', 'plant', 3.5, 3)];
+    expect(checkPlacement(layout, items, { ...plant, x: 4.5, z: 3 })).toBeNull();
+    expect(checkPlacement(layout, items, { ...plant, x: 4, z: 3 })).toBe('overlap');
+  });
+
+  it('meuble la demi-case libre de part et d’autre d’une cloison du plan', () => {
+    // Seed : cloison le long de z en x = 10 (open space | cuisine), trait au milieu de la case.
+    expect(checkPlacement(layout, [], { ...plant, x: 10, z: 4 })).toBe('wall');
+    expect(checkPlacement(layout, [], { ...plant, x: 9.5, z: 4 })).toBeNull();
+    expect(checkPlacement(layout, [], { ...plant, x: 10.5, z: 4 })).toBeNull();
+  });
+
+  it('meuble la demi-case libre à côté d’un mur fin posé par le joueur', () => {
+    const items = [item('w', 'thin-wall', 4, 4, 0)];
+    expect(checkPlacement(layout, items, { ...plant, x: 4, z: 3.5 })).toBeNull();
+    expect(checkPlacement(layout, items, { ...plant, x: 4, z: 4.5 })).toBeNull();
+    expect(checkPlacement(layout, items, { ...plant, x: 4, z: 4 })).toBe('wall');
+    // Un mur fin se pose à côté d'un objet qui ne traverse pas son trait.
+    const planted = [item('p', 'plant', 6, 3.5)];
+    expect(checkPlacement(layout, planted, { kind: 'thin-wall', rotation: 0, x: 6, z: 4 })).toBe(
+      null,
+    );
+    expect(checkPlacement(layout, planted, { kind: 'thin-wall', rotation: 1, x: 6, z: 4 })).toBe(
+      'overlap',
+    );
+  });
+
+  it('centre un écran de 3 cases dans une pièce de 4 cases fermée par des murs fins', () => {
+    const walls = [0, 1, 2, 3].flatMap((z) => [
+      item(`l${z}`, 'thin-wall', 1, z, 1),
+      item(`r${z}`, 'thin-wall', 6, z, 1),
+    ]);
+    const screen = { kind: 'projection-screen-medium', rotation: 0 } as const;
+    // Cases 2 à 5 entre les murs : centré, l'écran va de x = 2,5 à 5,5 (milieu en 4).
+    expect(checkPlacement(layout, walls, { ...screen, x: 2.5, z: 1 })).toBeNull();
+    expect(checkPlacement(layout, walls, { ...screen, x: 1.5, z: 1 })).toBeNull();
+    expect(checkPlacement(layout, walls, { ...screen, x: 1, z: 1 })).toBe('wall');
+  });
+
+  it('cherche la place libre la plus proche par demi-case, une case entière d’abord', () => {
+    const items = [item('a', 'plant', 3, 3)];
+    // À une case de là, plutôt qu'à une demi-case qui chevaucherait la plante.
+    const next = nearestValidCell(layout, items, plant, { x: 3, z: 3 })!;
+    expect(Number.isInteger(next.x) && Number.isInteger(next.z)).toBe(true);
+    expect(Math.abs(next.x - 3) + Math.abs(next.z - 3)).toBe(1);
+    expect(nearestValidCell(layout, [], plant, { x: 3.4, z: 3.1 })).toEqual({ x: 3.5, z: 3 });
+  });
+
+  it('trouve le meuble à plateau sous un point, même décalé d’une demi-case', () => {
+    const desk = item('d', 'desk', 2.5, 2);
+    const resolved = resolveAccessory([desk], { kind: 'rubber-duck', x: 3, z: 2 });
+    expect(resolved).toMatchObject({ host: { id: 'd' } });
   });
 });

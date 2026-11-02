@@ -1789,7 +1789,7 @@ input[type='range'] {
   background-size: 1.4rem 1.4rem;
 }
 
-/* Sol d'origine de la pièce (damier tiré de la graine). */
+/* Sol d'origine, le même dans toutes les pièces (`BASE_FLOOR_COLORS`). */
 .floor-swatch.small.original {
   background: repeating-conic-gradient(#d9cbb4 0 25%, #c9b9a0 0 50%) 0 0 / 0.7rem 0.7rem;
 }
@@ -3803,22 +3803,37 @@ legend {
   }
 }
 
-/* --- Salle des serveurs et fibre ---------------------------------------------------------- */
+/* --- Salle des serveurs et abonnements ---------------------------------------------------------- */
 
 .servers-panel,
-.servers-panel section {
+.servers-panel section,
+.subscriptions-panel,
+.subscriptions-panel section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.servers-panel {
+.servers-panel,
+.subscriptions-panel {
   gap: 12px;
+}
+
+.subscriptions-summary {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  font-weight: 600;
+}
+
+.servers-panel > button {
+  align-self: flex-start;
 }
 
 .server-rooms,
 .server-needs,
-.fibre-plans {
+.sub-offers {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -3827,14 +3842,14 @@ legend {
   list-style: none;
 }
 
-.fibre-plans {
+.sub-offers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 8px;
 }
 
 .server-room-card,
-.fibre-current {
+.sub-current {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -3846,7 +3861,7 @@ legend {
 
 .server-room-card h4,
 .server-room-card p,
-.fibre-current p,
+.sub-current p,
 .server-saving {
   margin: 0;
 }
@@ -3867,23 +3882,23 @@ legend {
   font-size: 0.9rem;
 }
 
-.fibre-current > button,
-.fibre-actions button {
+.sub-current > button,
+.sub-actions button {
   align-self: flex-start;
 }
 
-.fibre-actions {
+.sub-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.fibre-actions .hint {
+.sub-actions .hint {
   flex-basis: 100%;
   margin: 0;
 }
 
-.fibre-plan {
+.sub-offer {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -3895,16 +3910,16 @@ legend {
   background: var(--bg-elevated);
 }
 
-.fibre-plan.current {
+.sub-offer.current {
   border-left-color: #7fd18b;
 }
 
-.fibre-plan.locked {
+.sub-offer.locked {
   opacity: 0.75;
   border-left-color: var(--text-muted);
 }
 
-.fibre-plan h4 {
+.sub-offer h4 {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -3913,23 +3928,23 @@ legend {
   font-size: 1rem;
 }
 
-.fibre-speed,
-.fibre-price {
+.sub-detail,
+.sub-price {
   color: var(--text-muted);
   font-size: 0.9rem;
 }
 
-.fibre-price {
+.sub-price {
   margin: 0;
   color: var(--text);
   font-weight: 600;
 }
 
-.fibre-plan .hint {
+.sub-offer .hint {
   margin: 0;
 }
 
-.fibre-plan > button {
+.sub-offer > button {
   margin-top: auto;
 }
 

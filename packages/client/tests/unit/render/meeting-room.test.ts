@@ -38,9 +38,9 @@ function reachable(layout: OfficeLayout, blocked: readonly Cell[]): Set<string> 
 
 describe('Salle de réunion : plan', () => {
   it('pas de mobilier tant que la salle est vide, ni au garage', () => {
-    const empty = planDecor(officeLayout('SEED'), [], [], false, () => 0);
+    const empty = planDecor(officeLayout('SEED'), [], [], false);
     expect(empty.meeting).toBeNull();
-    const garage = planDecor(officeLayout('GARAGE'), [], [], false, () => 0, 'brainstorm');
+    const garage = planDecor(officeLayout('GARAGE'), [], [], false, 'brainstorm');
     expect(garage.meeting).toBeNull();
   });
 
@@ -48,7 +48,7 @@ describe('Salle de réunion : plan', () => {
     for (const phase of PHASES) {
       const layout = officeLayout(phase);
       for (const format of MEETING_FORMAT_IDS) {
-        const plan = planDecor(layout, [], [], false, () => 0, format);
+        const plan = planDecor(layout, [], [], false, format);
         const meeting = plan.meeting;
         expect(meeting, `${phase} ${format}`).not.toBeNull();
         if (!meeting) continue;
@@ -75,14 +75,14 @@ describe('Salle de réunion : plan', () => {
   it('la war room est tapissée d’écrans, les autres salles restent sobres', () => {
     const layout = officeLayout('UNICORN');
     const count = (format: (typeof MEETING_FORMAT_IDS)[number]) =>
-      planDecor(layout, [], [], false, () => 0, format).meeting?.wall.length ?? 0;
+      planDecor(layout, [], [], false, format).meeting?.wall.length ?? 0;
     expect(count('war-room')).toBeGreaterThan(count('brainstorm'));
     expect(count('standup')).toBeLessThanOrEqual(2);
   });
 
   it('les participants prennent chacun une place autour de la table', () => {
     const world = new AgentWorld(1);
-    const plan = planDecor(officeLayout('SEED'), [], [], false, () => 0, 'brainstorm');
+    const plan = planDecor(officeLayout('SEED'), [], [], false, 'brainstorm');
     world.setDecor(plan.blocked, plan.party, plan.meeting?.seats ?? []);
     const agent = { x: 0, z: 0 } as Parameters<AgentWorld['meetingSpot']>[0];
     const spot = world.meetingSpot(agent);
@@ -109,7 +109,7 @@ describe('Salle de réunion : rendu', () => {
   it('meuble la salle même sans les modèles Kenney (formes de secours)', async () => {
     for (const format of MEETING_FORMAT_IDS) {
       const layout = officeLayout('UNICORN');
-      const plan = planDecor(layout, [], [], false, () => 0, format).meeting;
+      const plan = planDecor(layout, [], [], false, format).meeting;
       if (!plan) throw new Error(format);
       const group = await buildMeetingRoom(plan, layout, noAssets);
       expect(group.name).toBe(`meeting-room-${format}`);
