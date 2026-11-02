@@ -135,12 +135,12 @@ function Subscription({ view }: { view: GameView }) {
   const current = plan ? plans.find((option) => option.id === plan.plan) : undefined;
   const money = (amount: number) => formatMoney(amount, i18n.language);
   return (
-    <section className="fibre" aria-labelledby="cleaning-plan-title">
+    <section className="subscription-service" aria-labelledby="cleaning-plan-title">
       <h3 id="cleaning-plan-title" className="group-heading">
         {t('cleaning.planTitle')}
       </h3>
       {plan && current ? (
-        <div className="fibre-current" data-testid="cleaning-current">
+        <div className="sub-current" data-testid="cleaning-current">
           <p>
             <strong>🗓️ {localized(current.name, i18n.language)}</strong>
           </p>
@@ -152,7 +152,7 @@ function Subscription({ view }: { view: GameView }) {
             · {t('cleaning.totalPaid', { price: money(plan.totalPaid) })}
           </p>
           {confirming ? (
-            <div className="fibre-actions">
+            <div className="sub-actions">
               <p className="hint">{t('cleaning.cancelWarning')}</p>
               <button
                 type="button"
@@ -185,7 +185,7 @@ function Subscription({ view }: { view: GameView }) {
           {t('cleaning.none')}
         </p>
       )}
-      <ul className="fibre-plans">
+      <ul className="sub-offers">
         {plans.map((option) => (
           <li key={option.id}>
             <PlanCard plan={option} subscribed={plan !== null} disabled={replay} />
@@ -213,24 +213,22 @@ function PlanCard({
   const reason = plan.blocker === null || current ? null : t(`results.${plan.blocker}`);
   return (
     <article
-      className={`fibre-plan${current ? ' current' : ''}`}
+      className={`sub-offer${current ? ' current' : ''}`}
       data-testid={`cleaning-plan-${plan.id}`}
     >
       <h4>
         {localized(plan.name, i18n.language)}{' '}
-        <span className="fibre-speed">
-          {plan.days.map((day) => days[day - 1] ?? '').join(', ')}
-        </span>
+        <span className="sub-detail">{plan.days.map((day) => days[day - 1] ?? '').join(', ')}</span>
       </h4>
-      <p className="fibre-price">
-        {t('servers.fibre.perWeek', { price })}{' '}
-        <span className="fibre-speed">
+      <p className="sub-price">
+        {t('subscriptions.perWeek', { price })}{' '}
+        <span className="sub-detail">
           {t('cleaning.discount', { percent: Math.round(plan.discount * 100) })}
         </span>
       </p>
       <p className="hint">{localized(plan.description, i18n.language)}</p>
       {current ? (
-        <p className="server-state up">{t('servers.fibre.currentPlan')}</p>
+        <p className="server-state up">{t('subscriptions.currentOffer')}</p>
       ) : (
         <button
           type="button"
@@ -240,8 +238,8 @@ function PlanCard({
           data-testid={`cleaning-subscribe-${plan.id}`}
         >
           {subscribed
-            ? t('servers.fibre.switch', { price })
-            : t('servers.fibre.subscribe', { price })}
+            ? t('subscriptions.switch', { price })
+            : t('subscriptions.subscribe', { price })}
         </button>
       )}
       {reason && <p className="hint">{reason}</p>}
