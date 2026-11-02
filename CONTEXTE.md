@@ -1,8 +1,8 @@
 # Contexte de passation
 
 > **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec le mode
-> Histoire. Dernier commit de `main` au moment de l'écriture : `83fec14` (PR #120) ; le mode
-> Histoire est sur la branche `claude/mode-histoire-dky33a` (PR ouverte, en attente de Thomas).
+> Histoire. Dernier commit de `main` au moment de l'écriture : `9f71139` (PR #122, mode
+> Histoire fusionné).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
