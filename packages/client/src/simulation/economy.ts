@@ -11,6 +11,7 @@ import { subscriptionsMonthly } from './subscriptions';
 import { cleaningMonthly } from './cleaning';
 import { currentPricing } from './pricing';
 import { clientsMonthly } from './clients';
+import { supportMonthly } from './support';
 
 /** Revenu mensuel par utilisateur, selon le modèle économique et le niveau de prix. */
 export function arpuMonthly(state: GameState): number {
@@ -67,7 +68,8 @@ export function fixedCosts(state: GameState): number {
 }
 
 /**
- * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. Les
+ * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, agents de
+ * support, prêt. Les
  * abonnements, payés à part à chaque échéance, n'y sont pas. Plus chères
  * en Hardcore (`difficultyOf`).
  */
@@ -77,6 +79,7 @@ export function monthlyExpenses(state: GameState): number {
       teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
       fixedCosts(state) +
       hostingCost(state) +
+      supportMonthly(state) +
       loanPayment(state)) *
     difficultyOf(state.mode).expenses
   );

@@ -20,6 +20,7 @@ import { FibreSubscriptionSchema } from './serverRoom.js';
 import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
 import { defaultPricing, PricingStateSchema } from './pricing.js';
 import { ClientsStateSchema, emptyClientsState } from './clients.js';
+import { emptySupportState, SupportStateSchema } from './support.js';
 import { SubscriptionsSchema } from './subscriptions.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
@@ -322,6 +323,9 @@ export const NOTIFICATION_KINDS = [
   'CLIENT_LOST',
   /** Fin normale d'un contrat de maintenance. */
   'CLIENT_ENDED',
+  /** Support client : agents embauchés ou remerciés, satisfaction sous le seuil des départs. */
+  'SUPPORT_STAFFED',
+  'SUPPORT_UNHAPPY',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -446,6 +450,8 @@ export const GameStateSchema = z.object({
   pricing: PricingStateSchema.default(defaultPricing),
   /** Clients B2B : offres du sprint et contrats (aucun dans les vieilles sauvegardes). */
   clients: ClientsStateSchema.default(emptyClientsState),
+  /** Support client : tickets, agents, satisfaction (au départ d'une partie dans les vieilles sauvegardes). */
+  support: SupportStateSchema.default(emptySupportState),
   /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */
   subscriptions: SubscriptionsSchema.default([]),
   /**

@@ -27,6 +27,7 @@ import { answerRaise } from './raises';
 import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
 import { setPricing } from './pricing';
 import { dropClient, signClient } from './clients';
+import { setSupport } from './support';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -211,5 +212,7 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return signClient(state, ctx, command.offerId);
     case 'DROP_CLIENT':
       return dropClient(state, ctx, command.contractId);
+    case 'SET_SUPPORT':
+      return setSupport(state, ctx, command.agents, command.duty);
   }
 }

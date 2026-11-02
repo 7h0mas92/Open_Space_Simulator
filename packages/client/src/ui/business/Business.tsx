@@ -2,6 +2,7 @@ import {
   PRICE_TIERS,
   PRICING_MODEL_INFO,
   PRICING_MODELS,
+  SUPPORT_DUTIES,
   type PriceTier,
   type PricingModel,
 } from '@oss/shared';
@@ -21,7 +22,8 @@ import { useGame } from '../store/game';
  * Panneau « Business » (bouton 💶 de la barre du haut) : le modèle économique du produit. Le
  * joueur choisit un modèle (gratuit avec pub, freemium, abonnement, achat unique) et un niveau de
  * prix, voit ce que le changement coûterait (utilisateurs perdus, hype) et ce qu'il rapporterait,
- * puis l'applique (une fois par sprint). En dessous, les clients B2B : les offres de la
+ * puis l'applique (une fois par sprint). En dessous, le support client (tickets, agents, devs de
+ * garde, satisfaction) et les clients B2B : les offres de la
  * planification et les contrats signés, avec leur avancement, leur échéance et leurs pannes.
  */
 
@@ -50,6 +52,7 @@ export function Business({ view }: { view: GameView }) {
     <div className="business-panel">
       <p className="hint">{t('business.intro')}</p>
       <Pricing view={view} />
+      <Support view={view} />
       <Clients view={view} />
     </div>
   );
@@ -406,5 +409,127 @@ function ContractCard({ contract }: { contract: ClientContractView }) {
         </button>
       )}
     </article>
+  );
+}
+
+/** Support client : satisfaction, tickets, agents et devs de garde. */
+function Support({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const replay = useGame((s) => s.replayOf !== null);
+  const support = view.support;
+  const language = i18n.language;
+  const satisfaction = Math.round(support.satisfaction);
+  const level =
+    support.satisfaction >= support.happyThreshold
+      ? 'happy'
+      : support.satisfaction >= support.churnThreshold
+        ? 'ok'
+        : 'angry';
+  const disabled = replay || support.blocker !== null;
+  const count = (value: number) => Math.round(value).toLocaleString(intlLocale(language));
+  const set = (agents: number, duty = support.duty) =>
+    void dispatch({ type: 'setSupport', agents, duty });
+  return (
+    <section className="support" aria-labelledby="support-title">
+      <h3 id="support-title" className="group-heading">
+        {t('business.support.title')}
+      </h3>
+      <p className="hint">{t('business.support.intro')}</p>
+      <div className={`support-card support-${level}`}>
+        <p className="support-value" data-testid="support-satisfaction">
+          <strong>{t('business.support.satisfaction', { value: satisfaction })}</strong>
+          <span>{t(`business.support.levels.${level}`)}</span>
+        </p>
+        <span
+          className="support-bar"
+          role="meter"
+          aria-label={t('business.support.satisfactionLabel')}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={satisfaction}
+        >
+          <span style={{ width: `${satisfaction}%` }} />
+        </span>
+        <p className="hint">
+          {level === 'angry'
+            ? t('business.support.churn', {
+                percent: Math.round((support.churnFactor - 1) * 100),
+              })
+            : level === 'happy'
+              ? t('business.support.happy', {
+                  percent: Math.round((support.growthFactor - 1) * 100),
+                })
+              : t('business.support.ok', { threshold: support.happyThreshold })}
+        </p>
+        <p data-testid="support-tickets">
+          {t('business.support.tickets', {
+            backlog: count(support.backlog),
+            perDay: count(support.ticketsPerDay),
+            capacity: count(support.capacity),
+          })}
+        </p>
+      </div>
+
+      <div className="support-agents">
+        <p>
+          <strong>{t('business.support.agents', { count: support.agents })}</strong>{' '}
+          <span className="hint">
+            {t('business.support.agentInfo', {
+              salary: euros(support.agentSalary, language),
+              capacity: support.agentCapacity,
+              max: support.maxAgents,
+            })}
+          </span>
+        </p>
+        <div className="support-stepper">
+          <button
+            type="button"
+            aria-label={t('business.support.fire')}
+            disabled={disabled || support.agents === 0}
+            onClick={() => set(support.agents - 1)}
+            data-testid="support-fire"
+          >
+            −
+          </button>
+          <span aria-live="polite">{support.agents}</span>
+          <button
+            type="button"
+            aria-label={t('business.support.hire')}
+            disabled={disabled || support.agents >= support.maxAgents}
+            onClick={() => set(support.agents + 1)}
+            data-testid="support-hire"
+          >
+            +
+          </button>
+        </div>
+        {support.monthly > 0 && (
+          <p className="hint">
+            {t('business.support.monthly', { price: euros(support.monthly, language) })}
+          </p>
+        )}
+      </div>
+
+      <fieldset className="pricing-tiers support-duties">
+        <legend>{t('business.support.duty')}</legend>
+        <div className="pricing-tier-row">
+          {SUPPORT_DUTIES.map((duty) => (
+            <button
+              key={duty}
+              type="button"
+              className={support.duty === duty ? 'selected' : ''}
+              aria-pressed={support.duty === duty}
+              disabled={disabled}
+              onClick={() => support.duty !== duty && set(support.agents, duty)}
+              data-testid={`support-duty-${duty}`}
+            >
+              {t(`business.support.duties.${duty}`, {
+                percent: Math.round(support.dutyShare[duty] * 100),
+              })}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+    </section>
   );
 }

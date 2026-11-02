@@ -494,3 +494,15 @@ test('le panneau Business signe un contrat avec un client B2B', async ({ page })
   await expect(page.getByTestId('clients-summary')).toContainText('1/1');
   await expect(page.locator('[data-testid^="client-contract-"]')).toHaveCount(1);
 });
+
+test('le panneau Business embauche un agent de support', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: 'Business', exact: true }).click();
+  const support = page.locator('.support-stepper');
+  await expect(support).toContainText('0');
+  await page.getByTestId('support-hire').click();
+  await expect(support).toContainText('1');
+  await expect(page.getByTestId('support-hire')).toBeDisabled();
+  await page.getByTestId('support-fire').click();
+  await expect(support).toContainText('0');
+});

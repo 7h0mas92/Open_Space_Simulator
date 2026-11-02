@@ -4,6 +4,7 @@ import {
   TIME,
   endlessCostMultiplier,
   endlessPressure,
+  supportChurnFactor,
   type ClientNeed,
   type CommandResult,
   type GameState,
@@ -264,7 +265,11 @@ function loseSprint(state: GameState, ctx: SimContext): void {
   payClients(state, days);
   repayLoan(state, days);
   const churn =
-    state.gauges.users * BALANCE.users.baseDailyChurn * currentPricing(state).churn * days;
+    state.gauges.users *
+    BALANCE.users.baseDailyChurn *
+    currentPricing(state).churn *
+    supportChurnFactor(state.support.satisfaction) *
+    days;
   addUsers(state, -churn);
   for (let day = 0; day < days; day++) addGauge(state, 'hype', hypeDrift(state.gauges.hype));
   clientsDemo(state, ctx, {});

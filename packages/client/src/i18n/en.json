@@ -2288,6 +2288,33 @@
       "dropWarning": "Cancelling now costs {{penalty}} in penalties and some hype.",
       "endWarning": "The client leaves at no cost: no more fee, no more outage penalty.",
       "dropConfirm": "Confirm"
+    },
+    "support": {
+      "title": "Customer support",
+      "intro": "Your users write in: bugs, questions, “it doesn’t work”. The more users, the higher the debt and the shakier the platform, the more tickets. Unanswered, satisfaction drops and they leave; happy, they recommend the product.",
+      "satisfaction": "Satisfaction {{value}}/100",
+      "satisfactionLabel": "User satisfaction",
+      "levels": {
+        "happy": "Delighted",
+        "ok": "Fine",
+        "angry": "Furious"
+      },
+      "churn": "Users leave {{percent}}% faster.",
+      "happy": "They recommend the product: +{{percent}}% growth and a little hype.",
+      "ok": "Above {{threshold}}, they would recommend the product.",
+      "tickets": "{{backlog}} tickets waiting · {{perDay}} per workday · {{capacity}} solved per day",
+      "agents_one": "{{count}} support agent",
+      "agents_other": "{{count}} support agents",
+      "agentInfo": "{{salary}} a month each, {{capacity}} tickets a day, {{max}} at most in this phase",
+      "hire": "Hire an agent",
+      "fire": "Let an agent go",
+      "monthly": "Support payroll: {{price}} a month",
+      "duty": "Devs on support duty",
+      "duties": {
+        "NONE": "None",
+        "LIGHT": "A little ({{percent}}%)",
+        "HEAVY": "A lot ({{percent}}%)"
+      }
     }
   }
 }

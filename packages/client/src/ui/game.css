@@ -4383,6 +4383,10 @@ legend {
   text-transform: capitalize;
 }
 
+.support-duties .pricing-tier-row button {
+  text-transform: none;
+}
+
 .pricing-preview {
   padding: 10px 12px;
   border: 1px solid var(--border);
@@ -4570,4 +4574,87 @@ legend {
   .hud-company {
     padding-right: 8px;
   }
+}
+
+/* Support client du panneau Business. */
+.support {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.support p {
+  margin: 0;
+}
+
+.support-card,
+.support-agents {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #7fd18b;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.support-card.support-ok {
+  border-left-color: var(--accent);
+}
+
+.support-card.support-angry {
+  border-left-color: var(--danger);
+}
+
+.support-agents {
+  border-left-color: var(--border);
+}
+
+.support-value {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 8px;
+}
+
+.support-bar {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.support-bar span {
+  display: block;
+  height: 100%;
+  background: #7fd18b;
+}
+
+.support-ok .support-bar span {
+  background: var(--accent);
+}
+
+.support-angry .support-bar span {
+  background: var(--danger);
+}
+
+.support-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.support-stepper button {
+  width: var(--touch);
+  min-height: var(--touch);
+  font-size: 1.2rem;
+}
+
+.support-stepper span {
+  min-width: 2ch;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
 }

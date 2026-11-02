@@ -11,6 +11,10 @@ import {
   ANNEXES,
   BALANCE,
   CLIENT_COMPANIES,
+  SUPPORT,
+  SUPPORT_MAX_AGENTS,
+  supportChurnFactor,
+  supportGrowthFactor,
   CLIENT_SLOTS,
   CLIENTS,
   contractMonthly,
@@ -121,12 +125,14 @@ import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pe
 import { leavingAtSprint } from '../simulation/raises';
 import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
 import { clientsMonthly, freeClientSlots } from '../simulation/clients';
+import { supportCapacity, supportMonthly, ticketsToday } from '../simulation/support';
 import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulation/subscriptions';
 import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
 import type {
   StoryView,
   ClientDealView,
   ClientsView,
+  SupportView,
   PricingChoiceView,
   PricingView,
   CandidateView,
@@ -922,6 +928,29 @@ function clientsView(state: GameState): ClientsView {
   };
 }
 
+function supportView(state: GameState): SupportView {
+  const support = state.support;
+  return {
+    satisfaction: support.satisfaction,
+    churnThreshold: SUPPORT.churnThreshold,
+    happyThreshold: SUPPORT.happyThreshold,
+    backlog: support.backlog,
+    ticketsPerDay: ticketsToday(state),
+    capacity: supportCapacity(state),
+    agents: support.agents,
+    maxAgents: SUPPORT_MAX_AGENTS[state.phase],
+    agentSalary: SUPPORT.agentSalary,
+    agentCapacity: SUPPORT.agentCapacity,
+    monthly: supportMonthly(state),
+    duty: support.duty,
+    dutyShare: SUPPORT.dutyShare,
+    churnFactor: supportChurnFactor(support.satisfaction),
+    growthFactor: supportGrowthFactor(support.satisfaction),
+    solved: support.solved,
+    blocker: state.stage === 'PITCH' || state.stage === 'ENDED' ? 'WRONG_STAGE' : null,
+  };
+}
+
 function pricingView(state: GameState): PricingView {
   const { model, tier, changedSprint, changes } = state.pricing;
   return {
@@ -1123,6 +1152,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     cleaning: cleaningView(state),
     pricing: pricingView(state),
     clients: clientsView(state),
+    support: supportView(state),
     subscriptions: subscriptionsView(state),
     floors: floorsView(state),
     canIpo:
@@ -1325,5 +1355,7 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SIGN_CLIENT', offerId: command.offerId };
     case 'dropClient':
       return { type: 'DROP_CLIENT', contractId: command.contractId };
+    case 'setSupport':
+      return { type: 'SET_SUPPORT', agents: command.agents, duty: command.duty };
   }
 }

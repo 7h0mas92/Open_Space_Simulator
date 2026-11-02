@@ -162,6 +162,8 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   CLIENT_SLA: 'error',
   CLIENT_LOST: 'error',
   CLIENT_ENDED: 'info',
+  SUPPORT_STAFFED: 'success',
+  SUPPORT_UNHAPPY: 'error',
   URGENT_TASK: 'error',
   URGENT_DONE: 'success',
   URGENT_MISSED: 'error',
