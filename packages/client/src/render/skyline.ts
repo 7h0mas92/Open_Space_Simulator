@@ -148,6 +148,42 @@ function distanceToRect(
   return Math.hypot(dx, dz);
 }
 
+/** Toit d'une tour rivale du mode Histoire et hauteur maximale de son enseigne. */
+export interface RivalSpot extends Point3 {
+  /** Haut de l'enseigne : sous la ligne `maxTop`, elle ne masque jamais le bureau. */
+  readonly limit: number;
+}
+
+/**
+ * Mode Histoire : les toits des tours rivales (Synergix, Pivotly, Gigacorp), choisis parmi les
+ * plus hautes tours sur les côtés de l'écran (derrière un mur du fond et devant l'autre), à 14
+ * à 32 cases et à au moins 8 cases les unes des autres. L'enseigne reste sous la ligne `maxTop` :
+ * elle ne masque jamais le bureau. Les plus proches d'abord.
+ */
+export function rivalTowerSpots(plan: SkylinePlan, layout: OfficeLayout, count = 3): RivalSpot[] {
+  const cx = (layout.width - 1) / 2;
+  const cz = (layout.depth - 1) / 2;
+  const candidates = plan.towers
+    .slice(1)
+    .filter((box) => box.roof !== undefined)
+    .map((box) => ({ box, distance: Math.hypot(box.x - cx, box.z - cz) }))
+    .filter(
+      ({ box, distance }) =>
+        // Sur les côtés de l'écran : derrière un mur du fond, devant l'autre.
+        box.x < cx - 4 !== box.z < cz - 4 && distance >= 14 && distance <= 32,
+    )
+    .sort((a, b) => b.box.top - a.box.top);
+  const spots: { spot: RivalSpot; distance: number }[] = [];
+  for (const { box, distance } of candidates) {
+    if (spots.length >= count) break;
+    if (spots.some(({ spot }) => Math.hypot(spot.x - box.x, spot.z - box.z) < 8)) continue;
+    const limit = Math.min(maxTop(distance - Math.max(box.width, box.depth) / 2), 4);
+    if (limit <= box.top + 2) continue;
+    spots.push({ spot: { x: box.x, y: box.top, z: box.z, limit }, distance });
+  }
+  return spots.sort((a, b) => a.distance - b.distance).map(({ spot }) => spot);
+}
+
 /**
  * Hauteur maximale d'un toit à `distance` cases de la tour : la caméra plonge à 35°, donc un
  * toit sous cette ligne ne masque jamais le bureau, quel que soit le côté d'où on le regarde.
@@ -769,6 +805,8 @@ export class SkylineView {
   private carCount = CAR_COUNT.medium;
   private clock = 0;
   private key = '';
+  /** Toits où s'affichent les enseignes des rivaux du mode Histoire (`rivalTowerSpots`). */
+  rivalSpots: readonly RivalSpot[] = [];
 
   constructor() {
     const points = (color: number, vertexColors = false) =>
@@ -804,6 +842,7 @@ export class SkylineView {
     this.key = key;
     this.clear();
     const plan = planSkyline(layout);
+    this.rivalSpots = rivalTowerSpots(plan, layout);
     const cx = (layout.width - 1) / 2;
     const cz = (layout.depth - 1) / 2;
     this.uniforms.center.value.set(cx, cz);

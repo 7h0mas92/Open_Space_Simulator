@@ -328,7 +328,8 @@
     "subscriptions": "Abonnements",
     "cleaning": "Ménage",
     "tickets": "Kanbanana, l’appli de tickets",
-    "leaderboard": "Classement"
+    "leaderboard": "Classement",
+    "market": "Marché"
   },
   "kanban": {
     "columns": {
@@ -2159,7 +2160,9 @@
           "max_other": "Recruter {{count}} personnes au plus",
           "none": "Ne recruter personne"
         }
-      }
+      },
+      "rivalUsers": "Plus d’utilisateurs que {{name}}",
+      "marketShare": "Au moins {{value}} % du marché"
     },
     "end": {
       "success": "Mission réussie !",
@@ -2223,6 +2226,24 @@
         "goals": "Objectifs remplis en tout : {{count}} sur {{total}}",
         "retry": "Reprendre « {{act}} »",
         "restart": "Recommencer l’histoire"
+      }
+    },
+    "market": {
+      "yourShare": "Ta part du marché : {{share}}",
+      "chart": "Utilisateurs comparés, sprint après sprint",
+      "you": "Ta startup",
+      "boughtBy": "Rachetée par {{name}}",
+      "bankrupt": "En faillite",
+      "rivalLine": "{{share}} du marché · valorisée {{valuation}}",
+      "lastAction": "Sprint {{sprint}} : {{action}}",
+      "actions": {
+        "copy": "a copié ta dernière feature",
+        "poach": "a voulu débaucher ton meilleur dev",
+        "lawsuit": "t’a fait un procès",
+        "priceCut": "a cassé ses prix",
+        "pivot": "a encore pivoté",
+        "clone": "a sorti un clone gratuit de ton produit",
+        "adBlitz": "a acheté toutes les pubs du métro"
       }
     }
   },

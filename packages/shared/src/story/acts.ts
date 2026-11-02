@@ -7,6 +7,7 @@ import {
   type StoryMissionId,
   type StoryStat,
 } from './campaign.js';
+import { RivalStateSchema } from '../sim/rivals.js';
 
 /**
  * L'histoire « Ctrl+Alt+Fonder » : une seule longue partie du mode Histoire, en 5 actes, du
@@ -97,11 +98,14 @@ export const STORY_ACTS: readonly StoryAct[] = [
     icon: '🏁',
     title: t('La course', 'The race'),
     intro: t(
-      'Les premiers utilisateurs arrivent, et Synergix aussi. Grandis assez vite pour lever ta Série A avant lui.',
-      'The first users are coming in, and so is Synergix. Grow fast enough to raise your Series A before he does.',
+      'Les premiers utilisateurs arrivent, et Synergix aussi. Dépasse-le en utilisateurs et lève ta Série A.',
+      'The first users are coming in, and so is Synergix. Overtake him in users and raise your Series A.',
     ),
     phase: 'SEED',
-    goals: [{ kind: 'phase', atLeast: 'SERIES_A' }],
+    goals: [
+      { kind: 'phase', atLeast: 'SERIES_A' },
+      { kind: 'rivalUsers', rival: 'synergix' },
+    ],
     deadline: 26,
     side: ['useful-meeting', 'clean-series-a'],
   },
@@ -125,11 +129,14 @@ export const STORY_ACTS: readonly StoryAct[] = [
     icon: '🏢',
     title: t('Le géant', 'The giant'),
     intro: t(
-      'Gigacorp rachète Synergix et sort un clone de ton produit. Prouve que tu vaux 1,5 milliard sans eux.',
-      'Gigacorp buys Synergix and releases a clone of your product. Prove you are worth 1.5 billion without them.',
+      'Gigacorp rachète Synergix et sort un clone de ton produit. Vaux 1,5 milliard et garde 30 % du marché.',
+      'Gigacorp buys Synergix and releases a clone of your product. Be worth 1.5 billion and keep 30% of the market.',
     ),
     phase: 'UNICORN',
-    goals: [{ kind: 'valuation', min: 1_500_000_000 }],
+    goals: [
+      { kind: 'valuation', min: 1_500_000_000 },
+      { kind: 'marketShare', min: 0.3 },
+    ],
     deadline: 52,
     side: ['firefighters'],
   },
@@ -179,6 +186,10 @@ export const CampaignStateSchema = z.object({
   missed: z.array(StoryMissionIdSchema),
   /** Statistiques au début de l'acte : les objectifs comptent depuis ce moment. */
   statsAtAct: z.record(z.enum(STORY_STATS), z.number()),
+  /** Startups rivales (`sim/rivals.ts`), simulées à chaque démo. Absent des vieilles parties. */
+  rivals: z.array(RivalStateSchema).default([]),
+  /** Utilisateurs du joueur à chaque démo, pour comparer les courbes. */
+  usersHistory: z.array(z.number()).default([]),
 });
 export type CampaignState = z.infer<typeof CampaignStateSchema>;
 

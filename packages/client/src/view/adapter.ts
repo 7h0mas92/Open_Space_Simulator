@@ -75,9 +75,12 @@ import {
   branchNodes,
   isRoleSkill,
   skillsEnabled,
+  getRival,
+  type CampaignState,
 } from '@oss/shared';
 import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
+import { marketShare } from '../simulation/rivals';
 import { actProgress, completedSprints, missionProgress } from '../simulation/story';
 import { hasUnlock } from '../simulation/unlocks';
 import {
@@ -148,6 +151,7 @@ import type {
   RetroView,
   StoryView,
   CampaignView,
+  MarketView,
   CandidateView,
   DevActivity,
   DevView,
@@ -1136,6 +1140,34 @@ function storyView(state: GameState): StoryView | null {
   };
 }
 
+function marketView(state: GameState, campaign: CampaignState): MarketView {
+  const total =
+    state.gauges.users +
+    campaign.rivals.reduce((sum, rival) => sum + (rival.alive ? rival.users : 0), 0);
+  return {
+    share: marketShare(state),
+    usersHistory: [...campaign.usersHistory],
+    rivals: campaign.rivals.map((rival) => {
+      const profile = getRival(rival.id);
+      return {
+        id: rival.id,
+        name: profile.name,
+        icon: profile.icon,
+        color: profile.color,
+        tagline: profile.tagline,
+        users: Math.round(rival.users),
+        valuation: Math.round(rival.valuation),
+        share: rival.alive && total > 0 ? rival.users / total : 0,
+        alive: rival.alive,
+        boughtBy: rival.boughtBy,
+        lastAction: rival.lastAction,
+        lastActionSprint: rival.lastActionSprint,
+        history: [...rival.history],
+      };
+    }),
+  };
+}
+
 function campaignView(state: GameState): CampaignView | null {
   const progress = actProgress(state);
   if (!progress) return null;
@@ -1152,6 +1184,7 @@ function campaignView(state: GameState): CampaignView | null {
     })),
     done: [...progress.campaign.done],
     sprintsDone: completedSprints(state),
+    market: marketView(state, progress.campaign),
   };
 }
 

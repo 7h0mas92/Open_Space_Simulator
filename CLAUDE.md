@@ -837,8 +837,22 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Histoire ou l'écran de fin. Écran Histoire en 2 onglets : « Histoire » (synopsis, frise et cartes
   des actes) et « Missions » (les 10 missions courtes, gardées jouables : choix de Thomas). Champ
   `story.campaign` optionnel (`missionId` devient optionnel), aucun tirage : les autres modes ne
-  changent pas. Calibrage : `pnpm balance:campaign`. À venir : rivaux et marché (PR 2), scènes,
-  fins écrites et Saison libre (PR 3), équilibrage (PR 4).
+  changent pas. Calibrage : `pnpm balance:campaign`. À venir : scènes, fins écrites et Saison
+  libre (PR 3), équilibrage (PR 4).
+- Rivaux de l'histoire en actes (T2, PR 2 sur 4 ; `shared/sim/rivals.ts`,
+  `client/src/simulation/rivals.ts`, panneau « 📈 Marché » `ui/story/MarketPanel.tsx`) : 3 startups
+  inventées simulées à chaque démo de la longue partie, sur la graine à part `seed#rival#sprint`.
+  Synergix (Bastien Lemaître) dès le prologue, accélère quand le joueur le dépasse (copie, débauche,
+  procès) ; Pivotly à la guerre des prix (pivote tous les 2 sprints, casse les prix) ; Gigacorp au
+  « Géant », rachète Synergix (clone, pubs, débauche). Croissance logistique, faillite d'un rival
+  qui chute sous 50 000 utilisateurs et 30 % de son record. Part de marché : la part des rivaux
+  ajoute des départs quotidiens d'utilisateurs (`rivalExtraChurn`). Objectifs `rivalUsers` (La
+  course : dépasser Synergix) et `marketShare` (Le géant : 30 % du marché). Panneau Marché : courbes
+  des utilisateurs, parts, dernière action ; notifications `RIVAL_ACTION`. Enseignes lumineuses des
+  rivaux sur des toits de la ville (`render/rivalTowers.ts`, `rivalTowerSpots` dans `skyline.ts`),
+  plus larges avec la part de marché, éclairées la nuit, éteintes à la faillite. État
+  `campaign.rivals` et `campaign.usersHistory` (vides par défaut). Hors de l'histoire en actes,
+  rien ne change.
 - Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
   menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
   8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,

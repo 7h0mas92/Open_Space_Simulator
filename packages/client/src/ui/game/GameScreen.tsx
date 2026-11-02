@@ -26,6 +26,7 @@ import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
 import { CampaignPanel } from '../story/CampaignPanel';
+import { MarketPanel } from '../story/MarketPanel';
 import { MissionPanel } from '../story/MissionPanel';
 import {
   ActionBar,
@@ -71,6 +72,10 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Funding view={view} />;
     case 'career':
       return <CareerPanel view={view} />;
+    case 'market':
+      return view.campaign ? (
+        <MarketPanel market={view.campaign.market} users={view.gauges.users} />
+      ) : null;
     case 'mission':
       return view.campaign ? (
         <CampaignPanel campaign={view.campaign} sprint={view.time.sprint} />

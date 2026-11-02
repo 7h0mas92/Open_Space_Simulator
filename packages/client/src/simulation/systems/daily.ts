@@ -1,5 +1,6 @@
 import { BALANCE, RETRO, endlessExtraChurn, type GameState } from '@oss/shared';
 import { retroActive } from '../retro';
+import { rivalExtraChurn } from '../rivals';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from '../economy';
 import {
   addDevLog,
@@ -44,7 +45,8 @@ function users(state: GameState): void {
     state.gauges.users *
     (u.baseDailyChurn +
       u.instabilityDailyChurn * instability * instability +
-      endlessExtraChurn(state.mode, state.sprint));
+      endlessExtraChurn(state.mode, state.sprint) +
+      rivalExtraChurn(state));
   addUsers(state, growth);
   addUsers(state, -churn);
 }

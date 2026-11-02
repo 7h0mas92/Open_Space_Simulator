@@ -16,6 +16,7 @@ import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
 import { endGame, endOfTime } from './endings';
+import { rivalsSprint } from './rivals';
 import { campaignDeadline, missionTimeUp } from './story';
 import { phaseIndex } from './furniture';
 import { closeSprintPerformance } from './performance';
@@ -173,6 +174,8 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   );
   const objective = settleObjective(state, ctx);
   ventureSprint(state, ctx);
+  // Mode Histoire, longue partie : les rivaux jouent leur sprint (graine à part).
+  rivalsSprint(state, ctx);
   state.valuation = computeValuation(state);
 
   state.history.sprints.push({

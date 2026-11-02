@@ -328,7 +328,8 @@
     "subscriptions": "Subscriptions",
     "cleaning": "Cleaning",
     "tickets": "Kanbanana, the ticket app",
-    "leaderboard": "Leaderboard"
+    "leaderboard": "Leaderboard",
+    "market": "Market"
   },
   "kanban": {
     "columns": {
@@ -2159,7 +2160,9 @@
           "max_other": "Hire {{count}} people at most",
           "none": "Hire nobody"
         }
-      }
+      },
+      "rivalUsers": "More users than {{name}}",
+      "marketShare": "At least {{value}}% of the market"
     },
     "end": {
       "success": "Mission complete!",
@@ -2223,6 +2226,24 @@
         "goals": "Goals completed overall: {{count}} of {{total}}",
         "retry": "Replay “{{act}}”",
         "restart": "Start the story over"
+      }
+    },
+    "market": {
+      "yourShare": "Your market share: {{share}}",
+      "chart": "Users compared, sprint after sprint",
+      "you": "Your startup",
+      "boughtBy": "Bought by {{name}}",
+      "bankrupt": "Bankrupt",
+      "rivalLine": "{{share}} of the market · valued at {{valuation}}",
+      "lastAction": "Sprint {{sprint}}: {{action}}",
+      "actions": {
+        "copy": "copied your latest feature",
+        "poach": "tried to poach your best dev",
+        "lawsuit": "sued you",
+        "priceCut": "slashed its prices",
+        "pivot": "pivoted again",
+        "clone": "released a free clone of your product",
+        "adBlitz": "bought every ad in the subway"
       }
     }
   },

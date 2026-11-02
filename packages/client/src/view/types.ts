@@ -14,6 +14,8 @@ import type {
   RetroAction,
   PublicHoliday,
   MissionGoal,
+  RivalAction,
+  RivalId,
   StoryActId,
   StoryMissionId,
   StoryRewardId,
@@ -950,6 +952,33 @@ export interface CampaignSideView {
   readonly constraints: readonly MissionGoalView[];
 }
 
+/** Une startup rivale de l'histoire, pour le panneau « Marché ». */
+export interface RivalView {
+  readonly id: RivalId;
+  readonly name: string;
+  readonly icon: string;
+  readonly color: string;
+  readonly tagline: LocalizedText;
+  readonly users: number;
+  readonly valuation: number;
+  /** Part du marché (0 à 1) ; 0 hors jeu. */
+  readonly share: number;
+  readonly alive: boolean;
+  /** Racheté par un autre rival. */
+  readonly boughtBy: RivalId | null;
+  readonly lastAction: RivalAction | null;
+  readonly lastActionSprint: number | null;
+  /** Utilisateurs à chaque démo. */
+  readonly history: readonly number[];
+}
+
+/** Le marché de l'histoire : ta part, ta courbe et les rivaux arrivés. */
+export interface MarketView {
+  readonly share: number;
+  readonly usersHistory: readonly number[];
+  readonly rivals: readonly RivalView[];
+}
+
 /** Mode Histoire, longue partie en actes : l'acte en cours et ses objectifs. */
 export interface CampaignView {
   readonly act: StoryActId;
@@ -964,6 +993,7 @@ export interface CampaignView {
   readonly done: readonly StoryMissionId[];
   /** Sprints terminés depuis le début de l'acte. */
   readonly sprintsDone: number;
+  readonly market: MarketView;
 }
 
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */

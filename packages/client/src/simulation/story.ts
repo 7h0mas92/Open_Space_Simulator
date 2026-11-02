@@ -16,6 +16,7 @@ import { endGame } from './endings';
 import { phaseIndex } from './furniture';
 import { notify, teamMoral, teamSize, text, type SimContext } from './helpers';
 import { missingPetNeeds } from './pets';
+import { marketShare, rivalUsers, startingRivals } from './rivals';
 import { serverRoomStatuses } from './serverRoom';
 import { hasUnlock } from './unlocks';
 
@@ -135,6 +136,14 @@ export function goalProgress(state: GameState, goal: MissionGoal): GoalProgress 
       const value = completedSprints(state);
       return check(value, value >= goal.min);
     }
+    case 'rivalUsers': {
+      const value = state.gauges.users;
+      return check(value, value >= rivalUsers(state, goal.rival));
+    }
+    case 'marketShare': {
+      const value = marketShare(state);
+      return check(value, value >= goal.min);
+    }
   }
 }
 
@@ -233,7 +242,14 @@ function statsSnapshot(state: GameState): CampaignState['statsAtAct'] {
 export function emptyCampaign(): CampaignState {
   const zero: Partial<CampaignState['statsAtAct']> = {};
   for (const stat of STORY_STATS) zero[stat] = 0;
-  return { act: 0, done: [], missed: [], statsAtAct: zero as CampaignState['statsAtAct'] };
+  return {
+    act: 0,
+    done: [],
+    missed: [],
+    statsAtAct: zero as CampaignState['statsAtAct'],
+    rivals: startingRivals(),
+    usersHistory: [],
+  };
 }
 
 /** L'acte en cours, ou `undefined` hors de la longue partie. */
