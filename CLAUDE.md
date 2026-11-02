@@ -743,14 +743,26 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `UNLOCK_NOT_EARNED`). Champs `story` (null) et `unlocks` ([]) par défaut, aucun tirage de plus.
   Calibrage par les bots : `pnpm balance:story` (chapitre 1 facile, chapitres 3 et 4 difficiles).
 
+- Base de production sur Supabase (projet `open-space-simulator`, offre gratuite,
+  `eu-central-1`) : simple PostgreSQL hébergé derrière Prisma, sans auth ni SDK Supabase. Toutes
+  les migrations y sont appliquées et notées dans `_prisma_migrations`. Migration
+  `row_level_security` : RLS sur toutes les tables, sans politique, pour que l'API REST publique
+  de Supabase ne lise rien (le serveur, propriétaire des tables, n'est pas concerné) ; toute
+  nouvelle table l'active aussi (`tests/rls.test.ts`). `DATABASE_URL` = URL du _Session pooler_
+  (5432, IPv4) + `?sslmode=require` ; `createPrismaClient` ajoute `uselibpqcompat=true` pour que
+  `pg` accepte le certificat de Supabase (`withLibpqSslMode`, `src/lib/prisma.ts`). `render.yaml`
+  ne crée plus de base Render. En local, docker compose ne change pas.
+
 Reste à faire :
-- Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
-  GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
+- Comptes en ligne : choisir le mot de passe de la base Supabase, déployer le serveur sur Render
+  (`render.yaml`, `DATABASE_URL` Supabase) et créer l'application GitHub OAuth (étapes dans le
+  README, section Déploiement). Le jeu invité est en ligne sur
   https://7h0mas92.github.io/Open_Space_Simulator/ et se redéploie à chaque fusion.
 - Effets sonores et ambiance : le lecteur Howler est prêt (`audio/manifest.ts`), les fichiers
   restent à déposer (les bruits de clavier et de souris sont faits).
 
 Développement local : `pnpm db:up`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm dev` (jeu sur
 localhost:5173, API et Swagger sur localhost:3000/docs). Base : `pnpm --filter @oss/server
-db:studio` (Prisma Studio sur localhost:5555) ou `docker compose exec db psql -U oss -d oss`.
+db:studio` (Prisma Studio sur localhost:5555) ou `docker compose exec db psql -U oss -d oss`. Production :
+tableau de bord Supabase (Table Editor, SQL Editor).
 Compte admin de développement créé par le seed : `admin@oss.local` / `admin-dev-password`.

@@ -1,8 +1,7 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec le mode
-> Histoire. Dernier commit de `main` au moment de l'écriture : `9f71139` (PR #122, mode
-> Histoire fusionné).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec la base de
+> données sur Supabase. Dernier commit de `main` au moment de l'écriture : `6924163` (PR #136).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -64,6 +63,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | --------------------------------------------------- | --------------- | -------------------------------- |
 | Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122) |
 | Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours             |
+| **Base de données sur Supabase** (production)       | Thomas + Claude | PR #PRNUM, à valider par Thomas  |
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
 10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
@@ -94,8 +94,11 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
   ~20 % avant). Proposition : réduire un peu le café livré par la cuisine. Thomas n'a pas tranché
   (question du 8 octobre) ; ne rien changer sans son accord.
-- **Comptes en ligne** (actions de Thomas, étapes dans le README, section Déploiement) : Render
-  (Blueprint `render.yaml`), URL Render dans `packages/client/vercel.json`, projet Vercel (Root
+- **Comptes en ligne** (actions de Thomas, étapes dans le README, section Déploiement) : la base
+  est prête sur Supabase (projet `open-space-simulator`, compte de Thomas, région
+  `eu-central-1`, tables créées, pas encore de données : le seed tourne au démarrage de Render).
+  Reste : mot de passe de la base dans Supabase, Render (Blueprint `render.yaml`, `DATABASE_URL`
+  = URL du _Session pooler_ + `?sslmode=require`), URL Render dans `packages/client/vercel.json`, projet Vercel (Root
   Directory `packages/client`), OAuth App GitHub. En attendant, la version GitHub Pages n'a ni
   comptes, ni classements, ni Daily en ligne, ni Slack IA, ni packs, ni back-office.
 - **Effets sonores et ambiance** : le lecteur Howler est prêt mais `SOUND_FILES` est vide dans
@@ -212,6 +215,11 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   (`unlocks`) : le serveur vérifie qu'elles sont gagnées et les rejoue. Un contenu réservé porte
   un champ `unlock` (meuble, papier peint, sol) ou est dans `COLOR_UNLOCKS`. `MENU_MODES` = les
   modes du menu et des classements (sans STORY).
+- **Base de production sur Supabase** : seulement un PostgreSQL hébergé, le serveur passe par
+  Prisma (pas d'auth ni de SDK Supabase). Toute nouvelle table active la RLS dans sa migration
+  (`ALTER TABLE "X" ENABLE ROW LEVEL SECURITY;`), sinon l'API REST publique de Supabase la
+  lirait ; `tests/rls.test.ts` échoue sinon. Ne jamais modifier une migration déjà appliquée
+  (somme de contrôle dans `_prisma_migrations`).
 - **Textes** : toujours en FR et EN (`packages/client/src/i18n/fr.json`, `en.json`).
 - **Versions figées** : TypeScript 6.0, Prisma 7.10 (`@prisma/adapter-pg`), Zod 4, Fastify 5,
   Vite 8, Vitest 5, Playwright 1.56.1, Node 22, pnpm 10.28, PostgreSQL 16.
@@ -226,6 +234,10 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
 - Captures headless : Chromium logiciel tourne à ~2 fps ; le jeu passe en qualité basse quand
   WebGL n'a pas de carte graphique.
 - GitHub Pages : source « GitHub Actions », `BASE_PATH=/Open_Space_Simulator/`.
+- Supabase : « self-signed certificate in certificate chain » = le driver `pg` lit
+  `sslmode=require` comme `verify-full` ; `createPrismaClient` ajoute `uselibpqcompat=true`.
+  Prendre l'URL du _Session pooler_ (5432), pas la _Direct connection_ (IPv6 seulement) ni le
+  _Transaction pooler_ (6543). Projet gratuit en pause après 7 jours sans requête.
 
 ---
 
@@ -235,6 +247,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 02/11    | Thomas + Claude | #PRNUM      | Base de production sur Supabase : projet créé, migrations appliquées, RLS sur toutes les tables (nouvelle migration + test), correctif SSL de `pg`, `render.yaml` sans base Render. Reste le mot de passe et Render (Thomas).                    |
 | 02/11    | Thomas + Claude | #122        | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
 | 13/10    | Thomas + Claude | #122        | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
