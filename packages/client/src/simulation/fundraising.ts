@@ -13,6 +13,8 @@ import {
   ROLE_PROFILES,
   TEAM_MAX,
   annexCount,
+  endlessRaiseShare,
+  difficultyOf,
   fundingTier,
   fundingTierIndex,
   getInvestor,
@@ -248,7 +250,9 @@ export function maxRaise(state: GameState): number {
     fixedCostsMonthly[state.phase] +
     fixedCostsMonthly[next] +
     hires * AVERAGE_HIRE_COST;
-  const target = projected * BALANCE.fundraising.maxRunwayMonths;
+  // En mode illimité, après les 18 mois, les investisseurs financent de moins en moins.
+  const target =
+    projected * BALANCE.fundraising.maxRunwayMonths * endlessRaiseShare(state.mode, state.sprint);
   return Math.round(Math.max(target * 0.25, target - Math.max(0, state.gauges.treasury)));
 }
 
@@ -310,7 +314,9 @@ export function pitchArgument(
   // Aux grands tours, un investisseur qui s'ennuie quitte la salle avant la fin (jamais
   // avant d'avoir entendu deux réponses).
   const walkOut =
-    tier.walkOut !== null && pitch.round >= 2 && pitch.interest - tier.bar < tier.walkOut;
+    tier.walkOut !== null &&
+    pitch.round >= 2 &&
+    pitch.interest - pitchBar(state, tier) < tier.walkOut;
   if (pitch.round < pitch.manches && !walkOut) {
     pitch.question = askQuestion(state, pitch, pitch.round);
     pitch.options = drawOptions(ctx, pitch, tier.options);
@@ -323,13 +329,19 @@ export function pitchArgument(
   return { ok: true };
 }
 
+/** Intérêt que l'investisseur attend à ce tour : plus haut en Hardcore (`difficultyOf`). */
+export function pitchBar(state: Readonly<GameState>, tier: FundingTier): number {
+  return tier.bar + difficultyOf(state.mode).pitchBar;
+}
+
 /** Décision de l'investisseur et calcul de la dilution. */
 function concludePitch(state: GameState, ctx: SimContext): void {
   const pitch = state.pitch;
   if (!pitch) return;
   const tier = FUNDING_TIERS[pitch.tier] ?? fundingTier(0);
   // L'investisseur parti, il n'y a rien à décider (et rien à tirer).
-  const success = !pitch.walkedOut && ctx.rng.chance(softSigmoid(pitch.interest - tier.bar));
+  const success =
+    !pitch.walkedOut && ctx.rng.chance(softSigmoid(pitch.interest - pitchBar(state, tier)));
   if (!success) {
     pitch.result = { success: false, amount: 0, preMoney: 0, dilution: 0 };
     addGauge(state, 'hype', -5 - pitch.tier);

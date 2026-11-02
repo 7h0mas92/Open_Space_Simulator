@@ -388,7 +388,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   caméra au bord de l'écran.
 - Mode construction refondu : catalogue en bas, aperçu sur la grille, bouton « Poser » au
   tactile, rendu 3D distinct pour chacun des 22 objets.
-- 65 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
+- 68 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
 - Menu principal refondu ; sans serveur, la fenêtre Connexion explique que les comptes sont
   indisponibles et le jeu reste jouable en invité.
 - Interface de jeu refondue : en haut ce qu'on lit (jauges, trésorerie en mois, horloge), en
@@ -419,8 +419,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   la semaine réelle (date dans la graine), 12 périodes d'environ une semaine (Nouvel An,
   Saint-Valentin, Pâques, Espace, Moyen Âge, Super-héros, Années 80, Été, Pirates, Halloween,
   Cyberpunk, Noël) avec 24 cartes de saison prioritaires. Décorations par thème en Three.js
-  (`render/decorations.ts`, `view/decor.ts`), réglées dans l'onglet « Décorations » du
-  back-office : désactivé, en saison (défaut) ou toujours ; table `DecorTheme`.
+  (`render/decorations.ts`, `view/decor.ts`) aux murs et sur les bureaux, plus aucune au sol
+  (objets fantômes ni déplaçables ni rangeables, retirés le 17 octobre 2026), réglées dans
+  l'onglet « Décorations » du back-office : désactivé, en saison (défaut) ou toujours ; table
+  `DecorTheme`.
 - Anniversaires des devs (date tirée de la graine, sans toucher au RNG) : table de fête
   décorative (gâteau, cadeaux, ballons), +moral, confettis, Slack ; le week-end, fête le lundi.
 - Performance des devs (`client/src/simulation/performance.ts`, composant ECS `performance`) :
@@ -472,8 +474,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
   `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
-  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
-  variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
+  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places. Sol d'origine
+  identique dans toutes les pièces (damier beige, `BASE_FLOOR_COLORS` dans `render/office.ts`) :
+  ajouter ou agrandir une pièce ne change pas sa couleur, seul le rayon « Sols » la change.
 - Vue sur New York (`render/skyline.ts`) : le bureau est au dernier étage d'une tour, dans une ville low-poly façon
   Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
@@ -714,7 +717,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   annexes) ou « Toutes les pièces », sans remboursement de l'ancien sol ; +moral par pièce, et
   +qualité ou +hype selon la matière. Motifs dessinés sur canvas (`view/floors.ts`), une dalle
   texturée par pièce qui rejoint la voisine sous la cloison (`render/floorFinishes.ts`). Commande
-  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine tiré de la graine), aucun tirage.
+  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine, le même partout), aucun tirage.
 
 - Le plan cède la place aux meubles posés : quand le bureau grandit (nouvelle phase, aile de
   filiale), une cloison du plan qui tomberait sur un meuble s'efface (`yieldToItems` dans
@@ -741,6 +744,32 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Commandes `SUBSCRIBE_FIBRE` / `CANCEL_FIBRE`, état `fibre` (null par défaut), `fibreSystem` en
   dernier système, rendu `render/serverRoom.ts` (12 formes des assets manquants). Aucun tirage.
 
+- Difficulté des modes (`shared/sim/difficulty.ts`, `difficultyOf(mode)`) : un profil de
+  multiplicateurs par mode remplace `BALANCE.easy`. Facile : 2,2 M€ au départ, effets négatifs des
+  cartes -15 %, autant de cartes qu'en Normal. Hardcore : 1,5 M€, dépenses +15 %, revenus -15 %,
+  4 cartes au plus par sprint (tirage x1,5), effets négatifs +30 %, pannes +50 %, barre des
+  investisseurs +0,3 (`pitchBar` dans `simulation/fundraising.ts`). Normal, Daily, Stagiaires Only
+  et 3 sprints au profil neutre : mêmes parties qu'avant. Rapport `pnpm balance` : section
+  « Difficulté par mode et par stratégie », 700 parties par autre mode. Faillite Hardcore 32 %
+  (bons bots 7 à 20 %, licorne 2 à 4 %) ; Facile proche du Normal, un peu plus indulgent. Les
+  replays des anciens scores Facile et Hardcore ne rejouent plus à l'identique.
+
+- Mode illimité (`ENDLESS`, `shared/sim/endless.ts`) : pas de fin au 39e sprint, la partie dure tant
+  que la trésorerie tient (IPO et rachat toujours possibles). Après 18 mois, la concurrence monte à
+  chaque sprint : frais fixes x(1 + 4 % p + 0,4 % p²) (`fixedCosts` dans `economy.ts`), churn
+  +0,004 % par jour et par sprint, levées divisées par (1 + 5 % p) (`maxRaise`), message
+  `COMPETITION_RISES` tous les 13 sprints. 18 premiers mois identiques au Normal (même graine), aucun
+  tirage en plus. `totalSprints` = 9999 (`ENDLESS.sprintCap`), HUD « Sprint n » sans total, phrase de
+  fin avec les sprints tenus, 3 succès (2, 3, 5 ans), 2 étapes du tutoriel. Bots : ils ne vendent pas
+  en illimité et tiennent de 76 à 300 sprints. Serveur : valeur `ENDLESS` de l'enum (migration
+  `20261017150000_endless_mode`), classement par sprints tenus puis valorisation.
+- Classement des meilleures entreprises (`ui/meta/Leaderboard.tsx`) au menu et en jeu (🏆 dans les
+  boutons système, panneau `leaderboard`, sans replay en jeu) : « En ligne » ou « Sur cet appareil »
+  (`save/localScores.ts`, 50 parties gardées par mode, invité et sans serveur ; ouvert par défaut
+  quand le serveur ne répond pas). Nom d'entreprise tiré de la graine (`companyName` dans
+  `shared/meta/company.ts`, hachage, sans tirage), champ `company` du `ScoreDto`, aussi sur l'écran
+  de fin et l'image partagée. Ordre commun `compareGames` (`shared/meta/leaderboard.ts`) ; le global
+  exclut Facile et Illimité (`GLOBAL_EXCLUDED_MODES`).
 - Mode Histoire (`shared/story/`, `client/src/simulation/story.ts`, `ui/story/`, carte « Histoire »
   du menu) : 4 chapitres (Garage, Seed, Série A, Licorne) et 10 missions débloquées l'une après
   l'autre, chacune avec point de départ (phase, caisse, jauges, équipe), objectifs, contraintes et

@@ -5,7 +5,7 @@ import { officeLayout } from '../../../src/view/layout';
 
 describe('Sols : pièces du plan', () => {
   it('une zone par pièce, les ailes numérotées dans l’ordre', () => {
-    const layout = officeLayout('SERIES_A', 2, 1, 'graine');
+    const layout = officeLayout('SERIES_A', 2, 1);
     expect(floorZoneRooms(layout).map((r) => r.zone)).toEqual([
       'open',
       'kitchen',

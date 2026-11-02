@@ -1,4 +1,11 @@
-import { BALANCE, DEV_ROLES, type CardEffects, type EventCard, type GameState } from '@oss/shared';
+import {
+  BALANCE,
+  DEV_ROLES,
+  difficultyOf,
+  type CardEffects,
+  type EventCard,
+  type GameState,
+} from '@oss/shared';
 import { unlockAchievement } from '../simulation/achievements';
 import { fireDev, spawnDev } from '../simulation/devs';
 import {
@@ -41,9 +48,9 @@ export function escalate(
   return isBad ? value * (1 + BALANCE.events.escalation * level) * softening : value;
 }
 
-/** Part des effets négatifs conservée selon le mode : moitié moins en Facile. */
+/** Part des effets négatifs appliquée selon le mode : moins en Facile, plus en Hardcore. */
 export function badEffectFactor(mode: GameState['mode']): number {
-  return mode === 'EASY' ? BALANCE.easy.badEffectMultiplier : 1;
+  return difficultyOf(mode).badEffects;
 }
 
 /**

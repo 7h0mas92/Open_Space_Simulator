@@ -1,21 +1,22 @@
 import { SERVER_ROOM_NEEDS } from '@oss/shared';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
-import type { FibrePlanView, GameView, ServerRoomView } from '../../view/types';
-import { formatMoney, localized } from '../game/format';
+import type { GameView, ServerRoomView } from '../../view/types';
+import { localized } from '../game/format';
 import { useGame } from '../store/game';
+import { ServiceSubscription } from '../subscriptions/Subscriptions';
 
 /*
  * Panneau « Salle des serveurs » (ouvert depuis le rayon Serveurs du mode construction, ou en
  * sélectionnant une salle) : l'état de chaque salle (ce qui manque pour qu'elle tourne), les
- * économies d'hébergement, puis l'abonnement fibre payé chaque semaine.
+ * économies d'hébergement, puis l'abonnement internet (le même que dans la rubrique Abonnements).
  */
 
 const NEED_ICONS = { server: '🗄️', network: '🔌', cooling: '❄️' } as const;
 
 export function ServerRoom({ view }: { view: GameView }) {
   const { t } = useTranslation();
+  const openPanel = useGame((s) => s.openPanel);
   const servers = view.servers;
   return (
     <div className="servers-panel">
@@ -46,7 +47,14 @@ export function ServerRoom({ view }: { view: GameView }) {
         </p>
       </section>
 
-      <Fibre view={view} />
+      <ServiceSubscription view={view} service="internet" />
+      <button
+        type="button"
+        onClick={() => openPanel('subscriptions')}
+        data-testid="servers-open-subscriptions"
+      >
+        🧾 {t('subscriptions.manageAll')}
+      </button>
     </div>
   );
 }
@@ -79,136 +87,6 @@ function RoomCard({ room }: { room: ServerRoomView }) {
           );
         })}
       </ul>
-    </article>
-  );
-}
-
-function Fibre({ view }: { view: GameView }) {
-  const { t, i18n } = useTranslation();
-  const dispatch = useGame((s) => s.dispatch);
-  const replay = useGame((s) => s.replayOf !== null);
-  const [confirming, setConfirming] = useState(false);
-  const { fibre, plans, hasBox } = view.servers;
-  const current = fibre ? plans.find((plan) => plan.id === fibre.plan) : undefined;
-  const money = (amount: number) => formatMoney(amount, i18n.language);
-
-  return (
-    <section className="fibre" aria-labelledby="fibre-title">
-      <h3 id="fibre-title" className="group-heading">
-        {t('servers.fibre.title')}
-      </h3>
-      <p className="hint">{t('servers.fibre.intro')}</p>
-      {fibre && current ? (
-        <div className="fibre-current" data-testid="fibre-current">
-          <p>
-            <strong>
-              🌐 {localized(current.name, i18n.language)} ·{' '}
-              {localized(current.speed, i18n.language)}
-            </strong>
-          </p>
-          <p className={fibre.connected ? 'server-state up' : 'server-state down'}>
-            {fibre.connected ? t('servers.fibre.connected') : t('servers.fibre.noBox')}
-          </p>
-          <p className="hint">
-            {t('servers.fibre.nextBill', {
-              price: money(fibre.weeklyPrice),
-              count: Math.max(1, Math.ceil(fibre.nextBillDays)),
-            })}{' '}
-            · {t('servers.fibre.totalPaid', { price: money(fibre.totalPaid) })}
-          </p>
-          {confirming ? (
-            <div className="fibre-actions">
-              <p className="hint">{t('servers.fibre.cancelWarning')}</p>
-              <button
-                type="button"
-                className="danger"
-                onClick={() => {
-                  setConfirming(false);
-                  void dispatch({ type: 'cancelFibre' });
-                }}
-                data-testid="fibre-cancel-confirm"
-              >
-                {t('servers.fibre.cancelConfirm')}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)}>
-                {t('group.cancel')}
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              disabled={replay || view.step === 'PITCH'}
-              onClick={() => setConfirming(true)}
-              data-testid="fibre-cancel"
-            >
-              ✂️ {t('servers.fibre.cancel')}
-            </button>
-          )}
-        </div>
-      ) : (
-        <p className="hint" data-testid="fibre-none">
-          {hasBox ? t('servers.fibre.none') : t('servers.fibre.needBox')}
-        </p>
-      )}
-      <ul className="fibre-plans">
-        {plans.map((plan) => (
-          <li key={plan.id}>
-            <PlanCard plan={plan} subscribed={fibre !== null} disabled={replay} />
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function PlanCard({
-  plan,
-  subscribed,
-  disabled,
-}: {
-  plan: FibrePlanView;
-  subscribed: boolean;
-  disabled: boolean;
-}) {
-  const { t, i18n } = useTranslation();
-  const dispatch = useGame((s) => s.dispatch);
-  const price = formatMoney(plan.weeklyPrice, i18n.language);
-  const reason =
-    plan.blocker === null || plan.blocker === 'CURRENT'
-      ? null
-      : plan.blocker === 'LOCKED'
-        ? t('build.locked', { phase: t(`phases.${plan.minPhase}`) })
-        : plan.blocker === 'NO_BOX'
-          ? t('servers.fibre.needBoxShort')
-          : t(`results.${plan.blocker}`);
-  const current = plan.blocker === 'CURRENT';
-  return (
-    <article
-      className={`fibre-plan${current ? ' current' : ''}${plan.blocker === 'LOCKED' ? ' locked' : ''}`}
-      data-testid={`fibre-plan-${plan.id}`}
-    >
-      <h4>
-        {localized(plan.name, i18n.language)}{' '}
-        <span className="fibre-speed">{localized(plan.speed, i18n.language)}</span>
-      </h4>
-      <p className="fibre-price">{t('servers.fibre.perWeek', { price })}</p>
-      <p className="hint">{localized(plan.description, i18n.language)}</p>
-      {current ? (
-        <p className="server-state up">{t('servers.fibre.currentPlan')}</p>
-      ) : (
-        <button
-          type="button"
-          className="primary"
-          disabled={disabled || plan.blocker !== null}
-          onClick={() => void dispatch({ type: 'subscribeFibre', plan: plan.id })}
-          data-testid={`fibre-subscribe-${plan.id}`}
-        >
-          {subscribed
-            ? t('servers.fibre.switch', { price })
-            : t('servers.fibre.subscribe', { price })}
-        </button>
-      )}
-      {reason && <p className="hint">{reason}</p>}
     </article>
   );
 }
