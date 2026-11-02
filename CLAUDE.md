@@ -367,6 +367,21 @@ journal des passations. À la fin de chaque travail (fil de discussion ou PR), m
 (date, dernier commit, travaux en cours, une ligne dans le journal), en plus de cette section
 et du README.
 
+# BRANCHES : DEVELOP PUIS MAIN (depuis le 17 octobre 2026)
+- `main` est la version publiée : GitHub Pages (et Render) ne déploient que `main`. On n'y pousse
+  jamais directement et on n'y ouvre pas de PR de fonctionnalité.
+- `develop` reçoit tout le travail en test. Chaque demande = une branche partie de `develop`
+  (`feat/…`, `fix/…`, `docs/…` ou `claude/…`) = une PR **vers `develop`**, CI verte, fusionnée en
+  squash après la validation de Melvin (ou de Thomas). Une idée abandonnée se retire de `develop`
+  (revert) sans toucher à `main`.
+- Mise en production : quand Thomas **et** Melvin ont testé `develop`, une PR `develop` → `main`
+  intitulée « release: … », fusionnée en **merge commit** (pas de squash, sinon les deux branches
+  divergent et la PR suivante rejoue tout l'historique).
+- Correctif urgent en production : branche depuis `main`, PR vers `main`, puis fusionner `main`
+  dans `develop` aussitôt.
+- La CI tourne sur toutes les branches et toutes les PR ; l'ÉTAT D'AVANCEMENT ci-dessous décrit
+  `develop`, la date de la dernière mise en production est dans `CONTEXTE.md`.
+
 # ÉTAT D'AVANCEMENT (mis à jour le 13 octobre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
