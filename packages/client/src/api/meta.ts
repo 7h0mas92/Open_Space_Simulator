@@ -16,8 +16,11 @@ import {
   SaveListResponseSchema,
   SaveResponseSchema,
   SlackAiResponseSchema,
+  StoryProgressResponseSchema,
   SubmitScoreResponseSchema,
   UnlockAchievementsResponseSchema,
+  type MissionCompletion,
+  type StoryProgressResponse,
   type AdminCard,
   type AdminCardListItem,
   type AdminCardBody,
@@ -110,6 +113,13 @@ export const metaApi = {
 
   achievements: async (): Promise<AchievementDto[]> =>
     (await apiRequest('/achievements', { schema: AchievementsResponseSchema })).achievements,
+
+  storyProgress: (): Promise<StoryProgressResponse> =>
+    apiRequest('/story', { schema: StoryProgressResponseSchema }),
+
+  /** Envoie une mission réussie : le serveur la rejoue avant de la garder sur le compte. */
+  completeMission: (body: MissionCompletion): Promise<StoryProgressResponse> =>
+    apiRequest('/story/complete', { method: 'POST', body, schema: StoryProgressResponseSchema }),
 
   unlockAchievements: async (ids: string[]): Promise<string[]> =>
     (

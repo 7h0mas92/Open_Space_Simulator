@@ -32,6 +32,7 @@ import { projectionEffects } from './projection';
 import { floorEffects } from './floors';
 import { fibreEffects, serverGearEffects } from './serverRoom';
 import { wallEffects } from './walls';
+import { colorUnlocked, hasUnlock } from './unlocks';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
 export function phaseIndex(phase: Phase): number {
@@ -128,6 +129,7 @@ export function placeFurniture(
 function checkPurchase(state: GameState, item: FurnitureDefinition | undefined): CommandResult {
   if (!item) return { ok: false, error: 'NOT_FOUND' };
   if (phaseIndex(state.phase) < phaseIndex(item.minPhase)) return { ok: false, error: 'LOCKED' };
+  if (!hasUnlock(state, item.unlock)) return { ok: false, error: 'LOCKED' };
   if (countOf(state, item.id) >= item.maxCount) return { ok: false, error: 'NOT_ELIGIBLE' };
   if (state.gauges.treasury < item.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
   return { ok: true };
@@ -144,6 +146,7 @@ export function buyFurniture(
   const item = getFurniture(itemId);
   const check = checkPurchase(state, item);
   if (!check.ok || !item) return check;
+  if (!colorUnlocked(state, color)) return { ok: false, error: 'LOCKED' };
   if (item.accessory || !canPlace(state, item, x, y, rotation))
     return { ok: false, error: 'INVALID_PLACEMENT' };
   addMoney(state, -item.price);
@@ -218,6 +221,7 @@ export function buyAccessory(
   const item = getFurniture(itemId);
   const check = checkPurchase(state, item);
   if (!check.ok || !item) return check;
+  if (!colorUnlocked(state, color)) return { ok: false, error: 'LOCKED' };
   const host = state.components.furniture[hostId];
   if (!host) return { ok: false, error: 'NOT_FOUND' };
   if (!item.accessory || !canHost(state, item, hostId, slot))
@@ -371,6 +375,7 @@ export function paintFurniture(
 ): CommandResult {
   const placed = state.components.furniture[furnitureId];
   if (!placed) return { ok: false, error: 'NOT_FOUND' };
+  if (!colorUnlocked(state, color)) return { ok: false, error: 'LOCKED' };
   if (color === 'natural') delete placed.color;
   else placed.color = color;
   return { ok: true };

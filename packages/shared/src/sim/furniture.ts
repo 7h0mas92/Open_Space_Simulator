@@ -2,6 +2,7 @@ import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
 import type { PetNeed } from './pets.js';
 import type { ServerGearKind } from './serverRoom.js';
+import type { StoryRewardId } from '../story/rewards.js';
 
 /**
  * Catalogue des objets du mode construction. Chaque objet a un effet réel sur la
@@ -115,6 +116,8 @@ export interface FurnitureDefinition {
    * sa salle tourne (serveur, réseau et climatisation installés, voir `serverRoom.ts`).
    */
   serverGear?: ServerGearKind;
+  /** Récompense du mode Histoire qui le met en vente (absent : en vente pour tous). */
+  unlock?: StoryRewardId;
 }
 
 /**
@@ -134,8 +137,17 @@ export const FURNITURE_COLORS = [
   'blue',
   'purple',
   'pink',
+  // Récompenses du mode Histoire
+  'gold',
+  'neon',
 ] as const;
 export type FurnitureColor = (typeof FURNITURE_COLORS)[number];
+
+/** Couleurs débloquées par le mode Histoire (les autres sont proposées à tous). */
+export const COLOR_UNLOCKS: Partial<Record<FurnitureColor, StoryRewardId>> = {
+  gold: 'color-gold',
+  neon: 'color-neon',
+};
 
 const t = (fr: string, en: string): LocalizedText => ({ fr, en });
 
@@ -1520,6 +1532,37 @@ export const FURNITURE_CATALOG = [
     accessory: true,
     serverGear: 'security',
     effects: { stabilityPerDay: 0.05, moral: 0.02 },
+  },
+  // --- Récompenses du mode Histoire (en vente seulement une fois la mission réussie). ---
+  {
+    id: 'unicorn-statue',
+    name: t('Statue de licorne', 'Unicorn statue'),
+    description: t(
+      'Récompense du mode Histoire : une licorne dorée sur un socle de marbre. +moral, +hype.',
+      'Story mode reward: a golden unicorn on a marble plinth. +morale, +hype.',
+    ),
+    price: 6000,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 1,
+    effects: { moral: 0.04, hypePerDay: 0.03 },
+    unlock: 'item-unicorn-statue',
+  },
+  {
+    id: 'ipo-bell',
+    name: t('Cloche de la Bourse', 'Stock exchange bell'),
+    description: t(
+      'Récompense du mode Histoire : la cloche de l’introduction en Bourse, sur son portique. +hype.',
+      'Story mode reward: the IPO bell on its wooden frame. +hype.',
+    ),
+    price: 9000,
+    width: 1,
+    depth: 1,
+    minPhase: 'GARAGE',
+    maxCount: 1,
+    effects: { hypePerDay: 0.05, moral: 0.02 },
+    unlock: 'item-ipo-bell',
   },
 ] as const satisfies readonly FurnitureDefinition[];
 
