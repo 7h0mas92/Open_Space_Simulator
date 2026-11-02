@@ -31,3 +31,6 @@ export * from './meta/achievements.js';
 export * from './meta/api.js';
 export * from './meta/decor.js';
 export * from './meta/packs.js';
+export * from './story/campaign.js';
+export * from './story/rewards.js';
+export * from './story/progress.js';

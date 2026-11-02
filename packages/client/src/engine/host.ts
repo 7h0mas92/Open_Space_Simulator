@@ -7,8 +7,9 @@ import {
 } from '@oss/shared';
 import { CardLibrary } from '../events/library';
 import { Simulation } from '../simulation/simulation';
+import type { GameConfig } from '../simulation/state';
 import { GameClock, isSpeed } from './clock';
-import type { MainToWorker, WorkerToMain } from './protocol';
+import type { GameSetup, MainToWorker, WorkerToMain } from './protocol';
 
 /** En replay, le temps passe plus vite : x4 revoit un sprint en quelques secondes. */
 export const REPLAY_BOOST = 8;
@@ -74,15 +75,9 @@ export class SimulationHost {
     this.replay = null;
     this.resumeSpeed = null;
     if (message.game.kind === 'new') {
-      this.simulation = Simulation.create(
-        { seed: message.game.seed, mode: message.game.mode },
-        cards,
-      );
+      this.simulation = Simulation.create(gameConfig(message.game), cards);
     } else if (message.game.kind === 'replay') {
-      this.simulation = Simulation.create(
-        { seed: message.game.seed, mode: message.game.mode },
-        cards,
-      );
+      this.simulation = Simulation.create(gameConfig(message.game), cards);
       this.replay = { commands: CommandLogSchema.parse(message.game.commands), next: 0, dwell: 0 };
     } else {
       const save = SaveDataSchema.parse(message.game.save);
@@ -237,4 +232,14 @@ export class SimulationHost {
     });
     this.pending = [];
   }
+}
+
+/** Configuration de la simulation à partir du point de départ reçu du thread principal. */
+function gameConfig(game: GameSetup): GameConfig {
+  return {
+    seed: game.seed,
+    mode: game.mode,
+    ...(game.mission ? { mission: game.mission } : {}),
+    ...(game.unlocks ? { unlocks: game.unlocks } : {}),
+  };
 }

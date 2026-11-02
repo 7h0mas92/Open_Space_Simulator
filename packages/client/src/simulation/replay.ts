@@ -1,4 +1,10 @@
-import type { GameMode, GameState, LoggedCommand } from '@oss/shared';
+import type {
+  GameMode,
+  GameState,
+  LoggedCommand,
+  StoryMissionId,
+  StoryRewardId,
+} from '@oss/shared';
 import type { CardLibrary } from '../events/library';
 import { Simulation } from './simulation';
 
@@ -16,6 +22,10 @@ export class ReplayError extends Error {
 export interface ReplayOptions {
   seed: string;
   mode: GameMode;
+  /** Mode Histoire : la mission jouée. */
+  mission?: StoryMissionId;
+  /** Récompenses du mode Histoire utilisées par la partie (son point de départ). */
+  unlocks?: readonly StoryRewardId[];
   commands: readonly LoggedCommand[];
   cards: CardLibrary;
   /** Appelé après chaque tick (pour afficher un replay au ralenti, par exemple). */
@@ -27,8 +37,19 @@ export interface ReplayOptions {
  * est déterministe, on retombe exactement sur le même état final : c'est la base
  * des replays et de la vérification des scores côté serveur (anti-triche).
  */
-export function replay({ seed, mode, commands, cards, onTick }: ReplayOptions): Simulation {
-  const simulation = Simulation.create({ seed, mode }, cards);
+export function replay({
+  seed,
+  mode,
+  mission,
+  unlocks,
+  commands,
+  cards,
+  onTick,
+}: ReplayOptions): Simulation {
+  const simulation = Simulation.create(
+    { seed, mode, ...(mission ? { mission } : {}), ...(unlocks ? { unlocks } : {}) },
+    cards,
+  );
   commands.forEach((entry, index) => {
     while (simulation.state.tick < entry.tick) {
       if (!simulation.isRunning) {

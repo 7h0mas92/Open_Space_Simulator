@@ -83,6 +83,8 @@ export function endGame(
   outcome: Outcome,
   valuation = state.valuation,
   buyer: LocalizedText | null = null,
+  /** Phrase de fin imposée (mode Histoire : « Mission réussie… »). */
+  headlineOverride?: LocalizedText,
 ): void {
   if (state.stage === 'ENDED') return;
   const phaseReached = state.phase;
@@ -97,7 +99,7 @@ export function endGame(
     sprint: state.sprint,
     valuation: finalValuation,
     ownership: state.ownership,
-    headline: headline(state, outcome, finalValuation, buyer),
+    headline: headlineOverride ?? headline(state, outcome, finalValuation, buyer),
   };
   notify(state, ctx, 'GAME_OVER', state.result.headline);
 }

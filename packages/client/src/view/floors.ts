@@ -82,6 +82,8 @@ export const FLOOR_ROUGHNESS: Record<FloorMaterialId, number> = {
   chevron: 0.65,
   terrazzo: 0.5,
   marble: 0.3,
+  datacenter: 0.55,
+  checker: 0.4,
 };
 
 type Draw = (ctx: CanvasRenderingContext2D, base: string, random: () => number) => void;
@@ -360,6 +362,39 @@ const marble: Draw = (ctx, base, random) => {
   grout(ctx, dark ? 'rgb(255 255 255 / 18%)' : 'rgb(0 0 0 / 12%)', 1, 1.5);
 };
 
+/** Dalles techniques : 2 x 2 dalles perforées par case, et un voyant vert sur l'une d'elles. */
+const datacenter: Draw = (ctx, base, random) => {
+  const half = FLOOR_TILE / 2;
+  for (const [x, y] of [
+    [0, 0],
+    [half, 0],
+    [0, half],
+    [half, half],
+  ] as const) {
+    ctx.fillStyle = shade(base, 1.06);
+    ctx.fillRect(x + 2, y + 2, half - 4, half - 4);
+    ctx.fillStyle = 'rgb(0 0 0 / 28%)';
+    for (let py = y + 8; py < y + half - 6; py += 6)
+      for (let px = x + 8; px < x + half - 6; px += 6) ctx.fillRect(px, py, 2, 2);
+  }
+  grout(ctx, 'rgb(0 0 0 / 35%)', 2, 2);
+  ctx.fillStyle = random() < 0.5 ? '#3ddc84' : '#4fc3f7';
+  ctx.fillRect(half - 7, half - 7, 4, 4);
+};
+
+/** Damier rétro : 2 x 2 carreaux par case, la teinte et un blanc cassé en alternance. */
+const checker: Draw = (ctx, base, random) => {
+  const half = FLOOR_TILE / 2;
+  ctx.fillStyle = '#efeae0';
+  ctx.fillRect(half, 0, half, half);
+  ctx.fillRect(0, half, half, half);
+  ctx.fillStyle = shade(base, 0.92);
+  ctx.fillRect(0, 0, half, half);
+  ctx.fillRect(half, half, half, half);
+  speckle(ctx, random, 300, 0.05);
+  grout(ctx, 'rgb(0 0 0 / 16%)', 2, 1);
+};
+
 const DRAWS: Record<FloorMaterialId, Draw> = {
   vinyl,
   carpet,
@@ -369,6 +404,8 @@ const DRAWS: Record<FloorMaterialId, Draw> = {
   chevron,
   terrazzo,
   marble,
+  datacenter,
+  checker,
 };
 
 /** Clé d'un sol (`planks:oak`). */
