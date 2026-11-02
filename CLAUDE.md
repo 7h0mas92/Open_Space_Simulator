@@ -727,6 +727,23 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Commandes `SUBSCRIBE_FIBRE` / `CANCEL_FIBRE`, état `fibre` (null par défaut), `fibreSystem` en
   dernier système, rendu `render/serverRoom.ts` (12 formes des assets manquants). Aucun tirage.
 
+- Mode Histoire (`shared/story/`, `client/src/simulation/story.ts`, `ui/story/`, carte « Histoire »
+  du menu) : 4 chapitres (Garage, Seed, Série A, Licorne) et 10 missions débloquées l'une après
+  l'autre, chacune avec point de départ (phase, caisse, jauges, équipe), objectifs, contraintes et
+  durée (3 à 12 sprints) ; panneau « 🎯 Mission » en jeu, objectifs en direct, écran de fin
+  (suivante, réessayer, partager), titre de fondateur par chapitre. Mission terminée en « zombie »
+  avec `result.mission` (réussie, ou ratée : contrainte, temps, faillite, vente) ; ni classement
+  ni succès de fin. Chaque mission débloque une récompense nouvelle pour Facile, Normal et les
+  défis, jamais le Daily (`UNLOCK_MODES`) : papiers peints « Plans du garage » et « Mur de
+  post-it », sols « Dalles techniques » et « Damier rétro », couleurs Or et Néon, statue de licorne
+  et cloche de la Bourse (formes Three.js, `render/storyRewards.ts`), bonus expresso dès le garage
+  et carnet d'adresses (+10 hype). Récompenses fixées au départ (`state.unlocks`, vide par défaut),
+  champ `unlock` du catalogue, erreur `LOCKED`. Progression sur l'appareil (`save/story.ts`) puis
+  sur le compte : `GET /api/story`, `POST /api/story/complete` rejoue la mission (table
+  `StoryMission`) ; `POST /api/scores` vérifie et rejoue les récompenses (`Score.unlocks`,
+  `UNLOCK_NOT_EARNED`). Champs `story` (null) et `unlocks` ([]) par défaut, aucun tirage de plus.
+  Calibrage par les bots : `pnpm balance:story` (chapitre 1 facile, chapitres 3 et 4 difficiles).
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur

@@ -12,6 +12,7 @@ import { prismaPlugin } from './plugins/prisma.js';
 import { securityPlugin } from './plugins/security.js';
 import { swaggerPlugin } from './plugins/swagger.js';
 import { achievementsRoutes } from './routes/achievements.js';
+import { storyRoutes } from './routes/story.js';
 import { adminRoutes } from './routes/admin.js';
 import { authRoutes } from './routes/auth.js';
 import { dailyRoutes } from './routes/daily.js';
@@ -82,6 +83,7 @@ export async function buildApp(env: Env, deps: AppDependencies = {}): Promise<Fa
   await app.register(scoresRoutes, { prefix: '/api/scores' });
   await app.register(dailyRoutes, { prefix: '/api/daily' });
   await app.register(achievementsRoutes, { prefix: '/api/achievements' });
+  await app.register(storyRoutes, { prefix: '/api/story' });
   const slackAi =
     deps.slackAi !== undefined
       ? deps.slackAi

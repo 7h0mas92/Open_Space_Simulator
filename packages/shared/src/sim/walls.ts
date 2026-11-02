@@ -3,6 +3,7 @@ import { PHASES, type Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
 import { ANNEX_KINDS, ANNEXES } from './funding.js';
 import { VENTURES } from './ventures.js';
+import type { StoryRewardId } from '../story/rewards.js';
 
 /**
  * Revêtements des murs : peintures et papiers peints achetés dans le mode construction.
@@ -53,6 +54,9 @@ export const WALL_FINISH_IDS = [
   'chalkboard',
   'artdeco',
   'coderain',
+  // Récompenses du mode Histoire
+  'blueprint',
+  'postit',
 ] as const;
 export const WallFinishIdSchema = z.enum(WALL_FINISH_IDS);
 export type WallFinishId = z.infer<typeof WallFinishIdSchema>;
@@ -77,6 +81,8 @@ export interface WallFinish {
   readonly price: number;
   readonly minPhase: Phase;
   readonly effects: WallFinishEffects;
+  /** Récompense du mode Histoire qui le débloque (absent : en vente pour tous). */
+  readonly unlock?: StoryRewardId;
 }
 
 const t = (fr: string, en: string): LocalizedText => ({ fr, en });
@@ -242,6 +248,32 @@ export const WALL_FINISHES: readonly WallFinish[] = [
     price: 8000,
     minPhase: 'UNICORN',
     effects: { moral: 0.05, hypePerDay: 0.008 },
+  },
+  {
+    id: 'blueprint',
+    kind: 'wallpaper',
+    name: t('Plans du garage', 'Garage blueprints'),
+    description: t(
+      'Récompense du mode Histoire : les plans de la v1 au feutre blanc sur fond bleu.',
+      'Story mode reward: the v1 plans in white marker on blue.',
+    ),
+    price: 1500,
+    minPhase: 'GARAGE',
+    effects: { moral: 0.035, quality: 0.002 },
+    unlock: 'wall-blueprint',
+  },
+  {
+    id: 'postit',
+    kind: 'wallpaper',
+    name: t('Mur de post-it', 'Sticky-note wall'),
+    description: t(
+      'Récompense du mode Histoire : des centaines de post-it de rétrospectives.',
+      'Story mode reward: hundreds of retrospective sticky notes.',
+    ),
+    price: 3000,
+    minPhase: 'GARAGE',
+    effects: { moral: 0.04, quality: 0.003 },
+    unlock: 'wall-postit',
   },
 ];
 

@@ -26,8 +26,10 @@ const view = (state: GameState) =>
 
 describe('Sols : catalogue', () => {
   it('8 matières de plus en plus chères, chacune avec au moins 3 teintes sobres', () => {
-    expect(FLOOR_MATERIALS).toHaveLength(8);
-    const prices = FLOOR_MATERIALS.map((m) => m.price);
+    // Les sols gagnés en mode Histoire viennent en plus.
+    const base = FLOOR_MATERIALS.filter((m) => !m.unlock);
+    expect(base).toHaveLength(8);
+    const prices = base.map((m) => m.price);
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
     for (const material of FLOOR_MATERIALS) {
       expect(material.tints.length).toBeGreaterThanOrEqual(3);
