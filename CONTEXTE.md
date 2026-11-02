@@ -115,7 +115,10 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
 - **Melvin** (`melvinvallot`) travaille avec son propre Claude, hors du projet de Thomas. Il a
   fusionné les PR #37 à #119 (9 au 11 octobre). Son rythme : une PR `feat:` ou `fix:`, puis une
   petite PR `docs:` qui met à jour `CLAUDE.md` et `README.md`.
-- **Avant de commencer** : `git pull` sur `main`, lire le haut de ce fichier et le journal, puis
+- **Branches** : tout le travail part de `develop` et y revient par une PR ; `main` ne reçoit
+  que les PR `develop` → `main` validées par Thomas et Melvin (détail dans `CLAUDE.md`, section
+  « BRANCHES », et dans le README, section « Branches et contributions »).
+- **Avant de commencer** : `git pull` sur `develop`, lire le haut de ce fichier et le journal, puis
   vérifier les PR ouvertes de l'autre pour éviter de toucher aux mêmes fichiers.
 
 Règles fixées par Thomas (à respecter par tout le monde) :
@@ -123,7 +126,9 @@ Règles fixées par Thomas (à respecter par tout le monde) :
 1. Livrer une version jouable, résumer, expliquer comment tester, **attendre la validation**
    avant de fusionner.
 2. PR avec « Before: / After: / How », captures desktop (1440 px) et mobile (375 px), CI verte.
-3. Squash merge dans `main` ; intégrer `main` d'abord si d'autres PR sont passées.
+3. PR vers `develop`, squash merge ; intégrer `develop` d'abord si d'autres PR sont passées.
+   Mise en production : PR `develop` → `main` en merge commit, après les tests de Thomas et
+   Melvin. Un correctif urgent va sur `main`, puis `main` est fusionnée dans `develop`.
 4. Après chaque fusion : mettre à jour `CLAUDE.md` (« ÉTAT D'AVANCEMENT »), `README.md` **et ce
    fichier**.
 5. Commits conventionnels en français (`feat:`, `fix:`, `docs:`…), vérifiés par husky +
@@ -142,7 +147,7 @@ Règles fixées par Thomas (à respecter par tout le monde) :
 
 | Quoi                                             | Où                                                                                                              |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (branche `main`)                                               |
+| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (`develop` en test, `main` publiée)                            |
 | Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                     |
 | Installation, architecture, déploiement, crédits | `README.md`                                                                                                     |
 | Ce relais                                        | `CONTEXTE.md`                                                                                                   |
@@ -237,6 +242,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 02/11    | Thomas + Claude | #122        | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
+| 17/10    | Melvin + Claude | #123        | Branche `develop` créée depuis `main` : les PR vont vers `develop`, puis `develop` → `main` après les tests de Thomas et Melvin.                                                                                                                 |
 | 17/10    | Melvin + Claude | à venir     | Ajout de `ARBORESCENCE.md` : rôle de chaque fichier. Toute PR qui ajoute ou déplace un fichier met sa ligne à jour.                                                                                                                              |
 | 13/10    | Thomas + Claude | #122        | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
@@ -248,7 +254,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 ## Historique des PR
 
-Toutes fusionnées dans `main`. Le détail de chaque fonctionnalité est dans `CLAUDE.md`.
+Les PR #1 à #120 sont fusionnées dans `main` ; les suivantes passent par `develop`. Le détail de chaque fonctionnalité est dans `CLAUDE.md`.
 
 | PR     | Contenu                                                                                                                                                                                                       |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -265,7 +271,7 @@ Toutes fusionnées dans `main`. Le détail de chaque fonctionnalité est dans `C
 Claude Code lit `CLAUDE.md` tout seul. Pour reprendre, commencer la session par :
 
 ```text
-Lis CLAUDE.md et CONTEXTE.md en entier. Fais un git pull sur main, regarde les PR ouvertes,
+Lis CLAUDE.md et CONTEXTE.md en entier. Fais un git pull sur develop, regarde les PR ouvertes,
 puis lance pnpm lint, pnpm typecheck et pnpm test pour vérifier que tout est vert. Respecte les
 règles de CONTEXTE.md (français, une PR par demande, captures desktop et mobile, CI verte,
 validation avant fusion, jamais le RNG de la partie, aucun secret). À la fin du travail, mets à
