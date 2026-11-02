@@ -2,7 +2,7 @@
 
 > **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : arbre de
 > compétences des devs (tâche T3 de [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md)),
-> PR #150 vers `develop`, à valider. Base : `develop` au commit `b4353a7` (PR #148, T1 fusionnée :
+> PR #150 fusionnée dans `develop` le 2 novembre 2026 (validée par Thomas). Base : `develop` au commit `b4353a7` (PR #148, T1 fusionnée :
 > `develop` contient tout `main`).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
@@ -71,7 +71,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Offres internet et température des salles (#129)    | Melvin + Claude | À rebrancher sur le modèle des abonnements (#126) |
 | Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation         |
 | Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné dans `develop` (PR #148)                 |
-| **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 vers `develop`, à valider                 |
+| **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                  |
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                  |
 | Histoire longue, rivaux, arbre R&D (T2, T4)         | Thomas          | Proposition prête, rien de codé                   |
 | Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                        |
