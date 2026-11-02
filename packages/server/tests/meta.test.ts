@@ -1,4 +1,5 @@
 import {
+  careerSeed,
   BUILTIN_CARDS_VERSION,
   CHARACTER_PACKS,
   DECOR_THEMES,
@@ -231,6 +232,27 @@ describe('POST /api/scores (anti-triche)', () => {
     const board = await app.inject({ url: '/api/scores/top?daily=today' });
     expect(board.json().entries).toHaveLength(1);
     expect(board.json().entries[0]).toMatchObject({ pseudo: 'daily', dailyDate: today });
+  }, 60_000);
+
+  it('vérifie une partie Carrière : la légende est lue dans la graine', async () => {
+    const cookies = await player('legend');
+    const seed = careerSeed('pepin', 'server-check');
+    const game = playGame(seed, 'CAREER');
+    expect(game.result.career?.legend).toBe('pepin');
+    const response = await submit(cookies, {
+      mode: 'CAREER',
+      seed,
+      commands: game.commands,
+      cardsVersion: BUILTIN_CARDS_VERSION,
+      claimed: { outcome: game.result.outcome, valuation: game.result.valuation },
+    });
+    expect(response.statusCode).toBe(201);
+    expect(response.json().score).toMatchObject({
+      mode: 'CAREER',
+      valuation: game.result.valuation,
+    });
+    const board = (await app.inject({ url: '/api/scores/top?mode=CAREER' })).json();
+    expect(board.entries[0]).toMatchObject({ pseudo: 'legend', mode: 'CAREER' });
   }, 60_000);
 
   it('classement : meilleur score de chaque joueur, puis replay', async () => {

@@ -373,7 +373,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   caméra au bord de l'écran.
 - Mode construction refondu : catalogue en bas, aperçu sur la grille, bouton « Poser » au
   tactile, rendu 3D distinct pour chacun des 22 objets.
-- 65 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
+- 67 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
 - Menu principal refondu ; sans serveur, la fenêtre Connexion explique que les comptes sont
   indisponibles et le jeu reste jouable en invité.
 - Interface de jeu refondue : en haut ce qu'on lit (jauges, trésorerie en mois, horloge), en
@@ -508,6 +508,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   effacée (appareil et serveur) et sa date de fin notée ; ses sauvegardes manuelles restent dans
   « Charger une partie » (`saves.markFinished`, `saves.latestResumable` dans
   `client/src/save/saves.ts`). Un Daily rejoué reste proposé.
+- Nouvelle partie depuis le menu : avec une partie en cours, l'accueil affiche « Continuer » et,
+  dessous, « Nouvelle partie » (mode suggéré : Facile au premier lancement, puis Normal), en plus
+  des cartes des modes (`ui/menu/HomeMenu.tsx`). La sauvegarde automatique marche aussi en
+  `pnpm dev` : `installGameLifecycle` se rebranche après le double montage de StrictMode.
 - Variété des tâches du Kanban (`client/src/simulation/taskTitles.ts`, catalogues dans
   `client/src/simulation/data/tasks.ts`) : 114 titres de code de base, 28 débloqués par phase
   (`GROWTH_TASK_TITLES` : Seed, Série A, Licorne), 48 de saison (`SEASON_TASK_TITLES`, une tâche de
@@ -742,6 +746,19 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `StoryMission`) ; `POST /api/scores` vérifie et rejoue les récompenses (`Score.unlocks`,
   `UNLOCK_NOT_EARNED`). Champs `story` (null) et `unlocks` ([]) par défaut, aucun tirage de plus.
   Calibrage par les bots : `pnpm balance:story` (chapitre 1 facile, chapitres 3 et 4 difficiles).
+- Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
+  menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
+  8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,
+  MicroMou, Trombinoscope, Orénoque, Centillion, Ampère Motors), 3 niveaux de difficulté. Chaque
+  légende fixe le départ (trésorerie, hype, dette, profil du premier dev, cofondateur) et 4 jalons
+  (phase, utilisateurs, valorisation, levées, features, équipe, stabilité, hype, part du capital
+  avant un sprint ou à la fin, dette maximale, issue). Jalons vérifiés à chaque démo, puis jugés à
+  la fin : ★ un jalon, ★★ la moitié, ★★★ tous, ajouté à la phrase partageable
+  (`GameResult.career`). Légende écrite dans la graine (`career:<légende>:<graine>`), aucun tirage :
+  replays, sauvegardes et anti-triche inchangés. Mode `CAREER` (migration Prisma), état `career`
+  (null par défaut), notifications `CAREER_MILESTONE` / `CAREER_MISSED`, bouton 🧭 du HUD, chapitre
+  du tutoriel, meilleur résultat par légende sur l'appareil (`oss.career.best`), 2 succès
+  (`career-first-star`, `career-legend`), section « Mode Carrière » de `pnpm balance`.
 
 - Base de production sur Supabase (projet `open-space-simulator`, offre gratuite,
   `eu-central-1`) : simple PostgreSQL hébergé derrière Prisma, sans auth ni SDK Supabase. Toutes

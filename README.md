@@ -538,12 +538,28 @@ sequenceDiagram
 - **Replays** : `GET /api/scores/:id/replay` renvoie graine, commandes et cartes ; le moteur les
   rejoue en accéléré (les commandes du joueur sont bloquées).
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
+- **Carrière** : refaire le parcours de 8 startups devenues géantes, jamais nommées (Pépin
+  Computer, Matelas & Céréales, Rembobine, MicroMou, Trombinoscope, Orénoque, Centillion, Ampère
+  Motors ; `packages/shared/src/sim/career.ts`). Chaque légende impose son départ (argent, hype,
+  dette, premier profil, parfois un cofondateur) et 4 jalons : une phase, des utilisateurs, une
+  levée ou une équipe avant un sprint donné, puis une façon de finir. Les jalons sont vérifiés à
+  chaque démo, sans un seul tirage (`client/src/simulation/career.ts`) ; à la fin, ★ pour au
+  moins un jalon, ★★ la moitié, ★★★ tous, écrit dans la phrase partageable. La légende est dans
+  la graine (`career:<légende>:<graine>`) : replays, sauvegardes et vérification du score par le
+  serveur marchent sans rien de plus. Bouton 🧭 en haut de l'écran pour suivre les jalons,
+  meilleur résultat de chaque légende gardé sur l'appareil, classement « Carrière » et 2 succès.
+
+| Choix de la légende                                         | Jalons en partie (mobile)                               |
+| ----------------------------------------------------------- | ------------------------------------------------------- |
+| ![Choix de la légende](docs/screenshots/career-desktop.png) | ![Jalons en partie](docs/screenshots/career-mobile.png) |
+
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion. « Continuer » reprend
   la sauvegarde la plus récente d'une partie en cours : à la fin d'une partie, sa sauvegarde
   automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
-  dans « Charger une partie »).
-- **Succès** : 65 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
+  dans « Charger une partie »). Sous « Continuer », le bouton « Nouvelle partie » lance une
+  partie dans le mode suggéré, et les cartes des modes restent disponibles.
+- **Succès** : 67 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
   condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
@@ -630,7 +646,8 @@ financements hors tour de table, organisatrice qui aménage la salle de réunion
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
-Only, 3 sprints). Une section suit les tâches dynamiques : urgences et tâches de la semaine
+Only, 3 sprints), puis 140 parties par légende du mode Carrière (étoiles et réussite de chaque
+jalon). Une section suit les tâches dynamiques : urgences et tâches de la semaine
 finies à temps, réussite des objectifs par type et difficulté. Le dernier rapport est dans
 [`docs/balance.md`](docs/balance.md).
 
@@ -712,10 +729,10 @@ Render et Vercel (le mot de passe de la base, dans Supabase puis dans Render). T
 
 ## Ce que l'application fait et ne fait pas
 
-Elle fait : un jeu de gestion solo complet (6 modes, 39 sprints, 100 cartes, 8 profils de
+Elle fait : un jeu de gestion solo complet (7 modes dont la Carrière, 39 sprints, 100 cartes, 8 profils de
 devs et 10 métiers d'une équipe web, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
 anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
-Daily, par mode), replays vérifiés par le serveur, 65 succès (dont 22 secrets), un back-office et un Slack
+Daily, par mode), replays vérifiés par le serveur, 67 succès (dont 22 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 
 Elle ne fait pas : de multijoueur en temps réel, d'achats intégrés ni de publicité, de chat

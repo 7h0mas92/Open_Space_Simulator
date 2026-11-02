@@ -472,3 +472,33 @@ test('un panneau se ferme avec Échap et rend le focus', async ({ page, isMobile
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(button).toBeFocused();
 });
+
+test('mode Carrière : choisir une légende, suivre ses jalons depuis le HUD', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('oss.language', 'fr');
+    localStorage.setItem('oss.settings', JSON.stringify({ tutorialDone: true }));
+  });
+  await page.goto('/');
+  await page.getByTestId('mode-CAREER').click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Carrière' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Relever le défi' })).toHaveCount(8);
+  // La page des légendes tient en largeur, sans défilement horizontal.
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+
+  await page.getByTestId('legend-pepin').getByRole('button', { name: 'Relever le défi' }).click();
+  await expect(page.getByTestId('game')).toBeVisible();
+  const career = page.getByRole('button', { name: /Carrière : 0 jalons tenus sur 4/ });
+  await expect(career).toBeVisible();
+  const box = await career.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(44);
+  expect(box?.height).toBeGreaterThanOrEqual(44);
+  // Le cofondateur de la légende est là dès le garage.
+  await expect.poll(async () => (await debug(page))?.characters ?? 0).toBe(2);
+
+  await career.click();
+  await expect(page.getByText('Pépin Computer')).toBeVisible();
+  await expect(page.getByText('Échéance : démo du sprint 6')).toBeVisible();
+});
