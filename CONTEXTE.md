@@ -1,8 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec le mode
-> Histoire. Dernier commit de `main` au moment de l'écriture : `9f71139` (PR #122, mode
-> Histoire fusionné).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), après la fusion des
+> PR de Melvin dans `develop`. Dernier commit de `develop` : `a6121c2` (PR #135, mode illimité) ;
+> dernier commit de `main` : `9f71139` (PR #122, mode Histoire).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -60,11 +60,13 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 
 ## Travaux en cours
 
-| Sujet                                               | Qui             | État                                                |
-| --------------------------------------------------- | --------------- | --------------------------------------------------- |
-| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                    |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours                                |
-| Mode **illimité** et classement des entreprises     | Melvin + Claude | PR ouverte vers `develop`, en attente de validation |
+| Sujet                                               | Qui             | État                                              |
+| --------------------------------------------------- | --------------- | ------------------------------------------------- |
+| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                  |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours                              |
+| Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135)   |
+| Offres internet et température des salles (#129)    | Melvin + Claude | À rebrancher sur le modèle des abonnements (#126) |
+| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Brouillon, à mettre à jour avec `develop`         |
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
 10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
@@ -78,18 +80,11 @@ grandes entreprises (Apple, Google…), **sans jamais citer leur nom directement
 ou allusions seulement, comme pour les super-héros inventés).
 
 **Proposition à valider pour les deux modes** : les objets débloqués sont utilisables en Normal,
-Facile et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
+Facile, Illimité et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
 rejeu anti-triche du serveur équitables). Déblocages gardés sur le compte, et en local pour les
 invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shared/src/game.ts`).
 
 ## En attente d'une décision
-
-- **GitHub Actions bloqué** : depuis le 13 octobre, chaque job de la CI s'arrête en 3 secondes
-  sans runner ni log, sur toutes les PR (#121 à #135). À vérifier dans les réglages de facturation
-  du compte GitHub (minutes ou limite de dépenses). En attendant, vérifier en local avant de
-  fusionner. Le mode Histoire (#122, mode `STORY`) est dans `main` : les PR ouvertes qui ajoutent
-  un mode (#121 Carrière, #135 Illimité, #130 difficulté par mode) doivent intégrer `main` et
-  garder `STORY` dans `GAME_MODES` (hors `MENU_MODES` et `UNLOCK_MODES`).
 
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
@@ -251,6 +246,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                             |
 | -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/11    | Thomas + Claude | #123 à #135       | CI de nouveau active. `develop` avancé jusqu'à `main` (mode Histoire), puis 11 PR de Melvin fusionnées dans `develop` après résolution des conflits : #123 à #128, #130 à #133, #135. Ménage à côté du modèle des abonnements, frais de l'illimité et du Hardcore cumulés, doublons du journal retirés. Restent #129 (à refaire sur les abonnements) et #134 (brouillon).              |
 | 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                                                                                                                                                                 |
 | 18/10    | Melvin + Claude | (PR develop)      | Saleté du bureau (0 à 100 %, -20 % de travail à 50 %) et entreprise de nettoyage Nickel Chrome : appel, express, abonnement hebdo (`shared/sim/cleaning.ts`, `simulation/cleaning.ts`, `render/cleaning.ts`, bouton 🧹). Champ `cleaning` par défaut ; règle qui change toutes les parties (anciens replays de scores divergent). À brancher sur le futur modèle commun d'abonnements. |
 | 18/10    | Melvin + Claude | develop           | Difficulté par mode (`difficultyOf`) : Facile moins généreux, Hardcore vraiment dur. Normal et Daily inchangés.                                                                                                                                                                                                                                                                        |
