@@ -1,4 +1,5 @@
-import { SEASONS, SPEEDS, type Phase, type Speed } from '@oss/shared';
+import { dirtLevel } from '../cleaning/Cleaning';
+import { SEASONS, SPEEDS, companyName, isEndless, type Phase, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView, type GaugeName } from '../../view/types';
 import { useSlack } from '../../slack/store';
@@ -38,7 +39,7 @@ const GAME_ACTIONS = [
   'slack',
 ] as const;
 type GameAction = (typeof GAME_ACTIONS)[number];
-const SYSTEM_PANELS = ['subscriptions', 'saves', 'settings'] as const;
+const SYSTEM_PANELS = ['subscriptions', 'saves', 'leaderboard', 'settings'] as const;
 
 /** Icône de chaque bouton du HUD, reprise dans l'en-tête du panneau ouvert. */
 export const PANEL_ICONS: Record<PanelId | 'build', string> = {
@@ -47,9 +48,11 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   hiring: '🤝',
   group: '🏛️',
   meetings: '🗓️',
+  tickets: '📽️',
   pets: '🐈',
   servers: '🗄️',
   lobby: '🛎️',
+  cleaning: '🧹',
   subscriptions: '🧾',
   funding: '💼',
   mission: '🎯',
@@ -57,6 +60,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   dashboard: '📈',
   slack: '💬',
   saves: '💾',
+  leaderboard: '🏆',
   settings: '⚙️',
   credits: '©️',
 };
@@ -90,6 +94,7 @@ export function Company({ view }: { view: GameView }) {
     <div className="hud-company">
       <Tooltip
         text={[
+          t('hud.company', { name: companyName(view.seed) }),
           t('hud.phase', { phase }),
           t('hud.mode', { mode }),
           t('hud.team', { count: view.devs.length, max: view.teamMax }),
@@ -225,7 +230,11 @@ export function Clock({ view }: { view: GameView }) {
   return (
     <div className="clock" data-tutorial="clock" aria-live="off">
       <p className="clock-line">
-        <strong>{t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}</strong>
+        <strong>
+          {isEndless(view.mode)
+            ? t('time.sprintEndless', { sprint: time.sprint })
+            : t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}
+        </strong>
         <span className={`clock-time ${isFridayFive(live) ? 'friday' : ''}`}>
           {t('time.day', { day: days[weekday(live.day)] ?? '', time: formatClock(live.minute) })}
         </span>
@@ -249,7 +258,7 @@ export function Clock({ view }: { view: GameView }) {
 }
 
 /** Sauvegardes et options : des boutons-icônes en haut, à l'écart des actions de jeu. */
-export function SystemButtons() {
+export function SystemButtons({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const panel = useGame((s) => s.panel);
   const openPanel = useGame((s) => s.openPanel);
@@ -260,6 +269,7 @@ export function SystemButtons() {
   const panels: readonly PanelId[] = story ? ['mission', ...system] : system;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>
+      <CleaningButton view={view} />
       {panels.map((id) => (
         <button
           key={id}
@@ -275,6 +285,32 @@ export function SystemButtons() {
         </button>
       ))}
     </div>
+  );
+}
+
+/** Ménage : un bouton-icône avec la saleté du bureau, qui ouvre le panneau Ménage. */
+function CleaningButton({ view }: { view: GameView }) {
+  const { t } = useTranslation();
+  const panel = useGame((s) => s.panel);
+  const openPanel = useGame((s) => s.openPanel);
+  const percent = Math.round(view.cleaning.dirt);
+  const level = dirtLevel(view.cleaning);
+  const label = t('cleaning.button', { percent });
+  return (
+    <button
+      type="button"
+      className={`system-button cleaning-button dirt-${level}`}
+      aria-pressed={panel === 'cleaning'}
+      aria-label={label}
+      title={label}
+      data-testid="open-cleaning"
+      onClick={() => openPanel(panel === 'cleaning' ? null : 'cleaning')}
+    >
+      <span aria-hidden="true">{view.cleaning.visit ? '🫧' : PANEL_ICONS.cleaning}</span>
+      <span className="dirt-badge" aria-hidden="true">
+        {percent}
+      </span>
+    </button>
   );
 }
 

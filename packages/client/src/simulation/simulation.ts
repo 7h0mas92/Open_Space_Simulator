@@ -30,6 +30,7 @@ import { taskFlowSystem } from './taskFlow';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
+import { cleaningSystem } from './cleaning';
 import { checkMission } from './story';
 import { migrateLegacyFibre, subscriptionSystem } from './subscriptions';
 
@@ -49,6 +50,7 @@ export const SYSTEMS: readonly System[] = [
   dailySystem,
   calendarSystem,
   (state, ctx) => subscriptionSystem(state, ctx),
+  cleaningSystem,
 ];
 
 export interface DispatchResult {

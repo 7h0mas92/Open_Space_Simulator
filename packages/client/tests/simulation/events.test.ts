@@ -1,6 +1,7 @@
 import {
   BALANCE,
   CARD_ACHIEVEMENTS,
+  DIFFICULTY,
   EventCardSchema,
   EVENT_CARDS,
   type EventCard,
@@ -180,7 +181,8 @@ describe('Tirage', () => {
     const debt = state.gauges.debt;
     eventSystem(state, ctx, WEDNESDAY_10H);
     expect(state.events.pending).toBeNull();
-    expect(state.gauges.debt).toBe(debt + 5);
+    // Effet négatif aggravé par la difficulté du Hardcore.
+    expect(state.gauges.debt).toBeCloseTo(debt + 5 * DIFFICULTY.HARDCORE.badEffects);
   });
 });
 

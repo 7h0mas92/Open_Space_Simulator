@@ -11,13 +11,14 @@ import {
 import { CommandLogSchema } from './commands.js';
 import { ComputerIdSchema } from './computers.js';
 import { FinancingStateSchema } from './funding.js';
-import { MeetingRoomSchema } from './meetings.js';
+import { MeetingRoomSchema, MorningSyncSchema } from './meetings.js';
 import { MonitorSetupSchema } from './monitors.js';
 import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { FibreSubscriptionSchema } from './serverRoom.js';
 import { LobbyStateSchema } from './lobby.js';
+import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
 import { SubscriptionsSchema } from './subscriptions.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
@@ -237,6 +238,8 @@ export const GameStatsSchema = z.object({
   meetingsUseless: z.number().int().default(0),
   /** Réunions de crise tenues dans la salle quand la prod tombe. */
   crisisMeetings: z.number().int().default(0),
+  /** Tickets en partie recodés pour rien, faute de Daily (travail en double). */
+  duplicateWork: z.number().int().default(0),
   /** Tâches urgentes et hebdomadaires terminées à temps ou ratées, objectifs de sprint. */
   urgentDone: z.number().int().default(0),
   urgentMissed: z.number().int().default(0),
@@ -279,6 +282,8 @@ export const NOTIFICATION_KINDS = [
   'PITCH_FAILED',
   'PHASE_UP',
   'SEASON_STARTED',
+  /** Mode illimité : la concurrence se renforce (tous les 6 mois après les 18 premiers). */
+  'COMPETITION_RISES',
   'ACQUISITION_OFFER',
   'VENTURE_FOUNDED',
   'VENTURE_DIED',
@@ -288,6 +293,8 @@ export const NOTIFICATION_KINDS = [
   'MEETING_USEFUL',
   'MEETING_USELESS',
   'CRISIS_MEETING',
+  /** Deux devs ont codé la même chose sans le savoir (pas de Daily ce matin-là). */
+  'DUPLICATE_WORK',
   'PET_ADOPTED',
   'PET_REHOMED',
   /** Abonnement internet (fibre) souscrit, changé ou résilié. */
@@ -303,6 +310,16 @@ export const NOTIFICATION_KINDS = [
   'SECURITY_SUBSCRIBED',
   'SECURITY_CANCELLED',
   'SECURITY_CUT',
+  /** Saleté au-delà du seuil d'alerte : l'équipe se plaint. */
+  'OFFICE_DIRTY',
+  /** Entreprise de nettoyage : appel réservé, ménage commencé ou terminé. */
+  'CLEANING_BOOKED',
+  'CLEANING_STARTED',
+  'CLEANING_DONE',
+  /** Abonnement de ménage souscrit, changé, résilié ou coupé faute de paiement. */
+  'CLEANING_SUBSCRIBED',
+  'CLEANING_CANCELLED',
+  'CLEANING_CUT',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -398,6 +415,8 @@ export const GameStateSchema = z.object({
   lastVentureSprint: z.number().int().nullable().default(null),
   /** Aménagement de la salle de réunion (null : salle vide, ou pas encore de salle). */
   meetingRoom: MeetingRoomSchema.nullable().default(null),
+  /** Dernier Daily tenu en salle de réunion (absent des vieilles sauvegardes). */
+  morningSync: MorningSyncSchema.nullable().default(null),
   /** Objectif du sprint en cours (certains sprints seulement). */
   objective: SprintObjectiveSchema.nullable().default(null),
   /** Financements hors tour de table (prêt en cours, cooldowns). */
@@ -421,6 +440,8 @@ export const GameStateSchema = z.object({
   fibre: FibreSubscriptionSchema.nullable().default(null),
   /** Hall d'entrée au rez-de-chaussée (null : pas de hall, ou sauvegarde d'avant son ajout). */
   lobby: LobbyStateSchema.nullable().default(null),
+  /** Saleté du bureau et entreprise de nettoyage (bureau propre dans les vieilles sauvegardes). */
+  cleaning: CleaningStateSchema.default(emptyCleaningState),
   /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */
   subscriptions: SubscriptionsSchema.default([]),
   /**

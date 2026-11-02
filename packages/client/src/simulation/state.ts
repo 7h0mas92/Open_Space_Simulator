@@ -1,7 +1,10 @@
 import {
   BALANCE,
+  ENDLESS,
   GAME,
   STATE_VERSION,
+  difficultyOf,
+  emptyCleaningState,
   STORY_MISSION_IDS,
   STORY_REWARD_IDS,
   UNLOCK_MODES,
@@ -42,8 +45,7 @@ function gameUnlocks(config: GameConfig): StoryRewardId[] {
 /** État vide, avant l'arrivée du premier dev. */
 export function createEmptyState(config: GameConfig): GameState {
   const { start } = BALANCE;
-  const treasury =
-    config.mode === 'EASY' ? start.treasury * BALANCE.easy.treasuryMultiplier : start.treasury;
+  const treasury = start.treasury * difficultyOf(config.mode).treasury;
   const mission =
     config.mode === 'STORY' ? getStoryMission(config.mission ?? STORY_MISSION_IDS[0]) : undefined;
   return {
@@ -53,7 +55,13 @@ export function createEmptyState(config: GameConfig): GameState {
     rng: seedToState(config.seed),
     tick: 0,
     sprint: 1,
-    totalSprints: mission?.sprints ?? (config.mode === 'SHIP_IN_3' ? 3 : GAME.totalSprints),
+    totalSprints:
+      mission?.sprints ??
+      (config.mode === 'SHIP_IN_3'
+        ? 3
+        : config.mode === 'ENDLESS'
+          ? ENDLESS.sprintCap
+          : GAME.totalSprints),
     sprintTick: 0,
     stage: 'PLANNING',
     phase: 'GARAGE',
@@ -94,6 +102,7 @@ export function createEmptyState(config: GameConfig): GameState {
     ventures: [],
     lastVentureSprint: null,
     meetingRoom: null,
+    morningSync: null,
     objective: null,
     financing: { lastSprint: {}, loan: null },
     inventory: [],
@@ -104,6 +113,7 @@ export function createEmptyState(config: GameConfig): GameState {
     raises: emptyRaisesState(),
     fibre: null,
     lobby: null,
+    cleaning: emptyCleaningState(),
     subscriptions: [],
     recentTaskTitles: [],
     story: mission ? { missionId: mission.id, startSprint: 1 } : null,
@@ -144,6 +154,7 @@ export function createEmptyState(config: GameConfig): GameState {
       meetingsUseful: 0,
       meetingsUseless: 0,
       crisisMeetings: 0,
+      duplicateWork: 0,
       urgentDone: 0,
       urgentMissed: 0,
       weeklyDone: 0,

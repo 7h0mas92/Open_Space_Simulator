@@ -40,11 +40,14 @@ import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
 import { DecorationsView } from './decorations';
 import { MeetingRoomView } from './meetingRoom';
+import { DailyBoardView } from './dailyBoard';
+import { ticketBoard } from '../view/ticketBoard';
 import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
 import { interpolateAgent } from './interpolation';
 import { PetsView } from './pets';
+import { CleaningView3D } from './cleaning';
 import {
   cameraDirection,
   clampTarget,
@@ -143,6 +146,8 @@ export class GameRenderer {
   private readonly office = new OfficeView(this.assets);
   private readonly decorations = new DecorationsView(this.assets);
   private readonly meetingRoom = new MeetingRoomView(this.assets);
+  /** Écran et projecteur du Daily : l'appli de tickets projetée pendant la réunion. */
+  private readonly dailyBoard = new DailyBoardView();
   /** Réglage de chaque thème de décoration au back-office (absent = pendant sa période). */
   private decorModes: Partial<Record<DecorTheme, DecorMode>> = {};
   private readonly roomLights = new OfficeLights(this.assets);
@@ -160,6 +165,8 @@ export class GameRenderer {
   /** Les chats du bureau : leur IA (déplacements) et leurs modèles. */
   private readonly cats = new CatWorld(1);
   private readonly pets = new PetsView();
+  /** Déchets au sol et équipe de ménage. */
+  private readonly cleaning = new CleaningView3D(this.assets);
   private previousCats = new Map<string, CatSnapshot>();
   private currentCats: CatSnapshot[] = [];
   private readonly gestures = new GestureRecognizer();
@@ -235,11 +242,13 @@ export class GameRenderer {
       this.office.root,
       this.decorations.root,
       this.meetingRoom.root,
+      this.dailyBoard.root,
       this.roomLights.root,
       this.screens.root,
       this.projection.root,
       this.lobby.root,
       this.pets.root,
+      this.cleaning.root,
     );
 
     this.smoke = new SmokeEffect(preset.maxParticles);
@@ -301,6 +310,7 @@ export class GameRenderer {
     this.projection.sync(view.items, view.projections);
     this.lobby.setLayout(this.layout);
     this.updateDecor(view);
+    this.dailyBoard.setBoard(ticketBoard(view), english ? 'en' : 'fr');
     void this.roomLights.setLayout(
       this.layout,
       QUALITY_PRESETS[this.quality].roomLights,
@@ -310,6 +320,7 @@ export class GameRenderer {
     this.world.sync(view);
     this.cats.sync(view, this.decorPlan?.blocked ?? []);
     this.pets.sync(view.pets.pets);
+    this.cleaning.sync(view.seed, this.layout, view.items, view.cleaning);
     if (phaseChanged) this.fitCamera();
 
     const ids = new Set(view.devs.map((dev) => dev.id));
@@ -496,6 +507,9 @@ export class GameRenderer {
     roomLights: number;
     /** Chats visibles dans la scène. */
     cats: number;
+    /** Déchets dessinés au sol, et l'équipe de ménage est-elle là ? */
+    litter: number;
+    cleaners: boolean;
   } {
     const tile = this.footprintTile;
     let ghost: { x: number; y: number } | null = null;
@@ -519,6 +533,8 @@ export class GameRenderer {
       screens: this.screens.count,
       roomLights: this.roomLights.realLights,
       cats: this.currentCats.filter((cat) => cat.visible).length,
+      litter: this.cleaning.litterShown,
+      cleaners: this.cleaning.crewVisible,
     };
   }
 
@@ -531,12 +547,14 @@ export class GameRenderer {
     this.office.dispose();
     this.decorations.dispose();
     this.meetingRoom.dispose();
+    this.dailyBoard.dispose();
     this.roomLights.dispose();
     this.skyline.dispose();
     this.screens.dispose();
     this.projection.dispose();
     this.lobby.dispose();
     this.pets.dispose();
+    this.cleaning.dispose();
     this.composer?.dispose();
     this.renderer.dispose();
   }
@@ -559,6 +577,7 @@ export class GameRenderer {
     this.world.setDecor(plan.blocked, plan.party, plan.meeting?.seats ?? []);
     void this.decorations.update(key, plan, this.layout, view.items);
     void this.meetingRoom.update(key, plan.meeting, this.layout);
+    this.dailyBoard.setPlan(plan.meeting);
   }
 
   // --- Boucle ------------------------------------------------------------------------------
@@ -569,10 +588,14 @@ export class GameRenderer {
     this.lastFrame = now;
 
     const view = this.view;
+    // Pendant la pause du Daily, l'équipe continue d'aller s'asseoir en salle de réunion.
+    const dailyLive = view?.step === 'EXECUTION' && view.meetingRoom.daily?.live === true;
     const speed = !view
       ? 0
       : view.time.speed === 0
-        ? 0
+        ? dailyLive
+          ? 1
+          : 0
         : view.step === 'EXECUTION'
           ? view.time.speed
           : 1;
@@ -598,6 +621,7 @@ export class GameRenderer {
     if (this.currentCats.length === 0 && view && view.pets.pets.length > 0)
       this.currentCats = this.cats.snapshot();
     this.pets.update(this.previousCats, this.currentCats, alpha, delta * speed, this.reducedMotion);
+    this.cleaning.update(delta * speed, this.reducedMotion);
 
     if (view) {
       const live = liveSprintMinutes(view.time, now);
@@ -621,6 +645,7 @@ export class GameRenderer {
     }
     this.projection.update(delta, !this.reducedMotion);
     this.lobby.update([...this.current, ...this.currentCats], delta, !this.reducedMotion);
+    this.dailyBoard.update(delta, !this.reducedMotion);
     this.options.onDeskActivity?.(this.deskActivity(speed > 0));
     this.smoke.update(delta);
     this.confetti.update(delta);

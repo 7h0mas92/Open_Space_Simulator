@@ -71,6 +71,26 @@
   display: block;
 }
 
+.score-table .score-company {
+  display: block;
+  font-weight: 700;
+}
+
+.score-table .score-player {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.leaderboard .segmented {
+  margin-bottom: 0.5rem;
+}
+
+.leaderboard .hint {
+  margin: 0 0 0.5rem;
+}
+
 .score-table tr.inactive {
   opacity: 0.55;
 }

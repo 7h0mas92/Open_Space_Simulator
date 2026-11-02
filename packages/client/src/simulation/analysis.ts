@@ -226,6 +226,17 @@ export interface ModeSummary extends GaugeSummary {
   mode: GameMode;
   bankruptcyRate: number;
   medianValuation: number;
+  /** Mêmes mesures stratégie par stratégie : vérifie l'écart de difficulté entre les modes. */
+  bots: ModeBotSummary[];
+}
+
+export interface ModeBotSummary {
+  bot: BotName;
+  games: number;
+  bankruptcyRate: number;
+  zombieRate: number;
+  unicornRate: number;
+  medianValuation: number;
 }
 
 export interface BalanceReport {
@@ -470,6 +481,22 @@ export function aggregate(allRecords: GameRecord[], cards: CardLibrary): Balance
       bankruptcyRate:
         games.filter((r) => r.outcome === 'BANKRUPTCY').length / Math.max(1, games.length),
       medianValuation: median(games.map((r) => r.valuation)),
+      bots: BOT_NAMES.flatMap((bot): ModeBotSummary[] => {
+        const own = games.filter((r) => r.bot === bot);
+        const n = own.length;
+        if (n === 0) return [];
+        const share = (test: (r: GameRecord) => boolean) => own.filter(test).length / n;
+        return [
+          {
+            bot,
+            games: n,
+            bankruptcyRate: share((r) => r.outcome === 'BANKRUPTCY'),
+            zombieRate: share((r) => r.outcome === 'ZOMBIE'),
+            unicornRate: share((r) => r.phaseReached === 'UNICORN'),
+            medianValuation: median(own.map((r) => r.valuation)),
+          },
+        ];
+      }),
     };
   });
 
@@ -694,6 +721,26 @@ export function renderReport(report: BalanceReport): string {
       lines.push(
         `| ${m.mode} | ${m.games} | ${pct(m.bankruptcyRate)} | ${money(m.medianValuation)} | ${cell(mid?.treasury, 1)} | ${cell(mid?.hype)} | ${cell(mid?.coffee)} | ${cell(end?.hype)} |`,
       );
+    }
+    // Facile, Normal et Hardcore côte à côte, stratégie par stratégie (profils de
+    // `difficultyOf`) : le Facile pardonne sans être gagné d'avance, le Hardcore punit
+    // l'attentisme sans être impossible.
+    const ladder = (['EASY', 'NORMAL', 'HARDCORE'] as const).flatMap(
+      (mode) => report.modes.find((m) => m.mode === mode) ?? [],
+    );
+    if (ladder.length > 1) {
+      lines.push('', '## Difficulté par mode et par stratégie', '');
+      lines.push(
+        '| Mode | Bot | Parties | Faillite | Zombie | Licorne | Valo. médiane |',
+        '| --- | --- | ---: | ---: | ---: | ---: | ---: |',
+      );
+      for (const m of ladder) {
+        for (const b of m.bots) {
+          lines.push(
+            `| ${m.mode} | ${b.bot} | ${b.games} | ${pct(b.bankruptcyRate)} | ${pct(b.zombieRate)} | ${pct(b.unicornRate)} | ${money(b.medianValuation)} |`,
+          );
+        }
+      }
     }
   }
   lines.push('', '## Cartes les plus tirées', '');

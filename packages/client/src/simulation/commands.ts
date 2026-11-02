@@ -25,6 +25,7 @@ import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
 import { buildLobby, setReceptionists } from './lobby';
+import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -201,5 +202,11 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return buildLobby(state, ctx);
     case 'SET_RECEPTIONISTS':
       return setReceptionists(state, ctx, command.count);
+    case 'CALL_CLEANING':
+      return callCleaning(state, ctx, command.express);
+    case 'SUBSCRIBE_CLEANING':
+      return subscribeCleaning(state, ctx, command.plan);
+    case 'CANCEL_CLEANING':
+      return cancelCleaning(state, ctx);
   }
 }

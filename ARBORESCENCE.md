@@ -29,7 +29,7 @@ n'est ni servi par Vite, ni copié dans le build, ni visible en jeu.
 Open_Space_Simulator/
 ├── .github/workflows/        # CI (lint, tests, build, e2e) et déploiement GitHub Pages
 ├── .husky/                   # Hook git : vérifie le format des messages de commit
-├── docs/                     # Rapport d'équilibrage et captures du README
+├── docs/                     # Équilibrage, captures du README, passation, propositions
 ├── packages/
 │   ├── shared/               # Types, schémas Zod, constantes d'équilibrage, cartes, succès
 │   │   └── src/
@@ -70,30 +70,32 @@ le serveur importe aussi la simulation du client pour rejouer les parties (anti-
 
 ## Racine du dépôt
 
-| Fichier                       | Rôle                                                                                        |
-| ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `ARBORESCENCE.md`             | Ce fichier : rôle et emplacement de chaque fichier.                                         |
-| `CLAUDE.md`                   | Cahier des charges complet et « État d'avancement » (liste de tout ce qui est livré).       |
-| `CONTEXTE.md`                 | Relais entre Thomas et Melvin : travaux en cours, décisions en attente, journal.            |
-| `README.md`                   | Documentation principale : installation, architecture, choix techniques, crédits.           |
-| `package.json`                | Scripts du monorepo (`dev`, `lint`, `test`, `build`, `balance`, `db:*`…) et outils communs. |
-| `pnpm-workspace.yaml`         | Déclare les trois paquets du monorepo (`packages/*`).                                       |
-| `pnpm-lock.yaml`              | Versions exactes des dépendances. Généré par pnpm, ne jamais modifier à la main.            |
-| `tsconfig.base.json`          | Réglages TypeScript stricts communs, étendus par chaque paquet.                             |
-| `eslint.config.js`            | Configuration ESLint commune à tout le monorepo.                                            |
-| `.prettierrc.json`            | Règles de mise en forme Prettier.                                                           |
-| `.prettierignore`             | Fichiers que Prettier ne touche pas (build, lockfile, migrations, `CLAUDE.md`).             |
-| `.editorconfig`               | Indentation et fins de ligne communes à tous les éditeurs.                                  |
-| `.gitignore`                  | Fichiers jamais commités (`node_modules`, build, `.env`, rapports de tests).                |
-| `.nvmrc`                      | Version de Node.js à utiliser (`nvm use`).                                                  |
-| `commitlint.config.js`        | Commits conventionnels (`feat:`, `fix:`, `docs:`…), vérifiés par le hook git.               |
-| `.husky/commit-msg`           | Hook git qui lance commitlint sur chaque message de commit.                                 |
-| `docker-compose.yml`          | Base PostgreSQL locale (`pnpm db:up`).                                                      |
-| `render.yaml`                 | Description du service et de la base pour le déploiement sur Render.                        |
-| `.github/workflows/ci.yml`    | CI à chaque push : lint, format, typecheck, tests, build, tests e2e.                        |
-| `.github/workflows/pages.yml` | Build invité et déploiement sur GitHub Pages à chaque fusion dans `main`.                   |
-| `docs/balance.md`             | Rapport d'équilibrage produit par `pnpm balance` (10 000 parties).                          |
-| `docs/screenshots/*.png`      | Captures utilisées dans le README (menu, partie, back-office, desktop et mobile).           |
+| Fichier                             | Rôle                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------- |
+| `ARBORESCENCE.md`                   | Ce fichier : rôle et emplacement de chaque fichier.                                         |
+| `CLAUDE.md`                         | Cahier des charges complet et « État d'avancement » (liste de tout ce qui est livré).       |
+| `CONTEXTE.md`                       | Relais entre Thomas et Melvin : travaux en cours, décisions en attente, journal.            |
+| `README.md`                         | Documentation principale : installation, architecture, choix techniques, crédits.           |
+| `package.json`                      | Scripts du monorepo (`dev`, `lint`, `test`, `build`, `balance`, `db:*`…) et outils communs. |
+| `pnpm-workspace.yaml`               | Déclare les trois paquets du monorepo (`packages/*`).                                       |
+| `pnpm-lock.yaml`                    | Versions exactes des dépendances. Généré par pnpm, ne jamais modifier à la main.            |
+| `tsconfig.base.json`                | Réglages TypeScript stricts communs, étendus par chaque paquet.                             |
+| `eslint.config.js`                  | Configuration ESLint commune à tout le monorepo.                                            |
+| `.prettierrc.json`                  | Règles de mise en forme Prettier.                                                           |
+| `.prettierignore`                   | Fichiers que Prettier ne touche pas (build, lockfile, migrations, `CLAUDE.md`).             |
+| `.editorconfig`                     | Indentation et fins de ligne communes à tous les éditeurs.                                  |
+| `.gitignore`                        | Fichiers jamais commités (`node_modules`, build, `.env`, rapports de tests).                |
+| `.nvmrc`                            | Version de Node.js à utiliser (`nvm use`).                                                  |
+| `commitlint.config.js`              | Commits conventionnels (`feat:`, `fix:`, `docs:`…), vérifiés par le hook git.               |
+| `.husky/commit-msg`                 | Hook git qui lance commitlint sur chaque message de commit.                                 |
+| `docker-compose.yml`                | Base PostgreSQL locale (`pnpm db:up`).                                                      |
+| `render.yaml`                       | Description du service et de la base pour le déploiement sur Render.                        |
+| `.github/workflows/ci.yml`          | CI à chaque push : lint, format, typecheck, tests, build, tests e2e.                        |
+| `.github/workflows/pages.yml`       | Build invité et déploiement sur GitHub Pages à chaque fusion dans `main`.                   |
+| `docs/balance.md`                   | Rapport d'équilibrage produit par `pnpm balance` (10 000 parties).                          |
+| `docs/screenshots/*.png`            | Captures utilisées dans le README (menu, partie, back-office, desktop et mobile).           |
+| `docs/PASSATION-THOMAS.md`          | Partage du travail entre Thomas et Melvin (2 novembre 2026), avec un prompt par tâche.      |
+| `docs/proposition-mode-histoire.md` | Proposition du mode Histoire long, de l'arbre des devs et de l'arbre R&D.                   |
 
 ---
 
@@ -139,6 +141,7 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 | `walls.ts`      | Peintures et papiers peints, zones de mur.                                                 |
 | `projection.ts` | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                |
 | `serverRoom.ts` | Salle des serveurs, équipements et offres fibre.                                           |
+| `lobby.ts`      | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                     |
 | `meetings.ts`   | Formules de salle de réunion, réunion du matin, réunion de crise.                          |
 | `pets.ts`       | Chats du bureau : équipement requis, prix, effets.                                         |
 | `teamRoles.ts`  | Équipe web : devs front, back, fullstack, tech lead, DevOps, QA, encadrement.              |
@@ -265,6 +268,7 @@ graine + mêmes commandes = même partie.
 | `walls.ts`        | Pose des peintures et papiers peints et effets par mur.                                 |
 | `projection.ts`   | Interrupteur des projecteurs et effets des projections.                                 |
 | `serverRoom.ts`   | Effets des salles de serveurs, abonnement et facturation de la fibre.                   |
+| `lobby.ts`        | Aménagement du hall, secrétaires de l'accueil et leurs effets.                          |
 | `pets.ts`         | Adoption des chats, départ, effets sur l'équipe.                                        |
 | `achievements.ts` | Succès vérifiés à partir de l'état.                                                     |
 | `endings.ts`      | Fins de partie et phrase partageable de l'écran de fin.                                 |
@@ -392,6 +396,8 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `projectionModels.ts` | Modèles fixes du projecteur et du caisson de l'écran.                     |
 | `meetingRoom.ts`      | Salle de réunion aménagée selon la formule choisie.                       |
 | `serverRoom.ts`       | Local serveur, salle vitrée et leurs équipements.                         |
+| `lobby.ts`            | Portes à badge, secrétaires, agent de sécurité et caméra du hall.         |
+| `lobbyFurniture.ts`   | Comptoir d'accueil.                                                       |
 | `annexDecor.ts`       | Décor des annexes (arcade, jardin, auditorium).                           |
 | `characters.ts`       | Personnages dans la scène, animés par les clips Kenney.                   |
 | `officeCharacters.ts` | Look de chaque personnage selon le profil du dev.                         |
@@ -471,6 +477,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `story/goals.ts`                  | Phrase de chaque objectif (« Livrer 3 features »).                      |
 | `meetings/MeetingRoom.tsx`        | Panneau « Réunion » : choix de la formule.                              |
 | `servers/ServerRoom.tsx`          | Panneau « Serveurs » : état des salles, offres fibre.                   |
+| `lobby/Lobby.tsx`                 | Panneau « Hall d'entrée » : travaux, secrétaires, sécurité.             |
 | `pets/Pets.tsx`                   | Panneau « Chats » : adoption et liste des chats.                        |
 | `funding/Funding.tsx`             | Panneau « Lever des fonds » : pitch et autres financements.             |
 | `group/Group.tsx`                 | Panneau « Investir » : filiales.                                        |

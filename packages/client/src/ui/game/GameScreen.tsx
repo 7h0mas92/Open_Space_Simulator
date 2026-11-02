@@ -5,6 +5,7 @@ import { SelectionBar } from '../build/SelectionBar';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Kanban } from '../kanban/Kanban';
 import { Credits } from '../settings/Credits';
+import { Leaderboard } from '../meta/Leaderboard';
 import { SaveSlots } from '../menu/SaveSlots';
 import { SlackPanel } from '../slack/SlackPanel';
 import { SlackDock } from '../slack/SlackDock';
@@ -13,10 +14,13 @@ import { useGame, type PanelId, type Toast } from '../store/game';
 import { useSettings } from '../store/settings';
 import { Funding } from '../funding/Funding';
 import { Group } from '../group/Group';
+import { DailyMoment } from '../meetings/DailyMoment';
 import { MeetingRoom } from '../meetings/MeetingRoom';
+import { TicketApp } from '../meetings/TicketApp';
 import { Pets } from '../pets/Pets';
 import { Lobby } from '../lobby/Lobby';
 import { ServerRoom } from '../servers/ServerRoom';
+import { Cleaning } from '../cleaning/Cleaning';
 import { SubscriptionsPanel } from '../subscriptions/Subscriptions';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
@@ -52,12 +56,16 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Group view={view} />;
     case 'meetings':
       return <MeetingRoom view={view} />;
+    case 'tickets':
+      return <TicketApp view={view} />;
     case 'pets':
       return <Pets view={view} />;
     case 'servers':
       return <ServerRoom view={view} />;
     case 'lobby':
       return <Lobby view={view} />;
+    case 'cleaning':
+      return <Cleaning view={view} />;
     case 'subscriptions':
       return <SubscriptionsPanel view={view} />;
     case 'funding':
@@ -70,6 +78,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <SlackPanel />;
     case 'saves':
       return <SaveSlots mode="save" />;
+    case 'leaderboard':
+      return <Leaderboard inGame />;
     case 'settings':
       return <SettingsPanel />;
     case 'credits':
@@ -178,6 +188,7 @@ export function GameScreen() {
     >
       <Scene />
       <Alerts view={view} />
+      {!building && <DailyMoment view={view} />}
       <h1 className="visually-hidden">{t('app.title')}</h1>
       {building ? (
         // Construction : le HUD habituel s'efface pour laisser la scène au joueur.
@@ -189,7 +200,7 @@ export function GameScreen() {
             <Company view={view} />
             <Gauges view={view} />
             <Clock view={view} />
-            <SystemButtons />
+            <SystemButtons view={view} />
           </header>
           <div className="hud-bottom">
             <SelectionBar view={view} />
