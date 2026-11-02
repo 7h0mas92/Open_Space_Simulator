@@ -4,7 +4,7 @@ import {
   LOBBY,
   LOBBY_DECOR,
   SECURITY_PLANS,
-  SECURITY_WEEK_TICKS,
+  TIME,
   getFurniture,
   weeklyFromMonthly,
   type GameState,
@@ -63,8 +63,8 @@ describe('Hall d’entrée : aménagement', () => {
   });
 
   it('le hall passe devant le bureau, avec deux portes à badge et l’entrée au fond', () => {
-    const base = officeLayout('SEED', 0, 0, 'graine');
-    const layout = officeLayout('SEED', 0, 0, 'graine', true);
+    const base = officeLayout('SEED', 0, 0);
+    const layout = officeLayout('SEED', 0, 0, true);
     expect(layout.depth).toBe(base.depth + LOBBY.depth);
     expect(layout.lobby?.wall).toBe(base.depth);
     expect(layout.lobby?.gates).toHaveLength(2);
@@ -82,13 +82,13 @@ describe('Hall d’entrée : aménagement', () => {
     expect(decor.map((f) => f.kind)).toEqual([...LOBBY_DECOR]);
     for (const fixture of decor) expect(fixture.z).toBeGreaterThan(base.depth);
     // Le garage n'a jamais de hall.
-    expect(officeLayout('GARAGE', 0, 0, '', true).lobby).toBeUndefined();
+    expect(officeLayout('GARAGE', 0, 0, true).lobby).toBeUndefined();
   });
 
   it('les portes ne tombent pas devant une cloison du bureau, même avec des annexes', () => {
     for (const phase of ['SEED', 'SERIES_A', 'UNICORN'] as const)
       for (const annexes of [0, 1, 3]) {
-        const layout = officeLayout(phase, 2, annexes, 'graine', true);
+        const layout = officeLayout(phase, 2, annexes, true);
         const blocked = new Set(layout.partitions.map((cell) => `${cell.x},${cell.z}`));
         for (const gate of layout.lobby?.gates ?? []) {
           expect(blocked.has(`${gate.x},${gate.z - 1}`)).toBe(false);
@@ -162,93 +162,87 @@ describe('Hall d’entrée : service de sécurité', () => {
     expect([...prices].sort((a, b) => a - b)).toEqual(prices);
   });
 
-  it('il faut un hall, et la formule 24 h/24 attend la Série A', () => {
+  it('passe par le modèle commun : service security, il faut un hall', () => {
     const simulation = richSeed();
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_SECURITY', plan: 'security-day' }).result,
-    ).toEqual({ ok: false, error: 'NOT_ELIGIBLE' });
-    expect(view(simulation.state).lobby.plans[1]?.blocker).toBe('NO_LOBBY');
+    expect(simulation.dispatch({ type: 'SUBSCRIBE', offer: 'security-day' }).result).toEqual({
+      ok: false,
+      error: 'NOT_ELIGIBLE',
+    });
+    const offers = () =>
+      view(simulation.state).subscriptions.services.find((s) => s.id === 'security')!.offers;
+    expect(offers()[1]).toMatchObject({ requires: 'lobby', blocker: 'REQUIREMENT' });
     simulation.dispatch({ type: 'BUILD_LOBBY' });
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_SECURITY', plan: 'security-24h' }).result,
-    ).toEqual({ ok: false, error: 'LOCKED' });
-    expect(view(simulation.state).lobby.plans[1]?.blocker).toBeNull();
+    expect(simulation.dispatch({ type: 'SUBSCRIBE', offer: 'security-24h' }).result).toEqual({
+      ok: false,
+      error: 'LOCKED',
+    });
+    expect(offers()[1]?.blocker).toBeNull();
+    expect(offers().map((offer) => [offer.price, offer.periodDays])).toEqual(
+      SECURITY_PLANS.map((plan) => [plan.weeklyPrice, 7]),
+    );
   });
 
-  it('première semaine payée à la souscription, puis chaque semaine, effets en plus', () => {
+  it('première semaine payée à la souscription, puis chaque semaine, effets et agent', () => {
     const simulation = richSeed();
     simulation.dispatch({ type: 'BUILD_LOBBY' });
     const plan = SECURITY_PLANS[1]!;
     const effects = computeOfficeEffects(simulation.state);
     const before = simulation.state.gauges.treasury;
-    expect(simulation.dispatch({ type: 'SUBSCRIBE_SECURITY', plan: plan.id }).result.ok).toBe(true);
+    expect(view(simulation.state).lobby.guard).toBeNull();
+    expect(simulation.dispatch({ type: 'SUBSCRIBE', offer: plan.id }).result.ok).toBe(true);
     expect(simulation.state.gauges.treasury).toBe(before - plan.weeklyPrice);
+    expect(view(simulation.state).lobby.guard).toBe('day');
     const guarded = computeOfficeEffects(simulation.state);
     expect(guarded.stabilityPerDay - effects.stabilityPerDay).toBeCloseTo(
       plan.effects.stabilityPerDay ?? 0,
     );
     // Le coût de la sécurité compte dans les mois de trésorerie.
     simulation.state.gauges.users = 0;
-    const security = simulation.state.security!;
+    const subscriptions = [...simulation.state.subscriptions];
     const runway = runwayMonths(simulation.state);
-    simulation.state.security = null;
+    simulation.state.subscriptions = [];
     expect(runwayMonths(simulation.state)).toBeGreaterThan(runway);
-    simulation.state.security = security;
+    simulation.state.subscriptions = subscriptions;
 
+    const security = simulation.state.subscriptions[0]!;
     const due = security.paidUntil;
     advance(simulation, due - simulation.state.tick + 1);
-    expect(simulation.state.security?.paidUntil).toBe(due + SECURITY_WEEK_TICKS);
-    expect(simulation.state.security?.totalPaid).toBe(2 * plan.weeklyPrice);
+    expect(security.paidUntil).toBe(due + 7 * TIME.ticksPerDay);
+    expect(security.totalPaid).toBe(2 * plan.weeklyPrice);
   });
 
-  it('contrat suspendu si la trésorerie ne couvre plus la semaine', () => {
+  it('sans hall, plus d’agent ni d’effets, et coupé si la semaine n’est plus couverte', () => {
     const simulation = richSeed();
     simulation.dispatch({ type: 'BUILD_LOBBY' });
-    simulation.dispatch({ type: 'SUBSCRIBE_SECURITY', plan: 'security-day' });
-    const due = simulation.state.security!.paidUntil;
+    simulation.dispatch({ type: 'SUBSCRIBE', offer: 'security-day' });
+    const lobby = simulation.state.lobby;
+    simulation.state.lobby = null;
+    expect(view(simulation.state).lobby.guard).toBeNull();
+    simulation.state.lobby = lobby;
+    const due = simulation.state.subscriptions[0]!.paidUntil;
     advance(simulation, due - simulation.state.tick - 1);
-    expect(simulation.state.security).not.toBeNull();
+    expect(simulation.state.subscriptions).toHaveLength(1);
     simulation.state.gauges.treasury = 10;
     advance(simulation, 2);
-    expect(simulation.state.security).toBeNull();
-  });
-
-  it('changer de formule ou résilier ne rembourse rien', () => {
-    const simulation = richSeed();
-    simulation.dispatch({ type: 'BUILD_LOBBY' });
-    simulation.dispatch({ type: 'SUBSCRIBE_SECURITY', plan: 'security-alarm' });
-    const since = simulation.state.security!.since;
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_SECURITY', plan: 'security-alarm' }).result.ok,
-    ).toBe(false);
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_SECURITY', plan: 'security-day' }).result.ok,
-    ).toBe(true);
-    expect(simulation.state.security).toMatchObject({ plan: 'security-day', since });
-    const treasury = simulation.state.gauges.treasury;
-    expect(simulation.dispatch({ type: 'CANCEL_SECURITY' }).result.ok).toBe(true);
-    expect(simulation.state.security).toBeNull();
-    expect(simulation.state.gauges.treasury).toBe(treasury);
-    expect(simulation.dispatch({ type: 'CANCEL_SECURITY' }).result.ok).toBe(false);
+    expect(simulation.state.subscriptions).toHaveLength(0);
+    expect(simulation.state.notifications.some((n) => n.kind === 'SECURITY_CUT')).toBe(true);
   });
 });
 
 describe('Hall d’entrée : sauvegardes et replays', () => {
-  it('une vieille sauvegarde n’a ni hall ni sécurité', () => {
+  it('une vieille sauvegarde n’a pas de hall', () => {
     const simulation = richSeed();
     const raw = JSON.parse(JSON.stringify(simulation.state)) as Record<string, unknown>;
     delete raw.lobby;
-    delete raw.security;
     const parsed = GameStateSchema.parse(raw);
     expect(parsed.lobby).toBeNull();
-    expect(parsed.security).toBeNull();
   });
 
   it('aucun tirage : aménager le hall ne change pas la suite du hasard', () => {
     const a = richSeed('meme-graine');
     const b = richSeed('meme-graine');
     b.dispatch({ type: 'BUILD_LOBBY' });
-    b.dispatch({ type: 'SUBSCRIBE_SECURITY', plan: 'security-alarm' });
+    b.dispatch({ type: 'SUBSCRIBE', offer: 'security-alarm' });
     expect(b.state.rng).toEqual(a.state.rng);
   });
 });

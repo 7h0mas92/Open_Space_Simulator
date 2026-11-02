@@ -13,11 +13,11 @@ import {
   type WallFinishId,
   type WallZone,
 } from '@oss/shared';
-import { accessCell, type ItemPlacement } from '../ai/grid';
+import { accessPoint, type ItemPlacement } from '../ai/grid';
 import { catalogItem, DESK_CHAIR, footprint } from '../view/catalog';
 import type { FurnitureColor } from '../view/colors';
 import { slotPosition } from '../view/placement';
-import type { OfficeLayout, RoomKind } from '../view/layout';
+import type { OfficeLayout } from '../view/layout';
 import type { FloorZoneView, PlacedItemView, WallZoneView } from '../view/types';
 import { wallLength, wallOpenings, type WallOpening, type WallSide } from '../view/windows';
 import { paintObject, type AssetLibrary } from './assets';
@@ -48,64 +48,12 @@ import {
   WALL_THICKNESS,
 } from './primitives';
 
-/** Un sol : deux teintes posées en damier, ou en lames (parquet, tapis de scène). */
-interface FloorStyle {
-  readonly colors: readonly [number, number];
-  readonly pattern: 'checker' | 'planks';
-}
-
-const checker = (a: number, b: number): FloorStyle => ({ colors: [a, b], pattern: 'checker' });
-const planks = (a: number, b: number): FloorStyle => ({ colors: [a, b], pattern: 'planks' });
-
 /**
- * Décors de sol de chaque type de pièce. Le premier est le décor d'origine ; les autres sont
- * tirés de la graine (`Room.style`) : d'une partie à l'autre, les pièces changent de look.
- * Le nombre de décors doit correspondre à `ROOM_STYLES` (view/layout.ts), un test le vérifie.
+ * Sol d'origine, le même dans toutes les pièces : deux teintes posées en damier. Ajouter ou
+ * agrandir une pièce ne change jamais sa couleur ; seul le rayon « Sols » du mode construction
+ * la change, pièce par pièce (`render/floorFinishes.ts`).
  */
-export const FLOOR_STYLES: Record<RoomKind, readonly FloorStyle[]> = {
-  open: [
-    checker(0xd9cbb4, 0xd0c1a8),
-    planks(0xb98f64, 0xae855b), // parquet chêne
-    checker(0xbfc2c8, 0xb8bbc1), // moquette grise
-    checker(0xcfccc5, 0xc6c3bc), // béton ciré
-  ],
-  meeting: [
-    checker(0xa9c0d9, 0x9fb6cf),
-    checker(0x9fc4a8, 0x96bb9f), // moquette verte
-    planks(0xc8a27a, 0xbe976f), // parquet
-  ],
-  kitchen: [
-    checker(0xe8e3d6, 0xc9c2b2),
-    checker(0xf1efe9, 0x4a4e57), // damier noir et blanc
-    checker(0xd38b5d, 0xc97f52), // terre cuite
-  ],
-  lounge: [
-    checker(0xc6b3d9, 0xbca8cf),
-    checker(0xe5a874, 0xdb9e6a), // moquette orange
-    checker(0x6a77a6, 0x63709e), // velours bleu nuit
-  ],
-  canteen: [
-    checker(0xe3c9a0, 0xd8bd92),
-    checker(0xc96f4f, 0xbd6545), // tomettes
-    checker(0xbfe3d4, 0xb2d8c8), // carrelage menthe
-  ],
-  incubator: [
-    checker(0xc4dbc0, 0xb8d0b3),
-    planks(0xe0c9a2, 0xd7bf97), // parquet clair
-    checker(0xbdbab3, 0xb6b3ac), // béton
-  ],
-  arcade: [checker(0x4a4380, 0x403a72)], // moquette d'arcade violette
-  garden: [checker(0x8cc277, 0x82b86d)], // pelouse
-  auditorium: [planks(0xb5525a, 0xa94a52)], // moquette rouge
-  // Le hall garde le sol de base de l'open space : une autre teinte reste un choix du joueur.
-  lobby: [checker(0xd9cbb4, 0xd0c1a8)],
-};
-
-/** Décor de sol d'une pièce (le décor d'origine si son style est inconnu). */
-export function floorStyle(kind: RoomKind, style = 0): FloorStyle {
-  const styles = FLOOR_STYLES[kind];
-  return styles[style] ?? (styles[0] as FloorStyle);
-}
+export const BASE_FLOOR_COLORS: readonly [number, number] = [0xd9cbb4, 0xd0c1a8];
 
 /** Partie d'un gabarit : un maillage et sa transformation relative à la racine. */
 export interface TemplatePart {
@@ -237,7 +185,8 @@ function extrasFor(
       color: 'natural',
     });
   if (def?.use !== 'desk' || item.kind === 'standing-desk') return extras;
-  const chairCell = accessCell(item);
+  // La chaise est au point exact devant le bureau, même décalé d'une demi-case.
+  const chairCell = accessPoint(item);
   const facing = new THREE.Quaternion().setFromAxisAngle(
     new THREE.Vector3(0, 1, 0),
     (item.rotation * Math.PI) / 2 + Math.PI,
@@ -312,10 +261,9 @@ export class OfficeView {
 
   /** Reconstruit sol et murs si le plan change (phase, aile, annexe, décor). */
   setLayout(layout: OfficeLayout): void {
-    const styles = layout.rooms.map((room) => room.style ?? 0).join('');
     // Les cloisons cèdent la place aux meubles posés : elles font partie de la clé.
     const partitions = layout.partitions.map((cell) => `${cell.x},${cell.z}`).join(';');
-    const key = `${layout.phase}:${layout.width}x${layout.depth}:${styles}|${partitions}`;
+    const key = `${layout.phase}:${layout.width}x${layout.depth}|${partitions}`;
     if (key === this.layoutKey) return;
     this.layoutKey = key;
     this.layout = layout;
@@ -597,12 +545,8 @@ function buildFloor(layout: OfficeLayout): THREE.Object3D {
     for (let x = 0; x < layout.width; x++) {
       matrix.makeTranslation(x, 0, z);
       mesh.setMatrixAt(index, matrix);
-      const room = [...layout.rooms]
-        .reverse()
-        .find((r) => x >= r.x && x < r.x + r.width && z >= r.z && z < r.z + r.depth);
-      const { colors, pattern } = floorStyle(room?.kind ?? 'open', room?.style);
-      const even = pattern === 'planks' ? x % 2 === 0 : (x + z) % 2 === 0;
-      mesh.setColorAt(index, color.setHex(even ? colors[0] : colors[1]));
+      const [even, odd] = BASE_FLOOR_COLORS;
+      mesh.setColorAt(index, color.setHex((x + z) % 2 === 0 ? even : odd));
       index++;
     }
   }

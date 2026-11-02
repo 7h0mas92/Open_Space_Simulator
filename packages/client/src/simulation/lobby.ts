@@ -1,20 +1,17 @@
 /**
- * Hall d'entrée et service de sécurité côté simulation : aménagement du hall, secrétaires de
- * l'accueil, souscription et facturation hebdomadaire de la sécurité. Les règles (prix, effets,
- * formules) sont dans `@oss/shared` (`lobby.ts`), partagées avec l'interface. Aucun tirage
- * aléatoire : une partie sans hall reste identique.
+ * Hall d'entrée côté simulation : aménagement du hall et secrétaires de l'accueil. Les règles
+ * (prix, effets) sont dans `@oss/shared` (`lobby.ts`), partagées avec l'interface. Le service de
+ * sécurité est un abonnement du modèle commun (service `security`, `subscriptions.ts`), qui
+ * demande un hall. Aucun tirage aléatoire : une partie sans hall reste identique.
  */
 import {
   LOBBY,
   PHASES,
-  SECURITY_WEEK_TICKS,
-  getSecurityPlan,
   type CommandResult,
   type FurnitureEffects,
   type GameState,
-  type SecurityPlanId,
 } from '@oss/shared';
-import { addMoney, moneyText, notify, text, type SimContext } from './helpers';
+import { addMoney, notify, text, type SimContext } from './helpers';
 
 // Comme `phaseIndex` de furniture.ts, qui importe ce module (pas d'import circulaire).
 const phaseIndex = (phase: GameState['phase']) => PHASES.indexOf(phase);
@@ -86,101 +83,15 @@ export function receptionistsMonthly(state: GameState): number {
   return (state.lobby?.receptionists ?? 0) * LOBBY.receptionistMonthly;
 }
 
-/** Coût mensuel de la sécurité (30 jours de jeu), pour le calcul des mois de trésorerie. */
-export function securityMonthly(state: GameState): number {
-  return state.security ? (getSecurityPlan(state.security.plan).weeklyPrice * 30) / 7 : 0;
-}
-
 /**
- * Effets du hall : le hall et ses portes à badge, chaque secrétaire, puis le service de
- * sécurité souscrit (mêmes unités que le mobilier).
+ * Effets du hall : le hall et ses portes à badge, puis chaque secrétaire (mêmes unités que le
+ * mobilier). Le service de sécurité est un abonnement (`subscriptions.ts`) : ses effets passent
+ * par `subscriptionEffects`.
  */
 export function lobbyEffects(state: GameState): FurnitureEffects[] {
   const lobby = state.lobby;
   if (!lobby) return [];
   const effects: FurnitureEffects[] = [LOBBY.effects, LOBBY.badgeEffects];
   for (let i = 0; i < lobby.receptionists; i++) effects.push(LOBBY.receptionistEffects);
-  if (state.security) effects.push(getSecurityPlan(state.security.plan).effects);
   return effects;
-}
-
-/**
- * Souscrit à un service de sécurité, ou passe à un autre : la première semaine de la nouvelle
- * formule est payée tout de suite (la semaine entamée de l'ancienne n'est pas remboursée). Il
- * faut un hall : l'agent et les portes à badge y sont.
- */
-export function subscribeSecurity(
-  state: GameState,
-  ctx: SimContext,
-  planId: SecurityPlanId,
-): CommandResult {
-  if (state.stage === 'PITCH') return { ok: false, error: 'WRONG_STAGE' };
-  const plan = getSecurityPlan(planId);
-  if (phaseIndex(state.phase) < phaseIndex(plan.minPhase)) return { ok: false, error: 'LOCKED' };
-  if (!state.lobby) return { ok: false, error: 'NOT_ELIGIBLE' };
-  if (state.security?.plan === planId) return { ok: false, error: 'NOT_ELIGIBLE' };
-  if (state.gauges.treasury < plan.weeklyPrice) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
-  addMoney(state, -plan.weeklyPrice);
-  const previous = state.security;
-  state.security = {
-    plan: planId,
-    paidUntil: state.tick + SECURITY_WEEK_TICKS,
-    since: previous ? previous.since : state.sprint,
-    totalPaid: (previous?.totalPaid ?? 0) + plan.weeklyPrice,
-  };
-  notify(
-    state,
-    ctx,
-    'SECURITY_SUBSCRIBED',
-    text(
-      previous
-        ? ['Nouvelle formule de sécurité : {plan}.', 'New security plan: {plan}.']
-        : [
-            'Sécurité en place : {plan}, {price} par semaine.',
-            'Security in place: {plan}, {price} a week.',
-          ],
-      { plan: plan.name, price: moneyText(plan.weeklyPrice) },
-    ),
-  );
-  return { ok: true };
-}
-
-/** Résilie le service de sécurité : il s'arrête tout de suite, sans remboursement. */
-export function cancelSecurity(state: GameState, ctx: SimContext): CommandResult {
-  if (state.stage === 'PITCH') return { ok: false, error: 'WRONG_STAGE' };
-  if (!state.security) return { ok: false, error: 'NOT_FOUND' };
-  state.security = null;
-  notify(
-    state,
-    ctx,
-    'SECURITY_CANCELLED',
-    text(['Contrat de sécurité résilié.', 'Security contract cancelled.']),
-  );
-  return { ok: true };
-}
-
-/**
- * Facture de la sécurité, chaque semaine de jeu. Si la trésorerie ne la couvre pas, la société
- * de sécurité suspend le contrat plutôt que de pousser la startup à la faillite.
- */
-export function securitySystem(state: GameState, ctx: SimContext): void {
-  const security = state.security;
-  if (!security || state.tick < security.paidUntil) return;
-  const plan = getSecurityPlan(security.plan);
-  if (state.gauges.treasury < plan.weeklyPrice) {
-    state.security = null;
-    notify(
-      state,
-      ctx,
-      'SECURITY_CUT',
-      text([
-        'Facture de sécurité impayée : le contrat est suspendu.',
-        'Unpaid security bill: the contract is suspended.',
-      ]),
-    );
-    return;
-  }
-  addMoney(state, -plan.weeklyPrice);
-  security.paidUntil += SECURITY_WEEK_TICKS;
-  security.totalPaid += plan.weeklyPrice;
 }

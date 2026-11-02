@@ -321,7 +321,8 @@
     "pets": "Chats du bureau",
     "servers": "Salle des serveurs",
     "mission": "Mission",
-    "lobby": "Hall d’entrée"
+    "lobby": "Hall d’entrée",
+    "subscriptions": "Abonnements"
   },
   "kanban": {
     "columns": {
@@ -1237,7 +1238,7 @@
       "off": "Désactivé"
     },
     "decor": {
-      "intro": "Chaque thème décore le bureau : guirlandes aux murs, objets au sol et sur les bureaux. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
+      "intro": "Chaque thème décore le bureau : guirlandes aux murs et un petit objet sur chaque bureau. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
       "legend": "Réglage du thème {{theme}}",
       "previewAlt": "Un coin de bureau décoré pour le thème {{theme}}",
       "live": "Affiché en ce moment",
@@ -1572,7 +1573,7 @@
           },
           "manage": {
             "title": "Tourner, peindre, déplacer, revendre",
-            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
+            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne, les flèches le décalent d'une demi-case et Échap le repose dans le catalogue. Les objets se posent à la demi-case près : contre un mur fin, la moitié de case libre se meuble, et un objet de 3 cases se centre dans une pièce de 4 (les murs fins et les fenêtres restent sur des cases entières). « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
           },
           "items": {
             "title": "Les objets utiles",
@@ -1947,25 +1948,7 @@
     "hire": "Embaucher une secrétaire ({{salary}} € par mois)",
     "dismiss": "Se séparer d’une secrétaire",
     "payroll": "Salaires de l’accueil : {{price}} € par mois.",
-    "security": {
-      "title": "Service de sécurité",
-      "intro": "Un abonnement payé chaque semaine, aux prix du marché. L’agent se tient dans le hall, à côté des portes à badge.",
-      "none": "aucune",
-      "noneHint": "Aucun service de sécurité pour l’instant.",
-      "needLobby": "Aménage d’abord le hall : l’agent et les portes à badge y sont.",
-      "needLobbyShort": "Il faut un hall d’entrée.",
-      "perWeek": "{{price}} € / semaine",
-      "perMonth": "(≈ {{price}} € / mois)",
-      "subscribe": "S’abonner ({{price}} € la 1re semaine)",
-      "switch": "Changer de formule ({{price}} €)",
-      "currentPlan": "Formule en cours",
-      "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
-      "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
-      "totalPaid": "{{price}} € payés depuis le début",
-      "cancel": "Résilier",
-      "cancelWarning": "Le contrat s’arrête tout de suite, la semaine entamée n’est pas remboursée.",
-      "cancelConfirm": "Oui, résilier"
-    }
+    "noSecurity": "aucune"
   },
   "servers": {
     "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer.",
@@ -1993,26 +1976,7 @@
     "fibreCard": "Abonnement fibre",
     "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
     "fibreCardReady": "La box fibre est posée : choisis une offre.",
-    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs.",
-    "fibre": {
-      "title": "Abonnement fibre",
-      "intro": "La fibre se paie chaque semaine (tous les 7 jours de jeu) et arrive dans la box fibre de ta salle des serveurs. Changer d’offre repart pour une semaine payée tout de suite ; si la trésorerie ne couvre plus la facture, l’opérateur coupe la ligne.",
-      "none": "Pas d’abonnement : choisis une offre ci-dessous.",
-      "needBox": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
-      "needBoxShort": "Il faut une box fibre dans une salle des serveurs.",
-      "connected": "La ligne arrive dans la box : l’offre donne ses effets.",
-      "noBox": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien.",
-      "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
-      "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
-      "totalPaid": "{{price}} € payés en tout",
-      "perWeek": "{{price}} € / semaine",
-      "subscribe": "S’abonner ({{price}} € la 1re semaine)",
-      "switch": "Passer à cette offre ({{price}} €)",
-      "currentPlan": "Ton offre actuelle",
-      "cancel": "Résilier",
-      "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
-      "cancelConfirm": "Résilier la fibre"
-    }
+    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs."
   },
   "story": {
     "title": "Mode Histoire",
@@ -2139,5 +2103,50 @@
         "SOLD": "La startup a été vendue avant la fin de la mission."
       }
     }
+  },
+  "subscriptions": {
+    "intro": "Les services payés à intervalle régulier. La première période se paie à la souscription, puis à chaque échéance ; changer d’offre repart pour une période payée tout de suite. Si la trésorerie ne couvre plus une échéance, le prestataire coupe le service. Résilier l’arrête tout de suite, sans remboursement.",
+    "summaryNone": "Aucun abonnement en cours.",
+    "summary_one": "{{count}} abonnement en cours · environ {{price}} € par mois",
+    "summary_other": "{{count}} abonnements en cours · environ {{price}} € par mois",
+    "services": {
+      "internet": {
+        "name": "Internet",
+        "intro": "La fibre arrive dans la box fibre de ta salle des serveurs et se paie chaque semaine (tous les 7 jours de jeu)."
+      },
+      "security": {
+        "name": "Sécurité",
+        "intro": "Un service de sécurité aux prix du marché, payé chaque semaine (tous les 7 jours de jeu). L’agent se tient dans le hall, à côté des portes à badge."
+      }
+    },
+    "requires": {
+      "fibreBox": {
+        "long": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
+        "short": "Il faut une box fibre dans une salle des serveurs.",
+        "inactive": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien."
+      },
+      "lobby": {
+        "long": "Pour t’abonner, aménage d’abord le hall d’entrée (rayon Accueil) : l’agent et les portes à badge y sont.",
+        "short": "Il faut un hall d’entrée.",
+        "inactive": "Pas de hall d’entrée : tu paies le service mais il ne sert à rien."
+      }
+    },
+    "none": "Pas d’abonnement : choisis une offre ci-dessous.",
+    "active": "Actif : l’offre donne ses effets.",
+    "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
+    "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
+    "totalPaid": "{{price}} € payés en tout",
+    "since": "depuis le sprint {{sprint}}",
+    "perWeek": "{{price}} € / semaine",
+    "perMonth": "{{price}} € / mois",
+    "perDays_one": "{{price}} € / jour",
+    "perDays_other": "{{price}} € / {{count}} jours",
+    "subscribe": "S’abonner ({{price}} € la 1re période)",
+    "switch": "Passer à cette offre ({{price}} €)",
+    "currentOffer": "Ton offre actuelle",
+    "cancel": "Résilier",
+    "cancelWarning": "Le service s’arrête tout de suite, sans remboursement de la période entamée.",
+    "cancelConfirm": "Résilier {{offer}}",
+    "manageAll": "Voir tous les abonnements"
   }
 }

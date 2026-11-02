@@ -21,7 +21,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import type { DeskActivity } from '../audio/deskSounds';
 import { AGENT_TICK_SECONDS, AgentWorld, type AgentSnapshot } from '../ai/agents';
 import { CatWorld, type CatSnapshot } from '../ai/cats';
-import { itemCells } from '../ai/grid';
+import { itemSquares } from '../ai/grid';
 import { catalogItem, footprint } from '../view/catalog';
 import { decorKey, planDecor } from '../view/decor';
 import { layoutOf, officeLayout, type Cell, type OfficeLayout } from '../view/layout';
@@ -32,6 +32,7 @@ import {
   nearestValidCell,
   resolveAccessory,
   slotPosition,
+  snapsToHalf,
 } from '../view/placement';
 import type { GameView, Rotation } from '../view/types';
 import { aimWindow, isWallItem, wallOpenings, type WallSide } from '../view/windows';
@@ -39,7 +40,6 @@ import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
 import { DecorationsView } from './decorations';
 import { MeetingRoomView } from './meetingRoom';
-import { THEME_MODELS } from './decorModels';
 import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
@@ -553,14 +553,7 @@ export class GameRenderer {
     const format = view.meetingRoom.format;
     const key = decorKey(this.layout, view.items, themes, birthday, format);
     if (key === this.decorPlanKey && this.decorPlan) return;
-    const plan = planDecor(
-      this.layout,
-      view.items,
-      themes,
-      birthday,
-      (theme) => THEME_MODELS[theme].floor.length,
-      format,
-    );
+    const plan = planDecor(this.layout, view.items, themes, birthday, format);
     this.decorPlanKey = key;
     this.decorPlan = plan;
     this.world.setDecor(plan.blocked, plan.party, plan.meeting?.seats ?? []);
@@ -966,11 +959,12 @@ export class GameRenderer {
     if (!cell || !build?.kind || !build.cell) return false;
     const def = catalogItem(build.kind);
     const [w, d] = def ? footprint(def, build.rotation) : [1, 1];
+    // Le point visé peut tomber sur une demi-case : on compare aux bords de l'aperçu.
     return (
-      cell.x >= build.cell.x &&
-      cell.x < build.cell.x + w &&
-      cell.z >= build.cell.z &&
-      cell.z < build.cell.z + d
+      cell.x > build.cell.x - 0.75 &&
+      cell.x < build.cell.x + w - 0.25 &&
+      cell.z > build.cell.z - 0.75 &&
+      cell.z < build.cell.z + d - 0.25
     );
   }
 
@@ -992,7 +986,7 @@ export class GameRenderer {
         // La case du meuble la plus proche du point touché.
         let best: Cell | null = null;
         let bestDistance = Infinity;
-        for (const cell of itemCells(host)) {
+        for (const cell of itemSquares(host)) {
           const distance = (cell.x - hit.point.x) ** 2 + (cell.z - hit.point.z) ** 2;
           if (distance < bestDistance) {
             best = cell;
@@ -1002,6 +996,7 @@ export class GameRenderer {
         if (best) return best;
       }
     }
+    if (kind && snapsToHalf(kind)) return this.pointAt(x, y);
     return this.cellAt(x, y);
   }
 
@@ -1279,6 +1274,24 @@ export class GameRenderer {
     const clamp = (value: number, max: number) => Math.max(0, Math.min(max - 1, Math.round(value)));
     const cell = { x: clamp(hit.x, this.layout.width), z: clamp(hit.z, this.layout.depth) };
     return aimWindow(this.layout, kind, cell);
+  }
+
+  /**
+   * Position visée par un objet qui se pose sur une demi-case : le point du sol sous le pointeur,
+   * arrondi à la demi-case, dans le bureau.
+   */
+  private pointAt(x: number, y: number): Cell | null {
+    this.raycaster.setFromCamera(this.ndc(x, y), this.camera);
+    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const hit = this.raycaster.ray.intersectPlane(ground, new THREE.Vector3());
+    if (!hit) return null;
+    const point = { x: Math.round(hit.x * 2) / 2, z: Math.round(hit.z * 2) / 2 };
+    return point.x >= 0 &&
+      point.z >= 0 &&
+      point.x <= this.layout.width - 1 &&
+      point.z <= this.layout.depth - 1
+      ? point
+      : null;
   }
 
   private cellAt(x: number, y: number): Cell | null {

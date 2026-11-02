@@ -1,23 +1,31 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { GameView, SecurityPlanView } from '../../view/types';
-import { formatMoney, localized } from '../game/format';
+import type { GameView } from '../../view/types';
+import { formatMoney } from '../game/format';
 import { useGame } from '../store/game';
+import { ServiceSubscription } from '../subscriptions/Subscriptions';
 
 /*
  * Panneau « Hall d'entrée » (ouvert depuis le rayon Accueil du mode construction, ou en
  * sélectionnant le comptoir) : les travaux du hall au rez-de-chaussée, les secrétaires de
- * l'accueil, puis le service de sécurité payé chaque semaine. Les cartes de sécurité
- * reprennent la présentation des offres fibre.
+ * l'accueil, puis le service de sécurité : un abonnement du modèle commun, le même que dans la
+ * rubrique Abonnements.
  */
 
 export function Lobby({ view }: { view: GameView }) {
   const { t } = useTranslation();
+  const openPanel = useGame((s) => s.openPanel);
   return (
     <div className="servers-panel lobby-panel">
       <p className="hint">{t('lobby.intro')}</p>
       {view.lobby.built ? <Reception view={view} /> : <Build view={view} />}
-      <Security view={view} />
+      <ServiceSubscription view={view} service="security" />
+      <button
+        type="button"
+        onClick={() => openPanel('subscriptions')}
+        data-testid="lobby-open-subscriptions"
+      >
+        🧾 {t('subscriptions.manageAll')}
+      </button>
     </div>
   );
 }
@@ -108,133 +116,5 @@ function Reception({ view }: { view: GameView }) {
         })}
       </p>
     </section>
-  );
-}
-
-function Security({ view }: { view: GameView }) {
-  const { t, i18n } = useTranslation();
-  const dispatch = useGame((s) => s.dispatch);
-  const replay = useGame((s) => s.replayOf !== null);
-  const [confirming, setConfirming] = useState(false);
-  const { security, plans, built } = view.lobby;
-  const current = security ? plans.find((plan) => plan.id === security.plan) : undefined;
-  const money = (amount: number) => formatMoney(amount, i18n.language);
-
-  return (
-    <section className="fibre" aria-labelledby="security-title">
-      <h3 id="security-title" className="group-heading">
-        {t('lobby.security.title')}
-      </h3>
-      <p className="hint">{t('lobby.security.intro')}</p>
-      {security && current ? (
-        <div className="fibre-current" data-testid="security-current">
-          <p>
-            <strong>🛡️ {localized(current.name, i18n.language)}</strong>
-          </p>
-          <p className="hint">{localized(current.coverage, i18n.language)}</p>
-          <p className="hint">
-            {t('lobby.security.nextBill', {
-              price: money(security.weeklyPrice),
-              count: Math.max(1, Math.ceil(security.nextBillDays)),
-            })}{' '}
-            · {t('lobby.security.totalPaid', { price: money(security.totalPaid) })}
-          </p>
-          {confirming ? (
-            <div className="fibre-actions">
-              <p className="hint">{t('lobby.security.cancelWarning')}</p>
-              <button
-                type="button"
-                className="danger"
-                onClick={() => {
-                  setConfirming(false);
-                  void dispatch({ type: 'cancelSecurity' });
-                }}
-                data-testid="security-cancel-confirm"
-              >
-                {t('lobby.security.cancelConfirm')}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)}>
-                {t('group.cancel')}
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              disabled={replay || view.step === 'PITCH'}
-              onClick={() => setConfirming(true)}
-              data-testid="security-cancel"
-            >
-              ✂️ {t('lobby.security.cancel')}
-            </button>
-          )}
-        </div>
-      ) : (
-        <p className="hint" data-testid="security-none">
-          {built ? t('lobby.security.noneHint') : t('lobby.security.needLobby')}
-        </p>
-      )}
-      <ul className="fibre-plans">
-        {plans.map((plan) => (
-          <li key={plan.id}>
-            <PlanCard plan={plan} subscribed={security !== null} disabled={replay} />
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function PlanCard({
-  plan,
-  subscribed,
-  disabled,
-}: {
-  plan: SecurityPlanView;
-  subscribed: boolean;
-  disabled: boolean;
-}) {
-  const { t, i18n } = useTranslation();
-  const dispatch = useGame((s) => s.dispatch);
-  const price = formatMoney(plan.weeklyPrice, i18n.language);
-  const reason =
-    plan.blocker === null || plan.blocker === 'CURRENT'
-      ? null
-      : plan.blocker === 'LOCKED'
-        ? t('build.locked', { phase: t(`phases.${plan.minPhase}`) })
-        : plan.blocker === 'NO_LOBBY'
-          ? t('lobby.security.needLobbyShort')
-          : t(`results.${plan.blocker}`);
-  const current = plan.blocker === 'CURRENT';
-  return (
-    <article
-      className={`fibre-plan${current ? ' current' : ''}${plan.blocker === 'LOCKED' ? ' locked' : ''}`}
-      data-testid={`security-plan-${plan.id}`}
-    >
-      <h4>{localized(plan.name, i18n.language)}</h4>
-      <p className="fibre-price">
-        {t('lobby.security.perWeek', { price })}{' '}
-        <span className="fibre-speed">
-          {t('lobby.security.perMonth', { price: formatMoney(plan.monthlyPrice, i18n.language) })}
-        </span>
-      </p>
-      <p className="fibre-speed">{localized(plan.coverage, i18n.language)}</p>
-      <p className="hint">{localized(plan.description, i18n.language)}</p>
-      {current ? (
-        <p className="server-state up">{t('lobby.security.currentPlan')}</p>
-      ) : (
-        <button
-          type="button"
-          className="primary"
-          disabled={disabled || plan.blocker !== null}
-          onClick={() => void dispatch({ type: 'subscribeSecurity', plan: plan.id })}
-          data-testid={`security-subscribe-${plan.id}`}
-        >
-          {subscribed
-            ? t('lobby.security.switch', { price })
-            : t('lobby.security.subscribe', { price })}
-        </button>
-      )}
-      {reason && <p className="hint">{reason}</p>}
-    </article>
   );
 }

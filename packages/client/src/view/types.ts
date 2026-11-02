@@ -17,9 +17,9 @@ import type {
   FloorMaterialId,
   FloorZone,
   ComputerId,
-  FibrePlanId,
-  SecurityPlanId,
   ServerRoomNeed,
+  SubscriptionRequirement,
+  SubscriptionService,
   WallFinishId,
   WallZone,
   Birthday,
@@ -584,19 +584,7 @@ export interface ServerRoomView {
   readonly slots: number;
 }
 
-/** Une offre fibre et pourquoi on ne peut pas y souscrire maintenant. */
-export interface FibrePlanView {
-  readonly id: FibrePlanId;
-  readonly name: LocalizedText;
-  readonly description: LocalizedText;
-  readonly speed: LocalizedText;
-  readonly weeklyPrice: number;
-  readonly minPhase: Phase;
-  /** `CURRENT` : c'est l'offre en cours ; `NO_BOX` : aucune box fibre dans une salle. */
-  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'NO_BOX' | 'CURRENT' | 'WRONG_STAGE' | null;
-}
-
-/** Salles des serveurs et abonnement fibre. */
+/** Salles des serveurs (l'abonnement fibre est dans `GameView.subscriptions`). */
 export interface ServersView {
   readonly rooms: readonly ServerRoomView[];
   /** Part de la facture d'hébergement épargnée grâce aux serveurs (0.18 = -18 %). */
@@ -604,33 +592,62 @@ export interface ServersView {
   readonly hostingSavingMax: number;
   /** Une box fibre est posée dans une salle des serveurs. */
   readonly hasBox: boolean;
-  /** Abonnement en cours, sinon null. */
-  readonly fibre: {
-    readonly plan: FibrePlanId;
-    /** La ligne arrive dans une box : ses effets comptent. */
-    readonly connected: boolean;
-    /** Jours de jeu avant le prochain prélèvement. */
-    readonly nextBillDays: number;
-    readonly weeklyPrice: number;
-    readonly totalPaid: number;
-  } | null;
-  readonly plans: readonly FibrePlanView[];
 }
 
-/** Une formule de sécurité et pourquoi on ne peut pas y souscrire maintenant. */
-export interface SecurityPlanView {
-  readonly id: SecurityPlanId;
+/**
+ * Pourquoi on ne peut pas souscrire à une offre maintenant. `CURRENT` : c'est l'offre en cours ;
+ * `REQUIREMENT` : l'installation demandée (`requires`) manque.
+ */
+export type SubscriptionBlocker =
+  'LOCKED' | 'NOT_ENOUGH_MONEY' | 'REQUIREMENT' | 'CURRENT' | 'WRONG_STAGE' | null;
+
+/** Une offre d'abonnement. */
+export interface SubscriptionOfferView {
+  readonly id: string;
+  readonly service: SubscriptionService;
   readonly name: LocalizedText;
   readonly description: LocalizedText;
-  readonly coverage: LocalizedText;
-  readonly monthlyPrice: number;
-  readonly weeklyPrice: number;
+  readonly detail: LocalizedText | null;
+  /** Prix d'une période, et sa durée en jours de jeu. */
+  readonly price: number;
+  readonly periodDays: number;
   readonly minPhase: Phase;
-  /** `CURRENT` : c'est la formule en cours ; `NO_LOBBY` : il faut d'abord un hall. */
-  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'NO_LOBBY' | 'CURRENT' | 'WRONG_STAGE' | null;
+  readonly requires: SubscriptionRequirement | null;
+  readonly blocker: SubscriptionBlocker;
 }
 
-/** Hall d'entrée du rez-de-chaussée, ses secrétaires et le service de sécurité. */
+/** L'abonnement en cours d'un service. */
+export interface CurrentSubscriptionView {
+  readonly offer: SubscriptionOfferView;
+  /** L'installation demandée est là : ses effets comptent (sinon il est payé pour rien). */
+  readonly active: boolean;
+  /** Jours de jeu avant le prochain prélèvement. */
+  readonly nextBillDays: number;
+  /** Sprint de la souscription. */
+  readonly since: number;
+  readonly totalPaid: number;
+  /** Coût ramené à 30 jours de jeu. */
+  readonly monthly: number;
+}
+
+/** Un service (internet, ménage…), son abonnement en cours et ses offres. */
+export interface SubscriptionServiceView {
+  readonly id: SubscriptionService;
+  readonly icon: string;
+  readonly current: CurrentSubscriptionView | null;
+  readonly offers: readonly SubscriptionOfferView[];
+}
+
+/** Rubrique « Abonnements ». */
+export interface SubscriptionsView {
+  readonly services: readonly SubscriptionServiceView[];
+  /** Nombre d'abonnements en cours. */
+  readonly count: number;
+  /** Total des abonnements ramené à 30 jours de jeu. */
+  readonly monthlyTotal: number;
+}
+
+/** Hall d'entrée du rez-de-chaussée, ses secrétaires et l'agent de sécurité. */
 export interface LobbyView {
   /** Le hall est aménagé. */
   readonly built: boolean;
@@ -642,17 +659,11 @@ export interface LobbyView {
   readonly receptionists: number;
   readonly maxReceptionists: number;
   readonly receptionistMonthly: number;
-  /** Formule de sécurité en cours, sinon null. */
-  readonly security: {
-    readonly plan: SecurityPlanId;
-    /** Un agent se tient dans le hall : en journée seulement, ou jour et nuit. */
-    readonly guard: 'none' | 'day' | 'always';
-    /** Jours de jeu avant le prochain prélèvement. */
-    readonly nextBillDays: number;
-    readonly weeklyPrice: number;
-    readonly totalPaid: number;
-  } | null;
-  readonly plans: readonly SecurityPlanView[];
+  /**
+   * Agent de sécurité de l'abonnement en cours (service `security`, actif seulement avec le
+   * hall) : aucun, en journée, ou jour et nuit. `null` sans abonnement de sécurité actif.
+   */
+  readonly guard: 'none' | 'day' | 'always' | null;
 }
 
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
@@ -780,10 +791,12 @@ export interface GameView {
   readonly pets: PetsView;
   /** Peintures et papiers peints des murs. */
   readonly walls: WallsView;
-  /** Salles des serveurs et abonnement fibre. */
+  /** Salles des serveurs. */
   readonly servers: ServersView;
   /** Hall d'entrée, accueil et sécurité. */
   readonly lobby: LobbyView;
+  /** Abonnements (internet…). */
+  readonly subscriptions: SubscriptionsView;
   /** Sols des pièces. */
   readonly floors: FloorsView;
   readonly canIpo: boolean;
@@ -885,14 +898,12 @@ export type GameCommand =
   | { readonly type: 'coverFloor'; readonly zone: FloorZone; readonly finish: FloorFinish }
   | { readonly type: 'adoptPet'; readonly coat: PetCoat }
   | { readonly type: 'rehomePet'; readonly petId: string }
-  /** Souscrit à une offre fibre (ou en change). */
-  | { readonly type: 'subscribeFibre'; readonly plan: FibrePlanId }
-  | { readonly type: 'cancelFibre' }
-  /** Aménage le hall d'entrée, règle l'accueil et le service de sécurité. */
+  /** Souscrit à une offre (ou change d'offre pour son service). */
+  | { readonly type: 'subscribe'; readonly offer: string }
+  | { readonly type: 'cancelSubscription'; readonly service: SubscriptionService }
+  /** Aménage le hall d'entrée, règle l'accueil. */
   | { readonly type: 'buildLobby' }
-  | { readonly type: 'setReceptionists'; readonly count: number }
-  | { readonly type: 'subscribeSecurity'; readonly plan: SecurityPlanId }
-  | { readonly type: 'cancelSecurity' };
+  | { readonly type: 'setReceptionists'; readonly count: number };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

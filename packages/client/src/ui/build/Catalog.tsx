@@ -256,9 +256,10 @@ function AdoptCard({ view }: { view: GameView }) {
 function FibreCard({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const openPanel = useGame((s) => s.openPanel);
-  const { fibre, plans, hasBox } = view.servers;
-  const current = fibre ? plans.find((plan) => plan.id === fibre.plan) : undefined;
-  const cheapest = Math.min(...plans.map((plan) => plan.weeklyPrice));
+  const { hasBox } = view.servers;
+  const internet = view.subscriptions.services.find((service) => service.id === 'internet');
+  const current = internet?.current?.offer;
+  const cheapest = Math.min(...(internet?.offers ?? []).map((offer) => offer.price));
   return (
     <button
       type="button"
@@ -272,12 +273,12 @@ function FibreCard({ view }: { view: GameView }) {
       <span className="catalog-card-name">{t('servers.fibreCard')}</span>
       <span className="catalog-card-meta">
         <span className="catalog-card-price">
-          {t('servers.fibre.perWeek', {
-            price: formatMoney(fibre?.weeklyPrice ?? cheapest, i18n.language),
+          {t('subscriptions.perWeek', {
+            price: formatMoney(current?.price ?? cheapest, i18n.language),
           })}
         </span>
       </span>
-      <span className={fibre || hasBox ? 'catalog-card-text' : 'catalog-card-text locked'}>
+      <span className={current || hasBox ? 'catalog-card-text' : 'catalog-card-text locked'}>
         {current
           ? t('servers.fibreCardCurrent', { plan: localized(current.name, i18n.language) })
           : hasBox
@@ -296,7 +297,7 @@ function LobbyCard({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const openPanel = useGame((s) => s.openPanel);
   const { lobby } = view;
-  const plan = lobby.security ? lobby.plans.find((p) => p.id === lobby.security?.plan) : undefined;
+  const plan = view.subscriptions.services.find((s) => s.id === 'security')?.current?.offer;
   return (
     <button
       type="button"
@@ -325,7 +326,7 @@ function LobbyCard({ view }: { view: GameView }) {
         {lobby.built
           ? t('lobby.cardStatus', {
               count: lobby.receptionists,
-              security: plan ? localized(plan.name, i18n.language) : t('lobby.security.none'),
+              security: plan ? localized(plan.name, i18n.language) : t('lobby.noSecurity'),
             })
           : lobby.buildBlocker === 'LOCKED'
             ? t('build.locked', { phase: t(`phases.${lobby.minPhase}`) })

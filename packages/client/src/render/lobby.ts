@@ -149,13 +149,9 @@ export function receptionOpen(minute: number, weekday: number): boolean {
 }
 
 /** L'agent est dans le hall : de 8 h à 20 h en semaine, ou tout le temps (gardiennage 24 h/24). */
-export function guardOnDuty(
-  guard: LobbyView['security'],
-  minute: number,
-  weekday: number,
-): boolean {
-  if (!guard || guard.guard === 'none') return false;
-  if (guard.guard === 'always') return true;
+export function guardOnDuty(guard: LobbyView['guard'], minute: number, weekday: number): boolean {
+  if (!guard || guard === 'none') return false;
+  if (guard === 'always') return true;
   return weekday < 5 && minute >= 8 * 60 && minute < 20 * 60;
 }
 
@@ -230,14 +226,14 @@ export class LobbyRenderer {
       }
     });
     const gate = this.gates[0];
-    const onDuty = lobby.built && guardOnDuty(lobby.security, scene.minute, scene.weekday);
+    const onDuty = lobby.built && guardOnDuty(lobby.guard, scene.minute, scene.weekday);
     this.guard.body.visible = onDuty && gate !== undefined;
     if (gate) {
       // L'agent se tient côté hall, à gauche des portes, tourné vers l'entrée.
       this.guard.body.position.set(gate.root.position.x - 1.7, 0, gate.root.position.z + 1.3);
       this.guard.body.rotation.y = Math.PI / 6;
     }
-    this.camera.visible = lobby.built && lobby.security !== null;
+    this.camera.visible = lobby.built && lobby.guard !== null;
   }
 
   /**

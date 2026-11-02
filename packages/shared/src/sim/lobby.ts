@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
-import { TIME } from './balance.js';
 import type { FurnitureEffects, FurnitureId } from './furniture.js';
 
 /**
@@ -47,9 +46,6 @@ export const LOBBY = {
     hypePerDay: 0.02,
   } satisfies FurnitureEffects,
 } as const;
-
-/** Une semaine de jeu, en ticks : la sécurité est facturée à ce rythme. */
-export const SECURITY_WEEK_TICKS = TIME.ticksPerDay * 7;
 
 /** Prix hebdomadaire d'un abonnement à partir de son prix mensuel (12 mois = 52 semaines). */
 export function weeklyFromMonthly(monthly: number): number {
@@ -137,18 +133,6 @@ export const LobbyStateSchema = z.object({
   receptionists: z.number().int().min(0).max(LOBBY.maxReceptionists).default(0),
 });
 export type LobbyState = z.infer<typeof LobbyStateSchema>;
-
-/** Abonnement de sécurité en cours (même forme que la fibre). */
-export const SecuritySubscriptionSchema = z.object({
-  plan: SecurityPlanIdSchema,
-  /** Tick jusqu'auquel la semaine est payée : la suivante est facturée à ce moment-là. */
-  paidUntil: z.number().int().nonnegative(),
-  /** Sprint de la souscription. */
-  since: z.number().int().min(1),
-  /** Total payé depuis la souscription. */
-  totalPaid: z.number().nonnegative(),
-});
-export type SecuritySubscription = z.infer<typeof SecuritySubscriptionSchema>;
 
 /** Comptoir d'accueil : les secrétaires s'y installent. */
 export const RECEPTION_DESK_ID = 'reception-desk';

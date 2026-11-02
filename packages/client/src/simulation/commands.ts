@@ -24,8 +24,8 @@ import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
-import { buildLobby, cancelSecurity, setReceptionists, subscribeSecurity } from './lobby';
-import { cancelFibre, subscribeFibre } from './serverRoom';
+import { buildLobby, setReceptionists } from './lobby';
+import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
@@ -190,16 +190,16 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
     case 'REHOME_PET':
       return rehomePet(state, ctx, command.petId);
     case 'SUBSCRIBE_FIBRE':
-      return subscribeFibre(state, ctx, command.plan);
+      return subscribe(state, ctx, command.plan);
     case 'CANCEL_FIBRE':
-      return cancelFibre(state, ctx);
+      return cancelSubscription(state, ctx, 'internet');
+    case 'SUBSCRIBE':
+      return subscribe(state, ctx, command.offer);
+    case 'CANCEL_SUBSCRIPTION':
+      return cancelSubscription(state, ctx, command.service);
     case 'BUILD_LOBBY':
       return buildLobby(state, ctx);
     case 'SET_RECEPTIONISTS':
       return setReceptionists(state, ctx, command.count);
-    case 'SUBSCRIBE_SECURITY':
-      return subscribeSecurity(state, ctx, command.plan);
-    case 'CANCEL_SECURITY':
-      return cancelSecurity(state, ctx);
   }
 }

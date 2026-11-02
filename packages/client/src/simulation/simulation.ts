@@ -30,9 +30,8 @@ import { taskFlowSystem } from './taskFlow';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
-import { securitySystem } from './lobby';
-import { fibreSystem } from './serverRoom';
 import { checkMission } from './story';
+import { migrateLegacyFibre, subscriptionSystem } from './subscriptions';
 
 /** Un système = une fonction qui fait évoluer l'état pendant un tick. */
 export type System = (state: GameState, ctx: SimContext, clock: SimClock) => void;
@@ -49,8 +48,7 @@ export const SYSTEMS: readonly System[] = [
   eventSystem,
   dailySystem,
   calendarSystem,
-  (state, ctx) => fibreSystem(state, ctx),
-  (state, ctx) => securitySystem(state, ctx),
+  (state, ctx) => subscriptionSystem(state, ctx),
 ];
 
 export interface DispatchResult {
@@ -90,6 +88,8 @@ export class Simulation {
     migrateRenamedItems(state);
     // Vieilles sauvegardes : les combinés meuble + appareil de cuisine deviennent deux objets.
     migrateLegacyKitchen(state);
+    // Vieilles sauvegardes : l'abonnement fibre rejoint la liste des abonnements.
+    migrateLegacyFibre(state);
     return new Simulation(state, cards, commands);
   }
 
@@ -98,12 +98,12 @@ export class Simulation {
    * ou en retire une (un des deux compteurs change). Les postes vont aux devs présents au
    * bureau : la liste des télétravailleurs fait donc aussi partie de la clé, comme la formule
    * de la salle de réunion, les ordinateurs des bureaux (changés sans nouvelle entité),
-   * l'abonnement fibre et la salle de chaque équipement serveur (déplaçable d'une salle à l'autre),
-   * le hall, ses secrétaires et le service de sécurité.
+   * les abonnements, la salle de chaque équipement serveur (déplaçable d'une salle à l'autre),
+   * le hall et ses secrétaires.
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.fibre?.plan ?? '-'}:${serverGearKey(state)}:${lobbyKey(state)}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.subscriptions.map((s) => s.offer).join(',')}:${serverGearKey(state)}:${lobbyKey(state)}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;
@@ -188,5 +188,5 @@ function serverGearKey(state: GameState): string {
 
 /** Hall d'entrée : aménagé ou non, nombre de secrétaires, formule de sécurité. */
 function lobbyKey(state: GameState): string {
-  return state.lobby ? `${state.lobby.receptionists}/${state.security?.plan ?? '-'}` : '-';
+  return state.lobby ? `${state.lobby.receptionists}` : '-';
 }

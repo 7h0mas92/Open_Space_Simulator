@@ -52,6 +52,7 @@ export const PANELS = [
   'pets',
   'servers',
   'lobby',
+  'subscriptions',
   'funding',
   'mission',
   'dashboard',
