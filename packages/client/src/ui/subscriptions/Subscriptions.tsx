@@ -62,6 +62,11 @@ export function ServiceSubscription({
         {t(`subscriptions.services.${service.id}.name`)}
       </h3>
       <p className="hint">{t(`subscriptions.services.${service.id}.intro`)}</p>
+      {service.offers.some((offer) => offer.maxUsers !== null) && (
+        <p className="server-saving" data-testid={`subscription-${service.id}-users`}>
+          👥 {t('subscriptions.users', { count: view.subscriptions.users })}
+        </p>
+      )}
       {service.current ? (
         <CurrentCard current={service.current} service={service} view={view} />
       ) : (
@@ -70,7 +75,12 @@ export function ServiceSubscription({
       <ul className="sub-offers">
         {service.offers.map((offer) => (
           <li key={offer.id}>
-            <OfferCard offer={offer} subscribed={service.current !== null} disabled={replay} />
+            <OfferCard
+              offer={offer}
+              subscribed={service.current !== null}
+              disabled={replay}
+              users={view.subscriptions.users}
+            />
           </li>
         ))}
       </ul>
@@ -124,10 +134,26 @@ function CurrentCard({
         </strong>{' '}
         <span className="sub-detail">{price}</span>
       </p>
-      <p className={current.active ? 'server-state up' : 'server-state down'}>
-        {current.active || !offer.requires
-          ? t('subscriptions.active')
-          : t(`subscriptions.requires.${offer.requires}.inactive`)}
+      <p
+        className={
+          current.active && current.penalty === 0 ? 'server-state up' : 'server-state down'
+        }
+        data-testid={`subscription-${service.id}-state`}
+      >
+        {!current.active && offer.requires
+          ? t(`subscriptions.requires.${offer.requires}.inactive`)
+          : current.penalty > 0 && offer.maxUsers !== null
+            ? t('subscriptions.saturated', {
+                count: view.subscriptions.users,
+                max: offer.maxUsers,
+                percent: Math.round(current.penalty * 100),
+              })
+            : offer.maxUsers !== null
+              ? t('subscriptions.activeUsers', {
+                  count: view.subscriptions.users,
+                  max: offer.maxUsers,
+                })
+              : t('subscriptions.active')}
       </p>
       <p className="hint">
         {t('subscriptions.nextBill', {
@@ -173,14 +199,18 @@ function OfferCard({
   offer,
   subscribed,
   disabled,
+  users,
 }: {
   offer: SubscriptionOfferView;
   subscribed: boolean;
   disabled: boolean;
+  users: number;
 }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
-  const amount = formatMoney(offer.price, i18n.language);
+  // Le premier paiement : la première période, plus les frais de mise en service.
+  const amount = formatMoney(offer.firstPayment, i18n.language);
+  const tooSmall = offer.maxUsers !== null && users > offer.maxUsers;
   const price = usePrice(offer.price, offer.periodDays);
   const current = offer.blocker === 'CURRENT';
   const reason =
@@ -203,6 +233,17 @@ function OfferCard({
         )}
       </h4>
       <p className="sub-price">{price}</p>
+      {offer.maxUsers !== null && (
+        <p className={tooSmall ? 'sub-users down' : 'sub-users'}>
+          👥 {t('subscriptions.maxUsers', { count: offer.maxUsers })}
+          {tooSmall && ` · ${t('subscriptions.tooSmall')}`}
+        </p>
+      )}
+      {offer.setupFee > 0 && (
+        <p className="hint">
+          {t('subscriptions.setupFee', { price: formatMoney(offer.setupFee, i18n.language) })}
+        </p>
+      )}
       <p className="hint">{localized(offer.description, i18n.language)}</p>
       {current ? (
         <p className="server-state up">{t('subscriptions.currentOffer')}</p>

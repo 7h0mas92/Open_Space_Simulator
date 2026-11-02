@@ -447,7 +447,9 @@ flowchart LR
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
 - **Murs fins** : le rayon Cloisons propose un mur fin à mi-hauteur et un mur fin vitré du sol
-  au plafond, posés case par case. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
+  au plafond, posés case par case. Les autres objets se posent à la demi-case près : la moitié
+  de case libre de chaque côté d'un mur fin se meuble, et un objet de 3 cases se centre dans une
+  pièce de 4. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
   eux (angles, T, croix), sans jour entre deux murs, et se tournent, se repeignent et se revendent.
   Un mur qui enfermerait une zone est refusé, pour que chacun puisse toujours rejoindre son bureau.
   Quand le bureau s'agrandit, le plan cède la place aux meubles déjà posés : une cloison qui
@@ -456,9 +458,9 @@ flowchart LR
 - **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble, un
   projecteur fixé au plafond (sans prendre de place au sol ni sur un bureau) et
   trois écrans de projection déroulants (2, 3 et 4 cases). Allumé et tourné vers un écran, le
-  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. Projecteur et
-  écran ne donnent leur effet (moral, qualité, hype, léger malus de productivité) que pendant la
-  projection.
+  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. La toile reste
+  toute blanche, sans cadre noir, quand elle monte ou descend. Projecteur et écran ne donnent leur
+  effet (moral, qualité, hype, léger malus de productivité) que pendant la projection.
 - **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
   fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
   au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
@@ -478,10 +480,15 @@ flowchart LR
   une salle des serveurs vitrée (dès la Série A), à équiper au choix : serveurs rack, lames ou
   GPU, switch, box fibre, climatisation, onduleur, NAS de sauvegarde, pare-feu et extinction
   automatique. Une salle ne tourne qu'avec un serveur, du réseau et du froid ; elle réduit alors la
-  facture d'hébergement (jusqu'à 40 %) et renforce la stabilité. Le panneau « 🗄️ Serveurs »
-  montre ce qui manque et propose trois abonnements fibre payés chaque semaine (400, 900 ou
-  2 500 €), qui demandent une box fibre posée dans une salle ; faute de trésorerie à l'échéance,
-  la ligne est coupée.
+  facture d'hébergement (jusqu'à 40 %) et renforce la stabilité. Chaque appareil chauffe et chaque
+  clim refroidit (climatiseur mural 5 kW, clim de précision 15 kW, clim en rangée 35 kW) : au-delà
+  de 27 °C la salle ne donne que la moitié de ses effets, au-delà de 32 °C elle plante et la prod
+  en pâtit (+3 °C l'été). La sonde de supervision affiche la température et prévient quand elle
+  change. Internet est un abonnement (rubrique 🧾 Abonnements, reprise dans le panneau « 🗄️
+  Serveurs ») : 6 offres aux prix des opérateurs français pour les entreprises, de la box 4G
+  (39 €/mois, 3 salariés) à la fibre dédiée 10 Gb/s (2 600 €/mois, 200 salariés), prélevées
+  chaque semaine, avec frais de mise en service. Au-delà de son nombre de salariés, le réseau
+  sature et toute l'équipe ralentit ; seule la fibre dédiée demande une box fibre dans une salle.
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
@@ -845,7 +852,7 @@ génère que des messages Slack.
   MacBook Pro sans logo, cinq écrans sur pied ou sur bras articulé (dont un incurvé), bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran géant des annexes (aussi en vente), ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
   local et salle des serveurs, serveurs rack, lames et GPU, switch, box fibre, climatisation de
-  précision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz,
+  précision, climatiseur mural, clim en rangée, sonde de supervision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz,
   litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,

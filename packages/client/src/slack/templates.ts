@@ -3146,6 +3146,46 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
       'No more internet. What now, read the docs offline? Are there offline docs?',
     ),
   },
+  // ─── INTERNET_SATURATED / SERVER_ROOM_WARM / SERVER_ROOM_OVERHEAT ─────────
+  {
+    trigger: 'INTERNET_SATURATED',
+    channel: 'general',
+    author: dev(),
+    text: t(
+      'Quelqu’un regarde Netflix ? Mon git pull est à 12 Ko/s. 😤',
+      'Is someone watching Netflix? My git pull is at 12 KB/s. 😤',
+    ),
+  },
+  {
+    trigger: 'INTERNET_SATURATED',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('🐌 {event}', '🐌 {event}'),
+  },
+  {
+    trigger: 'SERVER_ROOM_WARM',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('🌡️ {event}', '🌡️ {event}'),
+  },
+  {
+    trigger: 'SERVER_ROOM_OVERHEAT',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t(
+      '🔥 {event} Quelqu’un peut ouvrir la porte et mettre un ventilo ?',
+      '🔥 {event} Can someone open the door and bring a fan?',
+    ),
+  },
+  {
+    trigger: 'SERVER_ROOM_OVERHEAT',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'On pourrait faire cuire des œufs sur la baie 3. Je dis ça, je dis rien.',
+      'You could fry eggs on rack 3. Just saying.',
+    ),
+  },
   // ─── OFFICE_DIRTY / CLEANING_* ───────────────────────────────────────────
   {
     trigger: 'OFFICE_DIRTY',

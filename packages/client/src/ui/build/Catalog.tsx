@@ -245,12 +245,11 @@ function AdoptCard({ view }: { view: GameView }) {
 
 /**
  * Rayon Serveurs : la première carte ouvre le panneau de la salle des serveurs (état des salles,
- * abonnement fibre). Elle rappelle l'offre en cours ou ce qu'il faut pour s'abonner.
+ * abonnement internet). Elle rappelle l'offre en cours, ou le prix de la moins chère.
  */
 function FibreCard({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const openPanel = useGame((s) => s.openPanel);
-  const { hasBox } = view.servers;
   const internet = view.subscriptions.services.find((service) => service.id === 'internet');
   const current = internet?.current?.offer;
   const cheapest = Math.min(...(internet?.offers ?? []).map((offer) => offer.price));
@@ -272,12 +271,10 @@ function FibreCard({ view }: { view: GameView }) {
           })}
         </span>
       </span>
-      <span className={current || hasBox ? 'catalog-card-text' : 'catalog-card-text locked'}>
+      <span className="catalog-card-text">
         {current
           ? t('servers.fibreCardCurrent', { plan: localized(current.name, i18n.language) })
-          : hasBox
-            ? t('servers.fibreCardReady')
-            : t('servers.fibreCardMissing')}
+          : t('servers.fibreCardReady')}
       </span>
     </button>
   );
