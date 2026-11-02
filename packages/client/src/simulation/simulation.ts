@@ -30,6 +30,7 @@ import { taskFlowSystem } from './taskFlow';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
+import { isSummer, serverHeatSystem } from './serverRoom';
 import { cleaningSystem } from './cleaning';
 import { checkMission } from './story';
 import { migrateLegacyFibre, subscriptionSystem } from './subscriptions';
@@ -50,6 +51,7 @@ export const SYSTEMS: readonly System[] = [
   dailySystem,
   calendarSystem,
   (state, ctx) => subscriptionSystem(state, ctx),
+  (state, ctx) => serverHeatSystem(state, ctx),
   cleaningSystem,
 ];
 
@@ -100,11 +102,12 @@ export class Simulation {
    * ou en retire une (un des deux compteurs change). Les postes vont aux devs présents au
    * bureau : la liste des télétravailleurs fait donc aussi partie de la clé, comme la formule
    * de la salle de réunion, les ordinateurs des bureaux (changés sans nouvelle entité),
-   * les abonnements et la salle de chaque équipement serveur (déplaçable d'une salle à l'autre).
+   * les abonnements, la salle de chaque équipement serveur (déplaçable d'une salle à l'autre)
+   * et l'été (les salles des serveurs chauffent plus).
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.subscriptions.map((s) => s.offer).join(',')}:${serverGearKey(state)}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.subscriptions.map((s) => s.offer).join(',')}:${serverGearKey(state)}:${isSummer(state) ? 'été' : ''}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;
