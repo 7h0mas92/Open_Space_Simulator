@@ -23,6 +23,8 @@ import { VentureSchema } from './ventures.js';
 import { FloorFinishesSchema } from './floors.js';
 import { WallFinishesSchema } from './walls.js';
 import { AnnexDecorSchema } from './annexDecor.js';
+import { StoryMissionIdSchema } from '../story/campaign.js';
+import { StoryRewardIdSchema } from '../story/rewards.js';
 
 /**
  * État complet d'une partie. Il est 100 % sérialisable en JSON : une sauvegarde est
@@ -339,8 +341,25 @@ export const GameResultSchema = z.object({
   ownership: z.number(),
   /** Phrase partageable : « Ma startup a été rachetée 400 M€ et 7 devs ont fait un burn-out ». */
   headline: LocalizedTextSchema,
+  /** Mode Histoire : la mission est-elle réussie ? (absent hors mission) */
+  mission: z
+    .object({
+      id: StoryMissionIdSchema,
+      success: z.boolean(),
+      /** Pourquoi elle est perdue : contrainte enfreinte, faillite, temps écoulé, startup vendue. */
+      failure: z.enum(['CONSTRAINT', 'BANKRUPTCY', 'TIME', 'SOLD']).nullable(),
+    })
+    .optional(),
 });
 export type GameResult = z.infer<typeof GameResultSchema>;
+
+/** Mission en cours du mode Histoire (voir `story/campaign.ts`). */
+export const StoryStateSchema = z.object({
+  missionId: StoryMissionIdSchema,
+  /** Statistiques au lancement : les objectifs comptent depuis le début de la mission. */
+  startSprint: z.number().int().min(1),
+});
+export type StoryState = z.infer<typeof StoryStateSchema>;
 
 export const STATE_VERSION = 1;
 
@@ -405,6 +424,13 @@ export const GameStateSchema = z.object({
    * les mêmes idées. Absent des vieilles sauvegardes.
    */
   recentTaskTitles: z.array(z.string()).max(RECENT_TASK_TITLES_MAX).default([]),
+  /** Mode Histoire : la mission jouée (null dans les autres modes et les vieilles sauvegardes). */
+  story: StoryStateSchema.nullable().default(null),
+  /**
+   * Récompenses du mode Histoire débloquées au lancement de la partie (vide en Daily, en mission
+   * et dans les vieilles sauvegardes). Comme la graine, elles font partie du point de départ.
+   */
+  unlocks: z.array(StoryRewardIdSchema).default([]),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

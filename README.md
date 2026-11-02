@@ -132,21 +132,22 @@ Sans ces variables, le bouton « Continuer avec GitHub » est simplement masqué
 
 ### Scripts utiles
 
-| Commande                                         | Effet                                                               |
-| ------------------------------------------------ | ------------------------------------------------------------------- |
-| `pnpm dev`                                       | Lance shared (watch), le serveur et le client                       |
-| `pnpm test`                                      | Tests Vitest de tous les paquets (le serveur utilise `oss_test`)    |
-| `pnpm test:e2e`                                  | Tests Playwright sur 5 viewports (serveur + client réels)           |
-| `pnpm lint`                                      | ESLint                                                              |
-| `pnpm format`                                    | Prettier                                                            |
-| `pnpm typecheck`                                 | TypeScript strict sur tout le monorepo                              |
-| `pnpm build`                                     | Build de production des trois paquets                               |
-| `pnpm balance`                                   | Simule 10 000 parties et écrit `packages/client/reports/balance.md` |
-| `pnpm db:up`                                     | Démarre PostgreSQL 16 dans Docker                                   |
-| `pnpm db:migrate`                                | Crée / applique une migration Prisma                                |
-| `pnpm --filter @oss/server db:studio`            | Ouvre Prisma Studio sur http://localhost:5555                       |
-| `pnpm --filter @oss/server db:generate`          | Régénère le client Prisma (après un changement de schéma)           |
-| `pnpm --filter @oss/server user:promote <email>` | Donne le rôle ADMIN                                                 |
+| Commande                                         | Effet                                                                 |
+| ------------------------------------------------ | --------------------------------------------------------------------- |
+| `pnpm dev`                                       | Lance shared (watch), le serveur et le client                         |
+| `pnpm test`                                      | Tests Vitest de tous les paquets (le serveur utilise `oss_test`)      |
+| `pnpm test:e2e`                                  | Tests Playwright sur 5 viewports (serveur + client réels)             |
+| `pnpm lint`                                      | ESLint                                                                |
+| `pnpm format`                                    | Prettier                                                              |
+| `pnpm typecheck`                                 | TypeScript strict sur tout le monorepo                                |
+| `pnpm build`                                     | Build de production des trois paquets                                 |
+| `pnpm balance`                                   | Simule 10 000 parties et écrit `packages/client/reports/balance.md`   |
+| `pnpm balance:story`                             | Joue chaque mission du mode Histoire avec les bots (taux de réussite) |
+| `pnpm db:up`                                     | Démarre PostgreSQL 16 dans Docker                                     |
+| `pnpm db:migrate`                                | Crée / applique une migration Prisma                                  |
+| `pnpm --filter @oss/server db:studio`            | Ouvre Prisma Studio sur http://localhost:5555                         |
+| `pnpm --filter @oss/server db:generate`          | Régénère le client Prisma (après un changement de schéma)             |
+| `pnpm --filter @oss/server user:promote <email>` | Donne le rôle ADMIN                                                   |
 
 Les messages de commit suivent les [commits conventionnels](https://www.conventionalcommits.org/fr/)
 (`feat:`, `fix:`, `docs:`...), vérifiés par un hook `commit-msg` (husky + commitlint).
@@ -548,6 +549,15 @@ sequenceDiagram
   condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
   depuis le menu principal ; `pnpm balance` mesure le taux de déblocage de chacun par les bots
   pour vérifier la difficulté annoncée.
+- **Mode Histoire** : 4 chapitres et 10 missions (`packages/shared/src/story/campaign.ts`),
+  chacune une partie `STORY` avec un point de départ, des objectifs et des contraintes vérifiés
+  par la simulation (`client/src/simulation/story.ts`). Une mission réussie est envoyée à
+  `POST /api/story/complete`, qui la rejoue comme un score avant de la garder (table
+  `StoryMission`) ; un invité la garde sur l'appareil jusqu'à sa connexion. Chaque mission
+  débloque une récompense (papier peint, sol, couleur, objet ou bonus de départ) utilisable en
+  Facile, Normal et dans les défis, jamais en Daily. Les récompenses d'une partie sont fixées au
+  départ, envoyées avec le score et rejouées par le serveur, qui refuse celles qui ne sont pas
+  gagnées sur le compte (`UNLOCK_NOT_EARNED`). Les missions n'ont pas de classement.
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le

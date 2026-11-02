@@ -902,3 +902,272 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* --- Mode Histoire ------------------------------------------------------------------- */
+
+.story-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.story-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.story-intro p {
+  margin: 0;
+}
+
+.story-intro .cta {
+  align-self: flex-start;
+  min-height: var(--touch);
+}
+
+.story-chapter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.story-chapter.complete {
+  border-left: 4px solid #7ddc98;
+}
+
+.story-chapter header h2 {
+  margin: 0.125rem 0 0.25rem;
+}
+
+.story-chapter header p {
+  margin: 0;
+}
+
+.mission-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mission-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--mission-color, var(--border));
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.mission-card > button {
+  margin-top: auto;
+  min-height: var(--touch);
+}
+
+.mission-available {
+  --mission-color: var(--accent);
+}
+
+.mission-done {
+  --mission-color: #7ddc98;
+}
+
+/* Mission verrouillée : bordure en pointillés, icône grisée, texte toujours lisible (AA). */
+.mission-locked {
+  border-style: dashed;
+}
+
+.mission-locked .mission-icon {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.mission-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mission-card-head h4 {
+  flex: 1;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.mission-icon {
+  font-size: 1.5rem;
+}
+
+.mission-status-done {
+  color: #7ddc98;
+}
+
+.mission-status-available {
+  color: var(--accent);
+}
+
+.mission-brief,
+.mission-tip,
+.mission-reward,
+.mission-meta {
+  margin: 0;
+}
+
+.mission-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.mission-reward {
+  font-weight: 600;
+}
+
+.mission-goals-title {
+  margin: 0.25rem 0 0.125rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mission-goals ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mission-goal {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.mission-goal-icon {
+  flex: none;
+  width: 1.25rem;
+  text-align: center;
+}
+
+.mission-goal-text {
+  flex: 1;
+}
+
+.mission-goal-value {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.mission-goal.met {
+  color: #7ddc98;
+}
+
+.mission-goal.broken {
+  color: var(--danger);
+}
+
+/* Panneau « Mission » en jeu. */
+.mission-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.mission-panel h3 {
+  margin: 0;
+}
+
+.mission-progress {
+  margin: 0;
+  font-weight: 600;
+}
+
+.mission-tip {
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--accent);
+  color: var(--text-muted);
+}
+
+/* Fin de mission. */
+.mission-end .mission-goals {
+  margin: 0.5rem 0;
+  text-align: left;
+}
+
+.story-rewards h2 {
+  margin: 0;
+}
+
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.5rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reward-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.reward-card.owned {
+  border-left: 4px solid #7ddc98;
+}
+
+.reward-card.locked {
+  border-style: dashed;
+}
+
+.reward-card.locked .reward-icon {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.reward-icon {
+  font-size: 1.5rem;
+}
+
+.reward-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+@media (max-width: 480px) {
+  .story-chapter {
+    padding: 0.75rem;
+  }
+
+  .mission-list,
+  .reward-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .story-intro .cta {
+    align-self: stretch;
+  }
+}

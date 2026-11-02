@@ -81,7 +81,10 @@
     "DAILY_INVALID": "This Daily is closed.",
     "DAILY_ALREADY_PLAYED": "You already posted a score for this Daily.",
     "AI_UNAVAILABLE": "AI Slack is unavailable.",
-    "AI_QUOTA_EXCEEDED": "Daily AI quota reached."
+    "AI_QUOTA_EXCEEDED": "Daily AI quota reached.",
+    "MISSION_NOT_COMPLETED": "This mission is not completed on replay.",
+    "UNLOCK_NOT_EARNED": "This game uses a Story mode reward your account hasn't earned yet.",
+    "STORY_NOT_RANKED": "Story mode missions have no leaderboard."
   },
   "thoughts": {
     "whyWorks": "Why does it work??",
@@ -317,6 +320,7 @@
     "funding": "Raise funds",
     "pets": "Office cats",
     "servers": "Server room",
+    "mission": "Mission",
     "cleaning": "Cleaning"
   },
   "kanban": {
@@ -561,7 +565,11 @@
     "alreadyLabel": "The {{zone}} wall already has {{finish}}",
     "all": "All walls (€{{price}})",
     "perWall": "€{{price}} per wall",
-    "effects": { "moral": "morale", "quality": "quality", "hype": "hype" },
+    "effects": {
+      "moral": "morale",
+      "quality": "quality",
+      "hype": "hype"
+    },
     "zones": {
       "back-open": "Back · open space",
       "back-kitchen": "Back · kitchen",
@@ -669,7 +677,9 @@
       "teal": "Teal",
       "blue": "Blue",
       "purple": "Purple",
-      "pink": "Pink"
+      "pink": "Pink",
+      "gold": "Gold",
+      "neon": "Neon"
     },
     "placedCount_one": "{{count}} placed",
     "placedCount_other": "{{count}} placed",
@@ -693,7 +703,9 @@
     "fromInventory": "from the inventory",
     "sellStored": "Sell one {{item}} ({{price}} €)",
     "stopInventory": "{{item}}: none left in stock, back to the inventory.",
-    "monitor": "Monitor"
+    "monitor": "Monitor",
+    "storyLocked": "🔒 Story mode reward: complete its mission to buy it.",
+    "storyLockedMode": "🔒 Story mode reward, not available in this mode."
   },
   "results": {
     "INVALID_COMMAND": "That can't be done.",
@@ -875,7 +887,9 @@
       "zenFountain": "Zen fountain: stone basin, glowing water and jet",
       "smallStage": "Small wooden stage with a microphone stand",
       "lectern": "Wooden lectern with a slanted top and a microphone",
-      "auditoriumScreen": "Auditorium screen: glowing panel on two poles"
+      "auditoriumScreen": "Auditorium screen: glowing panel on two poles",
+      "unicornStatue": "Unicorn statue: moulded marble plinth, rearing golden unicorn, horn and mane",
+      "ipoBell": "Stock exchange bell: wooden frame, turned bronze bell, clapper and tasselled rope"
     },
     "back": "Back"
   },
@@ -1026,6 +1040,11 @@
       "name": "Daily",
       "rule": "The same game for everyone today.",
       "tag": "Daily leaderboard"
+    },
+    "STORY": {
+      "name": "Story",
+      "rule": "10 missions in 4 chapters, from the garage to the stock exchange. Every mission you win unlocks a reward.",
+      "tag": "Campaign"
     }
   },
   "saves": {
@@ -1270,6 +1289,9 @@
             },
             "SHIP_IN_3": {
               "body": "Your startup has just raised money. You only have 3 two-week sprints to ship your app.\n\nThis tutorial stays with you for the whole game: each chapter opens when you need it. The game is paused during the explanations: take your time."
+            },
+            "STORY": {
+              "body": "Welcome to Story mode. Every mission is a real game, with its own starting point, length and goals.\n\nThis tutorial walks you through the mission: each chapter opens right when you need it. The game is paused during explanations."
             }
           },
           "goal": {
@@ -1277,6 +1299,9 @@
             "body": "The game ends in one of four ways:\n\n• Bankruptcy: your cash hits zero. Game over.\n• IPO: you go public, the best ending. You need to be a Unicorn (a one-billion valuation) with a stable production.\n• Acquisition: a big company buys your startup.\n• Zombie: after 18 months, you survive without really growing.\n\nYour score is your startup's final valuation.",
             "SHIP_IN_3": {
               "body": "In the 3-sprint challenge, the game ends in one of three ways:\n\n• Bankruptcy: your cash reaches zero. Game over.\n• Acquisition: at the end of sprint 3, you shipped at least 5 features.\n• Zombie: at the end of sprint 3, you shipped fewer than 5.\n\nYour score is your startup's final valuation."
+            },
+            "STORY": {
+              "body": "A mission is won as soon as all its goals are met at the same time. It is lost if a constraint is broken, if cash hits zero or if time runs out.\n\nThe 🎯 button at the top of the screen shows the goals live."
             }
           },
           "gauges": {
@@ -1347,6 +1372,14 @@
           "dailyTips": {
             "title": "Today’s leaderboard",
             "body": "At the end of the game, your score goes to today’s leaderboard if you are signed in. The server replays your whole game from the seed and your decisions to check the score: no cheating possible.\n\nThere is no “Play again” button at the end: today’s game is played once. Come back tomorrow for a new seed."
+          },
+          "story": {
+            "title": "The mission",
+            "body": "Read the briefing carefully: it gives the starting point (stage, team, cash), the length in sprints and the goals.\n\n• ✓: goal met;\n• ○: goal still to meet;\n• 🛡️: constraint to respect until the end.\n\nWinning a mission unlocks the next one and a reward."
+          },
+          "storyTips": {
+            "title": "Rewards",
+            "body": "Each reward (wallpaper, flooring, colour, item or starting perk) can then be used in Easy, Normal, Hardcore, Interns Only and Ship in 3 sprints.\n\nNot in the Daily: today's game stays the same for everyone. Missions have no leaderboard."
           }
         }
       },
@@ -1591,6 +1624,9 @@
             "body": "After 18 months, your phase decides the ending:\n\n• Unicorn: IPO, the best ending.\n• Series A: acquisition, at a discount.\n• Seed: acquisition if you are worth more than €100M, otherwise zombie.\n• Garage: zombie.\n\nAnd if your cash hits zero before that, it's bankruptcy.",
             "SHIP_IN_3": {
               "body": "The challenge stops at the end of sprint 3:\n\n• at least 5 features shipped: your startup is acquired;\n• fewer than 5: it is the “zombie” ending.\n\nAnd if your cash reaches zero before that, it is bankruptcy. The demo reports show how many features each sprint shipped."
+            },
+            "STORY": {
+              "body": "In Story mode, the goals decide how it ends:\n\n• all met at the same time: mission complete;\n• a constraint broken, or time up: mission failed;\n• cash at zero: bankruptcy, mission failed.\n\nA failed mission can be replayed as often as you like."
             }
           },
           "offer": {
@@ -1929,6 +1965,132 @@
       "cancel": "Cancel",
       "cancelWarning": "The line will be cut right away, with no refund for the current week.",
       "cancelConfirm": "Cancel fibre"
+    }
+  },
+  "story": {
+    "title": "Story mode",
+    "intro": "Your startup, from the garage to the opening bell, in 10 missions. Every mission you win opens the next one and unlocks a reward for the other modes.",
+    "progress": "{{done}} of {{total}} missions completed",
+    "savedDevice": "Progress is kept on this device. Sign in to keep it on your account.",
+    "savedAccount": "Progress is kept on your account: every completed mission is verified by the server.",
+    "continue": "Play “{{mission}}”",
+    "allDone": "🏆 Campaign complete! Every reward is yours.",
+    "chapterNumber": "Chapter {{number}}",
+    "chapterDone": "Chapter complete: you earn the title “{{title}}”.",
+    "status": {
+      "done": "✓ Completed",
+      "available": "Ready",
+      "locked": "Locked"
+    },
+    "sprints_one": "{{count}} sprint",
+    "sprints_other": "{{count}} sprints",
+    "play": "Play mission",
+    "replay": "Replay",
+    "lockedHint": "Complete “{{mission}}” first.",
+    "rewardLine": "Reward: {{reward}}",
+    "rewardsTitle": "Rewards",
+    "rewardsHint": "Usable in Easy, Normal, Hardcore, Interns Only and Ship in 3 sprints. Not in the Daily, so today's game stays the same for everyone.",
+    "rewardFrom": "Earned with the “{{mission}}” mission.",
+    "rewardKinds": {
+      "wall": "Wall",
+      "floor": "Floor",
+      "color": "Colour",
+      "item": "Item",
+      "perk": "Perk"
+    },
+    "goalsTitle": "Goals",
+    "constraintsTitle": "Constraints",
+    "goalMet": "(met)",
+    "goalTodo": "(to do)",
+    "constraintBroken": "(broken)",
+    "noMission": "No mission in progress.",
+    "progressLine": "{{done}}/{{total}} goals met · sprint {{sprint}} of {{sprints}}",
+    "goals": {
+      "phase": "Reach the {{phase}} stage",
+      "gaugeMin": "{{gauge}} at {{value}} or more",
+      "gaugeMax": "{{gauge}} at {{value}} or less",
+      "team_one": "A team of at least {{count}} person",
+      "team_other": "A team of at least {{count}} people",
+      "moral": "Average morale of {{value}} or more",
+      "valuation": "A valuation of {{value}} or more",
+      "serverRoom": "A working server room",
+      "meetingRoom": "A fitted meeting room",
+      "pets_one": "{{count}} happy cat",
+      "pets_other": "{{count}} happy cats",
+      "sprints_one": "Last {{count}} sprint",
+      "sprints_other": "Last {{count}} sprints",
+      "stat": {
+        "featuresShipped": {
+          "min_one": "Ship {{count}} feature",
+          "min_other": "Ship {{count}} features",
+          "max_one": "Ship {{count}} feature at most",
+          "max_other": "Ship {{count}} features at most",
+          "none": "Ship no features"
+        },
+        "prodOutages": {
+          "min_one": "Suffer {{count}} prod outage",
+          "min_other": "Suffer {{count}} prod outages",
+          "max_one": "{{count}} prod outage at most",
+          "max_other": "{{count}} prod outages at most",
+          "none": "No prod outage"
+        },
+        "coffeeShortageDays": {
+          "min_one": "{{count}} day without coffee",
+          "min_other": "{{count}} days without coffee",
+          "max_one": "{{count}} day without coffee at most",
+          "max_other": "{{count}} days without coffee at most",
+          "none": "Never run out of coffee"
+        },
+        "meetingsUseful": {
+          "min_one": "Hold {{count}} useful meeting",
+          "min_other": "Hold {{count}} useful meetings",
+          "max_one": "{{count}} useful meeting at most",
+          "max_other": "{{count}} useful meetings at most",
+          "none": "No useful meeting"
+        },
+        "urgentDone": {
+          "min_one": "Finish {{count}} urgent task on time",
+          "min_other": "Finish {{count}} urgent tasks on time",
+          "max_one": "{{count}} urgent task done at most",
+          "max_other": "{{count}} urgent tasks done at most",
+          "none": "No urgent task done"
+        },
+        "urgentMissed": {
+          "min_one": "Miss {{count}} urgent task",
+          "min_other": "Miss {{count}} urgent tasks",
+          "max_one": "Miss {{count}} urgent task at most",
+          "max_other": "Miss {{count}} urgent tasks at most",
+          "none": "Miss no urgent task"
+        },
+        "resignations": {
+          "min_one": "{{count}} resignation",
+          "min_other": "{{count}} resignations",
+          "max_one": "{{count}} resignation at most",
+          "max_other": "{{count}} resignations at most",
+          "none": "No resignation"
+        },
+        "hired": {
+          "min_one": "Hire {{count}} person",
+          "min_other": "Hire {{count}} people",
+          "max_one": "Hire {{count}} person at most",
+          "max_other": "Hire {{count}} people at most",
+          "none": "Hire nobody"
+        }
+      }
+    },
+    "end": {
+      "success": "Mission complete!",
+      "failure": "Mission failed",
+      "unlocked": "Reward unlocked: {{reward}}. It's waiting for you in the other modes.",
+      "next": "Next mission: {{mission}}",
+      "retry": "Try again",
+      "chapters": "Back to chapters",
+      "failures": {
+        "CONSTRAINT": "A mission constraint was broken.",
+        "BANKRUPTCY": "Cash hit zero: bankruptcy.",
+        "TIME": "Time ran out before every goal was met.",
+        "SOLD": "The startup was sold before the end of the mission."
+      }
     }
   },
   "cleaning": {

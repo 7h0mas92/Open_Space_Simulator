@@ -122,6 +122,7 @@ describe('submitScore', () => {
       seed: 'graine',
       commands: data.commands,
       cardsVersion: 'builtin',
+      unlocks: [],
       claimed: { outcome: 'ACQUISITION', valuation: 400_000_000 },
     });
   });
