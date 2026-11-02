@@ -557,7 +557,8 @@ sequenceDiagram
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion. « Continuer » reprend
   la sauvegarde la plus récente d'une partie en cours : à la fin d'une partie, sa sauvegarde
   automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
-  dans « Charger une partie »).
+  dans « Charger une partie »). Sous « Continuer », le bouton « Nouvelle partie » lance une
+  partie dans le mode suggéré, et les cartes des modes restent disponibles.
 - **Succès** : 67 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur

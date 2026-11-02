@@ -508,6 +508,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   effacée (appareil et serveur) et sa date de fin notée ; ses sauvegardes manuelles restent dans
   « Charger une partie » (`saves.markFinished`, `saves.latestResumable` dans
   `client/src/save/saves.ts`). Un Daily rejoué reste proposé.
+- Nouvelle partie depuis le menu : avec une partie en cours, l'accueil affiche « Continuer » et,
+  dessous, « Nouvelle partie » (mode suggéré : Facile au premier lancement, puis Normal), en plus
+  des cartes des modes (`ui/menu/HomeMenu.tsx`). La sauvegarde automatique marche aussi en
+  `pnpm dev` : `installGameLifecycle` se rebranche après le double montage de StrictMode.
 - Variété des tâches du Kanban (`client/src/simulation/taskTitles.ts`, catalogues dans
   `client/src/simulation/data/tasks.ts`) : 114 titres de code de base, 28 débloqués par phase
   (`GROWTH_TASK_TITLES` : Seed, Série A, Licorne), 48 de saison (`SEASON_TASK_TITLES`, une tâche de
