@@ -1,5 +1,8 @@
 name: CI
 
+# Tourne à chaque push sur n'importe quelle branche (branches de travail, develop, main) et
+# sur chaque PR, quelle que soit sa branche cible : vers develop pour une fonctionnalité ou un
+# correctif, puis de develop vers main pour une mise en production.
 on:
   push:
     branches: ['**']
