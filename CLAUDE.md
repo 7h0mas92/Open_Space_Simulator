@@ -367,6 +367,21 @@ journal des passations. À la fin de chaque travail (fil de discussion ou PR), m
 (date, dernier commit, travaux en cours, une ligne dans le journal), en plus de cette section
 et du README.
 
+# BRANCHES : DEVELOP PUIS MAIN (depuis le 17 octobre 2026)
+- `main` est la version publiée : GitHub Pages (et Render) ne déploient que `main`. On n'y pousse
+  jamais directement et on n'y ouvre pas de PR de fonctionnalité.
+- `develop` reçoit tout le travail en test. Chaque demande = une branche partie de `develop`
+  (`feat/…`, `fix/…`, `docs/…` ou `claude/…`) = une PR **vers `develop`**, CI verte, fusionnée en
+  squash après la validation de Melvin (ou de Thomas). Une idée abandonnée se retire de `develop`
+  (revert) sans toucher à `main`.
+- Mise en production : quand Thomas **et** Melvin ont testé `develop`, une PR `develop` → `main`
+  intitulée « release: … », fusionnée en **merge commit** (pas de squash, sinon les deux branches
+  divergent et la PR suivante rejoue tout l'historique).
+- Correctif urgent en production : branche depuis `main`, PR vers `main`, puis fusionner `main`
+  dans `develop` aussitôt.
+- La CI tourne sur toutes les branches et toutes les PR ; l'ÉTAT D'AVANCEMENT ci-dessous décrit
+  `develop`, la date de la dernière mise en production est dans `CONTEXTE.md`.
+
 # ÉTAT D'AVANCEMENT (mis à jour le 13 octobre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
@@ -404,8 +419,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   la semaine réelle (date dans la graine), 12 périodes d'environ une semaine (Nouvel An,
   Saint-Valentin, Pâques, Espace, Moyen Âge, Super-héros, Années 80, Été, Pirates, Halloween,
   Cyberpunk, Noël) avec 24 cartes de saison prioritaires. Décorations par thème en Three.js
-  (`render/decorations.ts`, `view/decor.ts`), réglées dans l'onglet « Décorations » du
-  back-office : désactivé, en saison (défaut) ou toujours ; table `DecorTheme`.
+  (`render/decorations.ts`, `view/decor.ts`) aux murs et sur les bureaux, plus aucune au sol
+  (objets fantômes ni déplaçables ni rangeables, retirés le 17 octobre 2026), réglées dans
+  l'onglet « Décorations » du back-office : désactivé, en saison (défaut) ou toujours ; table
+  `DecorTheme`.
 - Anniversaires des devs (date tirée de la graine, sans toucher au RNG) : table de fête
   décorative (gâteau, cadeaux, ballons), +moral, confettis, Slack ; le week-end, fête le lundi.
 - Performance des devs (`client/src/simulation/performance.ts`, composant ECS `performance`) :
@@ -457,8 +474,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
   `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
-  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
-  variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
+  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places. Sol d'origine
+  identique dans toutes les pièces (damier beige, `BASE_FLOOR_COLORS` dans `render/office.ts`) :
+  ajouter ou agrandir une pièce ne change pas sa couleur, seul le rayon « Sols » la change.
 - Vue sur New York (`render/skyline.ts`) : le bureau est au dernier étage d'une tour, dans une ville low-poly façon
   Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
@@ -699,7 +717,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   annexes) ou « Toutes les pièces », sans remboursement de l'ancien sol ; +moral par pièce, et
   +qualité ou +hype selon la matière. Motifs dessinés sur canvas (`view/floors.ts`), une dalle
   texturée par pièce qui rejoint la voisine sous la cloison (`render/floorFinishes.ts`). Commande
-  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine tiré de la graine), aucun tirage.
+  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine, le même partout), aucun tirage.
 
 - Le plan cède la place aux meubles posés : quand le bureau grandit (nouvelle phase, aile de
   filiale), une cloison du plan qui tomberait sur un meuble s'efface (`yieldToItems` dans

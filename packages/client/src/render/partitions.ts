@@ -11,148 +11,35 @@
  * Toutes les pièces sont fusionnées par matériau : quelques appels de dessin pour tout le bureau.
  */
 import * as THREE from 'three';
-import { catalogItem } from '../view/catalog';
 import { COLOR_HEX, type FurnitureColor } from '../view/colors';
-import type { OfficeLayout } from '../view/layout';
-import type { PlacedItemView } from '../view/types';
+import {
+  PARTITION_THICKNESS,
+  type PartitionCell,
+  type PartitionKind,
+  type PartitionSegment,
+  type PartitionShape,
+} from '../view/partitions';
 import { Pieces } from './pieces';
 import { material, PALETTE, WALL_HEIGHT } from './primitives';
 
-export type PartitionKind = 'solid' | 'glass';
-/** Sens d'un mur : 0 le long de x, 1 le long de z. */
-export type PartitionAxis = 0 | 1;
+export {
+  PARTITION_THICKNESS,
+  partitionCells,
+  partitionShapes,
+  type PartitionAxis,
+  type PartitionCell,
+  type PartitionKind,
+  type PartitionSegment,
+  type PartitionShape,
+} from '../view/partitions';
 
 /** Hauteur des murs fins pleins : à mi-hauteur, on voit par-dessus depuis la caméra iso. */
 export const PARTITION_HEIGHT = 1.3;
-/** Épaisseur d'un mur fin plein. */
-export const PARTITION_THICKNESS = 0.12;
 /** Épaisseur du cadre d'un mur vitré (le verre est plus fin). */
 const FRAME_THICKNESS = 0.08;
 const GLASS_THICKNESS = 0.025;
 const RAIL = 0.07;
 const MULLION = 0.04;
-/** Un mur qui touche le mur extérieur s'y enfonce un peu : pas de fente au raccord. */
-const OUTER_REACH = 0.1;
-
-/** Une case de mur fin. */
-export interface PartitionCell {
-  readonly x: number;
-  readonly z: number;
-  readonly kind: PartitionKind;
-  /** Sens choisi par le joueur ; `null` pour une cloison du plan (déduit de ses voisines). */
-  readonly axis: PartitionAxis | null;
-  readonly color: FurnitureColor;
-}
-
-/** Un tronçon droit : de `from` à `to` le long de son axe, à la position `at` de l'autre axe. */
-export interface PartitionSegment {
-  readonly axis: PartitionAxis;
-  readonly from: number;
-  readonly to: number;
-  readonly at: number;
-}
-
-/** Forme d'une case : ses tronçons, et s'il s'agit d'un raccord (angle, T, croix). */
-export interface PartitionShape {
-  readonly cell: PartitionCell;
-  readonly segments: readonly PartitionSegment[];
-  readonly junction: boolean;
-}
-
-/** Cloisons du plan et murs fins posés par le joueur. */
-export function partitionCells(
-  layout: OfficeLayout,
-  items: readonly PlacedItemView[],
-): PartitionCell[] {
-  const cells: PartitionCell[] = layout.partitions.map((cell) => ({
-    x: cell.x,
-    z: cell.z,
-    kind: 'solid',
-    axis: null,
-    color: 'natural',
-  }));
-  for (const item of items) {
-    const kind = catalogItem(item.kind)?.partition;
-    if (!kind || item.host) continue;
-    cells.push({
-      x: item.x,
-      z: item.z,
-      kind,
-      axis: (item.rotation % 2) as PartitionAxis,
-      color: item.color,
-    });
-  }
-  return cells;
-}
-
-const key = (x: number, z: number) => `${x},${z}`;
-
-/** Les quatre voisins : sens de l'axe, et pas le long de cet axe. */
-const SIDES = [
-  { axis: 0, dx: 1, dz: 0 },
-  { axis: 0, dx: -1, dz: 0 },
-  { axis: 1, dx: 0, dz: 1 },
-  { axis: 1, dx: 0, dz: -1 },
-] as const;
-
-/**
- * Tronçons de chaque case. Une case pousse un bras vers un côté si ce côté est dans son propre
- * sens, ou si la case voisine de ce côté est un mur qui va vers elle. Le sens d'une cloison du
- * plan est celui de ses voisines du plan (le long de x par défaut).
- */
-export function partitionShapes(
-  cells: readonly PartitionCell[],
-  layout: Pick<OfficeLayout, 'width' | 'depth'>,
-): PartitionShape[] {
-  const byKey = new Map(cells.map((cell) => [key(cell.x, cell.z), cell]));
-  const planned = (x: number, z: number) => byKey.get(key(x, z))?.axis === null;
-  const axesOf = (cell: PartitionCell): ReadonlySet<PartitionAxis> => {
-    if (cell.axis !== null) return new Set([cell.axis]);
-    const axes = new Set<PartitionAxis>();
-    for (const side of SIDES) if (planned(cell.x + side.dx, cell.z + side.dz)) axes.add(side.axis);
-    return axes.size > 0 ? axes : new Set([0]);
-  };
-  const axes = new Map(cells.map((cell) => [cell, axesOf(cell)]));
-
-  return cells.map((cell) => {
-    const own = axes.get(cell) as ReadonlySet<PartitionAxis>;
-    // Bras vers chaque côté : [+x, -x, +z, -z].
-    const arms = SIDES.map((side) => {
-      if (own.has(side.axis)) return true;
-      const neighbour = byKey.get(key(cell.x + side.dx, cell.z + side.dz));
-      return neighbour !== undefined && (axes.get(neighbour)?.has(side.axis) ?? false);
-    });
-    const [east, west, south, north] = arms;
-    // Jusqu'au bord de la case, ou dans le mur extérieur au bord du bureau.
-    const edge = (along: number, sign: 1 | -1, last: number) =>
-      along + sign * 0.5 + (along === (sign > 0 ? last : 0) ? sign * OUTER_REACH : 0);
-    const half = PARTITION_THICKNESS / 2;
-    const segments: PartitionSegment[] = [];
-    const hasX = east || west;
-    if (hasX) {
-      segments.push({
-        axis: 0,
-        from: west ? edge(cell.x, -1, layout.width - 1) : cell.x - half,
-        to: east ? edge(cell.x, 1, layout.width - 1) : cell.x + half,
-        at: cell.z,
-      });
-    }
-    const zEdge = (sign: 1 | -1) => edge(cell.z, sign, layout.depth - 1);
-    if (hasX) {
-      // Le tronçon le long de x occupe déjà le centre : les bras le long de z partent de ses faces.
-      if (north) segments.push({ axis: 1, from: zEdge(-1), to: cell.z - half, at: cell.x });
-      if (south) segments.push({ axis: 1, from: cell.z + half, to: zEdge(1), at: cell.x });
-    } else if (north || south) {
-      segments.push({
-        axis: 1,
-        from: north ? zEdge(-1) : cell.z - half,
-        to: south ? zEdge(1) : cell.z + half,
-        at: cell.x,
-      });
-    }
-    return { cell, segments, junction: Boolean(hasX && (north || south)) };
-  });
-}
 
 /** Teinte choisie par le joueur, ou la couleur d'origine. */
 function tinted(base: number, color: FurnitureColor): number {

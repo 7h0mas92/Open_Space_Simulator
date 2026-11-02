@@ -6,7 +6,6 @@
  * 1 x 1, l'objet est posé au sol (y = 0), centré, et regarde vers +z (vers la caméra).
  *
  * Par thème :
- * - `floor` : modèles posés au sol le long des murs (sapin, citrouilles, fusée…) ;
  * - `desk` : un petit objet posé sur chaque bureau ;
  * - `wall` : guirlandes et ornements accrochés aux deux murs du fond.
  */
@@ -310,8 +309,6 @@ function topGarland(
 // --- Les thèmes --------------------------------------------------------------------------------
 
 export interface ThemeModels {
-  /** Modèles au sol, utilisés à tour de rôle. */
-  readonly floor: readonly (() => THREE.Object3D)[];
   /** Petit objet posé sur les bureaux. */
   readonly desk: () => THREE.Object3D;
   /** Décor des murs du fond pour un bureau de `width` x `depth` cases. */
@@ -348,33 +345,6 @@ const C = {
 } as const;
 
 const NEW_YEAR: ThemeModels = {
-  floor: [
-    // Seau à champagne sur pied.
-    () =>
-      group(
-        post(0.03, 0.12, 0.7, PALETTE.dark),
-        post(0.16, 0.12, 0.25, C.silver, 0, 0.7),
-        post(0.04, 0.05, 0.3, C.pine, 0.03, 0.8, 0),
-        post(0.02, 0.02, 0.08, C.gold, 0.03, 1.1, 0),
-        post(0.04, 0.05, 0.28, C.pine, -0.06, 0.8, 0.04),
-      ),
-    // Bouquet de ballons or et argent.
-    () =>
-      group(
-        post(0.08, 0.1, 0.08, PALETTE.dark),
-        balloon(C.gold, -0.12, 0, 1.3),
-        balloon(C.silver, 0.1, 0.05, 1.45),
-        balloon(C.magenta, 0, -0.08, 1.6),
-      ),
-    // Boule à facettes sur un pied.
-    () =>
-      group(
-        post(0.02, 0.15, 1.1, PALETTE.dark),
-        new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 0), decorGlow(C.silver)).translateY(
-          1.35,
-        ),
-      ),
-  ],
   desk: () =>
     group(
       cone(0.06, 0.2, C.magenta, 0, 0, 0, 6),
@@ -398,34 +368,6 @@ const NEW_YEAR: ThemeModels = {
 };
 
 const VALENTINE: ThemeModels = {
-  floor: [
-    // Grand cœur sur un pied.
-    () => group(post(0.03, 0.12, 0.8, PALETTE.white), flat(heartShape(0.3), 0.08, C.rose, 0, 1.05)),
-    // Vase de roses.
-    () => {
-      const result = group(post(0.12, 0.09, 0.35, PALETTE.white));
-      for (const [x, z, h] of [
-        [0, 0, 0.75],
-        [0.07, 0.05, 0.7],
-        [-0.07, 0.03, 0.68],
-        [0.02, -0.07, 0.72],
-      ] as const) {
-        result.add(post(0.008, 0.008, h - 0.35, C.green, x, 0.35, z, 4));
-        result.add(ball(0.045, C.rose, x, h, z));
-      }
-      return result;
-    },
-    // Peluche ourson géante (rose).
-    () =>
-      group(
-        ball(0.26, C.pink, 0, 0.3, 0, 1.1),
-        ball(0.19, C.pink, 0, 0.72, 0),
-        ball(0.06, C.pink, -0.15, 0.88, 0),
-        ball(0.06, C.pink, 0.15, 0.88, 0),
-        ball(0.06, PALETTE.white, 0, 0.68, 0.17),
-        flat(heartShape(0.08), 0.02, C.rose, 0, 0.35, 0.28),
-      ),
-  ],
   desk: () => flat(heartShape(0.08), 0.04, C.rose, 0, 0.09),
   wall: (w, d) =>
     group(
@@ -437,40 +379,6 @@ const VALENTINE: ThemeModels = {
 };
 
 const EASTER: ThemeModels = {
-  floor: [
-    // Œuf géant peint.
-    () => group(egg(0.28, C.sky, C.pastelYellow), post(0.2, 0.22, 0.06, C.pastelGreen)),
-    // Lapin assis.
-    () => {
-      const bunny = group(
-        ball(0.22, PALETTE.white, 0, 0.24, 0, 1.1),
-        ball(0.15, PALETTE.white, 0, 0.58, 0.04),
-        ball(0.035, C.pastelPink, 0, 0.56, 0.18),
-        ball(0.06, PALETTE.white, 0, 0.12, -0.22),
-      );
-      for (const x of [-0.06, 0.06]) {
-        const ear = ball(0.045, PALETTE.white, x, 0.82, 0.02, 3);
-        bunny.add(ear, ball(0.025, C.pastelPink, x, 0.82, 0.05, 3));
-      }
-      return bunny;
-    },
-    // Panier d'œufs.
-    () => {
-      const basket = group(post(0.25, 0.2, 0.22, PALETTE.wood, 0, 0, 0, 10));
-      const handle = new THREE.Mesh(
-        new THREE.TorusGeometry(0.22, 0.02, 4, 12, Math.PI),
-        material(PALETTE.woodDark),
-      );
-      handle.position.y = 0.22;
-      basket.add(handle);
-      const colors = [C.pastelPink, C.sky, C.pastelYellow, C.lilac, C.pastelGreen];
-      colors.forEach((color, i) => {
-        const a = (i / colors.length) * Math.PI * 2;
-        basket.add(egg(0.06, color, PALETTE.white, Math.cos(a) * 0.12, 0.16, Math.sin(a) * 0.12));
-      });
-      return basket;
-    },
-  ],
   desk: () => egg(0.05, C.lilac, C.pastelYellow),
   wall: (w, d) =>
     group(
@@ -483,37 +391,6 @@ const EASTER: ThemeModels = {
 };
 
 const SPACE: ThemeModels = {
-  floor: [
-    // Maquette de fusée.
-    () => {
-      const rocket = group(
-        post(0.16, 0.16, 0.9, PALETTE.white, 0, 0.2, 0, 10),
-        cone(0.16, 0.35, C.red, 0, 1.1, 0, 10),
-        ball(0.07, C.sky, 0, 0.85, 0.15),
-        cone(0.12, 0.2, decorGlow(C.orange), 0, 0, 0, 8),
-      );
-      for (const a of [0, (Math.PI * 2) / 3, (Math.PI * 4) / 3]) {
-        const fin = box(0.04, 0.3, 0.16, C.red, Math.sin(a) * 0.17, 0.15, Math.cos(a) * 0.17);
-        fin.rotation.y = a;
-        rocket.add(fin);
-      }
-      return rocket;
-    },
-    // Planète à anneau sur un socle.
-    () => {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.025, 4, 20), material(C.sand));
-      ring.rotation.x = Math.PI / 2.4;
-      ring.position.y = 1.05;
-      return group(post(0.03, 0.13, 0.8, PALETTE.dark), ball(0.22, C.orange, 0, 1.05, 0), ring);
-    },
-    // Casque d'astronaute sur un piédestal.
-    () =>
-      group(
-        box(0.4, 0.7, 0.4, PALETTE.white),
-        ball(0.2, PALETTE.white, 0, 0.92, 0),
-        ball(0.15, decorGlow(0x3a78c9), 0, 0.93, 0.08, 0.8),
-      ),
-  ],
   desk: () =>
     group(
       post(0.03, 0.03, 0.14, PALETTE.white, 0, 0.02),
@@ -532,38 +409,6 @@ const SPACE: ThemeModels = {
 };
 
 const MEDIEVAL: ThemeModels = {
-  floor: [
-    // Armure de chevalier.
-    () =>
-      group(
-        box(0.3, 0.1, 0.25, PALETTE.woodDark),
-        box(0.08, 0.6, 0.1, C.steel, -0.08, 0.1),
-        box(0.08, 0.6, 0.1, C.steel, 0.08, 0.1),
-        box(0.36, 0.5, 0.22, C.steel, 0, 0.7),
-        box(0.08, 0.45, 0.08, C.steel, -0.23, 0.72),
-        box(0.08, 0.45, 0.08, C.steel, 0.23, 0.72),
-        post(0.12, 0.13, 0.26, C.steel, 0, 1.2, 0, 8),
-        box(0.18, 0.03, 0.02, PALETTE.dark, 0, 1.33, 0.12),
-        cone(0.03, 0.15, 0xa8323a, 0, 1.46, 0, 6),
-      ),
-    // Épée dans le rocher.
-    () =>
-      group(
-        ball(0.3, 0x8a8f99, 0, 0.12, 0, 0.6),
-        box(0.05, 0.55, 0.015, C.silver, 0, 0.25),
-        box(0.24, 0.04, 0.05, C.gold, 0, 0.78),
-        box(0.04, 0.16, 0.04, PALETTE.woodDark, 0, 0.82),
-        ball(0.035, C.gold, 0, 1, 0),
-      ),
-    // Torchère.
-    () =>
-      group(
-        post(0.04, 0.1, 1.1, PALETTE.dark),
-        post(0.1, 0.06, 0.12, PALETTE.dark, 0, 1.1),
-        cone(0.08, 0.22, decorGlow(C.orange), 0, 1.2, 0, 6),
-        cone(0.045, 0.14, decorGlow(C.gold), 0, 1.22, 0, 6),
-      ),
-  ],
   desk: () =>
     group(
       post(0.04, 0.05, 0.06, C.gold),
@@ -594,39 +439,6 @@ const MEDIEVAL: ThemeModels = {
 };
 
 const SUPERHEROES: ThemeModels = {
-  floor: [
-    // Mannequin portant une cape.
-    () => {
-      const cape = box(0.42, 0.85, 0.03, C.red, 0, 0.45, -0.14);
-      cape.rotation.x = 0.12;
-      return group(
-        post(0.12, 0.15, 0.06, PALETTE.dark),
-        post(0.025, 0.025, 0.45, PALETTE.dark),
-        box(0.36, 0.55, 0.22, C.blue, 0, 0.45),
-        ball(0.12, PALETTE.skin, 0, 1.13),
-        box(0.25, 0.06, 0.03, PALETTE.dark, 0, 1.13, 0.1),
-        flat(boltShape(0.13), 0.02, C.gold, 0, 0.75, 0.12),
-        cape,
-      );
-    },
-    // Silhouette de ville en carton.
-    () => {
-      const city = new THREE.Group();
-      [0.9, 1.3, 0.7, 1.1].forEach((h, i) => {
-        city.add(box(0.22, h, 0.08, i % 2 === 0 ? C.night : C.blue, -0.36 + i * 0.24, 0, 0));
-        for (let y = 0.2; y < h - 0.1; y += 0.25)
-          city.add(box(0.06, 0.07, 0.01, decorGlow(C.gold), -0.36 + i * 0.24, y, 0.045));
-      });
-      return city;
-    },
-    // Podium du héros du sprint.
-    () =>
-      group(
-        box(0.7, 0.25, 0.5, C.red),
-        box(0.5, 0.2, 0.45, C.blue, 0, 0.25),
-        flat(starShape(0.18, 0.08), 0.03, C.gold, 0, 0.65, 0),
-      ),
-  ],
   desk: () =>
     group(box(0.08, 0.1, 0.04, C.blue), flat(boltShape(0.05), 0.01, C.gold, 0, 0.05, 0.025)),
   wall: (w, d) =>
@@ -642,38 +454,6 @@ const SUPERHEROES: ThemeModels = {
 };
 
 const RETRO_80S: ThemeModels = {
-  floor: [
-    // Borne d'arcade.
-    () =>
-      group(
-        box(0.55, 1.5, 0.5, C.violet),
-        box(0.45, 0.35, 0.02, decorGlow(C.cyan), 0, 0.95, 0.24),
-        box(0.5, 0.06, 0.3, PALETTE.dark, 0, 0.75, 0.25),
-        post(0.015, 0.015, 0.08, PALETTE.dark, -0.1, 0.81, 0.28, 4),
-        ball(0.03, C.red, -0.1, 0.9, 0.28),
-        ball(0.025, C.gold, 0.08, 0.83, 0.3),
-        ball(0.025, C.neonPink, 0.15, 0.83, 0.3),
-        box(0.55, 0.14, 0.04, decorGlow(C.neonPink), 0, 1.38, 0.24),
-      ),
-    // Gros radiocassette.
-    () =>
-      group(
-        box(0.12, 0.45, 0.12, PALETTE.dark),
-        box(0.7, 0.32, 0.2, PALETTE.dark, 0, 0.45),
-        post(0.1, 0.1, 0.02, C.silver, -0.22, 0.61, 0.1).rotateX(Math.PI / 2),
-        post(0.1, 0.1, 0.02, C.silver, 0.22, 0.61, 0.1).rotateX(Math.PI / 2),
-        box(0.18, 0.08, 0.02, decorGlow(C.cyan), 0, 0.6, 0.1),
-        box(0.5, 0.04, 0.04, C.silver, 0, 0.8),
-      ),
-    // Lampe à lave.
-    () =>
-      group(
-        cone(0.13, 0.18, PALETTE.dark, 0, 0, 0, 8),
-        post(0.05, 0.11, 0.55, decorGlow(C.neonPink), 0, 0.18, 0, 8),
-        cone(0.05, 0.08, PALETTE.dark, 0, 0.73, 0, 8),
-        ball(0.05, decorGlow(C.gold), 0, 0.42, 0),
-      ),
-  ],
   desk: () =>
     group(
       box(0.16, 0.1, 0.02, PALETTE.dark),
@@ -697,50 +477,6 @@ const RETRO_80S: ThemeModels = {
 };
 
 const SUMMER: ThemeModels = {
-  floor: [
-    // Parasol et transat.
-    () => {
-      const umbrella = group(
-        post(0.02, 0.02, 1.5, PALETTE.white),
-        cone(0.5, 0.25, C.coral, 0, 1.4, 0, 8),
-      );
-      const chair = box(0.35, 0.05, 0.7, C.turquoise, 0.15, 0.2, 0.05);
-      chair.rotation.x = -0.25;
-      umbrella.add(chair, box(0.04, 0.2, 0.04, PALETTE.white, 0.15, 0, 0.3));
-      return umbrella;
-    },
-    // Palmier en pot.
-    () => {
-      const palm = group(post(0.18, 0.14, 0.3, PALETTE.terracotta));
-      for (let i = 0; i < 4; i++)
-        palm.add(post(0.05, 0.06, 0.28, PALETTE.woodDark, 0.02 * i, 0.3 + i * 0.27, 0, 6));
-      for (let i = 0; i < 6; i++) {
-        const leaf = box(0.12, 0.02, 0.55, C.green, 0, 0, 0.25);
-        const holder = new THREE.Group();
-        holder.add(leaf);
-        holder.position.set(0.06, 1.42, 0);
-        holder.rotation.y = (i / 6) * Math.PI * 2;
-        leaf.rotation.x = 0.45;
-        palm.add(holder);
-      }
-      return palm;
-    },
-    // Bouée flamant rose et ballon de plage.
-    () => {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.09, 6, 14), material(C.pink));
-      ring.rotation.x = Math.PI / 2;
-      ring.position.y = 0.09;
-      const neck = post(0.04, 0.05, 0.45, C.pink, 0, 0.1, -0.25, 6);
-      return group(
-        ring,
-        neck,
-        ball(0.08, C.pink, 0, 0.6, -0.22),
-        cone(0.03, 0.08, PALETTE.dark, 0, 0.57, -0.13, 4).rotateX(Math.PI / 2),
-        ball(0.12, PALETTE.white, 0.32, 0.12, 0.25),
-        ball(0.121, C.turquoise, 0.32, 0.12, 0.25, 0.3),
-      );
-    },
-  ],
   desk: () =>
     group(
       post(0.04, 0.03, 0.12, decorGlow(C.coral)),
@@ -764,49 +500,6 @@ const SUMMER: ThemeModels = {
 };
 
 const PIRATES: ThemeModels = {
-  floor: [
-    // Coffre au trésor ouvert.
-    () => {
-      const lid = box(0.55, 0.06, 0.38, PALETTE.woodDark, 0, 0, -0.19);
-      const hinge = new THREE.Group();
-      hinge.add(lid);
-      hinge.position.set(0, 0.36, -0.18);
-      hinge.rotation.x = -1.1;
-      lid.position.z = -0.0;
-      return group(
-        box(0.55, 0.35, 0.38, PALETTE.wood),
-        box(0.57, 0.05, 0.4, C.gold, 0, 0.1),
-        box(0.08, 0.1, 0.02, C.gold, 0, 0.2, 0.2),
-        ball(0.2, decorGlow(C.gold), 0, 0.33, 0, 0.4),
-        hinge,
-      );
-    },
-    // Tonneau.
-    () =>
-      group(
-        post(0.22, 0.22, 0.6, PALETTE.wood, 0, 0, 0, 10),
-        post(0.235, 0.235, 0.05, PALETTE.dark, 0, 0.1, 0, 10),
-        post(0.235, 0.235, 0.05, PALETTE.dark, 0, 0.45, 0, 10),
-      ),
-    // Barre de navire.
-    () => {
-      const wheel = new THREE.Group();
-      wheel.add(
-        new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.03, 4, 16), material(PALETTE.woodDark)),
-      );
-      for (let i = 0; i < 8; i++) {
-        const spoke = box(0.03, 0.75, 0.03, PALETTE.wood, 0, -0.375, 0);
-        spoke.rotation.z = (i / 8) * Math.PI;
-        wheel.add(spoke);
-      }
-      wheel.position.y = 0.95;
-      return group(
-        box(0.12, 0.8, 0.12, PALETTE.woodDark),
-        box(0.4, 0.06, 0.3, PALETTE.woodDark),
-        wheel,
-      );
-    },
-  ],
   desk: () =>
     group(
       post(0.04, 0.035, 0.08, PALETTE.wood),
@@ -832,35 +525,6 @@ const PIRATES: ThemeModels = {
 };
 
 const HALLOWEEN: ThemeModels = {
-  floor: [
-    // Pile de citrouilles sculptées.
-    () =>
-      group(
-        pumpkin(0.24, true, 0, 0.05),
-        pumpkin(0.14, false, 0.28, -0.15),
-        pumpkin(0.12, true, -0.28, -0.1),
-      ),
-    // Fantôme.
-    () =>
-      group(
-        cone(0.3, 0.7, PALETTE.white, 0, 0, 0, 10),
-        ball(0.22, PALETTE.white, 0, 0.75, 0),
-        ball(0.04, PALETTE.dark, -0.08, 0.8, 0.19),
-        ball(0.04, PALETTE.dark, 0.08, 0.8, 0.19),
-        ball(0.05, PALETTE.dark, 0, 0.67, 0.2, 1.4),
-      ),
-    // Chaudron bouillonnant.
-    () =>
-      group(
-        ball(0.28, C.black, 0, 0.28, 0, 0.85),
-        post(0.24, 0.24, 0.03, decorGlow(C.slime), 0, 0.46),
-        ball(0.05, decorGlow(C.slime), 0.08, 0.52, 0.02),
-        ball(0.035, decorGlow(C.slime), -0.1, 0.53, -0.05),
-        new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.02, 4, 12), material(C.black))
-          .rotateX(Math.PI / 2)
-          .translateZ(-0.48),
-      ),
-  ],
   desk: () => pumpkin(0.07, true),
   wall: (w, d) =>
     group(
@@ -880,34 +544,6 @@ const HALLOWEEN: ThemeModels = {
 };
 
 const CYBERPUNK: ThemeModels = {
-  floor: [
-    // Colonne de néons.
-    () =>
-      group(
-        box(0.3, 1.6, 0.3, PALETTE.dark),
-        box(0.04, 1.5, 0.04, decorGlow(C.cyan), -0.15, 0.05, 0.15),
-        box(0.04, 1.5, 0.04, decorGlow(C.neonPink), 0.15, 0.05, 0.15),
-        box(0.32, 0.04, 0.32, decorGlow(C.violet), 0, 1.6),
-      ),
-    // Écran holographique.
-    () =>
-      group(
-        post(0.15, 0.2, 0.1, PALETTE.dark),
-        box(0.02, 0.5, 0.02, PALETTE.dark, 0, 0.1),
-        box(0.6, 0.4, 0.01, decorGlow(C.cyan), 0, 0.65, 0),
-        box(0.4, 0.04, 0.012, decorGlow(C.neonPink), 0, 0.85, 0.005),
-        box(0.25, 0.04, 0.012, decorGlow(C.gold), -0.08, 0.75, 0.005),
-      ),
-    // Robot de service.
-    () =>
-      group(
-        post(0.18, 0.22, 0.5, C.steel, 0, 0, 0, 8),
-        ball(0.17, C.steel, 0, 0.65, 0),
-        box(0.24, 0.05, 0.02, decorGlow(C.neonPink), 0, 0.66, 0.15),
-        post(0.01, 0.01, 0.15, PALETTE.dark, 0, 0.8, 0, 4),
-        ball(0.03, decorGlow(C.cyan), 0, 0.97, 0),
-      ),
-  ],
   desk: () =>
     group(
       box(0.14, 0.02, 0.06, PALETTE.dark),
@@ -924,54 +560,6 @@ const CYBERPUNK: ThemeModels = {
 };
 
 const CHRISTMAS: ThemeModels = {
-  floor: [
-    // Sapin décoré.
-    () => {
-      const tree = group(post(0.06, 0.08, 0.2, PALETTE.woodDark), post(0.2, 0.2, 0.1, C.red));
-      [
-        [0.45, 0.5, 0.2],
-        [0.36, 0.45, 0.55],
-        [0.26, 0.4, 0.88],
-      ].forEach(([r, h, y]) => tree.add(cone(r ?? 0, h ?? 0, C.pine, 0, y, 0, 8)));
-      const colors = [C.red, C.gold, C.sky, C.magenta];
-      for (let i = 0; i < 10; i++) {
-        const a = i * 2.4;
-        const y = 0.35 + (i % 5) * 0.18;
-        const r = 0.4 - (i % 5) * 0.07;
-        tree.add(
-          ball(
-            0.04,
-            decorGlow(colors[i % colors.length] ?? C.red),
-            Math.cos(a) * r,
-            y,
-            Math.sin(a) * r,
-          ),
-        );
-      }
-      tree.add(flat(starShape(0.1, 0.045), 0.03, decorGlow(C.gold), 0, 1.38, 0));
-      return tree;
-    },
-    // Pile de cadeaux.
-    () =>
-      group(
-        gift(0.4, 0.3, C.red, C.gold, -0.12, 0, 0.05),
-        gift(0.3, 0.25, C.green, C.red, 0.2, 0, -0.1),
-        gift(0.22, 0.18, C.gold, C.red, -0.08, 0.3, 0.05),
-      ),
-    // Bonhomme de neige.
-    () =>
-      group(
-        ball(0.28, PALETTE.white, 0, 0.27, 0),
-        ball(0.2, PALETTE.white, 0, 0.68, 0),
-        ball(0.14, PALETTE.white, 0, 0.98, 0),
-        cone(0.025, 0.12, C.orange, 0, 0.98, 0.16, 6).rotateX(Math.PI / 2),
-        post(0.1, 0.1, 0.03, PALETTE.dark, 0, 1.08),
-        post(0.07, 0.07, 0.15, PALETTE.dark, 0, 1.1),
-        new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.04, 4, 10), material(C.red))
-          .rotateX(Math.PI / 2)
-          .translateZ(-0.84),
-      ),
-  ],
   desk: () => gift(0.09, 0.07, C.red, C.gold),
   wall: (w, d) =>
     group(

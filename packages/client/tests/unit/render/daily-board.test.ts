@@ -64,7 +64,7 @@ describe('Daily : écran et projecteur de la salle de réunion', () => {
     for (const phase of PHASES) {
       const layout = officeLayout(phase);
       for (const format of MEETING_FORMAT_IDS) {
-        const meeting = planDecor(layout, [], [], false, () => 0, format).meeting;
+        const meeting = planDecor(layout, [], [], false, format).meeting;
         const screen = meeting?.screen;
         expect(screen, `${phase} ${format}`).toBeTruthy();
         if (!meeting || !screen) continue;
@@ -80,7 +80,7 @@ describe('Daily : écran et projecteur de la salle de réunion', () => {
   });
 
   it('pendant le Daily, la toile se déroule puis l’appli s’allume ; après, tout s’éteint', () => {
-    const meeting = planDecor(officeLayout('SEED'), [], [], false, () => 0, 'standup').meeting;
+    const meeting = planDecor(officeLayout('SEED'), [], [], false, 'standup').meeting;
     const view = new DailyBoardView();
     view.setPlan(meeting);
     expect(view.root.children.length).toBeGreaterThan(0);
