@@ -787,6 +787,19 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `UNLOCK_NOT_EARNED`). Champs `story` (null) et `unlocks` ([]) par défaut, aucun tirage de plus.
   Calibrage par les bots : `pnpm balance:story` (chapitre 1 facile, chapitres 3 et 4 difficiles).
 
+- Hall d'entrée (`shared/sim/lobby.ts`, `client/src/simulation/lobby.ts`, rayon « 🛎️ Accueil » du
+  mode construction, panneau « Hall d'entrée », `ui/lobby/Lobby.tsx`) : dès la Seed, 18 000 €
+  pour un hall au rez-de-chaussée devant toutes les pièces (pièce `lobby`, `LobbyPlan` dans
+  `view/layout.ts`), cloison percée de deux portes à badge (portillons qui s'ouvrent au passage),
+  entrée du bureau par le hall ; comptoir d'accueil, banquette et deux plantes offerts et
+  déplaçables (clés `L-0` à `L-3`), comptoir aussi en vente (2 500 €). Jusqu'à 2 secrétaires
+  (3 100 € par mois, +1 % de productivité, +moral, +hype), au comptoir en semaine de 8h à 19h.
+  Sécurité en abonnement du modèle commun (service `security`, installation `lobby`) :
+  télésurveillance (95 €/mois), agent en journée (5 600 €, visible de 8h à 20h), gardiennage
+  24 h/24 (16 500 €, Série A), payés chaque semaine. Rendu `render/lobby.ts` et
+  `render/lobbyFurniture.ts` (formes `receptionDesk` et `badgeGates` des assets manquants).
+  Commandes `BUILD_LOBBY` / `SET_RECEPTIONISTS`, état `lobby` (null par défaut), aucun tirage.
+
 Reste à faire :
 - Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
   GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur

@@ -1,8 +1,9 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin) : partage du travail
-> en cours entre Thomas et Melvin, voir [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md).
-> Dernier commit de `develop` : `a77f906` (PR #144) ; dernier commit de `main` : `d28c381`
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin) : hall d'entrée et
+> sécurité (PR #134) ; partage du travail en cours entre Thomas et Melvin, voir
+> [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md).
+> Dernier commit de `develop` avant cette PR : `5e65463` (PR #145) ; dernier commit de `main` : `d28c381`
 > (PR #143). **`main` a 5 PR absentes de `develop`** (#121, #137, #138, #142, #143) : à
 > réintégrer en premier (tâche T1 de la passation).
 
@@ -68,7 +69,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Dans `main` (#121), pas encore dans `develop`     |
 | Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135)   |
 | Offres internet et température des salles (#129)    | Melvin + Claude | À rebrancher sur le modèle des abonnements (#126) |
-| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation         |
+| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Fusionné dans `develop` le 2 novembre             |
 | Remettre `main` dans `develop` (T1)                 | Thomas          | À faire en premier (13 fichiers en conflit)       |
 | Histoire longue, rivaux, arbres devs et R&D (T2-T4) | Thomas          | Proposition prête, rien de codé                   |
 | Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                        |
@@ -256,6 +257,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                             |
 | -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/11    | Melvin + Claude | #134              | Hall d'entrée au rez-de-chaussée (rayon Accueil) : portes à badge, comptoir, 2 secrétaires. Sécurité branchée sur le modèle commun (service `security`, installation `lobby` dans `REQUIREMENT_CHECKS`). État `lobby` null par défaut, aucun tirage.                                                                                                                                   |
 | 02/11    | Melvin + Claude | (cette PR)        | Partage du travail : `docs/PASSATION-THOMAS.md` (tâches T1 à T6 pour Thomas avec un prompt chacune, M1 à M4 pour Melvin) et `docs/proposition-mode-histoire.md`. `main` a 5 PR absentes de `develop` : à réintégrer d'abord.                                                                                                                                                           |
 | 02/11    | Thomas + Claude | #123 à #135       | CI de nouveau active. `develop` avancé jusqu'à `main` (mode Histoire), puis 11 PR de Melvin fusionnées dans `develop` après résolution des conflits : #123 à #128, #130 à #133, #135. Ménage à côté du modèle des abonnements, frais de l'illimité et du Hardcore cumulés, doublons du journal retirés. Restent #129 (à refaire sur les abonnements) et #134 (brouillon).              |
 | 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                                                                                                                                                                 |
