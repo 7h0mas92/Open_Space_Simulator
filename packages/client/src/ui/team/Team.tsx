@@ -10,6 +10,7 @@ import { GradeBadge, PerformancePanel, SprintProductivity, Strengths } from './P
 import { moodEmoji, StatBars } from './StatBars';
 import { TeamFilterBar } from './TeamFilterBar';
 import { BridgeNotice, LeaveSection, useAbsenceLabel } from './Leave';
+import { TeamBuilding } from './TeamBuilding';
 
 /** Liste de l'équipe, puis fiche détaillée du dev choisi (ou sélectionné dans la scène). */
 export function Team({ view }: { view: GameView }) {
@@ -40,6 +41,7 @@ export function Team({ view }: { view: GameView }) {
         })}
       </p>
       <BridgeNotice view={view} />
+      <TeamBuilding view={view} />
       {noDesk && <p className="hint">{t('team.noDeskHint')}</p>}
       <LeadershipSummary leadership={view.leadership} />
       {view.devs.length > 1 && (

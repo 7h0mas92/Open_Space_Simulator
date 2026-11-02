@@ -1152,6 +1152,44 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── TEAM_BUILDING ────────────────────────────────────────────────────────
+  {
+    trigger: 'TEAM_BUILDING_BOOKED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '{event} Présence obligatoire. Fun obligatoire aussi.',
+      '{event} Attendance is mandatory. So is fun.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_BOOKED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Est-ce que ça compte comme du temps de travail ? Je demande pour ma motivation.',
+      '{event} Does it count as working time? Asking for my motivation.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_DONE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Photos dans #random, vidéos nulle part.',
+      '{event} Photos in #random, videos nowhere.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_DONE',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} J’ai déjà prévu le debrief du team building. Lundi, 2h.',
+      '{event} I’ve already booked the team building debrief. Monday, 2 hours.',
+    ),
+  },
+
   // ─── DEV_BIRTHDAY ─────────────────────────────────────────────────────────
   {
     trigger: 'DEV_BIRTHDAY',

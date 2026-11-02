@@ -11,6 +11,7 @@ import { FibrePlanIdSchema } from './serverRoom.js';
 import { SubscriptionServiceSchema } from './subscriptions.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
 import { RetroActionSchema } from './retro.js';
+import { OutingIdSchema } from './teamBuilding.js';
 
 /**
  * Commandes typées envoyées par l'interface à la simulation. C'est le SEUL moyen de
@@ -163,6 +164,10 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('REFUSE_BRIDGES'), refuse: z.boolean() }),
   /** Rétrospective : action d'amélioration retenue pour le sprint (null : on passe). */
   z.object({ type: z.literal('HOLD_RETRO'), action: RetroActionSchema.nullable() }),
+  /** Réserve une sortie d'équipe pour la fin du sprint qui commence. */
+  z.object({ type: z.literal('BOOK_TEAM_BUILDING'), outing: OutingIdSchema }),
+  /** Annule la sortie réservée (remboursée à moitié). */
+  z.object({ type: z.literal('CANCEL_TEAM_BUILDING') }),
   z.object({ type: z.literal('LAUNCH_IPO') }),
   /** Crée une filiale à partir d'un des projets proposés pendant la planification. */
   z.object({ type: z.literal('FOUND_VENTURE'), ideaId: z.string() }),

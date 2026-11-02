@@ -2374,5 +2374,48 @@
         "effect": "+3 % de vitesse"
       }
     }
+  },
+  "teamBuilding": {
+    "title": "Team building",
+    "intro": "Une sortie par sprint, en fin de 2e semaine. Payée à la réservation, elle coûte du temps de travail et répare le moral et les conflits. Sorties faites : {{count}}.",
+    "booked": "{{outing}} réservé {{when}} ({{cost}}).",
+    "cancel": "Annuler (remboursé à {{refund}} %)",
+    "hoursLost_one": "{{when}} : {{count}} heure de travail perdue",
+    "hoursLost_other": "{{when}} : {{count}} heures de travail perdues",
+    "noTimeLost": "{{when}} : aucune heure de travail perdue",
+    "repeat": "Déjà fait au dernier sprint : moral divisé par deux.",
+    "locked": "Disponible dès la phase {{phase}}",
+    "blockers": {
+      "COOLDOWN": "Une sortie est déjà prévue ce sprint.",
+      "NOT_ENOUGH_MONEY": "Pas assez de trésorerie.",
+      "LOCKED": "Pas encore disponible."
+    },
+    "outings": {
+      "afterwork": {
+        "name": "Afterwork pizza-bière",
+        "when": "jeudi soir de la 2e semaine",
+        "effect": "+6 moral, +8 d’affinité entre tous ; −15 d’énergie le lendemain"
+      },
+      "escape-game": {
+        "name": "Escape game",
+        "when": "vendredi après-midi de la 2e semaine",
+        "effect": "+10 moral, +25 d’affinité pour les paires en conflit (15 % de chance que ça empire)"
+      },
+      "laser-game": {
+        "name": "Laser game",
+        "when": "vendredi après-midi de la 2e semaine",
+        "effect": "+12 moral, +10 d’affinité entre tous ; les gros egos perdants boudent"
+      },
+      "seminar": {
+        "name": "Séminaire au vert",
+        "when": "vendredi de la 2e semaine",
+        "effect": "+20 moral, +20 d’affinité, +40 d’énergie, +3 hype"
+      },
+      "offsite": {
+        "name": "Off-site à Lisbonne",
+        "when": "jeudi et vendredi de la 2e semaine",
+        "effect": "+30 moral, +30 d’affinité, +20 d’énergie, +8 hype, −5 de dette"
+      }
+    }
   }
 }

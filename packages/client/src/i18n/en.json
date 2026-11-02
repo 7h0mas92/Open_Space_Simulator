@@ -2374,5 +2374,48 @@
         "effect": "+3% speed"
       }
     }
+  },
+  "teamBuilding": {
+    "title": "Team building",
+    "intro": "One outing per sprint, at the end of week 2. Paid when booked, it costs working time and repairs morale and conflicts. Outings so far: {{count}}.",
+    "booked": "{{outing}} booked {{when}} ({{cost}}).",
+    "cancel": "Cancel ({{refund}}% refunded)",
+    "hoursLost_one": "{{when}}: {{count}} working hour lost",
+    "hoursLost_other": "{{when}}: {{count}} working hours lost",
+    "noTimeLost": "{{when}}: no working hours lost",
+    "repeat": "Already done last sprint: morale gain halved.",
+    "locked": "Available from the {{phase}} phase",
+    "blockers": {
+      "COOLDOWN": "An outing is already booked this sprint.",
+      "NOT_ENOUGH_MONEY": "Not enough cash.",
+      "LOCKED": "Not available yet."
+    },
+    "outings": {
+      "afterwork": {
+        "name": "Pizza & beer afterwork",
+        "when": "Thursday evening of week 2",
+        "effect": "+6 morale, +8 affinity between everyone; −15 energy the next day"
+      },
+      "escape-game": {
+        "name": "Escape game",
+        "when": "Friday afternoon of week 2",
+        "effect": "+10 morale, +25 affinity for pairs in conflict (15% chance it backfires)"
+      },
+      "laser-game": {
+        "name": "Laser tag",
+        "when": "Friday afternoon of week 2",
+        "effect": "+12 morale, +10 affinity between everyone; big egos on the losing side sulk"
+      },
+      "seminar": {
+        "name": "Countryside seminar",
+        "when": "Friday of week 2",
+        "effect": "+20 morale, +20 affinity, +40 energy, +3 hype"
+      },
+      "offsite": {
+        "name": "Lisbon off-site",
+        "when": "Thursday and Friday of week 2",
+        "effect": "+30 morale, +30 affinity, +20 energy, +8 hype, −5 debt"
+      }
+    }
   }
 }

@@ -27,6 +27,7 @@ import { incidentSystem } from './systems/incidents';
 import { coffeeSystem, energySystem } from './systems/needs';
 import { remoteSystem } from './systems/remote';
 import { absentIds, teamLifeSystem } from './teamLife';
+import { teamBuildingSystem } from './teamBuilding';
 import { taskFlowSystem } from './taskFlow';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
@@ -44,6 +45,7 @@ export const SYSTEMS: readonly System[] = [
   workSystem,
   coffeeSystem,
   teamLifeSystem,
+  teamBuildingSystem,
   remoteSystem,
   (state, ctx) => energySystem(state, ctx),
   incidentSystem,

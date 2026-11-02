@@ -27,6 +27,7 @@ import { WallFinishesSchema } from './walls.js';
 import { AnnexDecorSchema } from './annexDecor.js';
 import { TeamLifeStateSchema } from './teamLife.js';
 import { emptyRetroState, RetroStateSchema } from './retro.js';
+import { emptyTeamBuildingState, TeamBuildingStateSchema } from './teamBuilding.js';
 import { StoryMissionIdSchema } from '../story/campaign.js';
 import { StoryRewardIdSchema } from '../story/rewards.js';
 
@@ -291,6 +292,9 @@ export const NOTIFICATION_KINDS = [
   'PUBLIC_HOLIDAY',
   /** Rétrospective tenue : action choisie par l'équipe ou imposée. */
   'RETRO_HELD',
+  /** Team building réservé, puis terminé (avec ses effets). */
+  'TEAM_BUILDING_BOOKED',
+  'TEAM_BUILDING_DONE',
   'RUST_CONVERT',
   'FUNDS_RAISED',
   'PITCH_FAILED',
@@ -450,6 +454,8 @@ export const GameStateSchema = z.object({
   teamLife: TeamLifeStateSchema.nullable().default(null),
   /** Rétrospective de sprint : proposée, et action en vigueur (absente des vieilles sauvegardes). */
   retro: RetroStateSchema.default(emptyRetroState),
+  /** Team building réservé et sorties faites (absent des vieilles sauvegardes). */
+  teamBuilding: TeamBuildingStateSchema.default(emptyTeamBuildingState),
   /**
    * Ancien champ de l'abonnement fibre, d'avant la rubrique Abonnements : repris dans
    * `subscriptions` au chargement (`migrateLegacyFibre`), toujours null ensuite.

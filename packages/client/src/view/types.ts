@@ -10,6 +10,7 @@
  */
 import type {
   AbsenceKind,
+  OutingId,
   RetroAction,
   PublicHoliday,
   MissionGoal,
@@ -240,6 +241,30 @@ export interface RetroView {
   readonly options: readonly { readonly action: RetroAction; readonly voters: readonly string[] }[];
   /** Action qui a le plus de voix. */
   readonly winner: RetroAction | null;
+}
+
+/** Une sortie d'équipe proposée en planification. */
+export interface OutingView {
+  readonly id: OutingId;
+  readonly icon: string;
+  readonly phase: Phase;
+  /** Prix pour l'équipe actuelle. */
+  readonly price: number;
+  /** Ce qui empêche de la réserver (null : possible). */
+  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'COOLDOWN' | null;
+  /** Déjà faite au sprint précédent : moral divisé par deux. */
+  readonly repeat: boolean;
+  readonly moral: number;
+  /** Temps de travail perdu, en heures (0 pour l'afterwork). */
+  readonly hoursLost: number;
+}
+
+export interface TeamBuildingView {
+  /** Sortie réservée pour ce sprint, et son prix. */
+  readonly booked: { readonly outing: OutingId; readonly cost: number } | null;
+  readonly outings: readonly OutingView[];
+  /** Sorties faites depuis le début de la partie. */
+  readonly count: number;
 }
 
 /** Congés et ponts du sprint (null : vieilles sauvegardes et défi « 3 sprints »). */
@@ -879,6 +904,8 @@ export interface GameView {
   /** Historique des jauges, un point par jour simulé. */
   readonly history: readonly Gauges[];
   readonly devs: readonly DevView[];
+  /** Team building : sortie réservée et sorties proposées. */
+  readonly teamBuilding: TeamBuildingView;
   /** Rétrospective en attente de décision (null : aucune). */
   readonly retro: RetroView | null;
   /** Action de la dernière rétro en vigueur ce sprint (null : aucune). */
@@ -1036,6 +1063,8 @@ export type GameCommand =
   | { readonly type: 'cancelLeave'; readonly devId: string }
   | { readonly type: 'refuseBridges'; readonly refuse: boolean }
   | { readonly type: 'holdRetro'; readonly action: RetroAction | null }
+  | { readonly type: 'bookTeamBuilding'; readonly outing: OutingId }
+  | { readonly type: 'cancelTeamBuilding' }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }

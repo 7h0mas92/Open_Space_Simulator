@@ -26,6 +26,9 @@ import {
   fundingTier,
   fundingTierIndex,
   TIME,
+  OUTINGS,
+  OUTING_DEFINITIONS,
+  TEAM_BUILDING,
   VENTURES,
   birthdayFromKey,
   civilFromDays,
@@ -109,11 +112,13 @@ import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pe
 import { leavingAtSprint } from '../simulation/raises';
 import { holidayOf, leaveSlots, sprintHasBridge } from '../simulation/teamLife';
 import { activeRetro, retroWinner } from '../simulation/retro';
+import { outingBlocker, outingPrice } from '../simulation/teamBuilding';
 import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
 import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulation/subscriptions';
 import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
 import type {
   AbsenceView,
+  TeamBuildingView,
   RetroView,
   StoryView,
   CandidateView,
@@ -309,6 +314,32 @@ function devView(state: GameState, id: string): DevView | null {
       state.teamLife && identity.role !== 'GHOST' && identity.role !== 'AI_AGENT'
         ? (state.teamLife.leave[id] ?? 0)
         : null,
+  };
+}
+
+function teamBuildingView(state: GameState): TeamBuildingView {
+  const booked = state.teamBuilding.booked;
+  const last = state.teamBuilding.last;
+  return {
+    booked:
+      booked && booked.sprint === state.sprint
+        ? { outing: booked.outing, cost: booked.cost }
+        : null,
+    outings: OUTINGS.map((id) => {
+      const outing = OUTING_DEFINITIONS[id];
+      const days = outing.endDay - outing.startDay;
+      return {
+        id,
+        icon: outing.icon,
+        phase: outing.phase,
+        price: outingPrice(state, outing),
+        blocker: outingBlocker(state, outing),
+        repeat: last?.outing === id && last.sprint === state.sprint - 1,
+        moral: outing.moral,
+        hoursLost: Math.max(0, TEAM_BUILDING.endHour - outing.startHour) + days * 9,
+      };
+    }),
+    count: state.teamBuilding.count,
   };
 }
 
@@ -1065,6 +1096,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     devs: devIds(state)
       .map((id) => devView(state, id))
       .filter((dev): dev is DevView => dev !== null),
+    teamBuilding: teamBuildingView(state),
     retro: retroView(state),
     retroAction: activeRetro(state),
     teamLife: state.teamLife
@@ -1280,6 +1312,10 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'REFUSE_BRIDGES', refuse: command.refuse };
     case 'holdRetro':
       return { type: 'HOLD_RETRO', action: command.action };
+    case 'bookTeamBuilding':
+      return { type: 'BOOK_TEAM_BUILDING', outing: command.outing };
+    case 'cancelTeamBuilding':
+      return { type: 'CANCEL_TEAM_BUILDING' };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
     case 'foundVenture':

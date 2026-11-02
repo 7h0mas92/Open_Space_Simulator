@@ -26,6 +26,7 @@ import { switchProjector } from './projection';
 import { answerRaise } from './raises';
 import { bookLeave, cancelLeave, refuseBridges } from './teamLife';
 import { holdRetro } from './retro';
+import { bookTeamBuilding, cancelTeamBuilding } from './teamBuilding';
 import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
@@ -180,6 +181,10 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return refuseBridges(state, command.refuse);
     case 'HOLD_RETRO':
       return holdRetro(state, ctx, command.action);
+    case 'BOOK_TEAM_BUILDING':
+      return bookTeamBuilding(state, ctx, command.outing);
+    case 'CANCEL_TEAM_BUILDING':
+      return cancelTeamBuilding(state);
     case 'LAUNCH_IPO':
       if (state.stage !== 'PLANNING' && state.stage !== 'DEMO') return fail('WRONG_STAGE');
       if (state.phase !== 'UNICORN' || state.gauges.stability < BALANCE.phases.ipoMinStability) {

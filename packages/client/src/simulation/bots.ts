@@ -2,6 +2,8 @@ import {
   FURNITURE_CATALOG,
   ROLE_PROFILES,
   TEAM_LIFE,
+  OUTINGS,
+  OUTING_DEFINITIONS,
   getMeetingFormat,
   ROLE_TRADE,
   taskTrade,
@@ -28,6 +30,7 @@ import type { Simulation } from './simulation';
 import { tasksInColumn } from './tasks';
 import { leaveSlots } from './teamLife';
 import { retroWinner } from './retro';
+import { outingBlocker } from './teamBuilding';
 import { activeVentures, investableCash, ventureBlocker, ventureOffers } from './ventures';
 
 /**
@@ -113,6 +116,8 @@ interface PlanningStyle {
   booksLeave?: boolean;
   /** Tient la rétrospective et suit le vote de l'équipe. */
   holdsRetro?: boolean;
+  /** Réserve une sortie d'équipe quand le moral moyen passe sous 50. */
+  teamBuilds?: boolean;
 }
 
 /** Bot « raisonnable », paramétré par un style de jeu. */
@@ -217,6 +222,9 @@ class PlannerBot implements Bot {
 
     // 2 ter. Congés : une semaine à ceux qui ont 5 jours en réserve, s'il reste une place.
     if (style.booksLeave) commands.push(...leaveBookings(state));
+
+    // 2 quater. Team building : la meilleure sortie possible quand le moral flanche.
+    if (style.teamBuilds) commands.push(...teamOuting(state, runway));
 
     // 3. Recrutement.
     if (teamSize(state) < teamMax(state) && runway > style.hireRunway) {
@@ -416,6 +424,15 @@ export function leaveBookings(state: Readonly<GameState>): Command[] {
   return commands;
 }
 
+/** La sortie qu'un joueur attentif réserverait : la plus chère qu'il peut se permettre. */
+export function teamOuting(state: Readonly<GameState>, runway: number): Command[] {
+  if (teamMoral(state) >= 50 || runway < 6 || teamSize(state) < 2) return [];
+  const outing = [...OUTINGS]
+    .reverse()
+    .find((id) => outingBlocker(state as GameState, OUTING_DEFINITIONS[id]) === null);
+  return outing ? [{ type: 'BOOK_TEAM_BUILDING', outing }] : [];
+}
+
 const fixPriority = (state: Readonly<GameState>) => state.gauges.stability < 60;
 
 export const BOT_NAMES = [
@@ -428,6 +445,7 @@ export const BOT_NAMES = [
   'financier',
   'rested',
   'retro',
+  'teambuilder',
 ] as const;
 export type BotName = (typeof BOT_NAMES)[number];
 
@@ -568,6 +586,17 @@ export function createBot(name: BotName, seed: string): Bot {
         pitchRunway: 10,
         buysFurniture: true,
         holdsRetro: true,
+      });
+    case 'teambuilder':
+      // Comme « balanced », mais il emmène l'équipe en sortie quand le moral flanche.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        teamBuilds: true,
       });
     case 'cautious':
       // Code propre, petite équipe, levées tardives.

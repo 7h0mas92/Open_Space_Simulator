@@ -747,6 +747,29 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
       Object.values(state.teamLife?.absences ?? {}).filter((absence) => absence.kind === 'SICK')
         .length >= 3,
   },
+  {
+    id: 'team-spirit',
+    icon: '🎉',
+    difficulty: 'MEDIUM',
+    title: t('Esprit d’équipe', 'Team Spirit'),
+    description: t(
+      'Faire 5 sorties d’équipe dans une partie.',
+      'Go on 5 team outings in one game.',
+    ),
+    check: (state) => state.teamBuilding.count >= 5,
+  },
+  {
+    id: 'what-happens-in-lisbon',
+    icon: '✈️',
+    difficulty: 'HARD',
+    secret: true,
+    title: t('Ce qui se passe à Lisbonne…', 'What Happens in Lisbon…'),
+    description: t(
+      'Emmener toute l’équipe en off-site à Lisbonne.',
+      'Take the whole team on an off-site in Lisbon.',
+    ),
+    check: (state) => state.teamBuilding.last?.outing === 'offsite',
+  },
   // ── Filiales ──────────────────────────────────────────────────────────────
   {
     id: 'business-angel',
