@@ -50,6 +50,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   pets: '🐈',
   servers: '🗄️',
   funding: '💼',
+  mission: '🎯',
   build: '🛠️',
   dashboard: '📈',
   slack: '💬',
@@ -251,7 +252,10 @@ export function SystemButtons() {
   const panel = useGame((s) => s.panel);
   const openPanel = useGame((s) => s.openPanel);
   const replay = useGame((s) => s.replayOf !== null);
-  const panels = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
+  // Mode Histoire : la mission (objectifs en direct) est à un clic, avant les sauvegardes.
+  const story = useGame((s) => s.view?.mode === 'STORY');
+  const system = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
+  const panels: readonly PanelId[] = story ? ['mission', ...system] : system;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>
       {panels.map((id) => (

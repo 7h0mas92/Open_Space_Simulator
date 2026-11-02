@@ -332,6 +332,9 @@ export const MISSING_ASSETS = [
   { id: 'backupNas', replacement: 'primitive' },
   { id: 'firewallUnit', replacement: 'primitive' },
   { id: 'fireSuppression', replacement: 'primitive' },
+  // Récompenses du mode Histoire (`render/storyRewards.ts`).
+  { id: 'unicornStatue', replacement: 'primitive' },
+  { id: 'ipoBell', replacement: 'primitive' },
   // Décor des annexes (arcade, jardin, auditorium), aussi en vente (`render/annexDecor.ts`).
   { id: 'arcadeCabinet', replacement: 'primitive' },
   { id: 'pinballMachine', replacement: 'primitive' },
