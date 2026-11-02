@@ -1,8 +1,10 @@
 import {
+  DAILY_SYNC,
   MEETINGS,
   PHASES,
   ROLE_TRADE,
   getMeetingFormat,
+  taskTrade,
   type CommandError,
   type CommandResult,
   type DevRole,
@@ -10,6 +12,7 @@ import {
   type GameState,
   type MeetingFormat,
   type MeetingFormatId,
+  type MorningSyncEntry,
   type Phase,
 } from '@oss/shared';
 import {
@@ -24,7 +27,7 @@ import {
 } from './helpers';
 import { assignTask } from './tasks';
 import { Rng } from './rng';
-import type { SimClock } from './time';
+import { getClock, type SimClock } from './time';
 
 /*
  * Salle de réunion : le joueur choisit une formule (stand-up, brainstorming, aquarium, zen,
@@ -145,6 +148,7 @@ export function holdTeamMeeting(
       if (mood) mood.moral = clamp(mood.moral + (effects.moral ?? 0), 0, 100);
     }
   }
+  recordMorningSync(state, attendees, useful);
   if (useful) state.stats.meetingsUseful += 1;
   else state.stats.meetingsUseless += 1;
   notify(
@@ -152,6 +156,123 @@ export function holdTeamMeeting(
     ctx,
     useful ? 'MEETING_USEFUL' : 'MEETING_USELESS',
     useful ? format.usefulText : format.uselessText,
+  );
+}
+
+// ─── Daily : le point sur les tickets ──────────────────────────────────────
+
+/**
+ * Note le point de chaque participant sur son ticket : avancement du jour et, si le ticket était
+ * déjà là au Daily précédent, celui de la veille. C'est ce que montre l'appli de tickets projetée
+ * dans la salle. Aucun tirage.
+ */
+function recordMorningSync(state: GameState, attendees: readonly EntityId[], useful: boolean) {
+  const previous = new Map(
+    (state.morningSync?.entries ?? []).map((entry) => [entry.taskId, entry.progress]),
+  );
+  const entries: MorningSyncEntry[] = [];
+  for (const devId of attendees) {
+    const taskId = state.components.worker[devId]?.taskId;
+    const task = taskId ? state.components.task[taskId] : undefined;
+    if (!taskId || !task || task.column === 'DONE') continue;
+    const progress = clamp(task.progress / task.work, 0, 1);
+    entries.push({ devId, taskId, progress, before: previous.get(taskId) ?? null });
+  }
+  state.morningSync = {
+    day: getClock(state).day,
+    tick: state.tick,
+    useful,
+    attendees: [...attendees],
+    entries,
+  };
+}
+
+/** Bonus de productivité d'un dev qui sort d'un Daily utile ce matin (0 sinon). */
+export function dailyFocus(state: GameState, devId: EntityId): number {
+  const sync = state.morningSync;
+  if (!sync?.useful || !sync.attendees.includes(devId)) return 0;
+  return sync.day === getClock(state).day ? DAILY_SYNC.focusBonus : 0;
+}
+
+/** Devs du code qui ont un ticket de code en cours et sont au travail (au bureau ou chez eux). */
+function busyCoders(state: GameState): EntityId[] {
+  return devIds(state).filter((id) => {
+    const role = state.components.identity[id]?.role;
+    if (!role || ROLE_TRADE[role] !== 'DEV') return false;
+    const kind = state.components.activity[id]?.kind;
+    if (kind === undefined || kind === 'GONE') return false;
+    const taskId = state.components.worker[id]?.taskId;
+    const task = taskId ? state.components.task[taskId] : undefined;
+    return task !== undefined && task.column === 'IN_PROGRESS' && taskTrade(task) === 'DEV';
+  });
+}
+
+/** Chance du jour que deux devs codent la même chose, sachant qui était au Daily. */
+export function duplicateOdds(coders: number, unsynced: number): number {
+  if (coders < DAILY_SYNC.duplicateMinCoders || unsynced === 0) return 0;
+  const base = Math.min(
+    DAILY_SYNC.duplicateMaxOdds,
+    DAILY_SYNC.duplicateOddsPerCoder * (coders - 2),
+  );
+  return (base * unsynced) / coders;
+}
+
+/**
+ * Travail en double, à 10h en semaine : sans Daily ce matin, personne ne sait qui fait quoi.
+ * Un dev qui n'y était pas découvre qu'un collègue a déjà codé une partie de son ticket : cette
+ * partie est perdue. Tiré sur une graine à part (graine + tick), jamais sur `ctx.rng`.
+ */
+export function checkDuplicateWork(state: GameState, ctx: SimContext, clock: SimClock): void {
+  if (state.stage !== 'EXECUTION' || clock.isWeekend) return;
+  if (clock.hour !== DAILY_SYNC.duplicateHour) return;
+  if (phaseIndex(state.phase) < phaseIndex(DAILY_SYNC.duplicatePhase)) return;
+  const coders = busyCoders(state);
+  const sync = state.morningSync?.day === clock.day ? state.morningSync : null;
+  const unsynced = coders.filter((id) => !sync?.attendees.includes(id));
+  const odds = duplicateOdds(coders.length, unsynced.length);
+  if (odds <= 0) return;
+  const rng = Rng.fromSeed(`${state.seed}#duplicate#${state.tick}`);
+  if (!rng.chance(odds)) return;
+  const victimId = rng.pick(unsynced);
+  const partnerId = rng.pick(coders.filter((id) => id !== victimId));
+  const taskId = state.components.worker[victimId]?.taskId;
+  const task = taskId ? state.components.task[taskId] : undefined;
+  if (!task) return;
+  const lost = Math.min(
+    task.progress,
+    task.work * rng.range(DAILY_SYNC.duplicateLossMin, DAILY_SYNC.duplicateLossMax),
+  );
+  if (lost <= 0) return;
+  // Le travail perdu emporte sa part de qualité et de dette.
+  const kept = (task.progress - lost) / task.progress;
+  task.progress -= lost;
+  task.qualitySum *= kept;
+  task.debtFactor *= kept;
+  state.stats.duplicateWork += 1;
+  const victim = state.components.identity[victimId]?.name ?? '?';
+  const partner = state.components.identity[partnerId]?.name ?? '?';
+  addDevLog(
+    state,
+    victimId,
+    text(
+      ['A recodé ce que {partner} avait déjà fait.', 'Re-coded what {partner} had already done.'],
+      {
+        partner,
+      },
+    ),
+  );
+  notify(
+    state,
+    ctx,
+    'DUPLICATE_WORK',
+    text(
+      [
+        'Pas de Daily : {victim} et {partner} ont codé la même chose. {percent} % de « {task} » à refaire.',
+        'No Daily: {victim} and {partner} coded the same thing. {percent}% of "{task}" to redo.',
+      ],
+      { victim, partner, percent: Math.round((lost / task.work) * 100), task: task.title },
+    ),
+    victimId,
   );
 }
 

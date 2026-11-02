@@ -49,6 +49,8 @@ export const PANELS = [
   'hiring',
   'group',
   'meetings',
+  /** Appli de tickets « Kanbanana » de la salle de réunion (ouverte depuis le Daily). */
+  'tickets',
   'pets',
   'servers',
   'cleaning',

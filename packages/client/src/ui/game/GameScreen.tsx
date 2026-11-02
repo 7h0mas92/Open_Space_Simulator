@@ -13,7 +13,9 @@ import { useGame, type PanelId, type Toast } from '../store/game';
 import { useSettings } from '../store/settings';
 import { Funding } from '../funding/Funding';
 import { Group } from '../group/Group';
+import { DailyMoment } from '../meetings/DailyMoment';
 import { MeetingRoom } from '../meetings/MeetingRoom';
+import { TicketApp } from '../meetings/TicketApp';
 import { Pets } from '../pets/Pets';
 import { ServerRoom } from '../servers/ServerRoom';
 import { Cleaning } from '../cleaning/Cleaning';
@@ -52,6 +54,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Group view={view} />;
     case 'meetings':
       return <MeetingRoom view={view} />;
+    case 'tickets':
+      return <TicketApp view={view} />;
     case 'pets':
       return <Pets view={view} />;
     case 'servers':
@@ -178,6 +182,7 @@ export function GameScreen() {
     >
       <Scene />
       <Alerts view={view} />
+      {!building && <DailyMoment view={view} />}
       <h1 className="visually-hidden">{t('app.title')}</h1>
       {building ? (
         // Construction : le HUD habituel s'efface pour laisser la scène au joueur.

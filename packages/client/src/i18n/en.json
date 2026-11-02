@@ -322,7 +322,8 @@
     "servers": "Server room",
     "mission": "Mission",
     "subscriptions": "Subscriptions",
-    "cleaning": "Cleaning"
+    "cleaning": "Cleaning",
+    "tickets": "Kanbanana, the ticket app"
   },
   "kanban": {
     "columns": {
@@ -771,7 +772,8 @@
       "ambienceVolume": "Ambience"
     },
     "slackAi": "AI-driven Slack",
-    "slackAiHint": "Devs react live thanks to AI (daily quota). Unchecked: classic messages."
+    "slackAiHint": "Devs react live thanks to AI (daily quota). Unchecked: classic messages.",
+    "dailyPause": "Stop time for a few seconds at the morning Daily"
   },
   "credits": {
     "title": "Credits",
@@ -1783,6 +1785,7 @@
   },
   "meetings": {
     "intro": "Fit out the office meeting room. Each format has a perk and a drawback, and the team meets there every weekday morning at {{hour}}, as soon as they arrive, for {{minutes}} minutes: a useful meeting pays off, a useless one costs morale.",
+    "dailyIntro": "The Daily is the ticket update: everyone says where they stand and what they're doing today, and the ticket app is shown on the room's projector. Useful meeting: attendees work {{focus}}% faster until tonight. Without a Daily that morning (empty room), or for those who missed it (remote), two devs end up coding the same thing and part of a ticket has to be redone.",
     "crisisIntro": "When prod goes down, the room becomes a crisis cell: the culprit if there is one, the {{count}} most solid devs (DevOps and Tech Lead first, culprit included) and the Product Owner or a manager meet there for half an hour. On the way out, the best one takes \"Fix prod\", already under way.",
     "crisis": "Crisis meetings",
     "crisisOne": "Crisis meeting",
@@ -2151,5 +2154,35 @@
     "cancelWarning": "The crew won’t come any more; the current week isn’t refunded.",
     "cancelConfirm": "Cancel cleaning",
     "button": "Cleaning: {{percent}}% dirty"
+  },
+  "daily": {
+    "liveUseful": "Daily in the meeting room: everyone gives an update on their ticket. Useful, +{{focus}}% until tonight.",
+    "liveUseless": "Daily in the meeting room: this could have been an email.",
+    "open": "Open {{app}}",
+    "resume": "Resume"
+  },
+  "tickets": {
+    "intro": "The office ticket app, projected in the meeting room during the Daily. Read-only: tickets are moved in the Kanban.",
+    "sprint": "Sprint {{sprint}}",
+    "pointsDone": "{{done}} / {{total}} points done",
+    "dailyTitle": "This morning’s Daily",
+    "noDaily": "No Daily yet: fit out the meeting room and the team will meet there every weekday at 9am.",
+    "useful": "Useful Daily: attendees know where they stand, +{{focus}}% productivity until tonight.",
+    "usefulPast": "Useful Daily.",
+    "useless": "Useless Daily: some morale lost, but at least nobody codes the same thing.",
+    "notToday": "(last Daily, not today)",
+    "started": "started, {{now}}%",
+    "moved": "{{before}}% → {{now}}%",
+    "nothing": "Nothing in progress.",
+    "duplicates": "Without a Daily, two devs end up coding the same thing. Tickets partly re-coded for nothing so far: {{count}}.",
+    "empty": "No tickets.",
+    "backlog": "{{count}} ideas left in the backlog.",
+    "unassigned": "Nobody",
+    "progress": "Progress",
+    "points": "Points",
+    "kinds": {
+      "URGENT": "Urgent",
+      "WEEKLY": "Weekly"
+    }
   }
 }
