@@ -1,4 +1,4 @@
-import { utcDate, type ScoreDto } from '@oss/shared';
+import { companyName, utcDate, type ScoreDto } from '@oss/shared';
 import type { Score, User } from '../generated/prisma/client.js';
 
 export type ScoreWithUser = Score & { user: Pick<User, 'pseudo'> };
@@ -12,6 +12,7 @@ export function toScoreDto(score: ScoreWithUser): ScoreDto {
     outcome: score.outcome,
     phaseReached: score.phaseReached,
     sprintsPlayed: score.sprintsPlayed,
+    company: companyName(score.seed),
     dailyDate: score.dailyDate ? utcDate(score.dailyDate) : null,
     createdAt: score.createdAt.toISOString(),
   };

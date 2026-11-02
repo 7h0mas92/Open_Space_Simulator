@@ -5,6 +5,7 @@ import {
   ROLE_TRADE,
   taskTrade,
   type CardEffects,
+  type CleaningPlanId,
   type Command,
   type DevRole,
   type EventCard,
@@ -157,6 +158,8 @@ class PlannerBot implements Bot {
   }
 
   private endgame(state: Readonly<GameState>): Command[] {
+    // Mode illimité : les bots visent la distance, ils ne vendent pas et n'entrent pas en Bourse.
+    if (state.mode === 'ENDLESS') return [];
     const offer = state.acquisitionOffer;
     if (
       offer &&
@@ -217,8 +220,13 @@ class PlannerBot implements Bot {
         });
     }
 
-    // 4. Mobilier utile.
-    if (style.buysFurniture) commands.push(...this.furniture(state));
+    // 4. Mobilier utile, et un abonnement de ménage à la mesure de l'équipe.
+    if (style.buysFurniture) {
+      commands.push(...this.furniture(state));
+      const plan = sensibleCleaningPlan(state);
+      if (plan && plan !== state.cleaning.plan?.plan && runway > 6)
+        commands.push({ type: 'SUBSCRIBE_CLEANING', plan });
+    }
 
     // 5. Kanban : on remplit TODO selon la capacité estimée de chaque métier (un 10x ou une
     // IA abattent plus de travail qu'un dev moyen ; la designeuse ne code pas).
@@ -427,6 +435,13 @@ export function sensibleMeetingRoom(state: Readonly<GameState>): MeetingFormatId
         ? 'boardroom'
         : (state.meetingRoom?.format ?? 'brainstorm');
   }
+}
+
+/** L'abonnement de ménage qu'un joueur attentif prendrait : plus de passages avec l'équipe. */
+export function sensibleCleaningPlan(state: Readonly<GameState>): CleaningPlanId | null {
+  const team = teamSize(state);
+  if (team === 0) return null;
+  return team <= 2 ? 'cleaning-weekly' : team <= 6 ? 'cleaning-twice' : 'cleaning-daily';
 }
 
 /** Crée un bot par son nom. `seed` ne sert qu'au bot aléatoire. */

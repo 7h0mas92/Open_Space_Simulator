@@ -1,11 +1,12 @@
 /**
  * Effets de bord d'une partie, branchés sur le store du jeu : sauvegarde automatique à chaque
- * planification, publication du score à la fin (et partie retirée de « Continuer »), succès
- * gardés pour le serveur.
+ * planification, publication du score à la fin (classement de l'appareil, partie retirée de
+ * « Continuer »), succès gardés pour le serveur.
  */
 import { ApiRequestError } from '../../api/client';
 import { metaApi } from '../../api/meta';
 import { pendingAchievements } from '../../save/achievements';
+import { localScores } from '../../save/localScores';
 import { saves } from '../../save/saves';
 import type { GameView } from '../../view/types';
 import { useGame } from './game';
@@ -98,6 +99,19 @@ function onViewChange(view: GameView | null, previous: GameView | null): void {
     void submitScore();
     void recordMission().catch(() => undefined);
     void saves.markFinished(view.seed, isOnline()).catch(() => undefined);
+    if (view.result) {
+      void localScores
+        .add({
+          seed: view.seed,
+          mode: view.mode,
+          outcome: view.result.outcome,
+          phaseReached: view.result.phaseReached,
+          valuation: view.result.valuation,
+          sprint: view.result.sprint,
+          dailyDate: view.mode === 'DAILY' ? dailyDateOf(view.seed) : undefined,
+        })
+        .catch(() => undefined);
+    }
   }
   if (view.achievements.length > previous.achievements.length) {
     const fresh = view.achievements.filter((id) => !previous.achievements.includes(id));

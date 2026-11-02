@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { accessCell, buildNavGrid, frontDirection, itemCells, NavGrid } from '../../../src/ai/grid';
+import {
+  accessCell,
+  accessPoint,
+  buildNavGrid,
+  frontDirection,
+  itemCells,
+  NavGrid,
+} from '../../../src/ai/grid';
 import { officeLayout } from '../../../src/view/layout';
 
 describe('grille de navigation', () => {
@@ -32,6 +39,22 @@ describe('grille de navigation', () => {
     expect(accessCell({ ...desk, rotation: 2 })).toEqual({ x: 2, z: 1 });
     expect(accessCell({ ...desk, rotation: 3 })).toEqual({ x: 1, z: 2 });
     expect(frontDirection(-1)).toEqual([-1, 0]);
+  });
+
+  it('décalé d’une demi-case, un objet bloque les cases qu’il chevauche', () => {
+    const desk = { id: 'd', kind: 'desk', x: 2.5, z: 2, rotation: 0 as const };
+    expect(itemCells(desk)).toEqual([
+      { x: 2, z: 2 },
+      { x: 3, z: 2 },
+      { x: 4, z: 2 },
+    ]);
+    // On s'assoit au point exact (la chaise), depuis une case entière de la grille.
+    expect(accessPoint(desk)).toEqual({ x: 2.5, z: 3 });
+    expect(accessCell(desk)).toEqual({ x: 3, z: 3 });
+    const front = { ...desk, x: 2, z: 2.5 };
+    expect(accessPoint(front)).toEqual({ x: 2, z: 3.5 });
+    expect(accessCell(front)).toEqual({ x: 2, z: 4 });
+    expect(new NavGrid(5, 5).walkable(2.5, 2)).toBe(false);
   });
 
   it('trouve la case libre la plus proche', () => {

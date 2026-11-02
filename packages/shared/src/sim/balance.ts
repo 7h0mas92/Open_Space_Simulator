@@ -520,16 +520,6 @@ export const BALANCE = {
     /** Pendant une période à thème, part des tirages réservée à ses cartes de saison. */
     seasonalShare: 0.7,
   },
-  /**
-   * Mode Facile : pensé pour apprendre, avec le tutoriel complet. Plus d'argent au départ,
-   * moins de crises, et des crises qui font moitié moins mal.
-   */
-  easy: {
-    treasuryMultiplier: 1.5,
-    maxEventsPerSprint: 2,
-    /** Multiplicateur appliqué aux seuls effets négatifs des cartes. */
-    badEffectMultiplier: 0.5,
-  },
   valuation: {
     base: 4_000_000,
     perDev: 400_000,

@@ -16,6 +16,8 @@ export interface Settings {
   readonly showFps: boolean;
   /** Défilement de la caméra quand la souris touche un bord de l'écran (desktop). */
   readonly edgePan: boolean;
+  /** Le temps s'arrête quelques secondes au Daily du matin, le temps de lire l'appli projetée. */
+  readonly dailyPause: boolean;
   readonly tutorialDone: boolean;
   /** Slack animé par l'IA du serveur (sinon : templates). */
   readonly slackAi: boolean;
@@ -65,6 +67,7 @@ function detectDefaults(): Settings {
     textScale: 1,
     showFps: false,
     edgePan: true,
+    dailyPause: true,
     tutorialDone: false,
     slackAi: false,
     musicVolume: 0.5,
@@ -91,6 +94,7 @@ function load(): Settings {
         : 1,
       showFps: raw.showFps === true,
       edgePan: raw.edgePan !== false,
+      dailyPause: raw.dailyPause !== false,
       tutorialDone: raw.tutorialDone === true,
       slackAi: raw.slackAi === true,
       musicVolume: volume(raw.musicVolume, defaults.musicVolume),

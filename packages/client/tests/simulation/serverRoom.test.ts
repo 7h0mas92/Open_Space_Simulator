@@ -11,7 +11,8 @@ import {
 import { canPlace, computeOfficeEffects } from '../../src/simulation/furniture';
 import { hostingCost, monthlyExpenses } from '../../src/simulation/economy';
 import { hostingSaving, serverRoomStatuses } from '../../src/simulation/serverRoom';
-import type { Simulation } from '../../src/simulation/simulation';
+import { CardLibrary } from '../../src/events/library';
+import { Simulation } from '../../src/simulation/simulation';
 import { toGameView } from '../../src/view/adapter';
 import { newSimulation } from './fixtures';
 
@@ -58,9 +59,6 @@ function runningRoom(simulation: Simulation): string {
   expect(install(simulation, 'fibre-router', room, 3).ok).toBe(true);
   return room;
 }
-
-const view = (state: GameState) =>
-  toGameView(state, { speed: 1, running: false, card: () => undefined }).servers;
 
 /** Lance le sprint et avance de `ticks` pas de simulation. */
 function advance(simulation: Simulation, ticks: number): void {
@@ -162,18 +160,22 @@ describe('Salle des serveurs : ce qu’il faut pour qu’elle tourne', () => {
   });
 });
 
-describe('Abonnement fibre', () => {
+describe('Abonnement internet (fibre)', () => {
+  const subs = (state: GameState) =>
+    toGameView(state, { speed: 1, running: false, card: () => undefined }).subscriptions;
+  const internet = (state: GameState) => subs(state).services.find((s) => s.id === 'internet');
+  const subscribeTo = (simulation: Simulation, offer: string) =>
+    simulation.dispatch({ type: 'SUBSCRIBE', offer }).result;
+
   it('il faut une box fibre posée dans une salle des serveurs', () => {
     const simulation = richOffice();
-    expect(simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-pro' }).result).toEqual({
-      ok: false,
-      error: 'NOT_ELIGIBLE',
-    });
-    expect(view(simulation.state).plans.map((plan) => plan.blocker)).toEqual([
-      'NO_BOX',
-      'NO_BOX',
-      'NO_BOX',
+    expect(subscribeTo(simulation, 'fibre-pro')).toEqual({ ok: false, error: 'NOT_ELIGIBLE' });
+    expect(internet(simulation.state)?.offers.map((offer) => offer.blocker)).toEqual([
+      'REQUIREMENT',
+      'REQUIREMENT',
+      'REQUIREMENT',
     ]);
+    expect(subscribeTo(simulation, 'offre-inconnue')).toEqual({ ok: false, error: 'NOT_FOUND' });
   });
 
   it('la première semaine est payée à la souscription, puis chaque semaine de jeu', () => {
@@ -182,42 +184,48 @@ describe('Abonnement fibre', () => {
     runningRoom(simulation);
     const before = computeOfficeEffects(state);
     const treasury = state.gauges.treasury;
-    expect(simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-pro' }).result.ok).toBe(
-      true,
-    );
+    expect(subscribeTo(simulation, 'fibre-pro').ok).toBe(true);
     expect(treasury - state.gauges.treasury).toBe(900);
-    expect(state.fibre).toMatchObject({ plan: 'fibre-pro', paidUntil: FIBRE_WEEK_TICKS });
+    expect(state.subscriptions).toEqual([
+      { offer: 'fibre-pro', paidUntil: FIBRE_WEEK_TICKS, since: state.sprint, totalPaid: 900 },
+    ]);
     const after = computeOfficeEffects(state);
     expect(after.teamProductivity - before.teamProductivity).toBeCloseTo(0.02);
     expect(after.stabilityPerDay - before.stabilityPerDay).toBeCloseTo(0.06);
-    expect(view(state).fibre).toMatchObject({ connected: true, nextBillDays: 7 });
+    expect(internet(state)?.current).toMatchObject({ active: true, nextBillDays: 7 });
+    expect(subs(state)).toMatchObject({ count: 1, monthlyTotal: (900 * 30) / 7 });
 
     // La semaine suivante est facturée au premier pas du 8e jour.
     advance(simulation, FIBRE_WEEK_TICKS);
-    expect(state.fibre?.totalPaid).toBe(900);
+    expect(state.subscriptions[0]?.totalPaid).toBe(900);
     advance(simulation, 1);
-    expect(state.fibre?.paidUntil).toBe(2 * FIBRE_WEEK_TICKS);
-    expect(state.fibre?.totalPaid).toBe(1800);
+    expect(state.subscriptions[0]?.paidUntil).toBe(2 * FIBRE_WEEK_TICKS);
+    expect(state.subscriptions[0]?.totalPaid).toBe(1800);
   });
 
   it('changer d’offre repart pour une semaine, résilier coupe la ligne sans remboursement', () => {
     const simulation = richOffice();
     const { state } = simulation;
     runningRoom(simulation);
-    simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-essential' });
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-essential' }).result,
-    ).toEqual({ ok: false, error: 'NOT_ELIGIBLE' });
+    subscribeTo(simulation, 'fibre-essential');
+    expect(subscribeTo(simulation, 'fibre-essential')).toEqual({
+      ok: false,
+      error: 'NOT_ELIGIBLE',
+    });
     const treasury = state.gauges.treasury;
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-dedicated' }).result.ok,
-    ).toBe(true);
+    expect(subscribeTo(simulation, 'fibre-dedicated').ok).toBe(true);
     expect(treasury - state.gauges.treasury).toBe(2500);
-    expect(state.fibre).toMatchObject({ plan: 'fibre-dedicated', totalPaid: 2900 });
+    expect(state.subscriptions).toHaveLength(1);
+    expect(state.subscriptions[0]).toMatchObject({ offer: 'fibre-dedicated', totalPaid: 2900 });
     const paid = state.gauges.treasury;
-    expect(simulation.dispatch({ type: 'CANCEL_FIBRE' }).result.ok).toBe(true);
-    expect(state.fibre).toBeNull();
+    expect(
+      simulation.dispatch({ type: 'CANCEL_SUBSCRIPTION', service: 'internet' }).result.ok,
+    ).toBe(true);
+    expect(state.subscriptions).toEqual([]);
     expect(state.gauges.treasury).toBe(paid);
+    expect(
+      simulation.dispatch({ type: 'CANCEL_SUBSCRIPTION', service: 'internet' }).result,
+    ).toEqual({ ok: false, error: 'NOT_FOUND' });
   });
 
   it('la fibre dédiée n’ouvre qu’en Série A', () => {
@@ -225,36 +233,54 @@ describe('Abonnement fibre', () => {
     simulation.state.phase = 'SEED';
     const room = buyAnywhere(simulation, 'server-closet');
     install(simulation, 'fibre-router', room, 0);
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-dedicated' }).result,
-    ).toEqual({ ok: false, error: 'LOCKED' });
-    expect(simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-pro' }).result.ok).toBe(
-      true,
-    );
+    expect(subscribeTo(simulation, 'fibre-dedicated')).toEqual({ ok: false, error: 'LOCKED' });
+    expect(subscribeTo(simulation, 'fibre-pro').ok).toBe(true);
   });
 
   it('sans box, la ligne est payée mais ne donne rien ; sans argent, l’opérateur la coupe', () => {
     const simulation = richOffice();
     const { state } = simulation;
     runningRoom(simulation);
-    simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-pro' });
+    subscribeTo(simulation, 'fibre-pro');
     const box = idsOf(state, 'fibre-router')[0] ?? '';
     const withBox = computeOfficeEffects(state).teamProductivity;
     simulation.dispatch({ type: 'SELL_FURNITURE', furnitureId: box });
     expect(withBox - computeOfficeEffects(state).teamProductivity).toBeCloseTo(0.02);
-    expect(view(state).fibre?.connected).toBe(false);
+    expect(internet(state)?.current?.active).toBe(false);
 
     advance(simulation, FIBRE_WEEK_TICKS);
     state.gauges.treasury = 100;
     advance(simulation, 1);
-    expect(state.fibre).toBeNull();
+    expect(state.subscriptions).toEqual([]);
     expect(state.notifications.at(-1)?.kind).toBe('FIBRE_CUT');
   });
 
-  it('une vieille sauvegarde n’a pas d’abonnement', () => {
+  it('les anciennes commandes de la fibre marchent encore (vieux replays)', () => {
+    const simulation = richOffice();
+    const { state } = simulation;
+    runningRoom(simulation);
+    expect(simulation.dispatch({ type: 'SUBSCRIBE_FIBRE', plan: 'fibre-pro' }).result.ok).toBe(
+      true,
+    );
+    expect(state.subscriptions[0]?.offer).toBe('fibre-pro');
+    expect(simulation.dispatch({ type: 'CANCEL_FIBRE' }).result.ok).toBe(true);
+    expect(state.subscriptions).toEqual([]);
+  });
+
+  it('une vieille sauvegarde n’a pas d’abonnement ; son ancienne fibre est reprise', () => {
     const simulation = newSimulation('old-save');
     const legacy = structuredClone(simulation.state) as Partial<GameState>;
     delete legacy.fibre;
-    expect(GameStateSchema.parse(legacy).fibre).toBeNull();
+    delete legacy.subscriptions;
+    const parsed = GameStateSchema.parse(legacy);
+    expect(parsed.fibre).toBeNull();
+    expect(parsed.subscriptions).toEqual([]);
+
+    parsed.fibre = { plan: 'fibre-pro', paidUntil: 336, since: 2, totalPaid: 1800 };
+    const restored = Simulation.restore(parsed, new CardLibrary([]));
+    expect(restored.state.fibre).toBeNull();
+    expect(restored.state.subscriptions).toEqual([
+      { offer: 'fibre-pro', paidUntil: 336, since: 2, totalPaid: 1800 },
+    ]);
   });
 });

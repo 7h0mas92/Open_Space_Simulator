@@ -9,7 +9,7 @@ test('le mode Facile guide le joueur pas à pas, sur tous les écrans', async ({
 
   const guide = page.getByTestId('guide');
   await expect(guide.getByRole('heading', { name: 'Bienvenue, fondateur' })).toBeVisible();
-  await expect(page.getByTestId('gauge-treasury')).toContainText('3');
+  await expect(page.getByTestId('gauge-treasury')).toContainText('2,2');
 
   // Le tutoriel tient dans l'écran et ses boutons restent accessibles.
   const viewport = page.viewportSize()!;
