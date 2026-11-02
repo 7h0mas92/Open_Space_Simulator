@@ -6,6 +6,7 @@ Jeu de gestion de startup jouable dans le navigateur, en 3D low-poly isométriqu
 Le cahier des charges complet est dans [`CLAUDE.md`](./CLAUDE.md).
 Le relais entre les développeurs (travaux en cours, décisions en attente, journal des
 passations) est dans [`CONTEXTE.md`](./CONTEXTE.md), mis à jour à la fin de chaque travail.
+Le rôle et l'emplacement de chaque fichier du dépôt sont dans [`ARBORESCENCE.md`](./ARBORESCENCE.md).
 
 **État actuel : jeu complet, prêt à déployer.** Socle, simulation, rendu 3D, interface,
 événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),
@@ -596,8 +597,8 @@ bouton 🛠 du menu principal.
   Costumes dans `render/characterPacks.ts`.
 - **Décorations** : un thème par période de l'année (Nouvel An, Saint-Valentin, Pâques, espace,
   Moyen Âge, super-héros, années 80, été, pirates, Halloween, cyberpunk, Noël). Chacun a une
-  guirlande murale, trois objets au sol et un petit objet par bureau, construits en Three.js, avec
-  un aperçu 3D. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
+  guirlande murale et un petit objet par bureau, construits en Three.js, avec un aperçu 3D. Rien
+  n'est posé au sol : le joueur ne pourrait ni déplacer ni ranger un objet qu'il n'a pas acheté. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
   période) ou toujours. `GET /api/decor-themes` (public, en cache hors ligne) et
   `PUT /api/admin/decor-themes/:id`.
 - **Statistiques** : joueurs, parties, fins, faillites par phase, cartes les plus tirées et choix
@@ -646,6 +647,38 @@ Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
   et la charge des utilisateurs use la prod : rien ne reste à 0 de dette ou à 100 de stabilité
   sans entretien.
 
+## Branches et contributions
+
+```text
+feat/… fix/… docs/…  ──PR (squash)──▶  develop  ──PR « release » (merge commit)──▶  main  ──▶  GitHub Pages
+        ▲                                 tests de Thomas et Melvin                     │
+        └──────────── correctif urgent : PR vers main, puis main fusionnée dans develop ◀┘
+```
+
+- **`main`** : la version publiée. Seule cette branche est déployée (GitHub Pages, Render). On
+  n'y pousse jamais directement.
+- **`develop`** : la branche de test. Chaque fonctionnalité ou correctif part de `develop` dans
+  sa propre branche et revient par une PR vers `develop` (CI verte, validation, squash merge).
+  Une idée qu'on ne garde pas se retire de `develop` par un revert, sans toucher à `main`.
+- **Mise en production** : quand Thomas et Melvin ont validé `develop`, une PR `develop` →
+  `main` fusionnée en _merge commit_ (pas de squash : les deux branches gardent le même
+  historique).
+- La CI ([`ci.yml`](.github/workflows/ci.yml) : lint, format, typecheck, tests, build, e2e)
+  tourne à chaque push sur toutes les branches et sur chaque PR.
+
+```bash
+git switch develop && git pull
+git switch -c feat/ma-fonctionnalite
+# … commits conventionnels en français …
+git push -u origin feat/ma-fonctionnalite   # puis PR vers develop sur GitHub
+```
+
+Protection conseillée (_Settings_ → _Branches_ → _Add branch ruleset_, à régler par le
+propriétaire du dépôt) : sur `main` et `develop`, PR obligatoire, CI « Lint, typecheck, tests,
+build » et « Tests end-to-end (Playwright) » obligatoires, pas de force-push ni de suppression ;
+sur `main`, en plus, une approbation. Dans _Settings_ → _General_ → _Pull Requests_, garder le
+squash et le merge commit autorisés.
+
 ## Déploiement
 
 Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prêts :
@@ -666,7 +699,7 @@ Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prê
 ### Version invité sur GitHub Pages
 
 Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur GitHub Pages à
-chaque push sur `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
+chaque push sur `main`, donc à chaque fusion de `develop` dans `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
 Sans serveur, le jeu se joue en invité avec les 130 cartes intégrées et les sauvegardes
 locales ; le compte, les classements, le Daily en ligne et le Slack IA demandent le serveur
 Render. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
