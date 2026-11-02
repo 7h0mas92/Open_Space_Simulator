@@ -12,6 +12,7 @@ import {
   type GameState,
 } from '@oss/shared';
 import { addMoney } from './helpers';
+import { hasUnlock } from './unlocks';
 import { wallOffice, type WallBlocker } from './walls';
 
 /*
@@ -33,6 +34,7 @@ export function floorBlocker(
   if (!floorZoneExists(zone, wallOffice(state))) return 'NOT_FOUND';
   if (state.stage === 'PITCH') return 'WRONG_STAGE';
   if (phaseIndex(state.phase) < phaseIndex(material.minPhase)) return 'LOCKED';
+  if (!hasUnlock(state, material.unlock)) return 'LOCKED';
   if (sameFloor(state.floors[zone], finish)) return 'NOT_ELIGIBLE';
   if (state.gauges.treasury < material.price) return 'NOT_ENOUGH_MONEY';
   return null;

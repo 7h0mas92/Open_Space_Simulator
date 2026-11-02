@@ -10,6 +10,8 @@ import {
   type LoggedCommand,
   type SaveData,
   type Speed,
+  type StoryMissionId,
+  type StoryRewardId,
 } from '@oss/shared';
 import { createGameEngine, type EngineSnapshot, type GameEngine, type GameStart } from '../engine';
 import { DEFAULT_CARDS } from '../events/defaultCards';
@@ -33,6 +35,10 @@ export interface GameSource {
 export interface NewGame {
   readonly seed: string;
   readonly mode: GameMode;
+  /** Mode Histoire : la mission jouée. */
+  readonly mission?: StoryMissionId;
+  /** Récompenses du mode Histoire débloquées par le joueur. */
+  readonly unlocks?: readonly StoryRewardId[];
 }
 
 /** Revoir une partie du classement à partir de sa graine et de ses commandes. */

@@ -253,6 +253,79 @@ const coderain: Draw = (ctx, w, h) => {
   }
 };
 
+const blueprint: Draw = (ctx, w, h) => {
+  // Quadrillage fin, puis le plan du garage : deux bureaux, une porte, des cotes.
+  ctx.strokeStyle = 'rgb(255 255 255 / 14%)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= w; x += 16) {
+    ctx.beginPath();
+    ctx.moveTo(x + 0.5, 0);
+    ctx.lineTo(x + 0.5, h);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= h; y += 16) {
+    ctx.beginPath();
+    ctx.moveTo(0, y + 0.5);
+    ctx.lineTo(w, y + 0.5);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgb(240 248 255 / 80%)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(14, 30, 100, 80);
+  ctx.strokeRect(24, 42, 30, 18);
+  ctx.strokeRect(70, 42, 30, 18);
+  ctx.beginPath();
+  ctx.arc(14, 96, 14, -Math.PI / 2, 0);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(14, 122);
+  ctx.lineTo(114, 122);
+  for (const x of [14, 114]) {
+    ctx.moveTo(x, 117);
+    ctx.lineTo(x, 127);
+  }
+  ctx.stroke();
+  // Une roue dentée et une ampoule griffonnées : la « grande idée ».
+  ctx.strokeStyle = 'rgb(255 255 255 / 55%)';
+  ctx.beginPath();
+  ctx.arc(40, 170, 12, 0, Math.PI * 2);
+  for (let k = 0; k < 8; k++) {
+    const a = (k * Math.PI) / 4;
+    ctx.moveTo(40 + Math.cos(a) * 12, 170 + Math.sin(a) * 12);
+    ctx.lineTo(40 + Math.cos(a) * 17, 170 + Math.sin(a) * 17);
+  }
+  ctx.moveTo(98, 160);
+  ctx.arc(90, 160, 8, 0, Math.PI * 2);
+  ctx.moveTo(86, 170);
+  ctx.lineTo(94, 170);
+  ctx.stroke();
+};
+
+const postit: Draw = (ctx, w, h) => {
+  const random = noise('wall#postit');
+  const colors = ['#f7e463', '#f59fb5', '#8fd3f4', '#a7e08a', '#f8b26a'];
+  for (let k = 0; k < 26; k++) {
+    const x = random() * w;
+    const y = random() * h;
+    const angle = (random() - 0.5) * 0.5;
+    const color = colors[Math.floor(random() * colors.length)] ?? '#f7e463';
+    wrapped(w, (dx) => {
+      ctx.save();
+      ctx.translate(x + dx, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = 'rgb(0 0 0 / 12%)';
+      ctx.fillRect(-10, -9, 22, 22);
+      ctx.fillStyle = color;
+      ctx.fillRect(-11, -11, 22, 22);
+      ctx.fillStyle = 'rgb(40 40 60 / 45%)';
+      ctx.fillRect(-7, -5, 14, 2);
+      ctx.fillRect(-7, 0, 10, 2);
+      ctx.restore();
+    });
+  }
+};
+
 export const WALL_LOOKS: Record<WallFinishId, FinishLook> = {
   cream: { base: '#ece6da' },
   sage: { base: '#a9bfa0' },
@@ -271,6 +344,8 @@ export const WALL_LOOKS: Record<WallFinishId, FinishLook> = {
   chalkboard: { base: '#2d3a33', draw: chalkboard },
   artdeco: { base: '#1d4b40', draw: artdeco },
   coderain: { base: '#07140c', draw: coderain },
+  blueprint: { base: '#1f4f8f', draw: blueprint },
+  postit: { base: '#e9e4d8', draw: postit },
 };
 
 /** Un revêtement a-t-il un motif (papier peint) ou n'est-il qu'une teinte (peinture) ? */

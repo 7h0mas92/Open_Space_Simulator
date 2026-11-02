@@ -13,6 +13,7 @@ import {
   type WallZone,
 } from '@oss/shared';
 import { addMoney } from './helpers';
+import { hasUnlock } from './unlocks';
 
 /*
  * Peintures et papiers peints des murs (catalogue dans `shared/sim/walls.ts`). Une commande
@@ -46,6 +47,7 @@ export function wallFinishBlocker(
   if (!finish || !wallZoneExists(zone, wallOffice(state))) return 'NOT_FOUND';
   if (state.stage === 'PITCH') return 'WRONG_STAGE';
   if (phaseIndex(state.phase) < phaseIndex(finish.minPhase)) return 'LOCKED';
+  if (!hasUnlock(state, finish.unlock)) return 'LOCKED';
   if (state.walls[zone] === finish.id) return 'NOT_ELIGIBLE';
   if (state.gauges.treasury < finish.price) return 'NOT_ENOUGH_MONEY';
   return null;
