@@ -34,3 +34,6 @@ export * from './meta/company.js';
 export * from './meta/leaderboard.js';
 export * from './meta/decor.js';
 export * from './meta/packs.js';
+export * from './story/campaign.js';
+export * from './story/rewards.js';
+export * from './story/progress.js';

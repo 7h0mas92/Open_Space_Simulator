@@ -8,6 +8,8 @@ import {
   ReplayResponseSchema,
   SubmitScoreBodySchema,
   SubmitScoreResponseSchema,
+  UNLOCK_MODES,
+  UnlocksSchema,
   utcDate,
   type GameMode,
   type GameState,
@@ -21,6 +23,7 @@ import { errorResponses } from '../lib/schemas.js';
 import { unlockForUser } from '../services/achievement.service.js';
 import { cardSetByVersion } from '../services/cards.service.js';
 import { verifyGame } from '../services/replay.service.js';
+import { unearnedUnlocks } from '../services/story.service.js';
 import { acceptedDailyDates, toScoreDto } from '../services/score.service.js';
 
 /** Taille maximale d'un journal de commandes envoyé (le rejeu d'une partie complète). */
@@ -136,8 +139,20 @@ export const scoresRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { mode, seed, commands, cardsVersion, dailyDate, claimed } = request.body;
+      const { mode, seed, commands, cardsVersion, dailyDate, unlocks, claimed } = request.body;
       const userId = request.user.sub;
+
+      // Mode Histoire : les missions passent par POST /story/complete, sans classement.
+      if (mode === 'STORY')
+        throw new AppError(400, 'STORY_NOT_RANKED', 'Les missions n’ont pas de classement');
+      // Récompenses du mode Histoire : jamais en Daily, et seulement celles gagnées sur le compte.
+      const used = UNLOCK_MODES.includes(mode) ? unlocks : [];
+      if ((await unearnedUnlocks(app.prisma, userId, used)).length > 0)
+        throw new AppError(
+          403,
+          'UNLOCK_NOT_EARNED',
+          'Cette partie utilise une récompense du mode Histoire pas encore gagnée',
+        );
 
       // Daily : la graine du jour, et une seule partie par jour.
       if (mode === 'DAILY') {
@@ -157,7 +172,7 @@ export const scoresRoutes: FastifyPluginAsyncZod = async (app) => {
       }
 
       const { cards } = await cardSetByVersion(app.prisma, cardsVersion);
-      const { state, result } = verifyGame({ seed, mode, commands, cards });
+      const { state, result } = verifyGame({ seed, mode, unlocks: used, commands, cards });
       if (
         claimed &&
         (claimed.outcome !== result.outcome || Math.round(claimed.valuation) !== result.valuation)
@@ -183,6 +198,7 @@ export const scoresRoutes: FastifyPluginAsyncZod = async (app) => {
             sprintsPlayed: result.sprint,
             commandsLog: commands as Prisma.InputJsonValue,
             stats: state.stats,
+            unlocks: state.unlocks,
             dailyDate: dailyDate ? new Date(dailyDate) : null,
           },
           include: { user: { select: { pseudo: true } } },
@@ -262,6 +278,7 @@ export const scoresRoutes: FastifyPluginAsyncZod = async (app) => {
         commands: CommandLogSchema.parse(score.commandsLog),
         cardsVersion: score.cardsVersion,
         cards,
+        unlocks: UnlocksSchema.parse(score.unlocks),
       };
     },
   );

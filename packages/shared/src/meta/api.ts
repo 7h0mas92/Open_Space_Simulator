@@ -7,6 +7,13 @@ import { GAME, GameModeSchema, OutcomeSchema, PhaseSchema } from '../game.js';
 import { LocaleSchema, LocalizedTextSchema } from '../i18n.js';
 import { AchievementDtoSchema } from './achievements.js';
 import { UserDtoSchema } from '../auth.js';
+import { STORY_REWARD_IDS, StoryRewardIdSchema } from '../story/rewards.js';
+
+/**
+ * Récompenses du mode Histoire utilisées par une partie (son point de départ, avec la graine).
+ * Le serveur vérifie qu'elles ont été gagnées sur le compte avant de rejouer la partie.
+ */
+export const UnlocksSchema = z.array(StoryRewardIdSchema).max(STORY_REWARD_IDS.length).default([]);
 
 /**
  * Contrats de l'API du méta-jeu : sauvegardes, cartes, scores, classements, replays,
@@ -93,6 +100,7 @@ export const SubmitScoreBodySchema = z.object({
   commands: CommandLogSchema,
   cardsVersion: CardsVersionSchema,
   dailyDate: IsoDateSchema.optional(),
+  unlocks: UnlocksSchema,
   claimed: z.object({ outcome: OutcomeSchema, valuation: z.number().nonnegative() }).optional(),
 });
 export type SubmitScoreBody = z.infer<typeof SubmitScoreBodySchema>;
@@ -141,6 +149,7 @@ export const ReplayResponseSchema = z.object({
   commands: CommandLogSchema,
   cardsVersion: CardsVersionSchema,
   cards: EventCardListSchema,
+  unlocks: UnlocksSchema,
 });
 export type ReplayResponse = z.infer<typeof ReplayResponseSchema>;
 

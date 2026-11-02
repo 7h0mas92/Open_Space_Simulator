@@ -13,6 +13,7 @@ import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
 import { endGame, endOfTime } from './endings';
+import { missionTimeUp } from './story';
 import { phaseIndex } from './furniture';
 import { closeSprintPerformance } from './performance';
 import {
@@ -314,7 +315,9 @@ export function endDemo(state: GameState, ctx: SimContext): CommandResult {
   }
   state.lostSprintsPending = 0;
   if (state.sprint >= state.totalSprints) {
-    endOfTime(state, ctx);
+    // Mode Histoire : le temps de la mission est écoulé, ses objectifs décident de la fin.
+    if (state.story) missionTimeUp(state, ctx);
+    else endOfTime(state, ctx);
     return { ok: true };
   }
   state.sprint += 1;

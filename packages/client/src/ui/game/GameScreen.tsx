@@ -20,6 +20,7 @@ import { ServerRoom } from '../servers/ServerRoom';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
+import { MissionPanel } from '../story/MissionPanel';
 import {
   ActionBar,
   Alerts,
@@ -55,6 +56,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <ServerRoom view={view} />;
     case 'funding':
       return <Funding view={view} />;
+    case 'mission':
+      return <MissionPanel view={view} />;
     case 'dashboard':
       return <Dashboard view={view} />;
     case 'slack':
@@ -127,6 +130,17 @@ function useShortcuts() {
   }, []);
 }
 
+/** Mode Histoire : le briefing de la mission s'ouvre au lancement (pas à la reprise). */
+function useMissionBriefing() {
+  const opening = useGame((s) => s.view?.mode === 'STORY' && s.view.tick === 0 && !s.replayOf);
+  const seed = useGame((s) => s.view?.seed);
+  useEffect(() => {
+    if (opening) useGame.getState().openPanel('mission');
+    // Une seule fois par mission lancée.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seed]);
+}
+
 export function GameScreen() {
   const { t, i18n } = useTranslation();
   const view = useGame((s) => s.view);
@@ -139,6 +153,7 @@ export function GameScreen() {
   const building = useGame((s) => s.build !== null);
   useShortcuts();
   useGameFeeds();
+  useMissionBriefing();
 
   // Les messages disparaissent seuls après quelques secondes.
   useEffect(() => {

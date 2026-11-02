@@ -334,6 +334,7 @@ describe('mode illimité', () => {
           sprintsPlayed,
           valuation,
           commandsLog: [],
+          unlocks: [],
           stats: reference.stats ?? {},
           createdAt: undefined,
         },

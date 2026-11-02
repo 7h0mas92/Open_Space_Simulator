@@ -1,7 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 18 octobre 2026**, par Claude (projet de Melvin), mode illimité et
-> classement des entreprises. Base : `develop` au commit `83fec14` (PR #120).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec le mode
+> Histoire. Dernier commit de `main` au moment de l'écriture : `9f71139` (PR #122, mode
+> Histoire fusionné).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -59,18 +60,18 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 
 ## Travaux en cours
 
-| Sujet                                               | Qui             | État                                                        |
-| --------------------------------------------------- | --------------- | ----------------------------------------------------------- |
-| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Décidé le 13 octobre, démarre après la fusion de ce fichier |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Décidé le 13 octobre, démarre après la fusion de ce fichier |
-| Mode **illimité** et classement des entreprises     | Melvin + Claude | PR ouverte vers `develop`, en attente de validation         |
+| Sujet                                               | Qui             | État                                                |
+| --------------------------------------------------- | --------------- | --------------------------------------------------- |
+| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                    |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours                                |
+| Mode **illimité** et classement des entreprises     | Melvin + Claude | PR ouverte vers `develop`, en attente de validation |
 
-**Mode Histoire** (choix de Thomas, idée n°1) : 8 à 10 missions courtes, chacune une partie
-normale avec un objectif (« Sortir du garage en 6 sprints », « Monter une salle des serveurs sans
-panne », « Lever la Série A avec moins de 30 % de dette »…). Une mission réussie débloque des
-objets pour les autres modes (marbre, tours gaming, papier peint pluie de code, packs de
-personnages…). Rester dans le thème du jeu. Thomas a donné le feu vert pour la suite et veut « un
-peu de tout » des autres idées, dans le même esprit.
+**Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
+10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
+sprints (`packages/shared/src/story/campaign.ts`). Chaque mission réussie ouvre la suivante et
+débloque une récompense **nouvelle** (2 papiers peints, 2 sols, 2 couleurs, 2 objets, 2 bonus de
+départ : `packages/shared/src/story/rewards.ts`) : aucun objet existant n'a été retiré des
+autres modes. Équilibrage : `pnpm balance:story`.
 
 **Mode Carrière** : essayer de reproduire les performances d'anciennes startups devenues de
 grandes entreprises (Apple, Google…), **sans jamais citer leur nom directement** (noms parodiques
@@ -79,9 +80,16 @@ ou allusions seulement, comme pour les super-héros inventés).
 **Proposition à valider pour les deux modes** : les objets débloqués sont utilisables en Normal,
 Facile et dans les modes défi, **jamais en Daily** (pour garder le Daily, les classements et le
 rejeu anti-triche du serveur équitables). Déblocages gardés sur le compte, et en local pour les
-invités.
+invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shared/src/game.ts`).
 
 ## En attente d'une décision
+
+- **GitHub Actions bloqué** : depuis le 13 octobre, chaque job de la CI s'arrête en 3 secondes
+  sans runner ni log, sur toutes les PR (#121 à #135). À vérifier dans les réglages de facturation
+  du compte GitHub (minutes ou limite de dépenses). En attendant, vérifier en local avant de
+  fusionner. Le mode Histoire (#122, mode `STORY`) est dans `main` : les PR ouvertes qui ajoutent
+  un mode (#121 Carrière, #135 Illimité, #130 difficulté par mode) doivent intégrer `main` et
+  garder `STORY` dans `GAME_MODES` (hors `MENU_MODES` et `UNLOCK_MODES`).
 
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
@@ -133,26 +141,27 @@ Règles fixées par Thomas (à respecter par tout le monde) :
 
 ## Où sont les choses
 
-| Quoi                                             | Où                                                                                                             |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (branche `main`)                                              |
-| Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                    |
-| Installation, architecture, déploiement, crédits | `README.md`                                                                                                    |
-| Ce relais                                        | `CONTEXTE.md`                                                                                                  |
-| Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                              |
-| Captures du README                               | `docs/screenshots/`                                                                                            |
-| Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                |
-| Interface de la simulation                       | `packages/client/src/simulation/README.md`                                                                     |
-| Constantes partagées de chaque système           | `packages/shared/src/sim/*.ts` (balance, furniture, pets, floors, serverRoom…)                                 |
-| Succès (65, dont 22 secrets)                     | `packages/shared/src/meta/achievements.ts`                                                                     |
-| 100 cartes d'événements                          | `packages/shared/src/data/cards/`                                                                              |
-| Modes de jeu                                     | `GAME_MODES` dans `packages/shared/src/game.ts` (EASY, NORMAL, HARDCORE, INTERNS_ONLY, SHIP_IN_3, DAILY)       |
-| Bots de `pnpm balance`                           | `packages/client/src/simulation/bots.ts` (random, shipper, balanced, cautious, investor, organizer, financier) |
-| Assets Kenney (déjà commités)                    | `packages/client/public/assets/kenney/` (Furniture Kit, Blocky Characters)                                     |
-| Musiques et sons                                 | `packages/client/public/assets/music/`, `packages/client/public/assets/sounds/`                                |
-| Variables d'environnement                        | `packages/server/.env.example`, `packages/client/.env.example`                                                 |
-| Déploiement                                      | `render.yaml`, `packages/client/vercel.json`, `.github/workflows/pages.yml`                                    |
-| CI                                               | `.github/workflows/ci.yml` (lint, format, typecheck, tests, build, e2e)                                        |
+| Quoi                                             | Où                                                                                                              |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Dépôt                                            | https://github.com/7h0mas92/Open_Space_Simulator (branche `main`)                                               |
+| Cahier des charges + état d'avancement           | `CLAUDE.md`                                                                                                     |
+| Installation, architecture, déploiement, crédits | `README.md`                                                                                                     |
+| Ce relais                                        | `CONTEXTE.md`                                                                                                   |
+| Rapport d'équilibrage (10 000 parties)           | `docs/balance.md`                                                                                               |
+| Captures du README                               | `docs/screenshots/`                                                                                             |
+| Rôle de chaque dossier du client                 | `packages/client/src/README.md`                                                                                 |
+| Interface de la simulation                       | `packages/client/src/simulation/README.md`                                                                      |
+| Constantes partagées de chaque système           | `packages/shared/src/sim/*.ts` (balance, furniture, pets, floors, serverRoom…)                                  |
+| Succès (65, dont 22 secrets)                     | `packages/shared/src/meta/achievements.ts`                                                                      |
+| 100 cartes d'événements                          | `packages/shared/src/data/cards/`                                                                               |
+| Modes de jeu                                     | `GAME_MODES` dans `packages/shared/src/game.ts` (EASY, NORMAL, HARDCORE, INTERNS_ONLY, SHIP_IN_3, DAILY, STORY) |
+| Mode Histoire (chapitres, missions, récompenses) | `packages/shared/src/story/`, `packages/client/src/simulation/story.ts`, `packages/client/src/ui/story/`        |
+| Bots de `pnpm balance`                           | `packages/client/src/simulation/bots.ts` (random, shipper, balanced, cautious, investor, organizer, financier)  |
+| Assets Kenney (déjà commités)                    | `packages/client/public/assets/kenney/` (Furniture Kit, Blocky Characters)                                      |
+| Musiques et sons                                 | `packages/client/public/assets/music/`, `packages/client/public/assets/sounds/`                                 |
+| Variables d'environnement                        | `packages/server/.env.example`, `packages/client/.env.example`                                                  |
+| Déploiement                                      | `render.yaml`, `packages/client/vercel.json`, `.github/workflows/pages.yml`                                     |
+| CI                                               | `.github/workflows/ci.yml` (lint, format, typecheck, tests, build, e2e)                                         |
 
 ## Installer et lancer
 
@@ -198,6 +207,12 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   forme Three.js a une entrée `credits.missingItems` en FR et EN.
 - **Serveur** : toutes les routes sous `/api`, erreurs `{ error: { code, message } }`, le serveur
   rejoue graine + commandes pour vérifier un score (il embarque la simulation du client).
+- **Mode Histoire** : une mission est une partie `STORY` (`GameConfig.mission`), terminée par
+  `result.mission` (issue « zombie », sans classement ni succès de fin). Les récompenses de la
+  partie sont fixées au départ dans `state.unlocks` (comme la graine) et envoyées avec le score
+  (`unlocks`) : le serveur vérifie qu'elles sont gagnées et les rejoue. Un contenu réservé porte
+  un champ `unlock` (meuble, papier peint, sol) ou est dans `COLOR_UNLOCKS`. `MENU_MODES` = les
+  modes du menu et des classements (sans STORY).
 - **Textes** : toujours en FR et EN (`packages/client/src/i18n/fr.json`, `en.json`).
 - **Versions figées** : TypeScript 6.0, Prisma 7.10 (`@prisma/adapter-pg`), Zod 4, Fastify 5,
   Vite 8, Vitest 5, Playwright 1.56.1, Node 22, pnpm 10.28, PostgreSQL 16.
@@ -221,7 +236,9 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 02/11    | Thomas + Claude | #122        | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                           |
 | 18/10    | Melvin + Claude | develop     | Mode illimité `ENDLESS` (pression après 18 mois) et classement des entreprises (menu et jeu, en ligne ou appareil). Un mode non comparable va dans `GLOBAL_EXCLUDED_MODES`.                                                                      |
+| 13/10    | Thomas + Claude | #122        | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
 | 11/10    | Melvin          | #109 à #119 | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
 | 10–11/10 | Melvin          | #93 à #108  | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |

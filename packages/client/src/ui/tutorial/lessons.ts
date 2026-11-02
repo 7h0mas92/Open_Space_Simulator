@@ -79,8 +79,12 @@ const panelOpen =
 const planningOfSprint = (view: GameView, sprint: number) =>
   view.step === 'PLANNING' && view.time.sprint >= sprint;
 
-/** Le défi « 3 sprints » n'attend pas le 5e sprint : la fin arrive au 3e. */
-const lateSprint = (view: GameView) => (view.mode === 'SHIP_IN_3' ? 3 : 5);
+/**
+ * Le défi « 3 sprints » n'attend pas le 5e sprint : la fin arrive au 3e. Une mission du mode
+ * Histoire non plus (certaines ne durent que 3 sprints).
+ */
+const lateSprint = (view: GameView) =>
+  view.mode === 'SHIP_IN_3' ? 3 : view.mode === 'STORY' ? Math.min(3, view.time.totalSprints) : 5;
 
 const ALL_BUT = (...excluded: GameMode[]): readonly GameMode[] =>
   GAME_MODES.filter((mode) => !excluded.includes(mode));
@@ -117,6 +121,8 @@ export const LESSONS: readonly Lesson[] = [
       { id: 'endlessTips', modes: ['ENDLESS'] },
       { id: 'daily', modes: ['DAILY'] },
       { id: 'dailyTips', modes: ['DAILY'] },
+      { id: 'story', modes: ['STORY'] },
+      { id: 'storyTips', modes: ['STORY'] },
     ],
   },
   {

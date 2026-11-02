@@ -1,5 +1,5 @@
 import {
-  GAME_MODES,
+  MENU_MODES,
   isEndless,
   utcDate,
   type GameMode,
@@ -15,7 +15,7 @@ import { useGame } from '../store/game';
 import { useSession } from '../store/session';
 
 /** Onglets : global, Daily du jour, puis un classement par mode (hors Daily). */
-const BOARDS = ['GLOBAL', 'DAILY', ...GAME_MODES.filter((mode) => mode !== 'DAILY')] as const;
+const BOARDS = ['GLOBAL', 'DAILY', ...MENU_MODES.filter((mode) => mode !== 'DAILY')] as const;
 type Board = (typeof BOARDS)[number];
 
 /** D'où vient le classement : le serveur (tous les joueurs) ou cet appareil. */
@@ -134,6 +134,7 @@ function OnlineBoard({ board, inGame }: { board: Board; inGame: boolean }) {
           commands: replay.commands,
           cards: replay.cards,
           cardsVersion: replay.cardsVersion,
+          unlocks: replay.unlocks,
           pseudo: replay.score.pseudo,
         },
       });
