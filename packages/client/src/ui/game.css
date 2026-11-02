@@ -2911,6 +2911,51 @@ legend {
   font-size: 0.85rem;
 }
 
+/* --- Congés, ponts et arrêts maladie ------------------------------------------------- */
+.leave-bridge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 4px 0 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.leave-bridge p {
+  flex: 1 1 220px;
+  margin: 0;
+}
+
+.leave-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.leave-claim,
+.leave-badge {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.leave-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.leave-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
 /* --- Encadrement de l'équipe (directeur, managers, scrum master...) ----------------- */
 .leadership {
   margin: 0 0 8px;

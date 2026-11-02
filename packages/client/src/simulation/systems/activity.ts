@@ -10,6 +10,7 @@ import {
 import { clamp, devIds, devsWithRole, type SimContext } from '../helpers';
 import { holdTeamMeeting, isTeamMeetingTime } from '../meetings';
 import { autoAssign, devQueueKey, devTrade, hasFreeTask } from '../tasks';
+import { isAbsent } from '../teamLife';
 import type { SimClock } from '../time';
 
 /** Le dev est-il au bureau (ou connecté, pour le Dev Fantôme) à cette heure ? */
@@ -146,6 +147,7 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
     const identity = state.components.identity[id];
     const current = state.components.activity[id];
     if (!identity || !current || id in state.components.remote || pauses.has(id)) continue;
+    if (clock.holiday || isAbsent(state, id, clock)) continue;
     if (
       isPresent(identity.trait, clock) &&
       (current.untilTick <= state.tick || current.kind === 'WORKING' || current.kind === 'IDLE')
@@ -161,7 +163,7 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
     const worker = state.components.worker[id];
     if (!identity || !mood || !current || !worker) continue;
 
-    if (!isPresent(identity.trait, clock)) {
+    if (!isPresent(identity.trait, clock) || clock.holiday || isAbsent(state, id, clock)) {
       setActivity(state, id, 'GONE', 1);
       continue;
     }

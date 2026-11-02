@@ -425,7 +425,8 @@
     "leaving": "🚪 A démissionné : part au début du sprint {{sprint}}.",
     "leavingShort": "🚪 part au sprint {{sprint}}",
     "specialty": "Spécialité : {{specialty}} (+20 % sur les {{focus}})",
-    "stack": "Côté de la stack : {{stack}}"
+    "stack": "Côté de la stack : {{stack}}",
+    "officeSummaryAway": "{{office}} au bureau · {{remote}} en télétravail · {{away}} absent·e(s) · {{desks}} bureaux"
   },
   "teamFilters": {
     "sortLabel": "Trier par",
@@ -448,7 +449,8 @@
       "TIRED": "Fatigué·e",
       "LOW_MORALE": "Moral bas",
       "REMOTE": "Télétravail",
-      "OFFICE": "Au bureau"
+      "OFFICE": "Au bureau",
+      "ABSENT": "Absent·e"
     },
     "sorts": {
       "PERF_DESC": "Meilleure performance",
@@ -743,7 +745,9 @@
     "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
     "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
     "INVENTORY_FULL": "L’inventaire est plein : revends des objets rangés.",
-    "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation."
+    "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation.",
+    "NOT_ENOUGH_LEAVE": "Pas assez de jours de congé en réserve.",
+    "LEAVE_SLOTS_FULL": "Trop de monde en congé cette semaine-là : choisis l’autre semaine."
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
@@ -2259,6 +2263,53 @@
     "kinds": {
       "URGENT": "Urgent",
       "WEEKLY": "Semaine"
+    }
+  },
+  "leave": {
+    "title": "Congés",
+    "balance": "Réserve : {{days}}/{{max}} jours",
+    "claim": "réclame ses vacances (−1 moral par jour)",
+    "week": "Semaine",
+    "weekOption": "Semaine {{week}} du sprint",
+    "days": "Durée",
+    "daysOption_one": "{{count}} jour",
+    "daysOption_other": "{{count}} jours",
+    "book": "Poser des congés",
+    "cancel": "Annuler",
+    "planned_one": "Congés prévus semaine {{week}} : {{count}} jour",
+    "planned_other": "Congés prévus semaine {{week}} : {{count}} jours",
+    "plannedShort": "congés S{{week}}",
+    "current": {
+      "LEAVE": "En congés ({{days}} j), retour le {{date}}",
+      "BRIDGE": "Fait le pont, retour le {{date}}",
+      "SICK": "Arrêt maladie ({{days}} j), retour le {{date}}",
+      "BURNOUT": "Burn-out : arrêt de {{days}} jours ouvrés, retour le {{date}}"
+    },
+    "short": {
+      "LEAVE": "en congés",
+      "BRIDGE": "fait le pont",
+      "SICK": "malade",
+      "BURNOUT": "burn-out"
+    },
+    "hint": "1 jour gagné par sprint, 10 au plus. Au retour : énergie au maximum et +{{moral}} moral par jour posé. {{slots}} dev(s) en congé à la fois par semaine. Réserve pleine trop longtemps : le dev pose 5 jours lui-même.",
+    "hintLater": "Les congés se posent pendant la planification.",
+    "bridge": "🌉 Pont ce sprint : ceux qui ont des jours en réserve feront le pont.",
+    "bridgeRefused": "🌉 Ponts refusés : tout le monde viendra travailler (−{{moral}} moral pour ceux qui comptaient le faire).",
+    "refuseBridges": "Refuser les ponts",
+    "acceptBridges": "Accepter les ponts",
+    "holiday": "Jour férié : {{name}}",
+    "holidays": {
+      "NEW_YEAR": "Jour de l’an",
+      "EASTER_MONDAY": "Lundi de Pâques",
+      "LABOUR_DAY": "Fête du Travail",
+      "VICTORY_1945": "Victoire 1945",
+      "ASCENSION": "Ascension",
+      "WHIT_MONDAY": "Lundi de Pentecôte",
+      "BASTILLE_DAY": "Fête nationale",
+      "ASSUMPTION": "Assomption",
+      "ALL_SAINTS": "Toussaint",
+      "ARMISTICE": "Armistice",
+      "CHRISTMAS": "Noël"
     }
   }
 }

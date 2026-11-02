@@ -149,6 +149,17 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ANSWER_ACQUISITION'), accept: z.boolean() }),
   /** Réponse à la demande d'augmentation d'un dev (pendant la planification). */
   z.object({ type: z.literal('ANSWER_RAISE'), accept: z.boolean() }),
+  /** Pose des congés à un dev pour le sprint qui commence (semaine 0 ou 1, 1 à 5 jours). */
+  z.object({
+    type: z.literal('BOOK_LEAVE'),
+    devId: EntityIdSchema,
+    week: z.union([z.literal(0), z.literal(1)]),
+    days: z.number().int().min(1).max(5),
+  }),
+  /** Annule les congés prévus d'un dev (les jours reviennent dans sa réserve). */
+  z.object({ type: z.literal('CANCEL_LEAVE'), devId: EntityIdSchema }),
+  /** Refuse (ou accepte à nouveau) les ponts du sprint qui commence. */
+  z.object({ type: z.literal('REFUSE_BRIDGES'), refuse: z.boolean() }),
   z.object({ type: z.literal('LAUNCH_IPO') }),
   /** Crée une filiale à partir d'un des projets proposés pendant la planification. */
   z.object({ type: z.literal('FOUND_VENTURE'), ideaId: z.string() }),
@@ -216,6 +227,8 @@ export const COMMAND_ERRORS = [
   'NOT_AVAILABLE',
   'INVENTORY_FULL',
   'RAISE_PENDING',
+  'NOT_ENOUGH_LEAVE',
+  'LEAVE_SLOTS_FULL',
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 

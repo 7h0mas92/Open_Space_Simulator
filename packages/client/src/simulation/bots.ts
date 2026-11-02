@@ -1,6 +1,7 @@
 import {
   FURNITURE_CATALOG,
   ROLE_PROFILES,
+  TEAM_LIFE,
   getMeetingFormat,
   ROLE_TRADE,
   taskTrade,
@@ -25,6 +26,7 @@ import { meetingFormatBlocker } from './meetings';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
 import { tasksInColumn } from './tasks';
+import { leaveSlots } from './teamLife';
 import { activeVentures, investableCash, ventureBlocker, ventureOffers } from './ventures';
 
 /**
@@ -106,6 +108,8 @@ interface PlanningStyle {
   meetingRoom?: (state: Readonly<GameState>) => MeetingFormatId | null;
   /** Utilise les autres financements (prêt, business angels…) quand l'argent manque. */
   finances?: boolean;
+  /** Pose des congés à ceux qui ont 5 jours en réserve (vie d'équipe). */
+  booksLeave?: boolean;
 }
 
 /** Bot « raisonnable », paramétré par un style de jeu. */
@@ -202,6 +206,9 @@ class PlannerBot implements Bot {
       const blocker = meetingFormatBlocker(state as GameState, getMeetingFormat(format));
       if (blocker === null) commands.push({ type: 'FIT_MEETING_ROOM', format });
     }
+
+    // 2 ter. Congés : une semaine à ceux qui ont 5 jours en réserve, s'il reste une place.
+    if (style.booksLeave) commands.push(...leaveBookings(state));
 
     // 3. Recrutement.
     if (teamSize(state) < teamMax(state) && runway > style.hireRunway) {
@@ -378,6 +385,29 @@ class RandomBot implements Bot {
   }
 }
 
+/** Congés qu'un joueur attentif poserait : 5 jours aux devs qui les ont, une semaine libre. */
+export function leaveBookings(state: Readonly<GameState>): Command[] {
+  const life = state.teamLife;
+  if (!life) return [];
+  const slots = leaveSlots(state as GameState);
+  const firstDay = (state.sprint - 1) * 14;
+  const taken = [0, 1].map(
+    (week) =>
+      Object.values(life.absences).filter(
+        (absence) => absence.kind === 'LEAVE' && absence.from === firstDay + week * 7,
+      ).length,
+  );
+  const commands: Command[] = [];
+  for (const id of devIds(state)) {
+    if ((life.leave[id] ?? 0) < TEAM_LIFE.leaveDaysMax || life.absences[id]) continue;
+    const week = taken.findIndex((count) => count < slots);
+    if (week !== 0 && week !== 1) break;
+    taken[week] = (taken[week] ?? 0) + 1;
+    commands.push({ type: 'BOOK_LEAVE', devId: id, week, days: TEAM_LIFE.leaveDaysMax });
+  }
+  return commands;
+}
+
 const fixPriority = (state: Readonly<GameState>) => state.gauges.stability < 60;
 
 export const BOT_NAMES = [
@@ -388,6 +418,7 @@ export const BOT_NAMES = [
   'investor',
   'organizer',
   'financier',
+  'rested',
 ] as const;
 export type BotName = (typeof BOT_NAMES)[number];
 
@@ -505,6 +536,18 @@ export function createBot(name: BotName, seed: string): Bot {
         pitchRunway: 10,
         buysFurniture: true,
         finances: true,
+      });
+    case 'rested':
+      // Comme « balanced », mais il pose les congés de l'équipe au lieu d'attendre qu'ils
+      // les réclament.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        booksLeave: true,
       });
     case 'cautious':
       // Code propre, petite équipe, levées tardives.

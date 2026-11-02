@@ -1,3 +1,4 @@
+import { leavePlanning } from './teamLife';
 import {
   BALANCE,
   ENDLESS,
@@ -57,6 +58,7 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
   resetTracker(state);
   rollObjective(state, ctx);
   raisePlanning(state, ctx);
+  leavePlanning(state, ctx);
   announceCompetition(state, ctx);
 }
 

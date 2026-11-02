@@ -24,6 +24,7 @@ import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
+import { bookLeave, cancelLeave, refuseBridges } from './teamLife';
 import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
@@ -170,6 +171,12 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
     }
     case 'ANSWER_RAISE':
       return answerRaise(state, ctx, command.accept);
+    case 'BOOK_LEAVE':
+      return bookLeave(state, command.devId, command.week, command.days);
+    case 'CANCEL_LEAVE':
+      return cancelLeave(state, command.devId);
+    case 'REFUSE_BRIDGES':
+      return refuseBridges(state, command.refuse);
     case 'LAUNCH_IPO':
       if (state.stage !== 'PLANNING' && state.stage !== 'DEMO') return fail('WRONG_STAGE');
       if (state.phase !== 'UNICORN' || state.gauges.stability < BALANCE.phases.ipoMinStability) {

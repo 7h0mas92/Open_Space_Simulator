@@ -1,5 +1,4 @@
 import { BALANCE, endlessExtraChurn, type GameState } from '@oss/shared';
-import { resignDev } from '../devs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from '../economy';
 import {
   addDevLog,
@@ -18,6 +17,7 @@ import {
 import { applyDailyLeadership } from '../leadership';
 import { log10Approx, round } from '../math';
 import type { SimClock } from '../time';
+import { burnOut, isAbsent } from '../teamLife';
 import { thinksInRust } from './work';
 
 const DAYS_PER_MONTH = 30;
@@ -84,6 +84,8 @@ function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
     const identity = state.components.identity[id];
     const mood = state.components.mood[id];
     if (!identity || !mood || identity.role === 'AI_AGENT') continue;
+    // En congé ou en arrêt : le moral se refait au retour.
+    if (isAbsent(state, id, clock)) continue;
     const relations = Object.values(state.components.relations[id] ?? {});
     const affinity =
       relations.length > 0 ? relations.reduce((a, b) => a + b, 0) / relations.length : 0;
@@ -104,7 +106,8 @@ function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
   }
   for (const id of devIds(state)) {
     const mood = state.components.mood[id];
-    if (mood && mood.moral <= BALANCE.moral.resignationThreshold) resignDev(state, ctx, id);
+    if (mood && mood.moral <= BALANCE.moral.resignationThreshold)
+      burnOut(state, ctx, id, clock.day);
   }
 }
 

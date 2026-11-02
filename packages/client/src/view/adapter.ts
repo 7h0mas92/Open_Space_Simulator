@@ -107,10 +107,12 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
+import { holidayOf, leaveSlots, sprintHasBridge } from '../simulation/teamLife';
 import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
 import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulation/subscriptions';
 import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
 import type {
+  AbsenceView,
   StoryView,
   CandidateView,
   DevActivity,
@@ -300,6 +302,27 @@ function devView(state: GameState, id: string): DevView | null {
         }
       : null,
     leavingAtSprint: leavingAtSprint(state, id),
+    absence: absenceView(state, id),
+    leave:
+      state.teamLife && identity.role !== 'GHOST' && identity.role !== 'AI_AGENT'
+        ? (state.teamLife.leave[id] ?? 0)
+        : null,
+  };
+}
+
+function absenceView(state: GameState, id: string): AbsenceView | null {
+  const absence = state.teamLife?.absences[id];
+  if (!absence) return null;
+  const today = getClock(state).day;
+  const sprintStart = (state.sprint - 1) * TIME.daysPerSprint;
+  const offset = absence.from - sprintStart;
+  return {
+    kind: absence.kind,
+    days: absence.days,
+    // En planification, un congé qui commence lundi n'a pas encore commencé (il s'annule).
+    started: absence.from <= today && !(state.stage === 'PLANNING' && offset === 0),
+    week: absence.kind === 'LEAVE' && offset >= 0 ? (offset >= 7 ? 1 : 0) : null,
+    returnDate: civilFromDays(calendarDay(state, absence.until)),
   };
 }
 
@@ -468,6 +491,8 @@ function candidateViews(state: GameState): CandidateView[] {
         performance: performanceView(candidate.identity, candidate.stats, 1),
         career: null,
         leavingAtSprint: null,
+        absence: null,
+        leave: null,
       },
     }));
 }
@@ -1008,6 +1033,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       date: civilFromDays(today),
       seasons: seasonsAt(today),
       birthdays: birthdayPartyIds(state, clock.day),
+      holiday: holidayOf(state, clock.day),
     },
     phase: state.phase,
     step: state.stage,
@@ -1023,6 +1049,13 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     devs: devIds(state)
       .map((id) => devView(state, id))
       .filter((dev): dev is DevView => dev !== null),
+    teamLife: state.teamLife
+      ? {
+          slots: leaveSlots(state),
+          bridge: sprintHasBridge(state),
+          bridgesRefused: state.teamLife.bridgesRefusedSprint === state.sprint,
+        }
+      : null,
     leadership: leadershipView(state),
     tasks: taskViews(state),
     candidates: candidateViews(state),
@@ -1216,6 +1249,17 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'ANSWER_ACQUISITION', accept: command.accept };
     case 'answerRaise':
       return { type: 'ANSWER_RAISE', accept: command.accept };
+    case 'bookLeave':
+      return {
+        type: 'BOOK_LEAVE',
+        devId: command.devId,
+        week: command.week,
+        days: Math.min(5, Math.max(1, Math.round(command.days))),
+      };
+    case 'cancelLeave':
+      return { type: 'CANCEL_LEAVE', devId: command.devId };
+    case 'refuseBridges':
+      return { type: 'REFUSE_BRIDGES', refuse: command.refuse };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
     case 'foundVenture':

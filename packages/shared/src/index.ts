@@ -25,6 +25,7 @@ export * from './sim/state.js';
 export * from './sim/endless.js';
 export * from './sim/subscriptions.js';
 export * from './sim/taskFlow.js';
+export * from './sim/teamLife.js';
 export * from './sim/teamRoles.js';
 export * from './sim/ventures.js';
 export * from './sim/floors.js';

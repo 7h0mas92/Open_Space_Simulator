@@ -9,6 +9,7 @@ import { LeadershipSummary, SpecialtyLine } from './Leadership';
 import { GradeBadge, PerformancePanel, SprintProductivity, Strengths } from './Performance';
 import { moodEmoji, StatBars } from './StatBars';
 import { TeamFilterBar } from './TeamFilterBar';
+import { BridgeNotice, LeaveSection, useAbsenceLabel } from './Leave';
 
 /** Liste de l'équipe, puis fiche détaillée du dev choisi (ou sélectionné dans la scène). */
 export function Team({ view }: { view: GameView }) {
@@ -22,18 +23,23 @@ export function Team({ view }: { view: GameView }) {
 
   if (selectedDev) return <DevSheet dev={selectedDev} view={view} onBack={() => select(null)} />;
   if (view.devs.length === 0) return <p>{t('team.empty')}</p>;
-  const remote = view.devs.filter((dev) => dev.remoteReason !== null).length;
+  const away = view.devs.filter((dev) => dev.absence?.started).length;
+  const remote = view.devs.filter(
+    (dev) => dev.remoteReason !== null && !dev.absence?.started,
+  ).length;
   const noDesk = view.devs.some((dev) => dev.remoteReason === 'NO_DESK');
   const shown = filterTeam(view.devs, filters);
   return (
     <>
       <p className="team-office">
-        {t('team.officeSummary', {
-          office: view.devs.length - remote,
+        {t(view.teamLife ? 'team.officeSummaryAway' : 'team.officeSummary', {
+          office: view.devs.length - remote - away,
           remote,
+          away,
           desks: view.desks,
         })}
       </p>
+      <BridgeNotice view={view} />
       {noDesk && <p className="hint">{t('team.noDeskHint')}</p>}
       <LeadershipSummary leadership={view.leadership} />
       {view.devs.length > 1 && (
@@ -63,16 +69,7 @@ export function Team({ view }: { view: GameView }) {
                   <ConflictTag dev={dev} team={view.devs} />
                 </span>
               </span>
-              <span className="dev-row-activity">
-                {dev.leavingAtSprint !== null && (
-                  <span className="leaving-badge">
-                    {t('team.leavingShort', { sprint: dev.leavingAtSprint })} ·{' '}
-                  </span>
-                )}
-                {dev.remoteReason
-                  ? `${t('team.remoteBadge')} · ${t(`remoteShort.${dev.remoteReason}`)}`
-                  : t(`activities.${dev.activity}`)}
-              </span>
+              <DevRowActivity dev={dev} />
               <GradeBadge
                 grade={dev.performance.grade}
                 score={dev.performance.score}
@@ -83,6 +80,28 @@ export function Team({ view }: { view: GameView }) {
         ))}
       </ul>
     </>
+  );
+}
+
+/** Ce que fait le dev : absence, télétravail ou activité au bureau. */
+function DevRowActivity({ dev }: { dev: DevView }) {
+  const { t } = useTranslation();
+  const absence = useAbsenceLabel(dev);
+  const started = dev.absence?.started === true;
+  return (
+    <span className="dev-row-activity">
+      {dev.leavingAtSprint !== null && (
+        <span className="leaving-badge">
+          {t('team.leavingShort', { sprint: dev.leavingAtSprint })} ·{' '}
+        </span>
+      )}
+      {absence && !started && <span className="leave-badge">{absence} · </span>}
+      {started
+        ? absence
+        : dev.remoteReason
+          ? `${t('team.remoteBadge')} · ${t(`remoteShort.${dev.remoteReason}`)}`
+          : t(`activities.${dev.activity}`)}
+    </span>
   );
 }
 
@@ -155,9 +174,11 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
         <div>
           <dt>{t('team.workplace')}</dt>
           <dd>
-            {dev.remoteReason
-              ? `${t('team.remoteBadge')} : ${t(`remoteReasons.${dev.remoteReason}`)}`
-              : t('team.atOffice')}
+            {dev.absence?.started
+              ? `${t(`leave.short.${dev.absence.kind}`)}`
+              : dev.remoteReason
+                ? `${t('team.remoteBadge')} : ${t(`remoteReasons.${dev.remoteReason}`)}`
+                : t('team.atOffice')}
           </dd>
         </div>
         <div>
@@ -213,6 +234,7 @@ function DevSheet({ dev, view, onBack }: { dev: DevView; view: GameView; onBack:
         </p>
       )}
       <p className="hint">{t(`traitDescriptions.${dev.trait}`)}</p>
+      <LeaveSection dev={dev} view={view} />
       {career && (
         <div className="xp">
           <span>

@@ -9,6 +9,8 @@
  * l'interface envoie des `GameCommand` pour demander un changement.
  */
 import type {
+  AbsenceKind,
+  PublicHoliday,
   MissionGoal,
   StoryMissionId,
   StoryRewardId,
@@ -212,6 +214,33 @@ export interface DevView {
   readonly career: CareerView | null;
   /** A démissionné après un refus d'augmentation : sprint de son départ, sinon null. */
   readonly leavingAtSprint: number | null;
+  /** Congé, pont ou arrêt maladie en cours ou prévu (null : aucun, ou candidat). */
+  readonly absence: AbsenceView | null;
+  /** Jours de congé en réserve (null : pas de congés, comme le Dev Fantôme ou l'IA Agent). */
+  readonly leave: number | null;
+}
+
+/** Absence d'un dev : congé posé, pont, petit arrêt maladie ou burn-out. */
+export interface AbsenceView {
+  readonly kind: AbsenceKind;
+  /** Jours ouvrés d'absence. */
+  readonly days: number;
+  /** Vrai si l'absence a commencé (le dev n'est pas au bureau aujourd'hui). */
+  readonly started: boolean;
+  /** Semaine du sprint où commence un congé prévu (0 ou 1), sinon null. */
+  readonly week: 0 | 1 | null;
+  /** Date réelle du retour au bureau. */
+  readonly returnDate: CalendarDate;
+}
+
+/** Congés et ponts du sprint (null : vieilles sauvegardes et défi « 3 sprints »). */
+export interface TeamLifeView {
+  /** Devs en congé en même temps au plus, par semaine. */
+  readonly slots: number;
+  /** Le sprint qui commence (ou en cours) a un jour de pont. */
+  readonly bridge: boolean;
+  /** Le joueur a refusé les ponts de ce sprint. */
+  readonly bridgesRefused: boolean;
 }
 
 export const TASK_TYPES = ['FEATURE', 'REFACTOR', 'BUGFIX', 'INFRA'] as const;
@@ -824,6 +853,8 @@ export interface CalendarView {
   readonly seasons: readonly DecorTheme[];
   /** Devs dont on fête l'anniversaire aujourd'hui (table de fête au bureau). */
   readonly birthdays: readonly string[];
+  /** Jour férié chômé aujourd'hui, ou null. */
+  readonly holiday: PublicHoliday | null;
 }
 
 export interface GameView {
@@ -839,6 +870,8 @@ export interface GameView {
   /** Historique des jauges, un point par jour simulé. */
   readonly history: readonly Gauges[];
   readonly devs: readonly DevView[];
+  /** Congés, ponts et arrêts maladie (null : vieilles sauvegardes, défi « 3 sprints »). */
+  readonly teamLife: TeamLifeView | null;
   /** Ce que l'encadrement apporte à l'équipe, et les postes ouverts au recrutement. */
   readonly leadership: LeadershipView;
   readonly tasks: readonly TaskView[];
@@ -981,6 +1014,14 @@ export type GameCommand =
   | { readonly type: 'endDemo' }
   | { readonly type: 'answerAcquisition'; readonly accept: boolean }
   | { readonly type: 'answerRaise'; readonly accept: boolean }
+  | {
+      readonly type: 'bookLeave';
+      readonly devId: string;
+      readonly week: 0 | 1;
+      readonly days: number;
+    }
+  | { readonly type: 'cancelLeave'; readonly devId: string }
+  | { readonly type: 'refuseBridges'; readonly refuse: boolean }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }

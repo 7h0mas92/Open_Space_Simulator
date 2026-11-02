@@ -195,11 +195,22 @@ export function Gauges({ view }: { view: GameView }) {
 /** Date du jour simulé, périodes à thème en cours (🎃, 🎄…) et anniversaires (🎂). */
 function CalendarLine({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
-  const { date, seasons, birthdays } = view.calendar;
+  const { date, seasons, birthdays, holiday } = view.calendar;
   const names = view.devs.filter((dev) => birthdays.includes(dev.id)).map((dev) => dev.name);
   return (
     <p className="clock-line clock-calendar">
       <span>{formatGameDate(date, i18n.language)}</span>
+      {holiday && (
+        <span
+          className="clock-season"
+          title={t('leave.holiday', { name: t(`leave.holidays.${holiday}`) })}
+        >
+          <span aria-hidden="true">🏖️</span>
+          <span className="visually-hidden">
+            {t('leave.holiday', { name: t(`leave.holidays.${holiday}`) })}
+          </span>
+        </span>
+      )}
       {seasons.map((theme) => {
         const label = localized(SEASONS[theme].name, i18n.language);
         return (
