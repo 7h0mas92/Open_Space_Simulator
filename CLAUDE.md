@@ -367,6 +367,21 @@ journal des passations. À la fin de chaque travail (fil de discussion ou PR), m
 (date, dernier commit, travaux en cours, une ligne dans le journal), en plus de cette section
 et du README.
 
+# BRANCHES : DEVELOP PUIS MAIN (depuis le 17 octobre 2026)
+- `main` est la version publiée : GitHub Pages (et Render) ne déploient que `main`. On n'y pousse
+  jamais directement et on n'y ouvre pas de PR de fonctionnalité.
+- `develop` reçoit tout le travail en test. Chaque demande = une branche partie de `develop`
+  (`feat/…`, `fix/…`, `docs/…` ou `claude/…`) = une PR **vers `develop`**, CI verte, fusionnée en
+  squash après la validation de Melvin (ou de Thomas). Une idée abandonnée se retire de `develop`
+  (revert) sans toucher à `main`.
+- Mise en production : quand Thomas **et** Melvin ont testé `develop`, une PR `develop` → `main`
+  intitulée « release: … », fusionnée en **merge commit** (pas de squash, sinon les deux branches
+  divergent et la PR suivante rejoue tout l'historique).
+- Correctif urgent en production : branche depuis `main`, PR vers `main`, puis fusionner `main`
+  dans `develop` aussitôt.
+- La CI tourne sur toutes les branches et toutes les PR ; l'ÉTAT D'AVANCEMENT ci-dessous décrit
+  `develop`, la date de la dernière mise en production est dans `CONTEXTE.md`.
+
 # ÉTAT D'AVANCEMENT (mis à jour le 13 octobre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
@@ -404,8 +419,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   la semaine réelle (date dans la graine), 12 périodes d'environ une semaine (Nouvel An,
   Saint-Valentin, Pâques, Espace, Moyen Âge, Super-héros, Années 80, Été, Pirates, Halloween,
   Cyberpunk, Noël) avec 24 cartes de saison prioritaires. Décorations par thème en Three.js
-  (`render/decorations.ts`, `view/decor.ts`), réglées dans l'onglet « Décorations » du
-  back-office : désactivé, en saison (défaut) ou toujours ; table `DecorTheme`.
+  (`render/decorations.ts`, `view/decor.ts`) aux murs et sur les bureaux, plus aucune au sol
+  (objets fantômes ni déplaçables ni rangeables, retirés le 17 octobre 2026), réglées dans
+  l'onglet « Décorations » du back-office : désactivé, en saison (défaut) ou toujours ; table
+  `DecorTheme`.
 - Anniversaires des devs (date tirée de la graine, sans toucher au RNG) : table de fête
   décorative (gâteau, cadeaux, ballons), +moral, confettis, Slack ; le week-end, fête le lundi.
 - Performance des devs (`client/src/simulation/performance.ts`, composant ECS `performance`) :
@@ -457,8 +474,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
   `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
-  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
-  variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
+  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places. Sol d'origine
+  identique dans toutes les pièces (damier beige, `BASE_FLOOR_COLORS` dans `render/office.ts`) :
+  ajouter ou agrandir une pièce ne change pas sa couleur, seul le rayon « Sols » la change.
 - Vue sur New York (`render/skyline.ts`) : le bureau est au dernier étage d'une tour, dans une ville low-poly façon
   Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
@@ -699,7 +717,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   annexes) ou « Toutes les pièces », sans remboursement de l'ancien sol ; +moral par pièce, et
   +qualité ou +hype selon la matière. Motifs dessinés sur canvas (`view/floors.ts`), une dalle
   texturée par pièce qui rejoint la voisine sous la cloison (`render/floorFinishes.ts`). Commande
-  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine tiré de la graine), aucun tirage.
+  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine, le même partout), aucun tirage.
 
 - Le plan cède la place aux meubles posés : quand le bureau grandit (nouvelle phase, aile de
   filiale), une cloison du plan qui tomberait sur un meuble s'efface (`yieldToItems` dans
@@ -725,6 +743,16 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Changement d'offre et résiliation sans remboursement, coût compté dans la trésorerie en mois.
   Commandes `SUBSCRIBE_FIBRE` / `CANCEL_FIBRE`, état `fibre` (null par défaut), `fibreSystem` en
   dernier système, rendu `render/serverRoom.ts` (12 formes des assets manquants). Aucun tirage.
+
+- Difficulté des modes (`shared/sim/difficulty.ts`, `difficultyOf(mode)`) : un profil de
+  multiplicateurs par mode remplace `BALANCE.easy`. Facile : 2,2 M€ au départ, effets négatifs des
+  cartes -15 %, autant de cartes qu'en Normal. Hardcore : 1,5 M€, dépenses +15 %, revenus -15 %,
+  4 cartes au plus par sprint (tirage x1,5), effets négatifs +30 %, pannes +50 %, barre des
+  investisseurs +0,3 (`pitchBar` dans `simulation/fundraising.ts`). Normal, Daily, Stagiaires Only
+  et 3 sprints au profil neutre : mêmes parties qu'avant. Rapport `pnpm balance` : section
+  « Difficulté par mode et par stratégie », 700 parties par autre mode. Faillite Hardcore 32 %
+  (bons bots 7 à 20 %, licorne 2 à 4 %) ; Facile proche du Normal, un peu plus indulgent. Les
+  replays des anciens scores Facile et Hardcore ne rejouent plus à l'identique.
 
 - Mode illimité (`ENDLESS`, `shared/sim/endless.ts`) : pas de fin au 39e sprint, la partie dure tant
   que la trésorerie tient (IPO et rachat toujours possibles). Après 18 mois, la concurrence monte à

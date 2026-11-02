@@ -6,6 +6,7 @@ Jeu de gestion de startup jouable dans le navigateur, en 3D low-poly isométriqu
 Le cahier des charges complet est dans [`CLAUDE.md`](./CLAUDE.md).
 Le relais entre les développeurs (travaux en cours, décisions en attente, journal des
 passations) est dans [`CONTEXTE.md`](./CONTEXTE.md), mis à jour à la fin de chaque travail.
+Le rôle et l'emplacement de chaque fichier du dépôt sont dans [`ARBORESCENCE.md`](./ARBORESCENCE.md).
 
 **État actuel : jeu complet, prêt à déployer.** Socle, simulation, rendu 3D, interface,
 événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),
@@ -445,7 +446,8 @@ flowchart LR
   carrelage, parquet en lames ou en chevrons, terrazzo, marbre poli), dont certaines se débloquent
   avec les levées, chacune en plusieurs teintes neutres ou essences de bois. On choisit la pièce à
   refaire ou « Toutes les pièces » ; chaque pièce refaite donne un peu de moral, parfois de la
-  qualité ou de la hype.
+  qualité ou de la hype. Tant qu'on n'y touche pas, toutes les pièces ont le même sol d'origine,
+  y compris celles qui apparaissent quand le bureau grandit.
 - **Salle des serveurs et fibre** : le rayon Serveurs propose un local serveur (dès la Seed) et
   une salle des serveurs vitrée (dès la Série A), à équiper au choix : serveurs rack, lames ou
   GPU, switch, box fibre, climatisation, onduleur, NAS de sauvegarde, pare-feu et extinction
@@ -610,8 +612,8 @@ bouton 🛠 du menu principal.
   Costumes dans `render/characterPacks.ts`.
 - **Décorations** : un thème par période de l'année (Nouvel An, Saint-Valentin, Pâques, espace,
   Moyen Âge, super-héros, années 80, été, pirates, Halloween, cyberpunk, Noël). Chacun a une
-  guirlande murale, trois objets au sol et un petit objet par bureau, construits en Three.js, avec
-  un aperçu 3D. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
+  guirlande murale et un petit objet par bureau, construits en Three.js, avec un aperçu 3D. Rien
+  n'est posé au sol : le joueur ne pourrait ni déplacer ni ranger un objet qu'il n'a pas acheté. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
   période) ou toujours. `GET /api/decor-themes` (public, en cache hors ligne) et
   `PUT /api/admin/decor-themes/:id`.
 - **Statistiques** : joueurs, parties, fins, faillites par phase, cartes les plus tirées et choix
@@ -643,10 +645,27 @@ bouton 🛠 du menu principal.
 financements hors tour de table, organisatrice qui aménage la salle de réunion) et produit un rapport : taux de faillite (global et par phase),
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
-collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
+collée à 0 ou à 100, et rejoue 700 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
 Only, 3 sprints). Une section suit les tâches dynamiques : urgences et tâches de la semaine
 finies à temps, réussite des objectifs par type et difficulté. Le dernier rapport est dans
 [`docs/balance.md`](docs/balance.md).
+
+**Difficulté des modes** (`packages/shared/src/sim/difficulty.ts`, `difficultyOf(mode)`) : un
+profil de multiplicateurs par mode (trésorerie de départ, cartes par sprint, chance de tirage,
+effets négatifs des cartes, dépenses, revenus, pannes, barre des investisseurs). Le Normal, le
+Daily, Stagiaires Only et 3 sprints gardent le profil neutre, donc les mêmes parties qu'avant.
+
+| Mode     | Départ | Effets négatifs | Cartes / sprint | Dépenses | Revenus | Pannes | Investisseurs |
+| -------- | -----: | --------------: | --------------: | -------: | ------: | -----: | ------------: |
+| Facile   | 2,2 M€ |           -15 % |               3 |        = |       = |      = |             = |
+| Normal   |   2 M€ |               = |               3 |        = |       = |      = |             = |
+| Hardcore | 1,5 M€ |           +30 % | 4 (tirage x1,5) |    +15 % |   -15 % |  +50 % |    barre +0,3 |
+
+Mesuré par la section « Difficulté par mode et par stratégie » du rapport : en Facile, un
+joueur au hasard fait encore faillite ou finit zombie une fois sur quatre et les bons bots ne
+deviennent pas plus souvent licornes qu'en Normal ; en Hardcore, le joueur au hasard et le
+prudent qui attend coulent trois à neuf fois sur dix, les bonnes stratégies une fois sur dix
+environ, et la licorne reste possible (2 à 4 %).
 
 Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
 `packages/shared/src/sim/balance.ts`) :
@@ -659,6 +678,38 @@ Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
 - **Dette et stabilité** : le code vieillit un peu chaque jour (plus vite avec une grande équipe)
   et la charge des utilisateurs use la prod : rien ne reste à 0 de dette ou à 100 de stabilité
   sans entretien.
+
+## Branches et contributions
+
+```text
+feat/… fix/… docs/…  ──PR (squash)──▶  develop  ──PR « release » (merge commit)──▶  main  ──▶  GitHub Pages
+        ▲                                 tests de Thomas et Melvin                     │
+        └──────────── correctif urgent : PR vers main, puis main fusionnée dans develop ◀┘
+```
+
+- **`main`** : la version publiée. Seule cette branche est déployée (GitHub Pages, Render). On
+  n'y pousse jamais directement.
+- **`develop`** : la branche de test. Chaque fonctionnalité ou correctif part de `develop` dans
+  sa propre branche et revient par une PR vers `develop` (CI verte, validation, squash merge).
+  Une idée qu'on ne garde pas se retire de `develop` par un revert, sans toucher à `main`.
+- **Mise en production** : quand Thomas et Melvin ont validé `develop`, une PR `develop` →
+  `main` fusionnée en _merge commit_ (pas de squash : les deux branches gardent le même
+  historique).
+- La CI ([`ci.yml`](.github/workflows/ci.yml) : lint, format, typecheck, tests, build, e2e)
+  tourne à chaque push sur toutes les branches et sur chaque PR.
+
+```bash
+git switch develop && git pull
+git switch -c feat/ma-fonctionnalite
+# … commits conventionnels en français …
+git push -u origin feat/ma-fonctionnalite   # puis PR vers develop sur GitHub
+```
+
+Protection conseillée (_Settings_ → _Branches_ → _Add branch ruleset_, à régler par le
+propriétaire du dépôt) : sur `main` et `develop`, PR obligatoire, CI « Lint, typecheck, tests,
+build » et « Tests end-to-end (Playwright) » obligatoires, pas de force-push ni de suppression ;
+sur `main`, en plus, une approbation. Dans _Settings_ → _General_ → _Pull Requests_, garder le
+squash et le merge commit autorisés.
 
 ## Déploiement
 
@@ -680,7 +731,7 @@ Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prê
 ### Version invité sur GitHub Pages
 
 Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur GitHub Pages à
-chaque push sur `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
+chaque push sur `main`, donc à chaque fusion de `develop` dans `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
 Sans serveur, le jeu se joue en invité avec les 130 cartes intégrées et les sauvegardes
 locales ; le compte, les classements en ligne, le Daily en ligne et le Slack IA demandent le serveur
 (le classement « Sur cet appareil » fonctionne sans)

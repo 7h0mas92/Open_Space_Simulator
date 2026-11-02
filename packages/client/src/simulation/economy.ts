@@ -1,6 +1,8 @@
-import { BALANCE, endlessCostMultiplier, type GameState } from '@oss/shared';
+import { BALANCE, difficultyOf, endlessCostMultiplier, type GameState } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
-import { fibreMonthly, hostingSaving } from './serverRoom';
+import { hostingSaving } from './serverRoom';
+import { subscriptionsMonthly } from './subscriptions';
+import { cleaningMonthly } from './cleaning';
 
 /** Revenu récurrent annuel (ARR), en euros. */
 export function annualRevenue(state: GameState): number {
@@ -52,22 +54,24 @@ export function fixedCosts(state: GameState): number {
 }
 
 /**
- * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. La
- * fibre, payée chaque semaine à part, n'y est pas.
+ * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. Les
+ * abonnements, payés à part à chaque échéance, n'y sont pas. Plus chères
+ * en Hardcore (`difficultyOf`).
  */
 export function monthlyExpenses(state: GameState): number {
   return (
-    monthlyPayroll(state) +
-    teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
-    fixedCosts(state) +
-    hostingCost(state) +
-    loanPayment(state)
+    (monthlyPayroll(state) +
+      teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
+      fixedCosts(state) +
+      hostingCost(state) +
+      loanPayment(state)) *
+    difficultyOf(state.mode).expenses
   );
 }
 
-/** Revenus mensuels (abonnements des utilisateurs). */
+/** Revenus mensuels (abonnements des utilisateurs), plus maigres en Hardcore. */
 export function monthlyRevenue(state: GameState): number {
-  return state.gauges.users * BALANCE.economy.arpuMonthly;
+  return state.gauges.users * BALANCE.economy.arpuMonthly * difficultyOf(state.mode).revenue;
 }
 
 /**
@@ -102,7 +106,11 @@ export function portfolioValue(state: GameState): number {
 
 /** Nombre de mois de trésorerie restants au rythme actuel (Infinity si rentable). */
 export function runwayMonths(state: GameState): number {
-  const burn = monthlyExpenses(state) + fibreMonthly(state) - monthlyRevenue(state);
+  const burn =
+    monthlyExpenses(state) +
+    subscriptionsMonthly(state) +
+    cleaningMonthly(state) -
+    monthlyRevenue(state);
   if (burn <= 0) return Number.POSITIVE_INFINITY;
   return state.gauges.treasury / burn;
 }

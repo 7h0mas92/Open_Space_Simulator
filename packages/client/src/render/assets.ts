@@ -13,7 +13,13 @@ import { COLOR_HEX, SECONDARY_SHADE, type FurnitureColor } from '../view/colors'
 import type { DevRole } from '../view/types';
 import { dressUp, themedLookFor, themedLookKey, type ThemedLook } from './characterPacks';
 import { characterUrl, furnitureUrl, type CharacterId, type FurnitureModel } from './assetManifest';
-import { addAccessories, BLOCKY_HEIGHT, buildCharacter, KENNEY_COLORS } from './officeCharacters';
+import {
+  addAccessories,
+  BLOCKY_HEIGHT,
+  buildCharacter,
+  KENNEY_COLORS,
+  type Outfit,
+} from './officeCharacters';
 import { buildPrimitive, fallbackBox } from './primitives';
 
 /**
@@ -126,6 +132,25 @@ export class AssetLibrary {
     if (!promise) {
       promise = this.buildCharacter(themed);
       this.characters.set(key, promise);
+    }
+    const asset = await promise;
+    if (!asset) return null;
+    return { scene: SkeletonUtils.clone(asset.scene), animations: asset.animations };
+  }
+
+  /**
+   * Personnage construit en Three.js d'après une tenue (équipe de ménage…), animé par les clips
+   * Kenney comme les devs. `key` identifie la tenue dans le cache.
+   */
+  async outfitCharacter(key: string, outfit: Outfit): Promise<CharacterAsset | null> {
+    const cacheKey = `outfit:${key}`;
+    let promise = this.characters.get(cacheKey);
+    if (!promise) {
+      promise = this.kenneyCharacter(CLIP_DONOR).then((donor) => ({
+        scene: normalizeCharacter(buildCharacter(outfit, [])),
+        animations: donor?.animations ?? [],
+      }));
+      this.characters.set(cacheKey, promise);
     }
     const asset = await promise;
     if (!asset) return null;

@@ -266,13 +266,23 @@ export function taskTrade(task: Pick<Task, 'trade'>): TaskTrade {
 
 export const ROTATIONS = [0, 1, 2, 3] as const;
 
+/**
+ * Pas de la grille du mode construction : un objet se pose ou se déplace d'une demi-case. Les
+ * anciennes positions (entières) restent valides. Les murs fins et les fenêtres restent sur des
+ * cases entières (voir `canPlace` dans la simulation).
+ */
+export const GRID_STEP = 0.5;
+
+/** Coordonnée d'un objet posé : positive, multiple d'une demi-case. */
+export const GridPositionSchema = z.number().nonnegative().multipleOf(GRID_STEP);
+
 export const FurnitureColorSchema = z.enum(FURNITURE_COLORS);
 
 /** Objet posé sur la grille du bureau. */
 export const FurnitureSchema = z.object({
   itemId: z.string(),
-  x: z.number().int().nonnegative(),
-  y: z.number().int().nonnegative(),
+  x: GridPositionSchema,
+  y: GridPositionSchema,
   /** Quart de tour (0 à 3). */
   rotation: z.number().int().min(0).max(3),
   purchasePrice: z.number().nonnegative(),

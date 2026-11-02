@@ -1,22 +1,16 @@
 /**
- * Où poser les décorations de saison et la table d'anniversaire.
+ * Où poser la table d'anniversaire et le mobilier de la salle de réunion.
  *
- * Ces objets sont purement décoratifs : ils ne sont pas dans la simulation, ne coûtent rien et
- * ne se vendent pas. Ils occupent pourtant des cases (les personnages les contournent), donc on
- * ne les pose que sur des cases libres, sans jamais couper le chemin vers un meuble utile.
- * Fonction pure : même bureau, mêmes thèmes ⇒ même plan.
+ * Ces objets ne sont pas dans la simulation, ne coûtent rien et ne se vendent pas. Ils occupent
+ * pourtant des cases (les personnages les contournent), donc on ne les pose que sur des cases
+ * libres, sans jamais couper le chemin vers un meuble utile. Les décorations de saison, elles,
+ * restent aux murs et sur les bureaux : aucun objet au sol que le joueur ne pourrait ni
+ * déplacer ni ranger. Fonction pure : même bureau, mêmes thèmes ⇒ même plan.
  */
 import type { DecorTheme, MeetingFormatId } from '@oss/shared';
 import { accessCell, buildNavGrid, NEIGHBORS_4, type NavGrid } from '../ai/grid';
 import { roomAt, type Cell, type OfficeLayout, type Room, type RoomKind } from './layout';
 import type { PlacedItemView } from './types';
-
-/** Une décoration posée au sol : `index` choisit le modèle parmi ceux du thème. */
-export interface FloorDecor {
-  readonly theme: DecorTheme;
-  readonly index: number;
-  readonly cell: Cell;
-}
 
 /** La table d'anniversaire : deux cases, de `cell` à `cell.x + 1`. */
 export interface PartySpot {
@@ -49,19 +43,22 @@ export interface MeetingPlan {
   readonly seats: readonly MeetingSeat[];
   /** Cases contre le mur du fond, de gauche à droite, occupées par un objet. */
   readonly wall: readonly Cell[];
+  /**
+   * Écran de projection du Daily, au milieu du mur du fond (null si la salle est trop étroite) :
+   * centre, rangée et largeur en cases. Le projecteur est suspendu au-dessus de la table.
+   */
+  readonly screen: { readonly x: number; readonly z: number; readonly cells: number } | null;
 }
 
 export interface DecorPlan {
+  /** Thèmes de saison décorés (guirlandes aux murs, petit objet sur chaque bureau). */
   readonly themes: readonly DecorTheme[];
-  readonly floor: readonly FloorDecor[];
   readonly party: PartySpot | null;
   readonly meeting: MeetingPlan | null;
-  /** Cases occupées par les décorations et la table (obstacles pour les personnages). */
+  /** Cases occupées par la table de fête et la salle de réunion (obstacles des personnages). */
   readonly blocked: readonly Cell[];
 }
 
-/** Une décoration au sol toutes les `FLOOR_SPACING` cases le long des murs du fond. */
-const FLOOR_SPACING = 3;
 /** Salles où l'on préfère installer la table d'anniversaire, dans l'ordre. */
 const PARTY_ROOMS: readonly RoomKind[] = ['canteen', 'kitchen', 'lounge', 'open'];
 
@@ -217,7 +214,24 @@ function placeMeeting(
       if (inRoom(next)) return false;
       return !layout.partitions.some((p) => p.x === next.x && p.z === next.z);
     });
-  // Les coins d'abord, puis le milieu, puis le reste.
+  // L'écran du Daily d'abord, au milieu du mur du fond : les objets se rangent de part et d'autre.
+  let screen: MeetingPlan['screen'] = null;
+  const screenCells = room.width >= 6 ? 3 : 2;
+  if (room.width >= 3) {
+    // Au milieu si possible, sinon le plus près du milieu (pas devant une porte).
+    const center = room.x + Math.floor((room.width - screenCells) / 2);
+    const starts: number[] = [];
+    for (let x = room.x; x + screenCells <= room.x + room.width; x++) starts.push(x);
+    starts.sort((a, b) => Math.abs(a - center) - Math.abs(b - center));
+    for (const startX of starts) {
+      const cells: Cell[] = [];
+      for (let dx = 0; dx < screenCells; dx++) cells.push({ x: startX + dx, z: room.z });
+      if (cells.some(opening) || !planner.tryBlock(cells)) continue;
+      screen = { x: startX + (screenCells - 1) / 2, z: room.z, cells: screenCells };
+      break;
+    }
+  }
+  // Les coins d'abord, puis le milieu (sauf derrière l'écran), puis le reste.
   const middle = room.x + Math.floor((room.width - 1) / 2);
   const order = [room.x, room.x + room.width - 1, middle];
   for (let x = room.x; x < room.x + room.width; x++) if (!order.includes(x)) order.push(x);
@@ -247,52 +261,26 @@ function placeMeeting(
     }
   }
   for (const seat of seats) planner.keepFree(seat.cell);
-  return { format, room, table, seats, wall };
-}
-
-/** Cases candidates le long des murs du fond (là où l'on voit le mieux depuis la caméra). */
-function wallCells(layout: OfficeLayout): Cell[] {
-  const cells: Cell[] = [];
-  for (let x = 1; x < layout.width; x += FLOOR_SPACING) cells.push({ x, z: 0 });
-  for (let z = FLOOR_SPACING; z < layout.depth - 1; z += FLOOR_SPACING) cells.push({ x: 0, z });
-  // Coins des autres salles (cuisine, réunion…), contre leur cloison du fond.
-  for (const room of layout.rooms) {
-    if (room.kind === 'open') continue;
-    cells.push({ x: room.x + room.width - 1, z: room.z });
-  }
-  return cells;
+  return { format, room, table, seats, wall, screen };
 }
 
 /**
- * Plan des décorations : la table d'anniversaire d'abord (si c'est un jour de fête), puis les
- * décorations au sol, réparties à tour de rôle entre les thèmes actifs.
+ * Plan du décor : la salle de réunion d'abord, puis la table d'anniversaire (si c'est un jour
+ * de fête). Les thèmes de saison sont seulement transmis au rendu, qui les accroche aux murs et
+ * les pose sur les bureaux.
  */
 export function planDecor(
   layout: OfficeLayout,
   items: readonly PlacedItemView[],
   themes: readonly DecorTheme[],
   birthday: boolean,
-  floorModels: (theme: DecorTheme) => number,
   meetingFormat: MeetingFormatId | null = null,
 ): DecorPlan {
   const planner = new Planner(layout, items);
   // La salle de réunion d'abord : ses meubles font partie du bureau, pas de la fête.
   const meeting = meetingFormat ? placeMeeting(planner, layout, meetingFormat) : null;
   const party = birthday ? placeParty(planner, layout) : null;
-  const floor: FloorDecor[] = [];
-  if (themes.length > 0) {
-    const used = new Map<DecorTheme, number>();
-    let turn = 0;
-    for (const cell of wallCells(layout)) {
-      const theme = themes[turn % themes.length];
-      if (!theme || !planner.tryBlock([cell])) continue;
-      const index = used.get(theme) ?? 0;
-      used.set(theme, index + 1);
-      floor.push({ theme, index: index % Math.max(1, floorModels(theme)), cell });
-      turn++;
-    }
-  }
-  return { themes, floor, party, meeting, blocked: planner.cells };
+  return { themes, party, meeting, blocked: planner.cells };
 }
 
 /** Clé de cache d'un plan : on ne reconstruit le décor que si elle change. */
