@@ -34,6 +34,7 @@ Open_Space_Simulator/
 │   ├── shared/               # Types, schémas Zod, constantes d'équilibrage, cartes, succès
 │   │   └── src/
 │   │       ├── sim/          # Règles et catalogues de la simulation (meubles, sols, fibre…)
+│   │       ├── story/        # Mode Histoire : campagne, récompenses
 │   │       ├── meta/         # Contrats de l'API, succès, packs, décorations
 │   │       └── data/         # Les cartes d'événements et les projets de filiales
 │   ├── client/               # Le jeu (Vite + React + Three.js)
@@ -156,6 +157,15 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 | `packs.ts`        | Packs de personnages thématiques (Noël, Halloween…) réglés par l'admin.                  |
 | `decor.ts`        | Décorations de saison réglées par l'admin (désactivé, en saison, toujours).              |
 
+### `src/story/` : mode Histoire
+
+| Fichier            | Rôle                                                                                     |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `campaign.ts`      | La campagne : 10 missions en 4 chapitres, départ, objectifs, contraintes, durée.         |
+| `campaign.test.ts` | Tests de la campagne (missions bien formées, ordre, récompenses).                        |
+| `rewards.ts`       | Récompenses débloquées par les missions (papiers peints, sols, couleurs, objets, bonus). |
+| `progress.ts`      | Contrats de l'API `/api/story` (missions réussies, rejouées par le serveur).             |
+
 ### `src/data/` : contenus
 
 | Fichier             | Rôle                                                                   |
@@ -201,12 +211,13 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 
 ### `scripts/`
 
-| Fichier                        | Rôle                                                                  |
-| ------------------------------ | --------------------------------------------------------------------- |
-| `balance/index.ts`             | `pnpm balance` : joue des milliers de parties avec des bots, rapport. |
-| `balance/worker.ts`            | Thread qui joue un lot de parties et renvoie leurs résumés.           |
-| `balance/worker-bootstrap.mjs` | Charge TypeScript (tsx) dans les threads Node avant le vrai worker.   |
-| `trace.ts`                     | Trace sprint par sprint d'une partie jouée par un bot.                |
+| Fichier                        | Rôle                                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| `balance/index.ts`             | `pnpm balance` : joue des milliers de parties avec des bots, rapport.        |
+| `balance/worker.ts`            | Thread qui joue un lot de parties et renvoie leurs résumés.                  |
+| `balance/worker-bootstrap.mjs` | Charge TypeScript (tsx) dans les threads Node avant le vrai worker.          |
+| `trace.ts`                     | Trace sprint par sprint d'une partie jouée par un bot.                       |
+| `story-check.ts`               | `pnpm balance:story` : calibrage des missions du mode Histoire par les bots. |
 
 ### `src/` : racine
 
@@ -257,6 +268,8 @@ graine + mêmes commandes = même partie.
 | `pets.ts`         | Adoption des chats, départ, effets sur l'équipe.                                        |
 | `achievements.ts` | Succès vérifiés à partir de l'état.                                                     |
 | `endings.ts`      | Fins de partie et phrase partageable de l'écran de fin.                                 |
+| `story.ts`        | Mode Histoire : départ de la mission, suivi des objectifs et contraintes, fin.          |
+| `unlocks.ts`      | Récompenses du mode Histoire utilisables dans la partie (`state.unlocks`).              |
 | `bots.ts`         | Stratégies automatiques de `pnpm balance` (random, shipper, balanced, investor…).       |
 | `analysis.ts`     | Joue des parties avec les bots et agrège les résultats (rapport d'équilibrage).         |
 
@@ -392,6 +405,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `skyline.ts`          | La vue sur New York autour de la tour.                                    |
 | `skylineShaders.ts`   | Shaders des façades, rues et reflets de la ville.                         |
 | `cityLights.ts`       | Part des fenêtres de la ville allumées à chaque heure.                    |
+| `storyRewards.ts`     | Objets gagnés en mode Histoire : statue de licorne, cloche de la Bourse.  |
 
 ### `src/ui/` : interface React + Zustand
 
@@ -405,70 +419,76 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `game.css`     | Styles de l'interface en partie (HUD, panneaux, dock).              |
 | `meta.css`     | Styles des pages classements, profil, succès et back-office.        |
 
-| Dossier / fichier                 | Rôle                                                                  |
-| --------------------------------- | --------------------------------------------------------------------- |
-| `store/game.ts`                   | Store de la partie : dernière `GameView`, `dispatch` des commandes.   |
-| `store/session.ts`                | Compte connecté, serveur joignable ou non.                            |
-| `store/settings.ts`               | Préférences du joueur (qualité, zoom, accessibilité, volumes).        |
-| `store/guide.ts`                  | Progression du tutoriel du mode Facile.                               |
-| `store/lifecycle.ts`              | Effets d'une partie : sauvegarde auto, score, succès, fin.            |
-| `menu/HomeMenu.tsx`               | Écran d'accueil : Jouer, Continuer, modes, pages.                     |
-| `menu/ModePicker.tsx`             | Choix du mode de jeu en cartes.                                       |
-| `menu/SaveSlots.tsx`              | Les 5 emplacements de sauvegarde.                                     |
-| `menu/AccountBar.tsx`             | Coin du compte : connexion, pseudo, déconnexion.                      |
-| `menu/useLatestSave.ts`           | Sauvegarde proposée par le bouton « Continuer ».                      |
-| `components/AuthPanel.tsx`        | Formulaires de connexion et d'inscription.                            |
-| `components/LanguageSwitcher.tsx` | Choix de la langue (FR, EN).                                          |
-| `game/GameScreen.tsx`             | Écran de partie : scène, HUD, panneaux, dock.                         |
-| `game/Scene.tsx`                  | Hôte du canvas Three.js.                                              |
-| `game/Hud.tsx`                    | HUD : jauges, trésorerie, horloge en haut ; actions en bas.           |
-| `game/Sheet.tsx`                  | Panneau latéral sur ordinateur, bottom sheet sur mobile.              |
-| `game/StageScreens.tsx`           | Carte d'événement, levée de fonds, démo, fin de partie.               |
-| `game/Tooltip.tsx`                | Infobulle accessible (survol, clavier, toucher).                      |
-| `game/format.ts`                  | Formatage des nombres, montants et dates selon la langue.             |
-| `game/shareImage.ts`              | Image partageable de fin de partie.                                   |
-| `game/useGameFeeds.ts`            | Branche Slack et audio sur la partie.                                 |
-| `game/useLiveTime.ts`             | Heure qui défile en continu à l'écran.                                |
-| `dashboard/Dashboard.tsx`         | Historique de chaque jauge en graphiques.                             |
-| `kanban/Kanban.tsx`               | Tableau Kanban de la planification.                                   |
-| `kanban/Objective.tsx`            | Objectif de sprint affiché en haut du Kanban.                         |
-| `kanban/useDragAndDrop.ts`        | Glisser-déposer souris et tactile du Kanban.                          |
-| `team/Team.tsx`                   | Liste de l'équipe et fiche détaillée d'un dev.                        |
-| `team/TeamFilterBar.tsx`          | Tri et filtres de l'équipe.                                           |
-| `team/filters.ts`                 | Logique des filtres et du tri (fonctions pures).                      |
-| `team/Hiring.tsx`                 | Recrutement : candidats, offre, risque de refus.                      |
-| `team/Leadership.tsx`             | Bloc « Encadrement » et spécialités de l'équipe web.                  |
-| `team/Performance.tsx`            | Note S à D et productivité par sprint.                                |
-| `team/StatBars.tsx`               | Barres de stats d'un dev ou d'un candidat.                            |
-| `build/BuildMode.tsx`             | Interface du mode construction.                                       |
-| `build/Catalog.tsx`               | Catalogue en bas de l'écran, par rayons, avec l'inventaire.           |
-| `build/SelectionBar.tsx`          | Actions sur l'objet sélectionné (tourner, peindre, ranger…).          |
-| `build/ColorPicker.tsx`           | Nuancier de peinture.                                                 |
-| `build/ComputerPicker.tsx`        | Choix de l'ordinateur d'un poste.                                     |
-| `build/MonitorShop.tsx`           | Rayon « Écrans ».                                                     |
-| `build/FloorShop.tsx`             | Rayon « Sols ».                                                       |
-| `build/WallFinishes.tsx`          | Rayon « Murs » (peintures et papiers peints).                         |
-| `build/thumbnails.ts`             | Vignettes 3D des objets du catalogue.                                 |
-| `meetings/MeetingRoom.tsx`        | Panneau « Réunion » : choix de la formule.                            |
-| `servers/ServerRoom.tsx`          | Panneau « Serveurs » : état des salles, offres fibre.                 |
-| `pets/Pets.tsx`                   | Panneau « Chats » : adoption et liste des chats.                      |
-| `funding/Funding.tsx`             | Panneau « Lever des fonds » : pitch et autres financements.           |
-| `group/Group.tsx`                 | Panneau « Investir » : filiales.                                      |
-| `slack/SlackDock.tsx`             | Slack ancré dans un coin (ordinateur) ou en bottom sheet (mobile).    |
-| `slack/SlackPanel.tsx`            | Les trois canaux et leurs messages.                                   |
-| `slack/useSlackAiAvailable.ts`    | Le Slack IA est-il proposé (connecté et clé d'API côté serveur) ?     |
-| `meta/MetaPage.tsx`               | Page plein écran du menu avec bouton retour.                          |
-| `meta/Leaderboard.tsx`            | Classements global, Daily et par mode, accès aux replays.             |
-| `meta/Profile.tsx`                | Profil joueur : statistiques et meilleures parties.                   |
-| `meta/Achievements.tsx`           | Liste des succès.                                                     |
-| `settings/SettingsPanel.tsx`      | Options : qualité, zoom, audio, Slack IA, accessibilité, langue.      |
-| `settings/Credits.tsx`            | Page Crédits : Kenney (CC0), musiques, assets remplacés.              |
-| `tutorial/Guide.tsx`              | Affichage du tutoriel interactif.                                     |
-| `tutorial/lessons.ts`             | Leçons du tutoriel et moment où chacune se déclenche.                 |
-| `admin/AdminPage.tsx`             | Back-office (rôle ADMIN) : onglets cartes, packs, décorations, stats. |
-| `admin/CardEditor.tsx`            | Création et modification d'une carte, avec aperçu.                    |
-| `admin/cardFilters.ts`            | Filtres combinables et tri des cartes (fonctions pures).              |
-| `admin/DecorTab.tsx`              | Onglet « Décorations ».                                               |
+| Dossier / fichier                 | Rôle                                                                    |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| `store/game.ts`                   | Store de la partie : dernière `GameView`, `dispatch` des commandes.     |
+| `store/session.ts`                | Compte connecté, serveur joignable ou non.                              |
+| `store/settings.ts`               | Préférences du joueur (qualité, zoom, accessibilité, volumes).          |
+| `store/guide.ts`                  | Progression du tutoriel du mode Facile.                                 |
+| `store/lifecycle.ts`              | Effets d'une partie : sauvegarde auto, score, succès, fin.              |
+| `store/story.ts`                  | Progression du mode Histoire (appareil puis compte).                    |
+| `menu/HomeMenu.tsx`               | Écran d'accueil : Jouer, Continuer, modes, pages.                       |
+| `menu/ModePicker.tsx`             | Choix du mode de jeu en cartes.                                         |
+| `menu/SaveSlots.tsx`              | Les 5 emplacements de sauvegarde.                                       |
+| `menu/AccountBar.tsx`             | Coin du compte : connexion, pseudo, déconnexion.                        |
+| `menu/useLatestSave.ts`           | Sauvegarde proposée par le bouton « Continuer ».                        |
+| `components/AuthPanel.tsx`        | Formulaires de connexion et d'inscription.                              |
+| `components/LanguageSwitcher.tsx` | Choix de la langue (FR, EN).                                            |
+| `game/GameScreen.tsx`             | Écran de partie : scène, HUD, panneaux, dock.                           |
+| `game/Scene.tsx`                  | Hôte du canvas Three.js.                                                |
+| `game/Hud.tsx`                    | HUD : jauges, trésorerie, horloge en haut ; actions en bas.             |
+| `game/Sheet.tsx`                  | Panneau latéral sur ordinateur, bottom sheet sur mobile.                |
+| `game/StageScreens.tsx`           | Carte d'événement, levée de fonds, démo, fin de partie.                 |
+| `game/Tooltip.tsx`                | Infobulle accessible (survol, clavier, toucher).                        |
+| `game/format.ts`                  | Formatage des nombres, montants et dates selon la langue.               |
+| `game/shareImage.ts`              | Image partageable de fin de partie.                                     |
+| `game/useGameFeeds.ts`            | Branche Slack et audio sur la partie.                                   |
+| `game/useLiveTime.ts`             | Heure qui défile en continu à l'écran.                                  |
+| `dashboard/Dashboard.tsx`         | Historique de chaque jauge en graphiques.                               |
+| `kanban/Kanban.tsx`               | Tableau Kanban de la planification.                                     |
+| `kanban/Objective.tsx`            | Objectif de sprint affiché en haut du Kanban.                           |
+| `kanban/useDragAndDrop.ts`        | Glisser-déposer souris et tactile du Kanban.                            |
+| `team/Team.tsx`                   | Liste de l'équipe et fiche détaillée d'un dev.                          |
+| `team/TeamFilterBar.tsx`          | Tri et filtres de l'équipe.                                             |
+| `team/filters.ts`                 | Logique des filtres et du tri (fonctions pures).                        |
+| `team/Hiring.tsx`                 | Recrutement : candidats, offre, risque de refus.                        |
+| `team/Leadership.tsx`             | Bloc « Encadrement » et spécialités de l'équipe web.                    |
+| `team/Performance.tsx`            | Note S à D et productivité par sprint.                                  |
+| `team/StatBars.tsx`               | Barres de stats d'un dev ou d'un candidat.                              |
+| `build/BuildMode.tsx`             | Interface du mode construction.                                         |
+| `build/Catalog.tsx`               | Catalogue en bas de l'écran, par rayons, avec l'inventaire.             |
+| `build/SelectionBar.tsx`          | Actions sur l'objet sélectionné (tourner, peindre, ranger…).            |
+| `build/ColorPicker.tsx`           | Nuancier de peinture.                                                   |
+| `build/ComputerPicker.tsx`        | Choix de l'ordinateur d'un poste.                                       |
+| `build/MonitorShop.tsx`           | Rayon « Écrans ».                                                       |
+| `build/FloorShop.tsx`             | Rayon « Sols ».                                                         |
+| `build/WallFinishes.tsx`          | Rayon « Murs » (peintures et papiers peints).                           |
+| `build/thumbnails.ts`             | Vignettes 3D des objets du catalogue.                                   |
+| `build/storyLock.ts`              | Pourquoi une récompense du mode Histoire n'est pas en vente.            |
+| `story/StoryPage.tsx`             | Page des chapitres et des missions du mode Histoire.                    |
+| `story/MissionPanel.tsx`          | Panneau « Mission » en jeu : briefing, objectifs en direct, récompense. |
+| `story/MissionGoals.tsx`          | Liste des objectifs et contraintes avec leur avancement.                |
+| `story/goals.ts`                  | Phrase de chaque objectif (« Livrer 3 features »).                      |
+| `meetings/MeetingRoom.tsx`        | Panneau « Réunion » : choix de la formule.                              |
+| `servers/ServerRoom.tsx`          | Panneau « Serveurs » : état des salles, offres fibre.                   |
+| `pets/Pets.tsx`                   | Panneau « Chats » : adoption et liste des chats.                        |
+| `funding/Funding.tsx`             | Panneau « Lever des fonds » : pitch et autres financements.             |
+| `group/Group.tsx`                 | Panneau « Investir » : filiales.                                        |
+| `slack/SlackDock.tsx`             | Slack ancré dans un coin (ordinateur) ou en bottom sheet (mobile).      |
+| `slack/SlackPanel.tsx`            | Les trois canaux et leurs messages.                                     |
+| `slack/useSlackAiAvailable.ts`    | Le Slack IA est-il proposé (connecté et clé d'API côté serveur) ?       |
+| `meta/MetaPage.tsx`               | Page plein écran du menu avec bouton retour.                            |
+| `meta/Leaderboard.tsx`            | Classements global, Daily et par mode, accès aux replays.               |
+| `meta/Profile.tsx`                | Profil joueur : statistiques et meilleures parties.                     |
+| `meta/Achievements.tsx`           | Liste des succès.                                                       |
+| `settings/SettingsPanel.tsx`      | Options : qualité, zoom, audio, Slack IA, accessibilité, langue.        |
+| `settings/Credits.tsx`            | Page Crédits : Kenney (CC0), musiques, assets remplacés.                |
+| `tutorial/Guide.tsx`              | Affichage du tutoriel interactif.                                       |
+| `tutorial/lessons.ts`             | Leçons du tutoriel et moment où chacune se déclenche.                   |
+| `admin/AdminPage.tsx`             | Back-office (rôle ADMIN) : onglets cartes, packs, décorations, stats.   |
+| `admin/CardEditor.tsx`            | Création et modification d'une carte, avec aperçu.                      |
+| `admin/cardFilters.ts`            | Filtres combinables et tri des cartes (fonctions pures).                |
+| `admin/DecorTab.tsx`              | Onglet « Décorations ».                                                 |
 
 ### `src/audio/`, `src/slack/`, `src/save/`, `src/api/`, `src/i18n/`
 
@@ -488,6 +508,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `save/achievements.ts` | Succès en attente d'envoi au serveur.                                    |
 | `save/packs.ts`        | Packs de personnages actifs mis en cache.                                |
 | `save/decor.ts`        | Réglages des décorations de saison mis en cache.                         |
+| `save/story.ts`        | Missions réussies gardées sur l'appareil.                                |
 | `api/client.ts`        | Client HTTP typé, erreurs avec code traduisible.                         |
 | `api/auth.ts`          | Appels d'authentification (cookies httpOnly).                            |
 | `api/meta.ts`          | Appels du méta-jeu : sauvegardes, scores, succès, Daily, admin.          |
@@ -497,11 +518,11 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 
 ### `tests/` : tests du client
 
-| Dossier       | Contenu                                                                                                                                                                                                                                                                                   |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `simulation/` | Vitest de la simulation, un fichier par module (`pets.test.ts` teste `simulation/pets.ts`…). `fixtures.ts` : états et générateurs truqués. `core.test.ts` : ECS et RNG ; `engine.test.ts` : moteur ; `simulation.test.ts` : parties complètes.                                            |
-| `unit/`       | Vitest hors simulation, rangés comme `src/` : `ai/`, `audio/`, `render/`, `view/`, `ui/`, `meta/` (menus, sauvegardes, Slack, musique, admin). `setup.ts` : préparation de jsdom ; `fixtures/game.ts` : parties de test ; `meta/helpers.ts` : faux serveur.                               |
-| `e2e/`        | Playwright sur la vraie pile : `auth.spec.ts` (inscription, connexion), `game.spec.ts` (partie, Kanban, mode construction, caméra), `meta.spec.ts` (sauvegarde, classement, replay, succès), `easy.spec.ts` (tutoriel), `responsive.spec.ts` (375 à 1440 px), `pwa.spec.ts` (hors ligne). |
+| Dossier       | Contenu                                                                                                                                                                                                                                                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `simulation/` | Vitest de la simulation, un fichier par module (`pets.test.ts` teste `simulation/pets.ts`…). `fixtures.ts` : états et générateurs truqués. `core.test.ts` : ECS et RNG ; `engine.test.ts` : moteur ; `simulation.test.ts` : parties complètes.                                                                             |
+| `unit/`       | Vitest hors simulation, rangés comme `src/` : `ai/`, `audio/`, `render/`, `view/`, `ui/`, `meta/` (menus, sauvegardes, Slack, musique, admin). `setup.ts` : préparation de jsdom ; `fixtures/game.ts` : parties de test ; `meta/helpers.ts` : faux serveur.                                                                |
+| `e2e/`        | Playwright sur la vraie pile : `auth.spec.ts` (inscription, connexion), `game.spec.ts` (partie, Kanban, mode construction, caméra), `meta.spec.ts` (sauvegarde, classement, replay, succès), `easy.spec.ts` (tutoriel), `responsive.spec.ts` (375 à 1440 px), `pwa.spec.ts` (hors ligne), `story.spec.ts` (mode Histoire). |
 
 ---
 
@@ -518,12 +539,12 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 
 ### `prisma/`
 
-| Fichier                                 | Rôle                                                                                                                                    |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `schema.prisma`                         | Modèle de données : User, Save, EventCard, Score, Achievement…                                                                          |
-| `seed.ts`                               | Données initiales : cartes, succès, compte admin de développement.                                                                      |
-| `migrations/<date>_<nom>/migration.sql` | Une migration SQL par évolution du schéma (init, meta, easy_mode, character_packs, decor_themes). Générées par Prisma, ne pas modifier. |
-| `migrations/migration_lock.toml`        | Fournisseur de base verrouillé (PostgreSQL).                                                                                            |
+| Fichier                                 | Rôle                                                                                                                                                |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema.prisma`                         | Modèle de données : User, Save, EventCard, Score, Achievement…                                                                                      |
+| `seed.ts`                               | Données initiales : cartes, succès, compte admin de développement.                                                                                  |
+| `migrations/<date>_<nom>/migration.sql` | Une migration SQL par évolution du schéma (init, meta, easy_mode, character_packs, decor_themes, story_mode). Générées par Prisma, ne pas modifier. |
+| `migrations/migration_lock.toml`        | Fournisseur de base verrouillé (PostgreSQL).                                                                                                        |
 
 ### `src/`
 
@@ -552,7 +573,9 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `routes/decor.ts`                 | `GET /decor-themes` : réglages des décorations.                             |
 | `routes/slack-ai.ts`              | Proxy vers l'API Claude pour le Slack IA, avec quota.                       |
 | `routes/admin.ts`                 | Back-office : CRUD des cartes, statistiques, packs, décorations.            |
+| `routes/story.ts`                 | `/story` : progression et mission réussie (rejouée côté serveur).           |
 | `services/user.service.ts`        | Utilisateurs : création, pseudo libre, profil public.                       |
+| `services/story.service.ts`       | Missions réussies d'un joueur, vérification et récompenses.                 |
 | `services/password.service.ts`    | Hachage des mots de passe (argon2id).                                       |
 | `services/session.service.ts`     | JWT d'accès et refresh tokens en cookies httpOnly.                          |
 | `services/github.service.ts`      | Échanges avec GitHub pendant l'OAuth.                                       |
@@ -578,6 +601,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `github.test.ts`   | Connexion GitHub OAuth (appels simulés).                        |
 | `meta.test.ts`     | Sauvegardes, scores, anti-triche, Daily, succès, admin.         |
 | `slack-ai.test.ts` | Slack IA : quota, cache, repli en cas d'erreur.                 |
+| `story.test.ts`    | Mode Histoire : mission rejouée, progression, récompenses.      |
 
 ---
 
