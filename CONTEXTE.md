@@ -53,8 +53,10 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 - **État** : les 12 étapes du plan sont livrées, plus une centaine d'ajouts validés (PR #1 à
   #119, toutes fusionnées, **aucune PR ouverte** au 13 octobre). La liste complète est dans
   `CLAUDE.md`, section « ÉTAT D'AVANCEMENT ».
-- **Jeu en ligne** (invité seulement, redéployé à chaque fusion dans `main`) :
-  https://7h0mas92.github.io/Open_Space_Simulator/
+- **Jeu en ligne avec comptes** (Vercel, redéployé à chaque fusion dans `main`) :
+  https://open-space-simulator.vercel.app, serveur Render `https://oss-server-e90i.onrender.com`
+  (endormi après 15 min sans visite, ~50 s au réveil), base Supabase `open-space-simulator`.
+  Version invité seule : https://7h0mas92.github.io/Open_Space_Simulator/
 - **Langue** : tout est en français (code commenté, commits, PR, échanges) ; le jeu est en FR et
   EN.
 
@@ -99,13 +101,11 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
   ~20 % avant). Proposition : réduire un peu le café livré par la cuisine. Thomas n'a pas tranché
   (question du 8 octobre) ; ne rien changer sans son accord.
-- **Comptes en ligne** (actions de Thomas, étapes dans le README, section Déploiement) : la base
-  Supabase (projet `open-space-simulator`, `eu-central-1`) et le serveur Render
-  (`https://oss-server-e90i.onrender.com`) tournent depuis le 2 novembre ; le seed a rempli la
-  base. `packages/client/vercel.json` pointe sur Render. Reste : projet Vercel (Root Directory
-  `packages/client`), puis `CLIENT_URL` sur Render = l'adresse Vercel, et l'OAuth App GitHub. En
-  attendant, la version GitHub Pages n'a ni comptes, ni classements, ni Daily en ligne, ni Slack
-  IA, ni packs, ni back-office.
+- **Connexion GitHub** (action de Thomas, étapes dans le README, section Déploiement) : les
+  comptes email + mot de passe marchent en ligne depuis le 2 novembre. Reste l'OAuth App GitHub
+  (callback `https://open-space-simulator.vercel.app/api/auth/github/callback`), puis
+  `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` sur Render ; facultatif : `ANTHROPIC_API_KEY` pour
+  le Slack IA.
 - **Effets sonores et ambiance** : le lecteur Howler est prêt mais `SOUND_FILES` est vide dans
   `packages/client/src/audio/manifest.ts`. Les musiques (7 MP3 dans
   `packages/client/public/assets/music/`) et les bruits de clavier et de souris sont faits.
@@ -260,6 +260,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 02/11    | Thomas + Claude | #143        | Jeu en ligne avec comptes : client Vercel `open-space-simulator.vercel.app`, `CLIENT_URL` réglé sur Render, inscription testée par Thomas (compte créé dans Supabase). Reste l'OAuth GitHub.                                                     |
 | 02/11    | Thomas + Claude | #142        | Serveur Render en ligne (`oss-server-e90i.onrender.com`), branché sur Supabase et rempli par le seed (130 cartes, 67 succès, admin). `vercel.json` pointe dessus. Reste : projet Vercel, `CLIENT_URL` sur Render, OAuth GitHub.                  |
 | 02/11    | Thomas + Claude | #138        | Base de production sur Supabase : projet créé, migrations appliquées, RLS sur toutes les tables (nouvelle migration + test), correctif SSL de `pg`, `render.yaml` sans base Render. Reste le mot de passe et Render (Thomas).                    |
 | 02/11    | Thomas + Claude | #137        | Bouton « Nouvelle partie » sous « Continuer ». Sauvegarde auto rétablie en `pnpm dev` (StrictMode). À valider.                                                                                                                                   |

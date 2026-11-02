@@ -11,7 +11,9 @@ passations) est dans [`CONTEXTE.md`](./CONTEXTE.md), mis à jour à la fin de ch
 événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),
 Slack simulé (templates ou IA), back-office, PWA hors ligne et configuration de déploiement.
 
-**Jouer en ligne (mode invité) :** <https://7h0mas92.github.io/Open_Space_Simulator/>
+**Jouer en ligne (comptes, classements, Daily) :** <https://open-space-simulator.vercel.app>
+(le serveur gratuit met environ 50 s à se réveiller après 15 min sans visite) · **Mode invité
+seul :** <https://7h0mas92.github.io/Open_Space_Simulator/>
 
 | Menu                               | Partie (ordinateur)                                         | Partie (mobile)                                        |
 | ---------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
@@ -705,7 +707,7 @@ d'auth Supabase, pas de SDK `supabase-js`).
 1. **Render** → _New_ → _Blueprint_ → ce dépôt. Render crée le service `oss-server` (build,
    migrations, seed puis démarrage). Il demande :
    - `DATABASE_URL` : l'URL Supabase du _Session pooler_ ci-dessus ;
-   - `CLIENT_URL` : l'URL Vercel du client (par exemple `https://open-space-simulator.vercel.app`) ;
+   - `CLIENT_URL` : l'URL Vercel du client, `https://open-space-simulator.vercel.app` ;
    - `SEED_ADMIN_EMAIL` et `SEED_ADMIN_PASSWORD` : le compte administrateur ;
    - facultatif : `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` (OAuth App GitHub, callback
      `${CLIENT_URL}/api/auth/github/callback`) et `ANTHROPIC_API_KEY` (Slack IA).
