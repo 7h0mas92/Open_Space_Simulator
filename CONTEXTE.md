@@ -1,8 +1,10 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), après la fusion des
-> PR de Melvin dans `develop`. Dernier commit de `develop` : `a6121c2` (PR #135, mode illimité) ;
-> dernier commit de `main` : `9f71139` (PR #122, mode Histoire).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin) : partage du travail
+> en cours entre Thomas et Melvin, voir [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md).
+> Dernier commit de `develop` : `a77f906` (PR #144) ; dernier commit de `main` : `d28c381`
+> (PR #143). **`main` a 5 PR absentes de `develop`** (#121, #137, #138, #142, #143) : à
+> réintégrer en premier (tâche T1 de la passation).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -63,10 +65,18 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Sujet                                               | Qui             | État                                              |
 | --------------------------------------------------- | --------------- | ------------------------------------------------- |
 | Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                  |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fil séparé, en cours                              |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Dans `main` (#121), pas encore dans `develop`     |
 | Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135)   |
 | Offres internet et température des salles (#129)    | Melvin + Claude | À rebrancher sur le modèle des abonnements (#126) |
-| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Brouillon, à mettre à jour avec `develop`         |
+| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation         |
+| Remettre `main` dans `develop` (T1)                 | Thomas          | À faire en premier (13 fichiers en conflit)       |
+| Histoire longue, rivaux, arbres devs et R&D (T2-T4) | Thomas          | Proposition prête, rien de codé                   |
+| Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                        |
+| Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                               |
+
+**Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
+progression et la vie de l'équipe. Détail, dépendances, fichiers à éviter et prompts prêts à coller
+dans [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md).
 
 **Mode Histoire** (choix de Thomas, idée n°1) : 4 chapitres (Garage, Seed, Série A, Licorne),
 10 missions courtes avec un point de départ, des objectifs, des contraintes et une durée en
@@ -246,7 +256,8 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                             |
 | -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 02/11    | Melvin + Claude | (docs develop)    | Daily et Kanbanana (#133) décrits dans `CLAUDE.md` et le README. Nouveau champ `morningSync` et stat `duplicateWork` (défauts pour les anciennes sauvegardes). Idées de suite proposées à Melvin pour le Daily : blocage signalé, pair programming, Daily qui dérape, retard, rétro de fin de sprint, succès.                                                                          |
+| 02/11    | Melvin + Claude | #146              | Daily et Kanbanana (#133) décrits dans `CLAUDE.md` et le README. Nouveau champ `morningSync` et stat `duplicateWork` (défauts pour les anciennes sauvegardes). Idées de suite proposées à Melvin pour le Daily : blocage signalé, pair programming, Daily qui dérape, retard, rétro de fin de sprint, succès.                                                                          |
+| 02/11    | Melvin + Claude | (cette PR)        | Partage du travail : `docs/PASSATION-THOMAS.md` (tâches T1 à T6 pour Thomas avec un prompt chacune, M1 à M4 pour Melvin) et `docs/proposition-mode-histoire.md`. `main` a 5 PR absentes de `develop` : à réintégrer d'abord.                                                                                                                                                           |
 | 02/11    | Thomas + Claude | #123 à #135       | CI de nouveau active. `develop` avancé jusqu'à `main` (mode Histoire), puis 11 PR de Melvin fusionnées dans `develop` après résolution des conflits : #123 à #128, #130 à #133, #135. Ménage à côté du modèle des abonnements, frais de l'illimité et du Hardcore cumulés, doublons du journal retirés. Restent #129 (à refaire sur les abonnements) et #134 (brouillon).              |
 | 02/11    | Thomas + Claude | #122              | Mode Histoire validé par Thomas (récompenses nouvelles) et fusionné sans CI (GitHub Actions bloqué), vérifié en local.                                                                                                                                                                                                                                                                 |
 | 18/10    | Melvin + Claude | (PR develop)      | Saleté du bureau (0 à 100 %, -20 % de travail à 50 %) et entreprise de nettoyage Nickel Chrome : appel, express, abonnement hebdo (`shared/sim/cleaning.ts`, `simulation/cleaning.ts`, `render/cleaning.ts`, bouton 🧹). Champ `cleaning` par défaut ; règle qui change toutes les parties (anciens replays de scores divergent). À brancher sur le futur modèle commun d'abonnements. |
