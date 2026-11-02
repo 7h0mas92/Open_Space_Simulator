@@ -419,6 +419,12 @@ flowchart LR
   souvent l'hiver). Un dev à bout ne démissionne plus aussitôt : il part 10 jours en arrêt pour
   burn-out et ne démissionne qu'en cas de rechute. Hasard sur une graine à part ; les anciennes
   sauvegardes et le défi « 3 sprints » restent sans congés (`client/src/simulation/teamLife.ts`).
+- **Rétrospective** : dès le 2e sprint, la planification s'ouvre sur une rétro. L'équipe propose
+  trois actions tirées des problèmes du sprint écoulé (plus de tests après des pannes, médiation
+  après des disputes, café en libre-service quand la machine a été vidée…) et vote selon les goûts
+  de chacun. Suivre le vote remonte le moral de tous, imposer autre chose vexe ceux qui ont voté
+  autrement. L'action choisie vaut pour le sprint qui commence (🔁 dans le HUD). On peut passer la
+  rétro sans pénalité (`client/src/simulation/retro.ts`).
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une

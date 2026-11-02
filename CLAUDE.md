@@ -479,6 +479,14 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   démission. Un absent n'a ni tâche ni bureau, filtre 🏖️ de l'équipe. Commandes `BOOK_LEAVE`,
   `CANCEL_LEAVE`, `REFUSE_BRIDGES`, état `teamLife` (null pour les anciennes sauvegardes et le défi
   3 sprints = comportement d'avant), hasard sur `seed#leave#jour`. 2 succès, bot « rested ».
+- Rétrospective de sprint (`shared/sim/retro.ts`, `client/src/simulation/retro.ts`, fenêtre
+  « Rétrospective » en planification dès le 2e sprint) : 3 actions proposées selon les problèmes du
+  sprint écoulé (dette, pannes, urgences ratées, café, fatigue, conflits, réunions…) parmi 10 (plus
+  de tests, revue de code, café en libre-service, médiation, astreinte, horaires souples, petits
+  tickets, mercredi sans réunion, kudos, continuer comme ça). Chaque dev vote selon son profil et
+  son caractère (`seed#retro#sprint`). Suivre le vote : +3 moral pour tous ; imposer autre chose :
+  -3 pour ceux qui ont voté autrement ; passer la rétro ne coûte rien. L'action dure un sprint
+  (🔁 dans le HUD). Commande `HOLD_RETRO`, état `retro` (vide par défaut), bot « retro ».
 - Levées de fonds (`shared/sim/pitch.ts`, `shared/sim/funding.ts`, panneau « Lever des fonds ») :
   6 tours de plus en plus durs (Seed à pré-IPO : 3 à 5 questions, 3 à 4 réponses, barre plus
   haute, bluffs démasqués plus souvent, gros fonds, départ de l'investisseur dès la Série B) ;
