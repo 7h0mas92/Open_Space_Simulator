@@ -31,6 +31,7 @@ import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
 import { isSummer, serverHeatSystem } from './serverRoom';
+import { cleaningSystem } from './cleaning';
 import { checkMission } from './story';
 import { migrateLegacyFibre, subscriptionSystem } from './subscriptions';
 
@@ -51,6 +52,7 @@ export const SYSTEMS: readonly System[] = [
   calendarSystem,
   (state, ctx) => subscriptionSystem(state, ctx),
   (state, ctx) => serverHeatSystem(state, ctx),
+  cleaningSystem,
 ];
 
 export interface DispatchResult {

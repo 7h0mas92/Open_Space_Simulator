@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Phase } from '../game.js';
+import { EntityIdSchema } from './components.js';
 import type { LocalizedText } from '../i18n.js';
 
 /**
@@ -94,6 +95,55 @@ export const MEETINGS = {
   /** Part du prix remboursée quand on démonte la salle (ou qu'on change de formule). */
   refundRatio: 0.5,
 } as const;
+
+/**
+ * Le Daily (réunion d'équipe du matin) sert à faire le point sur les tickets : chacun dit où il
+ * en est, ce qu'il fait aujourd'hui et ce qui le bloque. Deux conséquences :
+ * - réunion utile : chaque participant qui a un ticket sait exactement quoi faire, il avance
+ *   plus vite jusqu'au soir (`focusBonus`) ;
+ * - sans Daily ce matin-là (pas de salle aménagée), ou pour ceux qui n'y étaient pas
+ *   (télétravail), deux devs peuvent coder la même chose sans le savoir : à 10h, une partie d'un
+ *   ticket en cours est perdue (« travail en double »).
+ * Le tirage du travail en double se fait sur une graine à part (`seed#duplicate#tick`).
+ */
+export const DAILY_SYNC = {
+  /** Bonus de productivité des participants d'un Daily utile, jusqu'au soir. */
+  focusBonus: 0.05,
+  /** Heure du contrôle « travail en double » (après le Daily, une fois par jour de semaine). */
+  duplicateHour: 10,
+  /** À partir de combien de devs du code avec un ticket en cours on se marche dessus. */
+  duplicateMinCoders: 3,
+  /** Chance par jour, par dev du code au-delà de 2 (pondérée par la part de non-synchronisés). */
+  duplicateOddsPerCoder: 0.06,
+  duplicateMaxOdds: 0.4,
+  /** Part du travail du ticket perdue (entre les deux bornes). */
+  duplicateLossMin: 0.2,
+  duplicateLossMax: 0.35,
+  /** Phase à partir de laquelle l'équipe est assez grande pour se marcher dessus. */
+  duplicatePhase: 'SEED' as Phase,
+} as const;
+
+/** Le point d'un participant sur son ticket, noté au Daily. */
+export const MorningSyncEntrySchema = z.object({
+  devId: EntityIdSchema,
+  taskId: EntityIdSchema,
+  /** Avancement du ticket au moment du Daily (0 à 1). */
+  progress: z.number().min(0).max(1),
+  /** Avancement au Daily précédent, si le ticket y était déjà (pour « hier → aujourd'hui »). */
+  before: z.number().min(0).max(1).nullable(),
+});
+export type MorningSyncEntry = z.infer<typeof MorningSyncEntrySchema>;
+
+/** Dernier Daily tenu (null : jamais, ou sauvegarde d'avant son ajout). */
+export const MorningSyncSchema = z.object({
+  /** Jour de la partie (comme `SimClock.day`) et tick du Daily. */
+  day: z.number().int(),
+  tick: z.number().int(),
+  useful: z.boolean(),
+  attendees: z.array(EntityIdSchema),
+  entries: z.array(MorningSyncEntrySchema),
+});
+export type MorningSync = z.infer<typeof MorningSyncSchema>;
 
 const t = (fr: string, en: string): LocalizedText => ({ fr, en });
 

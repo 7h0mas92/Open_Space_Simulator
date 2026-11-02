@@ -87,6 +87,14 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
       <label className="switch">
         <input
           type="checkbox"
+          checked={settings.dailyPause}
+          onChange={(e) => settings.update({ dailyPause: e.target.checked })}
+        />
+        {t('settings.dailyPause')}
+      </label>
+      <label className="switch">
+        <input
+          type="checkbox"
           checked={settings.showFps}
           onChange={(e) => settings.update({ showFps: e.target.checked })}
         />

@@ -12,6 +12,7 @@ import {
   BALANCE,
   DEFAULT_COMPUTER,
   hasComputer,
+  DAILY_SYNC,
   MEETING_FORMATS,
   PETS,
   FUNDING_TIERS,
@@ -50,6 +51,11 @@ import {
   WALL_FINISHES,
   floorZones,
   wallZones,
+  CLEANING,
+  CLEANING_CREW,
+  CLEANING_PLANS,
+  cleaningCallPrice,
+  dirtProductivity,
   HOSTING_SAVING_MAX,
   saturationPenalty,
   firstPayment,
@@ -67,12 +73,12 @@ import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
-import { currentTier } from '../simulation/fundraising';
+import { currentTier, pitchBar } from '../simulation/fundraising';
 import { softSigmoid } from '../simulation/math';
 import { countDesks, monitorOf, RESALE_RATIO } from '../simulation/furniture';
 import { activeProjections } from '../simulation/projection';
 import { leadershipEffects, teamShape } from '../simulation/leadership';
-import { devIds, teamMax } from '../simulation/helpers';
+import { clamp, devIds, teamMax } from '../simulation/helpers';
 import {
   expectedProductivity,
   expectedQuality,
@@ -100,6 +106,7 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
+import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
 import {
   offerLoad,
   requirementMet,
@@ -129,8 +136,10 @@ import type {
   GroupView,
   GameView,
   MeetingRoomView,
+  DailyView,
   PetsView,
   ServersView,
+  CleaningView,
   SubscriptionOfferView,
   SubscriptionServiceView,
   SubscriptionsView,
@@ -599,7 +608,7 @@ function pitchView(state: GameState, pitch: PitchState): PitchView {
         },
       ];
     }),
-    interest: Math.round(softSigmoid(pitch.interest - tier.bar) * 100) / 100,
+    interest: Math.round(softSigmoid(pitch.interest - pitchBar(state, tier)) * 100) / 100,
     walkedOut: pitch.walkedOut,
     result: pitch.result,
   };
@@ -685,6 +694,22 @@ function groupView(state: GameState): GroupView {
 /** Nombre de réunions récentes affichées dans le panneau de la salle. */
 const RECENT_MEETINGS = 4;
 
+function dailyView(state: GameState): DailyView | null {
+  const sync = state.morningSync;
+  if (!sync) return null;
+  const today = sync.day === getClock(state).day;
+  return {
+    tick: sync.tick,
+    today,
+    // Le snapshot qui suit le tick du Daily : l'équipe est en salle, l'appli est projetée.
+    live: state.stage === 'EXECUTION' && sync.tick === state.tick - 1,
+    useful: sync.useful,
+    focus: sync.useful && today ? Math.round(DAILY_SYNC.focusBonus * 100) : 0,
+    attendees: [...sync.attendees],
+    entries: sync.entries.map((entry) => ({ ...entry })),
+  };
+}
+
 function meetingRoomView(state: GameState): MeetingRoomView {
   const recent = state.notifications
     .filter(
@@ -721,6 +746,8 @@ function meetingRoomView(state: GameState): MeetingRoomView {
     useful: state.stats.meetingsUseful,
     useless: state.stats.meetingsUseless,
     crisis: state.stats.crisisMeetings,
+    daily: dailyView(state),
+    duplicates: state.stats.duplicateWork,
     recent,
   };
 }
@@ -821,6 +848,75 @@ function subscriptionsView(state: GameState): SubscriptionsView {
     users: serviceUsers(state),
     count: services.filter((service) => service.current !== null).length,
     monthlyTotal: subscriptionsMonthly(state),
+  };
+}
+
+function cleaningView(state: GameState): CleaningView {
+  const cleaning = state.cleaning;
+  const visitCost = visitPrice(state);
+  const callPrice = cleaningCallPrice(visitCost, false);
+  const expressPrice = cleaningCallPrice(visitCost, true);
+  const busy = cleaning.booking !== null || cleaning.visit !== null;
+  const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
+  const plan = cleaning.plan;
+  const visit = cleaning.visit;
+  return {
+    dirt: cleaning.dirt,
+    alert: CLEANING.dirtyAlert,
+    productivity: dirtProductivity(cleaning.dirt),
+    daysSinceClean: cleaning.daysSinceClean,
+    visit: visit
+      ? {
+          express: visit.express,
+          progress: clamp((state.tick - visit.start) / Math.max(1, visit.end - visit.start), 0, 1),
+        }
+      : null,
+    booking: cleaning.booking
+      ? {
+          express: cleaning.booking.express,
+          inHours: Math.max(0, (cleaning.booking.start - state.tick) / TIME.ticksPerHour),
+        }
+      : null,
+    plan: plan
+      ? {
+          plan: plan.plan,
+          weeklyPrice: planWeeklyPrice(state, plan.plan),
+          nextBillDays: Math.max(0, (plan.paidUntil - state.tick) / TIME.ticksPerDay),
+          totalPaid: plan.totalPaid,
+        }
+      : null,
+    plans: CLEANING_PLANS.map((option) => {
+      const weeklyPrice = planWeeklyPrice(state, option.id);
+      return {
+        id: option.id,
+        name: option.name,
+        description: option.description,
+        days: [...option.days],
+        weeklyPrice,
+        discount: option.discount,
+        blocker:
+          plan?.plan === option.id
+            ? 'CURRENT'
+            : wrongStage
+              ? 'WRONG_STAGE'
+              : state.gauges.treasury < weeklyPrice
+                ? 'NOT_ENOUGH_MONEY'
+                : null,
+      };
+    }),
+    visitPrice: visitCost,
+    callPrice,
+    expressPrice,
+    callBlocker: busy
+      ? 'BUSY'
+      : wrongStage
+        ? 'WRONG_STAGE'
+        : state.gauges.treasury < callPrice
+          ? 'NOT_ENOUGH_MONEY'
+          : null,
+    crew: CLEANING_CREW.map((member) => ({ ...member })),
+    visits: cleaning.visits,
+    spent: cleaning.spent,
   };
 }
 
@@ -938,6 +1034,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    cleaning: cleaningView(state),
     subscriptions: subscriptionsView(state),
     floors: floorsView(state),
     canIpo:
@@ -1128,5 +1225,11 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SUBSCRIBE', offer: command.offer };
     case 'cancelSubscription':
       return { type: 'CANCEL_SUBSCRIPTION', service: command.service };
+    case 'callCleaning':
+      return { type: 'CALL_CLEANING', express: command.express };
+    case 'subscribeCleaning':
+      return { type: 'SUBSCRIBE_CLEANING', plan: command.plan };
+    case 'cancelCleaning':
+      return { type: 'CANCEL_CLEANING' };
   }
 }

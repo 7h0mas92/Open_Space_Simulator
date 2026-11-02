@@ -3077,6 +3077,103 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
       'You could fry eggs on rack 3. Just saying.',
     ),
   },
+  // ─── OFFICE_DIRTY / CLEANING_* ───────────────────────────────────────────
+  {
+    trigger: 'OFFICE_DIRTY',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🧹 {event} Rappel : la boîte de pizza sous le bureau 4 n’est pas un élément de décoration.',
+      '🧹 {event} Reminder: the pizza box under desk 4 is not a decoration.',
+    ),
+  },
+  {
+    trigger: 'OFFICE_DIRTY',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'J’ai trouvé un gobelet de café qui date du sprint précédent. Il a développé une conscience.',
+      'I found a coffee cup from last sprint. It has developed consciousness.',
+    ),
+  },
+  {
+    trigger: 'OFFICE_DIRTY',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Quelqu’un peut ramasser les emballages de barres de céréales ? Je glisse dessus à chaque pause.',
+      'Can someone pick up the granola bar wrappers? I slip on them every break.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_BOOKED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t('📞 {event}', '📞 {event}'),
+  },
+  {
+    trigger: 'CLEANING_STARTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Jean-Marc vient d’aspirer mon câble USB-C. Je ne lui en veux pas, il était par terre depuis mars.',
+      'Jean-Marc just vacuumed up my USB-C cable. No hard feelings, it’d been on the floor since March.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_STARTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Lucía a lavé le sol autour de mon bureau. Interdiction de marcher, je code en lévitation.',
+      'Lucía mopped around my desk. No walking allowed, I’m coding in levitation.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_DONE',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '✨ {event} Merci de garder le bureau dans cet état au moins jusqu’à 9h05.',
+      '✨ {event} Please keep the office like this at least until 9:05 am.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_DONE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'On voit enfin la couleur de la moquette. Elle était bleue, en fait.',
+      'You can finally see the carpet color. It was blue all along.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_SUBSCRIBED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🧽 {event} Fatou demande juste qu’on arrête de cacher les tasses dans les tiroirs.',
+      '🧽 {event} Fatou just asks that we stop hiding mugs in drawers.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_CANCELLED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Plus de ménage ? Je propose un roulement : le dernier à merger sur main sort les poubelles.',
+      'No more cleaning? I suggest a rota: whoever last merged to main takes out the trash.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_CUT',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🗑️ {event} Les sacs-poubelle sont dans le placard. Bon courage à tous.',
+      '🗑️ {event} Trash bags are in the cupboard. Good luck, everyone.',
+    ),
+  },
 ];
 
 /** Index des templates par déclencheur, construit une seule fois. */

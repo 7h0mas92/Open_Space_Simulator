@@ -527,6 +527,8 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   ...ANNEX_DECOR_PRIMITIVES,
   officeCharacters: null,
   officeCats: null,
+  cleaningCrew: null,
+  officeLitter: null,
   seasonalDecor: null,
   meetingRoomProps: null,
   deskMonitors: null,

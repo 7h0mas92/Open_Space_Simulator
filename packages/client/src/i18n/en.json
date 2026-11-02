@@ -279,6 +279,7 @@
   },
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
+    "sprintEndless": "Sprint {{sprint}}",
     "day": "{{day}} {{time}}",
     "birthday": "{{names}}'s birthday: cake at the office!",
     "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -321,7 +322,10 @@
     "pets": "Office cats",
     "servers": "Server room",
     "mission": "Mission",
-    "subscriptions": "Subscriptions"
+    "subscriptions": "Subscriptions",
+    "cleaning": "Cleaning",
+    "tickets": "Kanbanana, the ticket app",
+    "leaderboard": "Leaderboard"
   },
   "kanban": {
     "columns": {
@@ -770,7 +774,8 @@
       "ambienceVolume": "Ambience"
     },
     "slackAi": "AI-driven Slack",
-    "slackAiHint": "Devs react live thanks to AI (daily quota). Unchecked: classic messages."
+    "slackAiHint": "Devs react live thanks to AI (daily quota). Unchecked: classic messages.",
+    "dailyPause": "Stop time for a few seconds at the morning Daily"
   },
   "credits": {
     "title": "Credits",
@@ -839,6 +844,8 @@
       "catTreeMedium": "Double cat tree (2 tiles, grey carpet): cubby, basket and mouse",
       "catTreeLarge": "Giant cat tree (3 tiles, mauve carpet): cubby, rope bridge and mouse",
       "officeCats": "Office cats: six coats built from Three.js shapes, animated in code (walking, napping, eating)",
+      "cleaningCrew": "Cleaning crew: three uniformed cleaners built like the devs (Kenney clips), cart, vacuum and mop in Three.js shapes",
+      "officeLitter": "Floor litter: crumpled paper, wrappers, cans, cups, pizza boxes, banana peels and stains",
       "windowSmall": "Small window and its wall section",
       "windowMedium": "Two-tile window",
       "windowLarge": "Large three-tile window",
@@ -999,6 +1006,7 @@
     },
     "ownership": "Your stake",
     "sprints": "Sprints played",
+    "sprintsEndless": "Sprints survived",
     "again": "Play again",
     "menu": "Main menu",
     "share": "Share",
@@ -1014,7 +1022,7 @@
     "title": "Pick your mode",
     "EASY": {
       "name": "Easy",
-      "rule": "To learn: full tutorial, more money, softer crises.",
+      "rule": "To learn: full tutorial, a bit more money, softer crises. Bad management still sinks you.",
       "tag": "Beginner"
     },
     "NORMAL": {
@@ -1024,7 +1032,7 @@
     },
     "HARDCORE": {
       "name": "Hardcore",
-      "rule": "No pause. Ever.",
+      "rule": "No pause, less money, more crises. Every decision counts.",
       "tag": "Expert"
     },
     "INTERNS_ONLY": {
@@ -1036,6 +1044,11 @@
       "name": "3-sprint challenge",
       "rule": "This app must ship in 3 sprints.",
       "tag": "Short game"
+    },
+    "ENDLESS": {
+      "name": "Endless",
+      "rule": "No ending: last as long as you can, competition rises after 18 months.",
+      "tag": "How far?"
     },
     "DAILY": {
       "name": "Daily",
@@ -1079,7 +1092,19 @@
     "watch": "Watch {{pseudo}}'s game",
     "empty": "Nobody has posted a score here yet.",
     "error": "Could not reach the server.",
-    "replayError": "Could not load this replay."
+    "replayError": "Could not load this replay.",
+    "local": "On this device",
+    "localHint": "Your best companies, kept on this device, even without an account.",
+    "localEmpty": "Finish a game to add your first company here.",
+    "onlineHint": "The best companies of all signed-in players.",
+    "offline": "The online leaderboard needs the game server, which cannot be reached here. The leaderboard on this device still works.",
+    "company": "Company",
+    "mode": "Mode",
+    "date": "Date",
+    "endlessHint": "In Endless mode, the leaderboard ranks sprints survived first, then valuation.",
+    "you": "you",
+    "online": "Online",
+    "sources": "Leaderboard source"
   },
   "replay": {
     "banner": "{{pseudo}}'s replay: command {{played}}/{{total}}",
@@ -1336,7 +1361,7 @@
         "steps": {
           "easy": {
             "title": "Easy mode",
-            "body": "Easy mode is made for learning:\n\n• you start with €3M instead of €2M;\n• at most 2 random cards per sprint instead of 3 (the Friday 5pm outage can still add one);\n• the negative effects of crises are halved.\n\nEasy mode scores have their own leaderboard: they don't count in the global leaderboard."
+            "body": "Easy mode is made for learning, not for a guaranteed win:\n\n• you start with €2.2M instead of €2M;\n• the negative effects of crises are 15% smaller;\n• as many cards come up as in Normal (at most 3 per sprint, plus the Friday 5pm outage).\n\nSalaries, customers and investors are the same as in Normal: a badly run team still goes bankrupt.\n\nEasy mode scores have their own leaderboard: they don't count in the global leaderboard."
           },
           "normal": {
             "title": "Normal mode",
@@ -1344,11 +1369,11 @@
           },
           "hardcore": {
             "title": "Hardcore mode",
-            "body": "No pause. Ever. The pause button and the space bar no longer respond, and even this tutorial cannot stop time: read it while keeping an eye on the office.\n\nThe other rules are the Normal ones: €2M, 18 months, at most 3 random cards per sprint.\n\nTip: time stays stopped during planning and the demo. That is when you think."
+            "body": "No pause. Ever. The pause button and the space bar no longer respond, and even this tutorial cannot stop time: read it while keeping an eye on the office.\n\nAnd everything is harder than in Normal:\n\n• €1.5M to start instead of €2M;\n• salaries and costs 15% higher, customers paying 15% less;\n• more crises (at most 4 cards per sprint) with negative effects 30% stronger;\n• prod outages 50% more frequent;\n• more demanding investors at every round.\n\nWaiting without deciding leads to bankruptcy: every choice counts.\n\nTip: time stays stopped during planning and the demo. That is when you think."
           },
           "hardcoreEvents": {
             "title": "Crises do not wait",
-            "body": "In Hardcore, an event card does not stop time. If you do not choose within 2 in-game hours (a little under 2 seconds at x1), the last answer is picked for you: “you did not decide, so the problem decided for you”.\n\nThat last answer is often the worst one. Stay at x1 during office hours so you have time to read, and keep x2 or x4 for nights and weekends."
+            "body": "In Hardcore, an event card does not stop time. If you do not choose within 2 in-game hours (a little under 2 seconds at x1), the last answer is picked for you: “you did not decide, so the problem decided for you”.\n\nThat last answer is often the worst one, and negative effects are 30% stronger than in Normal (the numbers shown include it). Stay at x1 during office hours so you have time to read, and keep x2 or x4 for nights and weekends."
           },
           "interns": {
             "title": "Interns Only mode",
@@ -1365,6 +1390,14 @@
           "shipTips": {
             "title": "Ship, ship, ship",
             "body": "Only features count towards the 5: refactoring, bugfix and infra tasks do not.\n\n• Fill “To do” with small features from the first sprint.\n• Hire from the first sprint: every extra dev means more points shipped.\n• Do not worry too much about debt: you will not have time to pay for it.\n\nEvery demo report shows how many features the sprint shipped."
+          },
+          "endless": {
+            "title": "Endless mode",
+            "body": "Here, the game does not stop after 18 months (39 sprints). It lasts as long as your treasury holds.\n\nAfter sprint 39, competitors wake up:\n\n• fixed costs rise every sprint, faster and faster;\n• users leave a bit faster;\n• investors get tired: every round raises less.\n\nYou can still go public or accept an acquisition, but the game then ends."
+          },
+          "endlessTips": {
+            "title": "Go as far as you can",
+            "body": "The Endless leaderboard ranks sprints survived first, then valuation.\n\n• Keep a comfortable treasury: the pressure never stops rising.\n• Grow revenue faster than costs: users pay the salaries.\n• Watch stability: with competitors around, every outage drives more people away.\n\nAchievements await: 2, 3 and 5 years survived."
           },
           "daily": {
             "title": "The Daily",
@@ -1513,7 +1546,7 @@
           },
           "soft": {
             "title": "In Easy mode",
-            "body": "In Easy mode, the negative effects of cards are halved (the numbers shown already include it) and at most 2 random cards come up per sprint. Only the Friday 5pm outage can add one."
+            "body": "In Easy mode, the negative effects of cards are 15% smaller (the numbers shown already include it). As many cards come up as in Normal: at most 3 random ones per sprint, plus the Friday 5pm outage."
           }
         }
       },
@@ -1670,7 +1703,7 @@
     }
   },
   "hud": {
-    "company": "Your startup",
+    "company": "Company: {{name}}",
     "phase": "Stage: {{phase}}",
     "mode": "{{mode}} mode",
     "team": "Team: {{count}} of {{max}} seats",
@@ -1783,6 +1816,7 @@
   },
   "meetings": {
     "intro": "Fit out the office meeting room. Each format has a perk and a drawback, and the team meets there every weekday morning at {{hour}}, as soon as they arrive, for {{minutes}} minutes: a useful meeting pays off, a useless one costs morale.",
+    "dailyIntro": "The Daily is the ticket update: everyone says where they stand and what they're doing today, and the ticket app is shown on the room's projector. Useful meeting: attendees work {{focus}}% faster until tonight. Without a Daily that morning (empty room), or for those who missed it (remote), two devs end up coding the same thing and part of a ticket has to be redone.",
     "crisisIntro": "When prod goes down, the room becomes a crisis cell: the culprit if there is one, the {{count}} most solid devs (DevOps and Tech Lead first, culprit included) and the Product Owner or a manager meet there for half an hour. On the way out, the best one takes \"Fix prod\", already under way.",
     "crisis": "Crisis meetings",
     "crisisOne": "Crisis meeting",
@@ -2133,5 +2167,76 @@
     "maxUsers_other": "Up to {{count}} employees",
     "tooSmall": "too small for your team",
     "setupFee": "Setup fee: €{{price}}, paid when you subscribe"
+  },
+  "cleaning": {
+    "intro": "Every weekday, the team in the office makes a mess: wrappers, cups, cans, pizza boxes… The longer you wait, the faster it gets dirty, and a dirty office slows down everyone working there (not remote workers). Call the Nickel Chrome cleaning company or take a subscription.",
+    "dirtTitle": "Office dirt",
+    "dirt": "{{percent}}% dirty",
+    "levels": {
+      "clean": "Clean",
+      "warn": "Watch out",
+      "dirty": "Dirty"
+    },
+    "loss": "The team on site works {{percent}}% slower.",
+    "noLoss": "Spotless office: no work lost.",
+    "days_one": "{{count}} day without cleaning",
+    "days_other": "{{count}} days without cleaning",
+    "crewTitle": "Nickel Chrome, cleaning company",
+    "tools": {
+      "cart": "team lead, cart",
+      "vacuum": "vacuum cleaner",
+      "mop": "mop"
+    },
+    "status": {
+      "visit": "Cleaning in progress ({{percent}}%)",
+      "express": "The express crew is on its way",
+      "booked_one": "The crew comes in {{count}} hour",
+      "booked_other": "The crew comes in {{count}} hours"
+    },
+    "call": "Book for tonight (€{{price}})",
+    "express": "Express, right now (€{{price}})",
+    "callHint": "A call is paid when booked: the crew comes at 7 pm, or right away for express.",
+    "history_one": "{{count}} visit, €{{price}} spent",
+    "history_other": "{{count}} visits, €{{price}} spent",
+    "planTitle": "Cleaning subscription",
+    "none": "No subscription: the crew only comes when you call.",
+    "nextBill_one": "Next €{{price}} payment in {{count}} day",
+    "nextBill_other": "Next €{{price}} payment in {{count}} days",
+    "totalPaid": "€{{price}} paid in total",
+    "discount": "(-{{percent}}% per visit)",
+    "cancel": "Cancel",
+    "cancelWarning": "The crew won’t come any more; the current week isn’t refunded.",
+    "cancelConfirm": "Cancel cleaning",
+    "button": "Cleaning: {{percent}}% dirty"
+  },
+  "daily": {
+    "liveUseful": "Daily in the meeting room: everyone gives an update on their ticket. Useful, +{{focus}}% until tonight.",
+    "liveUseless": "Daily in the meeting room: this could have been an email.",
+    "open": "Open {{app}}",
+    "resume": "Resume"
+  },
+  "tickets": {
+    "intro": "The office ticket app, projected in the meeting room during the Daily. Read-only: tickets are moved in the Kanban.",
+    "sprint": "Sprint {{sprint}}",
+    "pointsDone": "{{done}} / {{total}} points done",
+    "dailyTitle": "This morning’s Daily",
+    "noDaily": "No Daily yet: fit out the meeting room and the team will meet there every weekday at 9am.",
+    "useful": "Useful Daily: attendees know where they stand, +{{focus}}% productivity until tonight.",
+    "usefulPast": "Useful Daily.",
+    "useless": "Useless Daily: some morale lost, but at least nobody codes the same thing.",
+    "notToday": "(last Daily, not today)",
+    "started": "started, {{now}}%",
+    "moved": "{{before}}% → {{now}}%",
+    "nothing": "Nothing in progress.",
+    "duplicates": "Without a Daily, two devs end up coding the same thing. Tickets partly re-coded for nothing so far: {{count}}.",
+    "empty": "No tickets.",
+    "backlog": "{{count}} ideas left in the backlog.",
+    "unassigned": "Nobody",
+    "progress": "Progress",
+    "points": "Points",
+    "kinds": {
+      "URGENT": "Urgent",
+      "WEEKLY": "Weekly"
+    }
   }
 }
