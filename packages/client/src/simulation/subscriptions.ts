@@ -6,9 +6,11 @@
 import {
   SUBSCRIPTION_SERVICE_INFO,
   TIME,
+  firstPayment,
   getSubscriptionOffer,
   hasFibreBox,
   monthlyPrice,
+  saturationPenalty,
   type CommandResult,
   type GameState,
   type LocalizedText,
@@ -19,7 +21,7 @@ import {
   type SubscriptionService,
 } from '@oss/shared';
 import { phaseIndex } from './furniture';
-import { addMoney, moneyText, notify, text, type SimContext } from './helpers';
+import { addMoney, moneyText, notify, teamSize, text, type SimContext } from './helpers';
 import { serverRoomItems } from './serverRoom';
 
 /**
@@ -61,11 +63,29 @@ export function activeOffer(
   return current && requirementMet(state, current.offer) ? current.offer : null;
 }
 
-/** Effets des abonnements actifs (ceux dont l'installation est présente). */
+/**
+ * Salariés qui utilisent un service : toute l'équipe (pour internet, ceux en télétravail passent
+ * par le VPN du bureau, le compte ne bouge donc pas chaque matin).
+ */
+export function serviceUsers(state: GameState): number {
+  return teamSize(state);
+}
+
+/** Charge d'une offre : salariés sur salariés supportés (au-delà de 1 : saturée), 0 sans limite. */
+export function offerLoad(state: GameState, offer: SubscriptionOffer): number {
+  return offer.maxUsers ? serviceUsers(state) / offer.maxUsers : 0;
+}
+
+/**
+ * Effets des abonnements actifs (ceux dont l'installation est présente). Une offre saturée ne
+ * donne plus ses effets et ralentit l'équipe.
+ */
 export function subscriptionEffects(state: GameState): SubscriptionEffects[] {
   return state.subscriptions.flatMap((subscription) => {
     const offer = getSubscriptionOffer(subscription.offer);
-    return offer && requirementMet(state, offer) ? [offer.effects] : [];
+    if (!offer || !requirementMet(state, offer)) return [];
+    const penalty = saturationPenalty(offerLoad(state, offer));
+    return [penalty > 0 ? { teamProductivity: -penalty } : offer.effects];
   });
 }
 
@@ -86,7 +106,8 @@ export function periodText(days: number): LocalizedText {
 
 /**
  * Souscrit à une offre, ou passe à une autre offre du même service : la première période de la
- * nouvelle offre est payée tout de suite (la période entamée de l'ancienne n'est pas remboursée).
+ * nouvelle offre et ses frais de mise en service sont payés tout de suite (la période entamée de
+ * l'ancienne n'est pas remboursée).
  */
 export function subscribe(state: GameState, ctx: SimContext, offerId: string): CommandResult {
   if (state.stage === 'PITCH') return { ok: false, error: 'WRONG_STAGE' };
@@ -96,14 +117,16 @@ export function subscribe(state: GameState, ctx: SimContext, offerId: string): C
   const previous = subscriptionOf(state, offer.service);
   if (previous?.offer.id === offer.id) return { ok: false, error: 'NOT_ELIGIBLE' };
   if (!requirementMet(state, offer)) return { ok: false, error: 'NOT_ELIGIBLE' };
-  if (state.gauges.treasury < offer.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
-  addMoney(state, -offer.price);
+  const cost = firstPayment(offer);
+  if (state.gauges.treasury < cost) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
+  addMoney(state, -cost);
   const next: Subscription = {
     offer: offer.id,
     paidUntil: state.tick + offer.periodDays * TIME.ticksPerDay,
     since: previous?.subscription.since ?? state.sprint,
-    totalPaid: (previous?.subscription.totalPaid ?? 0) + offer.price,
+    totalPaid: (previous?.subscription.totalPaid ?? 0) + cost,
   };
+  if (offer.maxUsers) next.saturated = offerLoad(state, offer) > 1;
   // Changer d'offre garde la place du service dans la liste (ordre de facturation).
   const index = previous ? state.subscriptions.indexOf(previous.subscription) : -1;
   if (index >= 0) state.subscriptions[index] = next;
@@ -152,13 +175,45 @@ export function cancelSubscription(
   return { ok: true };
 }
 
+/** Prévient quand une offre se met à saturer (trop de salariés), ou ne sature plus. */
+function watchSaturation(
+  state: GameState,
+  ctx: SimContext,
+  subscription: Subscription,
+  offer: SubscriptionOffer,
+): void {
+  if (!offer.maxUsers) return;
+  const saturated = offerLoad(state, offer) > 1;
+  if (saturated === (subscription.saturated ?? false)) return;
+  subscription.saturated = saturated;
+  const kinds = SUBSCRIPTION_SERVICE_INFO[offer.service].notifications;
+  const kind = saturated ? kinds.saturated : kinds.recovered;
+  if (!kind) return;
+  notify(
+    state,
+    ctx,
+    kind,
+    saturated
+      ? text(
+          [
+            'Ça rame : {offer} supporte {max} personnes. Passe à une offre plus grosse.',
+            'Everything is crawling: {offer} handles {max} people. Upgrade your plan.',
+          ],
+          { offer: offer.name, max: offer.maxUsers },
+        )
+      : text(['{offer} respire à nouveau.', '{offer} can breathe again.'], { offer: offer.name }),
+  );
+}
+
 /**
  * Facture chaque abonnement à son échéance, dans l'ordre de souscription. Si la trésorerie ne
  * couvre pas la période, le prestataire coupe le service plutôt que de pousser la startup à la
- * faillite.
+ * faillite. Prévient aussi quand une offre sature.
  */
 export function subscriptionSystem(state: GameState, ctx: SimContext): void {
   for (const subscription of [...state.subscriptions]) {
+    const current = getSubscriptionOffer(subscription.offer);
+    if (current) watchSaturation(state, ctx, subscription, current);
     if (state.tick < subscription.paidUntil) continue;
     const offer = getSubscriptionOffer(subscription.offer);
     if (!offer || state.gauges.treasury < offer.price) {

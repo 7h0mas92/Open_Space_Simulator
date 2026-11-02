@@ -903,7 +903,10 @@
       "lectern": "Pupitre de conférence en bois, plateau incliné et micro",
       "auditoriumScreen": "Écran géant d'auditorium : dalle lumineuse sur deux mâts",
       "unicornStatue": "Statue de licorne : socle de marbre à moulures, licorne dorée cabrée, corne et crinière",
-      "ipoBell": "Cloche de la Bourse : portique en bois, cloche de bronze tournée, battant et corde à pompon"
+      "ipoBell": "Cloche de la Bourse : portique en bois, cloche de bronze tournée, battant et corde à pompon",
+      "splitAc": "Climatiseur mural : unité intérieure blanche à volet, sur support, groupe et tuyaux",
+      "inrowCooling": "Climatisation en rangée : armoire noire perforée, ventilateurs et écran bleu",
+      "serverMonitoring": "Supervision : pupitre, écran de courbes de température, sonde et gyrophare"
     },
     "back": "Retour"
   },
@@ -2001,7 +2004,7 @@
     "noSecurity": "aucune"
   },
   "servers": {
-    "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer.",
+    "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer. Chaque appareil chauffe : prévois assez de clim.",
     "roomsTitle": "Tes salles",
     "noRoom": "Pas encore de salle des serveurs : achète un local serveurs (Seed) ou une salle des serveurs (Série A) dans le rayon Serveurs.",
     "slots": "{{count}}/{{max}} emplacements",
@@ -2010,7 +2013,7 @@
     "needs": {
       "server": "Au moins un serveur (baie, lames ou GPU)",
       "network": "Du réseau (switch ou box fibre)",
-      "cooling": "Une climatisation de précision"
+      "cooling": "Une climatisation (murale, de précision ou en rangée)"
     },
     "needsShort": {
       "server": "un serveur",
@@ -2022,11 +2025,26 @@
     "saving": "Facture d’hébergement : −{{percent}} % grâce à tes serveurs ({{max}} % au plus).",
     "statusRunning": "Elle tourne · {{count}}/{{max}} emplacements",
     "statusMissing": "Ne tourne pas : il manque {{missing}}.",
-    "open": "Salle et fibre",
-    "fibreCard": "Abonnement fibre",
+    "open": "Salle et internet",
+    "fibreCard": "Abonnement internet",
     "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
-    "fibreCardReady": "La box fibre est posée : choisis une offre.",
-    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs."
+    "fibreCardReady": "De la box 4G à la fibre dédiée : choisis l’offre qui suit ton équipe.",
+    "warm": "Elle chauffe : les serveurs ralentissent et ne donnent que {{percent}} % de leurs effets.",
+    "overheat": "Surchauffe : les serveurs plantent, plus aucun effet et la prod se dégrade. Ajoute de la clim ou retire du matériel.",
+    "statusWarm": "Elle chauffe · {{count}}/{{max}} emplacements",
+    "statusOverheat": "Surchauffe : il faut plus de clim.",
+    "heat": {
+      "load": "Chaleur {{heat}} kW · clim {{cooling}} kW",
+      "summer": "été, +3 °C",
+      "meter": "Charge de la climatisation",
+      "temperature": "🌡️ {{temp}} °C · {{level}}",
+      "unmonitored": "🌡️ Température inconnue : installe une sonde de supervision pour la suivre et être prévenu quand elle monte.",
+      "levels": {
+        "cool": "tout va bien",
+        "warm": "ça chauffe (au-delà de 27 °C)",
+        "overheat": "surchauffe (au-delà de 32 °C)"
+      }
+    }
   },
   "career": {
     "intro": "Huit startups parties de rien sont devenues des géants. Leurs noms ont changé, leurs histoires presque pas. Choisis une légende, pars avec les mêmes contraintes qu'elle et tiens ses jalons.",
@@ -2194,7 +2212,7 @@
     "services": {
       "internet": {
         "name": "Internet",
-        "intro": "La fibre arrive dans la box fibre de ta salle des serveurs et se paie chaque semaine (tous les 7 jours de jeu)."
+        "intro": "De la box 4G à la fibre dédiée. Chaque offre supporte un nombre de salariés : au-delà, le réseau sature et toute l’équipe ralentit. Prix mensuels hors taxes constatés chez les opérateurs français pour les entreprises (2026), prélevés chaque semaine (tous les 7 jours de jeu) ; la mise en service se paie à la souscription."
       },
       "security": {
         "name": "Sécurité",
@@ -2203,9 +2221,9 @@
     },
     "requires": {
       "fibreBox": {
-        "long": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
-        "short": "Il faut une box fibre dans une salle des serveurs.",
-        "inactive": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien."
+        "long": "La fibre dédiée arrive dans une box fibre : installe-la dans une salle des serveurs (rayon Serveurs).",
+        "short": "La fibre dédiée arrive dans une box fibre posée dans une salle des serveurs.",
+        "inactive": "Aucune box fibre dans une salle : tu paies la fibre dédiée mais elle n’arrive nulle part."
       },
       "lobby": {
         "long": "Pour t’abonner, aménage d’abord le hall d’entrée (rayon Accueil) : l’agent et les portes à badge y sont.",
@@ -2223,13 +2241,21 @@
     "perMonth": "{{price}} € / mois",
     "perDays_one": "{{price}} € / jour",
     "perDays_other": "{{price}} € / {{count}} jours",
-    "subscribe": "S’abonner ({{price}} € la 1re période)",
+    "subscribe": "S’abonner ({{price}} € tout de suite)",
     "switch": "Passer à cette offre ({{price}} €)",
     "currentOffer": "Ton offre actuelle",
     "cancel": "Résilier",
     "cancelWarning": "Le service s’arrête tout de suite, sans remboursement de la période entamée.",
     "cancelConfirm": "Résilier {{offer}}",
-    "manageAll": "Voir tous les abonnements"
+    "manageAll": "Voir tous les abonnements",
+    "users_one": "{{count}} salarié utilise la connexion (télétravail compris, par le VPN).",
+    "users_other": "{{count}} salariés utilisent la connexion (télétravail compris, par le VPN).",
+    "activeUsers": "La ligne tient la charge : {{count}}/{{max}} salariés.",
+    "saturated": "Réseau saturé : {{count}} salariés pour {{max}} prévus, −{{percent}} % de productivité. Passe à une offre plus grosse.",
+    "maxUsers_one": "Jusqu’à {{count}} salarié",
+    "maxUsers_other": "Jusqu’à {{count}} salariés",
+    "tooSmall": "trop petite pour ton équipe",
+    "setupFee": "Mise en service : {{price}} €, payée à la souscription"
   },
   "cleaning": {
     "intro": "Chaque jour de semaine, l’équipe présente au bureau le salit : emballages, gobelets, canettes, boîtes de pizza… Plus tu attends, plus la saleté monte vite, et un bureau sale ralentit tous ceux qui y travaillent (pas les télétravailleurs). Appelle l’entreprise de nettoyage Nickel Chrome ou prends un abonnement.",

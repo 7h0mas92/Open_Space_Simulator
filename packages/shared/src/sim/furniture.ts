@@ -116,6 +116,10 @@ export interface FurnitureDefinition {
    * sa salle tourne (serveur, réseau et climatisation installés, voir `serverRoom.ts`).
    */
   serverGear?: ServerGearKind;
+  /** Matériel serveur : chaleur dégagée, en kW (voir `roomTemperature` dans `serverRoom.ts`). */
+  heat?: number;
+  /** Climatisation de salle serveur : froid produit, en kW. */
+  cooling?: number;
   /** Récompense du mode Histoire qui le met en vente (absent : en vente pour tous). */
   unlock?: StoryRewardId;
 }
@@ -1402,6 +1406,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 8,
     accessory: true,
     serverGear: 'server',
+    heat: 3,
     effects: { stabilityPerDay: 0.15, hostingSaving: 0.06 },
   },
   {
@@ -1418,6 +1423,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 6,
     accessory: true,
     serverGear: 'server',
+    heat: 8,
     effects: { stabilityPerDay: 0.3, hostingSaving: 0.12 },
   },
   {
@@ -1434,6 +1440,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 4,
     accessory: true,
     serverGear: 'server',
+    heat: 10,
     effects: { teamProductivity: 0.015, hypePerDay: 0.05, hostingSaving: 0.03 },
   },
   {
@@ -1450,14 +1457,15 @@ export const FURNITURE_CATALOG = [
     maxCount: 4,
     accessory: true,
     serverGear: 'network',
+    heat: 0.3,
     effects: { stabilityPerDay: 0.04 },
   },
   {
     id: 'fibre-router',
     name: t('Box fibre pro', 'Business fibre router'),
     description: t(
-      'Le point d’arrivée de la fibre : indispensable à l’abonnement. Compte comme du réseau.',
-      'Where the fibre comes in: required for the subscription. Counts as networking.',
+      'Le point d’arrivée de la fibre dédiée : indispensable à cette offre. Compte comme du réseau.',
+      'Where the dedicated fibre comes in: required for that plan. Counts as networking.',
     ),
     price: 600,
     width: 1,
@@ -1466,14 +1474,32 @@ export const FURNITURE_CATALOG = [
     maxCount: 2,
     accessory: true,
     serverGear: 'network',
+    heat: 0.1,
     effects: { stabilityPerDay: 0.02 },
+  },
+  {
+    id: 'split-ac',
+    name: t('Climatiseur mural', 'Wall-mounted air conditioner'),
+    description: t(
+      'Un split de 5 kW au-dessus de la porte : assez pour une baie, juste en été.',
+      'A 5 kW split unit above the door: enough for one rack, tight in summer.',
+    ),
+    price: 1200,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 4,
+    accessory: true,
+    serverGear: 'cooling',
+    cooling: 5,
+    effects: {},
   },
   {
     id: 'precision-cooling',
     name: t('Climatisation de précision', 'Precision air conditioner'),
     description: t(
-      'Garde la salle à 21 °C. Sans elle, les serveurs surchauffent et ne servent à rien.',
-      'Keeps the room at 21 °C. Without it the servers overheat and do nothing.',
+      'Une armoire de froid de 15 kW, de quoi tenir une salle pleine de baies. +stabilité.',
+      'A 15 kW cooling cabinet, enough for a room full of racks. +stability.',
     ),
     price: 3500,
     width: 1,
@@ -1482,6 +1508,41 @@ export const FURNITURE_CATALOG = [
     maxCount: 4,
     accessory: true,
     serverGear: 'cooling',
+    cooling: 15,
+    effects: { stabilityPerDay: 0.02 },
+  },
+  {
+    id: 'inrow-cooling',
+    name: t('Climatisation en rangée', 'In-row cooling unit'),
+    description: t(
+      'Glissée entre les baies, elle souffle 35 kW de froid là où ça chauffe. +stabilité.',
+      'Slotted between the racks, it blows 35 kW of cold air right where it is hot. +stability.',
+    ),
+    price: 7000,
+    width: 1,
+    depth: 1,
+    minPhase: 'SERIES_A',
+    maxCount: 4,
+    accessory: true,
+    serverGear: 'cooling',
+    cooling: 35,
+    effects: { stabilityPerDay: 0.04 },
+  },
+  {
+    id: 'server-monitoring',
+    name: t('Sonde et écran de supervision', 'Monitoring probe and screen'),
+    description: t(
+      'Affiche la température, prévient quand elle grimpe et coupe proprement en cas de surchauffe.',
+      'Shows the temperature, warns when it climbs and shuts down cleanly when it overheats.',
+    ),
+    price: 900,
+    width: 1,
+    depth: 1,
+    minPhase: 'SEED',
+    maxCount: 2,
+    accessory: true,
+    serverGear: 'monitoring',
+    heat: 0.1,
     effects: { stabilityPerDay: 0.02 },
   },
   {
@@ -1498,6 +1559,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 4,
     accessory: true,
     serverGear: 'power',
+    heat: 0.5,
     effects: { stabilityPerDay: 0.1 },
   },
   {
@@ -1514,6 +1576,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 3,
     accessory: true,
     serverGear: 'storage',
+    heat: 0.8,
     effects: { stabilityPerDay: 0.05, debtPerDay: -0.05 },
   },
   {
@@ -1530,6 +1593,7 @@ export const FURNITURE_CATALOG = [
     maxCount: 2,
     accessory: true,
     serverGear: 'security',
+    heat: 0.3,
     effects: { stabilityPerDay: 0.06, hypePerDay: 0.02 },
   },
   {

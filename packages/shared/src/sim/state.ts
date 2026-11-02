@@ -17,7 +17,7 @@ import { MonitorSetupSchema } from './monitors.js';
 import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
-import { FibreSubscriptionSchema } from './serverRoom.js';
+import { FibreSubscriptionSchema, ServerHeatLevelSchema } from './serverRoom.js';
 import { LobbyStateSchema } from './lobby.js';
 import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
 import { SubscriptionsSchema } from './subscriptions.js';
@@ -311,6 +311,13 @@ export const NOTIFICATION_KINDS = [
   'SECURITY_SUBSCRIBED',
   'SECURITY_CANCELLED',
   'SECURITY_CUT',
+  /** Trop de salariés au bureau pour l'offre internet : la ligne sature (ou ne sature plus). */
+  'INTERNET_SATURATED',
+  'INTERNET_OK',
+  /** Température d'une salle des serveurs (prévenu seulement avec une sonde de supervision). */
+  'SERVER_ROOM_WARM',
+  'SERVER_ROOM_OVERHEAT',
+  'SERVER_ROOM_COOL',
   /** Saleté au-delà du seuil d'alerte : l'équipe se plaint. */
   'OFFICE_DIRTY',
   /** Entreprise de nettoyage : appel réservé, ménage commencé ou terminé. */
@@ -451,6 +458,11 @@ export const GameStateSchema = z.object({
   subscriptions: SubscriptionsSchema.default([]),
   /** Mode Carrière : légende suivie et jalons (null dans les autres modes). */
   career: CareerStateSchema.nullable().default(null),
+  /**
+   * Dernier niveau de température connu de chaque salle des serveurs, par identifiant de salle,
+   * pour prévenir quand il change (absent des vieilles sauvegardes).
+   */
+  serverHeat: z.record(z.string(), ServerHeatLevelSchema).default({}),
   /**
    * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
    * les mêmes idées. Absent des vieilles sauvegardes.

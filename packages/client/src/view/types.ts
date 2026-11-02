@@ -17,6 +17,7 @@ import type {
   FloorMaterialId,
   FloorZone,
   ComputerId,
+  ServerHeatLevel,
   CleanerTool,
   CleaningPlanId,
   ServerRoomNeed,
@@ -633,10 +634,19 @@ export interface PetsView {
 export interface ServerRoomView {
   readonly id: string;
   readonly kind: string;
-  /** Serveur, réseau et climatisation installés : son matériel donne ses effets. */
+  /** Serveur, réseau et climatisation installés, sans surchauffe : son matériel donne ses effets. */
   readonly running: boolean;
   /** Ce qu'il faut encore y installer pour qu'elle tourne. */
   readonly missing: readonly ServerRoomNeed[];
+  /** Chaleur dégagée par le matériel et froid des climatisations, en kW. */
+  readonly heat: number;
+  readonly cooling: number;
+  /** Température en °C (affichée seulement avec une sonde de supervision). */
+  readonly temperature: number;
+  readonly level: ServerHeatLevel;
+  readonly monitored: boolean;
+  /** Part des effets donnée par son matériel (1, 0,5 ou 0,75 si elle chauffe, 0 à l'arrêt). */
+  readonly efficiency: number;
   /** Équipements installés, sur le nombre d'emplacements. */
   readonly gear: number;
   readonly slots: number;
@@ -650,6 +660,8 @@ export interface ServersView {
   readonly hostingSavingMax: number;
   /** Une box fibre est posée dans une salle des serveurs. */
   readonly hasBox: boolean;
+  /** L'été réchauffe les salles. */
+  readonly summer: boolean;
 }
 
 /**
@@ -670,6 +682,11 @@ export interface SubscriptionOfferView {
   readonly price: number;
   readonly periodDays: number;
   readonly minPhase: Phase;
+  /** Frais de mise en service (0 si aucun) et total payé à la souscription. */
+  readonly setupFee: number;
+  readonly firstPayment: number;
+  /** Salariés que l'offre supporte (null : pas de limite). */
+  readonly maxUsers: number | null;
   readonly requires: SubscriptionRequirement | null;
   readonly blocker: SubscriptionBlocker;
 }
@@ -686,6 +703,8 @@ export interface CurrentSubscriptionView {
   readonly totalPaid: number;
   /** Coût ramené à 30 jours de jeu. */
   readonly monthly: number;
+  /** Productivité perdue parce que l'offre sature (0 si elle tient la charge). */
+  readonly penalty: number;
 }
 
 /** Un service (internet, ménage…), son abonnement en cours et ses offres. */
@@ -699,6 +718,8 @@ export interface SubscriptionServiceView {
 /** Rubrique « Abonnements ». */
 export interface SubscriptionsView {
   readonly services: readonly SubscriptionServiceView[];
+  /** Salariés qui utilisent les services (toute l'équipe, télétravail compris). */
+  readonly users: number;
   /** Nombre d'abonnements en cours. */
   readonly count: number;
   /** Total des abonnements ramené à 30 jours de jeu. */
