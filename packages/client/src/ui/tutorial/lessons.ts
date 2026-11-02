@@ -121,6 +121,8 @@ export const LESSONS: readonly Lesson[] = [
       { id: 'endlessTips', modes: ['ENDLESS'] },
       { id: 'daily', modes: ['DAILY'] },
       { id: 'dailyTips', modes: ['DAILY'] },
+      { id: 'career', modes: ['CAREER'], target: 'panel-career' },
+      { id: 'careerTips', modes: ['CAREER'] },
       { id: 'story', modes: ['STORY'] },
       { id: 'storyTips', modes: ['STORY'] },
     ],
