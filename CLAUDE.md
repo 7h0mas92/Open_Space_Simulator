@@ -870,6 +870,22 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   rien et -stabilité ; la sonde affiche la température et prévient quand le niveau change
   (`serverHeatSystem`, état `serverHeat` vide par défaut). Aucun tirage.
 
+- Arbre de compétences des devs (`shared/sim/skills.ts`, `client/src/simulation/skills.ts`, onglet
+  « Compétences » de la fiche, `ui/team/SkillTree.tsx`) : 1 point par niveau, 3 branches de 5 nœuds
+  qui demandent chacun le précédent (Technique : code propre -10 % de dette, débogueur, architecte,
+  revue de code -5 % de dette des features de l'équipe, gardien de la prod x2 sur « Réparer la
+  prod » ; Vitesse : raccourcis +5 %, concentration, deep work le matin, fin de sprint, Crunch
+  +50 % pendant 24 h et -10 moral une fois par sprint ; Humain : endurance -15 % de fatigue,
+  diplomate, mentor +20 % d'XP aux collègues, bonne humeur, leader : plus de démission à moral 0).
+  Un nœud de métier par profil qui code (demande le 3e nœud de sa branche) ; l'encadrement n'a pas
+  d'arbre. Formations en planification (livre 500 €, formation 2 000 €, conférence 5 000 €, une
+  par dev et par sprint, niveaux gagnés sans tirer de statistique), réinitialisation pour un mois
+  de salaire. Ouvert partout sauf en Daily (`skillsEnabled`). Commandes `LEARN_SKILL`,
+  `RESET_SKILLS`, `TRAIN_DEV`, `USE_CRUNCH`, composant ECS `skills` (vide par défaut), stats
+  `skillsLearned`, `trainings`, `crunches`. Aucun tirage : sans compétence, chaque multiplicateur
+  vaut 1 (48 parties de 4 modes comparées à `develop`, état identique) ; une compétence qui change
+  une probabilité garde le même tirage. Bot « coach » dans `pnpm balance`.
+
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback
   `https://open-space-simulator.vercel.app/api/auth/github/callback`) et mettre ses clés sur

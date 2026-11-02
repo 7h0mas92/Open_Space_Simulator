@@ -89,6 +89,7 @@ export function createEmptyState(config: GameConfig): GameState {
       remoteReason: {},
       rustConverted: {},
       performance: {},
+      skills: {},
     },
     gauges: {
       treasury,
@@ -169,6 +170,9 @@ export function createEmptyState(config: GameConfig): GameState {
       meetingsUseless: 0,
       crisisMeetings: 0,
       duplicateWork: 0,
+      skillsLearned: 0,
+      trainings: 0,
+      crunches: 0,
       urgentDone: 0,
       urgentMissed: 0,
       weeklyDone: 0,

@@ -1255,6 +1255,35 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── Arbre de compétences ─────────────────────────────────────────────────
+  {
+    trigger: 'SKILL_LEARNED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} J’ai regardé un tuto de 12 minutes en x2, je suis senior maintenant.',
+      '{event} I watched a 12-minute tutorial at 2x speed, I’m a senior now.',
+    ),
+  },
+  {
+    trigger: 'DEV_TRAINED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '📚 {event} Merci de ne pas revenir avec l’envie de tout migrer.',
+      '📚 {event} Please don’t come back wanting to migrate everything.',
+    ),
+  },
+  {
+    trigger: 'CRUNCH',
+    channel: 'general',
+    author: dev(),
+    text: t(
+      'Quelqu’un a commandé 14 pizzas ? Ah, c’est le crunch. Bon courage.',
+      'Did someone order 14 pizzas? Oh, it’s the crunch. Good luck.',
+    ),
+  },
+
   // ─── DEV_LEVEL_UP ─────────────────────────────────────────────────────────
   {
     trigger: 'DEV_LEVEL_UP',

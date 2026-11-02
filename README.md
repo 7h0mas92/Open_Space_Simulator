@@ -410,6 +410,17 @@ flowchart LR
   démissionner une fois sur deux (il part deux planifications plus tard, badge « 🚪 » dans
   l'équipe), sinon il reste démotivé et perd deux compétences. Réglages dans `BALANCE.raises` ;
   le hasard est tiré sur une graine à part, sans toucher au tirage du jeu.
+- **Arbre de compétences des devs** : chaque niveau gagné donne un point, à dépenser dans
+  l'onglet « Compétences » de la fiche du dev (badge ⭐ dans la liste de l'équipe). 3 branches de
+  5 nœuds, chacun demandant le précédent : 🛠️ Technique (code propre, débogueur, architecte, revue
+  de code, gardien de la prod), ⚡ Vitesse (raccourcis, concentration, deep work, fin de sprint,
+  Crunch : +50 % pendant 24 h, une fois par sprint) et 🤝 Humain (endurance, diplomate, mentor,
+  bonne humeur, leader : personne ne démissionne tant qu'il est là). Chaque profil qui code a son
+  nœud de métier (le stagiaire ne touche plus à main, l'IA hallucine 2 fois moins…). Formations
+  payantes en planification (livre, formation, conférence) et réinitialisation pour un mois de
+  salaire. Ouvert dans tous les modes sauf le Daily. Aucun tirage : sans compétence, chaque
+  multiplicateur vaut exactement 1 et la partie reste identique au bit près
+  (`shared/sim/skills.ts`, `client/src/simulation/skills.ts`, `ui/team/SkillTree.tsx`).
 - **Congés, jours fériés et arrêts maladie** : les 11 jours fériés français ferment le bureau.
   Chaque dev gagne un jour de congé par sprint (10 au plus) et le joueur les pose pendant la
   planification, dans la fiche du dev (1 à 5 jours, un absent pour 4 devs à la fois) : le dev
