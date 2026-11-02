@@ -666,9 +666,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   posé sur un meuble, bouton « ⏻ Allumer / Éteindre ») et 3 écrans de projection posés au sol
   (petit 2 cases 450 €, moyen 3 cases 1 100 € en Seed, grand 4 cases 2 400 € en Série A). Allumé et
   tourné vers un écran (cône de 50°, 1,5 à 10 cases, devant la toile), il déroule la toile, puis
-  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule. Un écran
-  par projecteur, le plus proche, projecteurs servis dans l'ordre d'achat (`projectionPairs`, même
-  calcul pour la simulation et le rendu). Effets seulement pendant la projection : écran +qualité,
+  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule ; la toile
+  reste toute blanche, sans cadre noir (`FABRIC_WHITE`). Un écran par projecteur, le plus proche,
+  projecteurs servis dans l'ordre d'achat (`projectionPairs`, même calcul pour la simulation et le
+  rendu). Effets seulement pendant la projection : écran +qualité,
   +hype (+moral moyen et grand), projecteur +moral et -0,4 % de productivité. Commande
   `SWITCH_PROJECTOR`, champ `on` optionnel (absent = éteint), `GameView.projections`, rendu animé
   dans `render/projection.ts` (sans animation si « réduire les animations »). Aucun tirage.
@@ -826,6 +827,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   « 📽️ » en grand, lecture seule. Le temps s'arrête 6 s au début du Daily (option « Pause pendant
   le Daily », active par défaut, jamais en Hardcore ni en replay). État `morningSync` (null par
   défaut). `pnpm balance` : aménager la salle rapporte plus (bot organizer 352 → 434 M€ médians).
+- Placement à la demi-case (`GridPositionSchema` dans `shared/sim/components.ts`, `view/partitions.ts`) :
+  tous les objets se posent et se déplacent d'une demi-case (souris, doigt, flèches du clavier) ;
+  la demi-case libre de part et d'autre d'un mur fin (cloison du plan ou mur posé) se meuble tant
+  que l'objet ne traverse pas le trait du mur, et un objet de 3 cases se centre dans une pièce de 4.
+  Murs fins et fenêtres restent sur des cases entières. La grille de navigation bloque chaque case
+  chevauchée ; chaise et dev assis au point exact devant un bureau décalé (`accessPoint`). Positions
+  entières toujours valides : anciennes sauvegardes, replays, Daily et scores inchangés, aucun tirage.
 
 - Saleté et ménage (`shared/sim/cleaning.ts`, `client/src/simulation/cleaning.ts`, bouton 🧹 en
   haut, panneau « Ménage », `ui/cleaning/Cleaning.tsx`) : chaque jour de semaine, l'équipe présente
