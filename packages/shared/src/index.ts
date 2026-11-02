@@ -10,6 +10,7 @@ export * from './sim/cleaning.js';
 export * from './sim/commands.js';
 export * from './sim/components.js';
 export * from './sim/computers.js';
+export * from './sim/difficulty.js';
 export * from './sim/funding.js';
 export * from './sim/furniture.js';
 export * from './sim/meetings.js';

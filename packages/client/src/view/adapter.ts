@@ -71,7 +71,7 @@ import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
-import { currentTier } from '../simulation/fundraising';
+import { currentTier, pitchBar } from '../simulation/fundraising';
 import { softSigmoid } from '../simulation/math';
 import { countDesks, monitorOf, RESALE_RATIO } from '../simulation/furniture';
 import { activeProjections } from '../simulation/projection';
@@ -595,7 +595,7 @@ function pitchView(state: GameState, pitch: PitchState): PitchView {
         },
       ];
     }),
-    interest: Math.round(softSigmoid(pitch.interest - tier.bar) * 100) / 100,
+    interest: Math.round(softSigmoid(pitch.interest - pitchBar(state, tier)) * 100) / 100,
     walkedOut: pitch.walkedOut,
     result: pitch.result,
   };

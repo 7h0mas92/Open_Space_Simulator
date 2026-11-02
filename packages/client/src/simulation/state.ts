@@ -2,6 +2,7 @@ import {
   BALANCE,
   GAME,
   STATE_VERSION,
+  difficultyOf,
   emptyCleaningState,
   STORY_MISSION_IDS,
   STORY_REWARD_IDS,
@@ -43,8 +44,7 @@ function gameUnlocks(config: GameConfig): StoryRewardId[] {
 /** État vide, avant l'arrivée du premier dev. */
 export function createEmptyState(config: GameConfig): GameState {
   const { start } = BALANCE;
-  const treasury =
-    config.mode === 'EASY' ? start.treasury * BALANCE.easy.treasuryMultiplier : start.treasury;
+  const treasury = start.treasury * difficultyOf(config.mode).treasury;
   const mission =
     config.mode === 'STORY' ? getStoryMission(config.mission ?? STORY_MISSION_IDS[0]) : undefined;
   return {

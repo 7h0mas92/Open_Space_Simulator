@@ -1016,7 +1016,7 @@
     "title": "Choisis ton mode",
     "EASY": {
       "name": "Facile",
-      "rule": "Pour apprendre : tutoriel complet, plus d'argent, crises adoucies.",
+      "rule": "Pour apprendre : tutoriel complet, un peu plus d'argent, crises adoucies. Mal géré, ça coule quand même.",
       "tag": "Débutant"
     },
     "NORMAL": {
@@ -1026,7 +1026,7 @@
     },
     "HARDCORE": {
       "name": "Hardcore",
-      "rule": "Pas de pause. Jamais.",
+      "rule": "Pas de pause, moins d'argent, plus de crises. Chaque décision compte.",
       "tag": "Expert"
     },
     "INTERNS_ONLY": {
@@ -1338,7 +1338,7 @@
         "steps": {
           "easy": {
             "title": "Le mode Facile",
-            "body": "Le mode Facile est fait pour apprendre :\n\n• tu démarres avec 3 M€ au lieu de 2 M€ ;\n• au plus 2 cartes tirées au hasard par sprint au lieu de 3 (la panne du vendredi 17h peut toujours en ajouter une) ;\n• les effets négatifs des crises sont divisés par deux.\n\nLes scores du mode Facile ont leur propre classement : ils ne comptent pas dans le classement global."
+            "body": "Le mode Facile est fait pour apprendre, pas pour gagner à coup sûr :\n\n• tu démarres avec 2,2 M€ au lieu de 2 M€ ;\n• les effets négatifs des crises sont réduits de 15 % ;\n• il tombe autant de cartes qu'en Normal (3 au plus par sprint, plus la panne du vendredi 17h).\n\nLes salaires, les clients et les investisseurs sont les mêmes qu'en Normal : une équipe mal gérée finit quand même en faillite.\n\nLes scores du mode Facile ont leur propre classement : ils ne comptent pas dans le classement global."
           },
           "normal": {
             "title": "Le mode Normal",
@@ -1346,11 +1346,11 @@
           },
           "hardcore": {
             "title": "Le mode Hardcore",
-            "body": "Pas de pause. Jamais. Le bouton pause et la barre d'espace ne répondent plus, et même ce tutoriel ne peut pas arrêter le temps : lis-le en gardant un œil sur le bureau.\n\nLe reste des règles est celui du mode Normal : 2 M€, 18 mois, 3 cartes tirées au hasard par sprint au maximum.\n\nAstuce : le temps reste arrêté pendant la planification et la démo. C'est là que tu réfléchis."
+            "body": "Pas de pause. Jamais. Le bouton pause et la barre d'espace ne répondent plus, et même ce tutoriel ne peut pas arrêter le temps : lis-le en gardant un œil sur le bureau.\n\nEt tout est plus dur qu'en Normal :\n\n• 1,5 M€ au départ au lieu de 2 M€ ;\n• salaires et frais 15 % plus chers, clients qui paient 15 % de moins ;\n• plus de crises (4 cartes au plus par sprint) et des effets négatifs 30 % plus forts ;\n• pannes de prod 50 % plus fréquentes ;\n• investisseurs plus exigeants à chaque levée.\n\nAttendre sans rien décider mène à la faillite : chaque choix compte.\n\nAstuce : le temps reste arrêté pendant la planification et la démo. C'est là que tu réfléchis."
           },
           "hardcoreEvents": {
             "title": "Les crises n’attendent pas",
-            "body": "En Hardcore, une carte d'événement n'arrête pas le temps. Si tu ne choisis pas dans les 2 heures de jeu (un peu moins de 2 secondes à x1), la dernière réponse est choisie pour toi : « tu n'as rien décidé, le problème a décidé pour toi ».\n\nCette dernière réponse est souvent la pire. Reste en x1 pendant les heures de bureau pour avoir le temps de lire, et garde x2 ou x4 pour les nuits et les week-ends."
+            "body": "En Hardcore, une carte d'événement n'arrête pas le temps. Si tu ne choisis pas dans les 2 heures de jeu (un peu moins de 2 secondes à x1), la dernière réponse est choisie pour toi : « tu n'as rien décidé, le problème a décidé pour toi ».\n\nCette dernière réponse est souvent la pire, et les effets négatifs sont 30 % plus forts qu'en Normal (les chiffres affichés en tiennent compte). Reste en x1 pendant les heures de bureau pour avoir le temps de lire, et garde x2 ou x4 pour les nuits et les week-ends."
           },
           "interns": {
             "title": "Le mode Stagiaires Only",
@@ -1515,7 +1515,7 @@
           },
           "soft": {
             "title": "En mode Facile",
-            "body": "En mode Facile, les effets négatifs des cartes sont divisés par deux (les chiffres affichés en tiennent déjà compte) et il tombe au plus 2 cartes au hasard par sprint. Seule la panne du vendredi 17h peut s'y ajouter."
+            "body": "En mode Facile, les effets négatifs des cartes sont réduits de 15 % (les chiffres affichés en tiennent déjà compte). Il tombe autant de cartes qu'en Normal : au plus 3 au hasard par sprint, plus la panne du vendredi 17h."
           }
         }
       },

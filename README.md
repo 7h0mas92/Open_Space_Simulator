@@ -631,10 +631,27 @@ bouton 🛠 du menu principal.
 financements hors tour de table, organisatrice qui aménage la salle de réunion) et produit un rapport : taux de faillite (global et par phase),
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
-collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
+collée à 0 ou à 100, et rejoue 700 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
 Only, 3 sprints). Une section suit les tâches dynamiques : urgences et tâches de la semaine
 finies à temps, réussite des objectifs par type et difficulté. Le dernier rapport est dans
 [`docs/balance.md`](docs/balance.md).
+
+**Difficulté des modes** (`packages/shared/src/sim/difficulty.ts`, `difficultyOf(mode)`) : un
+profil de multiplicateurs par mode (trésorerie de départ, cartes par sprint, chance de tirage,
+effets négatifs des cartes, dépenses, revenus, pannes, barre des investisseurs). Le Normal, le
+Daily, Stagiaires Only et 3 sprints gardent le profil neutre, donc les mêmes parties qu'avant.
+
+| Mode     | Départ | Effets négatifs | Cartes / sprint | Dépenses | Revenus | Pannes | Investisseurs |
+| -------- | -----: | --------------: | --------------: | -------: | ------: | -----: | ------------: |
+| Facile   | 2,2 M€ |           -15 % |               3 |        = |       = |      = |             = |
+| Normal   |   2 M€ |               = |               3 |        = |       = |      = |             = |
+| Hardcore | 1,5 M€ |           +30 % | 4 (tirage x1,5) |    +15 % |   -15 % |  +50 % |    barre +0,3 |
+
+Mesuré par la section « Difficulté par mode et par stratégie » du rapport : en Facile, un
+joueur au hasard fait encore faillite ou finit zombie une fois sur quatre et les bons bots ne
+deviennent pas plus souvent licornes qu'en Normal ; en Hardcore, le joueur au hasard et le
+prudent qui attend coulent trois à neuf fois sur dix, les bonnes stratégies une fois sur dix
+environ, et la licorne reste possible (2 à 4 %).
 
 Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
 `packages/shared/src/sim/balance.ts`) :

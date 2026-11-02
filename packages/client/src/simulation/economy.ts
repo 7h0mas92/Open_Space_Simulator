@@ -1,4 +1,4 @@
-import { BALANCE, type GameState } from '@oss/shared';
+import { BALANCE, difficultyOf, type GameState } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
 import { hostingSaving } from './serverRoom';
 import { subscriptionsMonthly } from './subscriptions';
@@ -45,21 +45,23 @@ export function hostingCost(state: GameState): number {
 
 /**
  * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. Les
- * abonnements, payés à part à chaque échéance, n'y sont pas.
+ * abonnements, payés à part à chaque échéance, n'y sont pas. Plus chères
+ * en Hardcore (`difficultyOf`).
  */
 export function monthlyExpenses(state: GameState): number {
   return (
-    monthlyPayroll(state) +
-    teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
-    BALANCE.economy.fixedCostsMonthly[state.phase] +
-    hostingCost(state) +
-    loanPayment(state)
+    (monthlyPayroll(state) +
+      teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
+      BALANCE.economy.fixedCostsMonthly[state.phase] +
+      hostingCost(state) +
+      loanPayment(state)) *
+    difficultyOf(state.mode).expenses
   );
 }
 
-/** Revenus mensuels (abonnements des utilisateurs). */
+/** Revenus mensuels (abonnements des utilisateurs), plus maigres en Hardcore. */
 export function monthlyRevenue(state: GameState): number {
-  return state.gauges.users * BALANCE.economy.arpuMonthly;
+  return state.gauges.users * BALANCE.economy.arpuMonthly * difficultyOf(state.mode).revenue;
 }
 
 /**

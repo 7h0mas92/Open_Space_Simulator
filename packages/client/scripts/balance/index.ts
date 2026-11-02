@@ -3,7 +3,7 @@
  * sans navigateur, et produit un rapport d'équilibrage (taux de faillite, valorisation
  * moyenne, cartes trop fortes).
  *
- * Options : --games 10000 (mode Normal, réparti entre les bots), --mode-games 400 (par autre
+ * Options : --games 10000 (mode Normal, réparti entre les bots), --mode-games 700 (par autre
  * mode : Facile, Hardcore, Stagiaires Only, 3 sprints), --threads 4, --out reports/balance.md
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -19,7 +19,7 @@ import { BOT_NAMES, type BotName } from '../../src/simulation/bots';
 const { values } = parseArgs({
   options: {
     games: { type: 'string', default: '10000' },
-    'mode-games': { type: 'string', default: '400' },
+    'mode-games': { type: 'string', default: '700' },
     threads: { type: 'string', default: String(availableParallelism()) },
     out: { type: 'string', default: 'reports/balance.md' },
   },
