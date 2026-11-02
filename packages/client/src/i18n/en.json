@@ -1231,7 +1231,7 @@
       "off": "Off"
     },
     "decor": {
-      "intro": "Each theme decorates the office: garlands on the walls, items on the floor and on desks. By default, a theme decorates the office during its period in the game calendar (Halloween at the end of October, Christmas in December…), along with its seasonal events. You can also turn it off or keep it always on. Players see changes when they start their next game.",
+      "intro": "Each theme decorates the office: garlands on the walls and a small item on each desk. By default, a theme decorates the office during its period in the game calendar (Halloween at the end of October, Christmas in December…), along with its seasonal events. You can also turn it off or keep it always on. Players see changes when they start their next game.",
       "legend": "Setting for the {{theme}} theme",
       "previewAlt": "An office corner decorated for the {{theme}} theme",
       "live": "Showing right now",

@@ -39,7 +39,6 @@ import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
 import { DecorationsView } from './decorations';
 import { MeetingRoomView } from './meetingRoom';
-import { THEME_MODELS } from './decorModels';
 import { ConfettiEffect, SmokeEffect } from './effects';
 import { EDGE_PAN_SPEED, edgePanVelocity, exitPoint } from './edgePan';
 import { GestureRecognizer, type GestureEvent } from './gestures';
@@ -546,14 +545,7 @@ export class GameRenderer {
     const format = view.meetingRoom.format;
     const key = decorKey(this.layout, view.items, themes, birthday, format);
     if (key === this.decorPlanKey && this.decorPlan) return;
-    const plan = planDecor(
-      this.layout,
-      view.items,
-      themes,
-      birthday,
-      (theme) => THEME_MODELS[theme].floor.length,
-      format,
-    );
+    const plan = planDecor(this.layout, view.items, themes, birthday, format);
     this.decorPlanKey = key;
     this.decorPlan = plan;
     this.world.setDecor(plan.blocked, plan.party, plan.meeting?.seats ?? []);

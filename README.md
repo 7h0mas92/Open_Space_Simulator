@@ -597,8 +597,8 @@ bouton 🛠 du menu principal.
   Costumes dans `render/characterPacks.ts`.
 - **Décorations** : un thème par période de l'année (Nouvel An, Saint-Valentin, Pâques, espace,
   Moyen Âge, super-héros, années 80, été, pirates, Halloween, cyberpunk, Noël). Chacun a une
-  guirlande murale, trois objets au sol et un petit objet par bureau, construits en Three.js, avec
-  un aperçu 3D. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
+  guirlande murale et un petit objet par bureau, construits en Three.js, avec un aperçu 3D. Rien
+  n'est posé au sol : le joueur ne pourrait ni déplacer ni ranger un objet qu'il n'a pas acheté. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
   période) ou toujours. `GET /api/decor-themes` (public, en cache hors ligne) et
   `PUT /api/admin/decor-themes/:id`.
 - **Statistiques** : joueurs, parties, fins, faillites par phase, cartes les plus tirées et choix
