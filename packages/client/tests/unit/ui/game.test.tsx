@@ -243,6 +243,9 @@ describe('Construction', () => {
     await userEvent.click(screen.getByTestId('catalog-plant'));
     const cell = freeCell();
     act(() => useGame.getState().setBuildCell({ x: cell.x + 1, z: cell.z }));
+    // Une flèche décale l'objet d'une demi-case.
+    await userEvent.keyboard('{ArrowLeft}');
+    expect(useGame.getState().build?.cell).toEqual({ x: cell.x + 0.5, z: cell.z });
     await userEvent.keyboard('{ArrowLeft}');
     expect(useGame.getState().build?.cell).toEqual(cell);
 

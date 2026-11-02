@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ANNEX_KINDS, ANNEXES, type AnnexKind } from './funding.js';
 import type { FurnitureId } from './furniture.js';
+import { GridPositionSchema } from './components.js';
 
 /**
  * Décor offert avec chaque annexe (salle d'arcade, jardin intérieur, auditorium). Ces objets
@@ -35,8 +36,8 @@ export function annexDecorItem(key: string, annexes: number): FurnitureId | unde
 
 /** Nouvelle place d'un objet du décor (même repère que le mobilier : y = profondeur). */
 export const AnnexDecorPlacementSchema = z.object({
-  x: z.number().int().nonnegative(),
-  y: z.number().int().nonnegative(),
+  x: GridPositionSchema,
+  y: GridPositionSchema,
   rotation: z.number().int().min(0).max(3),
 });
 export type AnnexDecorPlacement = z.infer<typeof AnnexDecorPlacementSchema>;

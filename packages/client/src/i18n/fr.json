@@ -1566,7 +1566,7 @@
           },
           "manage": {
             "title": "Tourner, peindre, déplacer, revendre",
-            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
+            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne, les flèches le décalent d'une demi-case et Échap le repose dans le catalogue. Les objets se posent à la demi-case près : contre un mur fin, la moitié de case libre se meuble, et un objet de 3 cases se centre dans une pièce de 4 (les murs fins et les fenêtres restent sur des cases entières). « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
           },
           "items": {
             "title": "Les objets utiles",

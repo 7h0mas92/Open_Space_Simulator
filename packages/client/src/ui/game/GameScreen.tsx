@@ -36,6 +36,7 @@ import { StageScreens, stageScreen } from './StageScreens';
 import { localized } from './format';
 import { useGameFeeds } from './useGameFeeds';
 import type { GameView } from '../../view/types';
+import { gridStep } from '../../view/placement';
 
 function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
   switch (panel) {
@@ -82,7 +83,7 @@ const ARROWS: Record<string, readonly [number, number]> = {
 
 /**
  * Raccourcis clavier globaux : Échap, espace (pause), B (construction) et, objet en main,
- * R (tourner), flèches (déplacer l'aperçu), Entrée (poser).
+ * R (tourner), flèches (déplacer l'aperçu d'une demi-case), Entrée (poser).
  */
 function useShortcuts() {
   useEffect(() => {
@@ -102,8 +103,10 @@ function useShortcuts() {
         game.rotateBuild();
       } else if (game.build?.kind && arrow && game.build.cell) {
         event.preventDefault();
+        // Une demi-case par appui pour les objets qui s'y posent, une case sinon.
         const { cell } = game.build;
-        game.setBuildCell({ x: cell.x + arrow[0], z: cell.z + arrow[1] });
+        const step = gridStep(game.build.kind);
+        game.setBuildCell({ x: cell.x + arrow[0] * step, z: cell.z + arrow[1] * step });
       } else if (game.build?.kind && event.key === 'Enter' && target?.tagName !== 'BUTTON') {
         event.preventDefault();
         void game.placeAt();
