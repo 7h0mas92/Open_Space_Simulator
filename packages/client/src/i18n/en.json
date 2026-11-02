@@ -325,7 +325,8 @@
     "subscriptions": "Subscriptions",
     "cleaning": "Cleaning",
     "tickets": "Kanbanana, the ticket app",
-    "leaderboard": "Leaderboard"
+    "leaderboard": "Leaderboard",
+    "business": "Business"
   },
   "kanban": {
     "columns": {
@@ -2211,6 +2212,36 @@
     "kinds": {
       "URGENT": "Urgent",
       "WEEKLY": "Weekly"
+    }
+  },
+  "business": {
+    "intro": "Your product has to make money, but every euro you charge drives users away. Cash follows revenue, valuation mostly follows your user count (a paying customer counts more for investors).",
+    "pricing": {
+      "title": "Business model",
+      "model": "Model",
+      "tier": "Price level",
+      "current": "Current: {{model}}, {{tier}} price",
+      "revenue": "{{price}} a month from users",
+      "inUse": "current",
+      "tiers": {
+        "LOW": "low",
+        "STANDARD": "standard",
+        "PREMIUM": "premium"
+      },
+      "arpu": "Revenue per user per month",
+      "oneTime": "Paid once by each new user",
+      "acquisition": "New users",
+      "churn": "Users leaving",
+      "userValue": "Value of a user for investors",
+      "monthly": "Monthly revenue with this setting",
+      "loss": "Price rise: {{users}} users leave right away and hype drops {{hype}} points.",
+      "cut": "Price cut: +{{hype}} hype points.",
+      "unchanged": "This is your current setting. Pick another model or price to compare.",
+      "apply": "Apply this model",
+      "blockers": {
+        "COOLDOWN": "Already changed this sprint: customers need some stability. Try again next sprint.",
+        "WRONG_STAGE": "Not during a fundraising pitch."
+      }
     }
   }
 }

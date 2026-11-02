@@ -325,7 +325,8 @@
     "subscriptions": "Abonnements",
     "cleaning": "Ménage",
     "tickets": "Kanbanana, l’appli de tickets",
-    "leaderboard": "Classement"
+    "leaderboard": "Classement",
+    "business": "Business"
   },
   "kanban": {
     "columns": {
@@ -2211,6 +2212,36 @@
     "kinds": {
       "URGENT": "Urgent",
       "WEEKLY": "Semaine"
+    }
+  },
+  "business": {
+    "intro": "Ton produit doit rapporter de l’argent, mais chaque euro demandé fait fuir des utilisateurs. La trésorerie suit le revenu, la valorisation suit surtout le nombre d’utilisateurs (un client qui paie compte plus pour les investisseurs).",
+    "pricing": {
+      "title": "Modèle économique",
+      "model": "Modèle",
+      "tier": "Niveau de prix",
+      "current": "En cours : {{model}}, prix {{tier}}",
+      "revenue": "{{price}} par mois de revenus des utilisateurs",
+      "inUse": "en cours",
+      "tiers": {
+        "LOW": "bas",
+        "STANDARD": "standard",
+        "PREMIUM": "premium"
+      },
+      "arpu": "Revenu par utilisateur et par mois",
+      "oneTime": "Payé une fois par nouvel utilisateur",
+      "acquisition": "Nouveaux utilisateurs",
+      "churn": "Départs d’utilisateurs",
+      "userValue": "Valeur d’un utilisateur pour les investisseurs",
+      "monthly": "Revenus mensuels avec ce réglage",
+      "loss": "Hausse de prix : {{users}} utilisateurs partent tout de suite et la hype perd {{hype}} points.",
+      "cut": "Baisse de prix : +{{hype}} points de hype.",
+      "unchanged": "C’est le réglage en cours. Choisis un autre modèle ou un autre prix pour comparer.",
+      "apply": "Appliquer ce modèle",
+      "blockers": {
+        "COOLDOWN": "Déjà changé ce sprint : les clients ont besoin d’un peu de stabilité. Réessaie au prochain sprint.",
+        "WRONG_STAGE": "Pas pendant une levée de fonds."
+      }
     }
   }
 }

@@ -16,6 +16,7 @@ import {
   type SimContext,
 } from '../helpers';
 import { applyDailyLeadership } from '../leadership';
+import { acquireUsers, currentPricing } from '../pricing';
 import { log10Approx, round } from '../math';
 import type { SimClock } from '../time';
 import { thinksInRust } from './work';
@@ -31,19 +32,21 @@ function economy(state: GameState): void {
 
 /**
  * Croissance organique (hype) et départs (churn, aggravé par l'instabilité et, en mode
- * illimité, par la concurrence après les 18 mois).
+ * illimité, par la concurrence après les 18 mois), selon le modèle économique.
  */
 function users(state: GameState): void {
   const { users: u } = BALANCE;
   const { hype, stability } = state.gauges;
   const instability = 1 - stability / 100;
   const growth = state.gauges.users * u.organicDailyGrowth * (hype / 100);
+  // Le modèle économique joue sur les arrivées et sur les départs.
   const churn =
     state.gauges.users *
     (u.baseDailyChurn +
       u.instabilityDailyChurn * instability * instability +
-      endlessExtraChurn(state.mode, state.sprint));
-  addUsers(state, growth);
+      endlessExtraChurn(state.mode, state.sprint)) *
+    currentPricing(state).churn;
+  acquireUsers(state, growth);
   addUsers(state, -churn);
 }
 

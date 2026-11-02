@@ -7,6 +7,7 @@ import { FinancingKindSchema } from './funding.js';
 import { PetCoatSchema } from './pets.js';
 import { FloorMaterialIdSchema, FloorTintSchema, FloorZoneSchema } from './floors.js';
 import { CleaningPlanIdSchema } from './cleaning.js';
+import { PriceTierSchema, PricingModelSchema } from './pricing.js';
 import { FibrePlanIdSchema } from './serverRoom.js';
 import { SubscriptionServiceSchema } from './subscriptions.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
@@ -180,6 +181,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('SUBSCRIBE_CLEANING'), plan: CleaningPlanIdSchema }),
   /** Résilie l'abonnement de ménage (la semaine entamée n'est pas remboursée). */
   z.object({ type: z.literal('CANCEL_CLEANING') }),
+  /** Change le modèle économique et le niveau de prix (une fois par sprint). */
+  z.object({ type: z.literal('SET_PRICING'), model: PricingModelSchema, tier: PriceTierSchema }),
   /** Souscrit à une offre, ou change d'offre pour ce service : la 1re période est payée. */
   z.object({ type: z.literal('SUBSCRIBE'), offer: z.string().max(64) }),
   /** Résilie l'abonnement d'un service (la période entamée n'est pas remboursée). */

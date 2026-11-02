@@ -10,6 +10,16 @@
 import {
   ANNEXES,
   BALANCE,
+  difficultyOf,
+  oneTimePrice,
+  PRICE_TIERS,
+  PRICING_MODELS,
+  pricingChangeHype,
+  pricingChangeLoss,
+  pricingFactors,
+  userValue,
+  type PriceTier,
+  type PricingModel,
   DEFAULT_COMPUTER,
   hasComputer,
   DAILY_SYNC,
@@ -109,6 +119,8 @@ import { requirementMet, subscriptionOf, subscriptionsMonthly } from '../simulat
 import { hostingSaving, serverRoomItems, serverRoomStatuses } from '../simulation/serverRoom';
 import type {
   StoryView,
+  PricingChoiceView,
+  PricingView,
   CandidateView,
   DevActivity,
   DevView,
@@ -826,6 +838,44 @@ function subscriptionsView(state: GameState): SubscriptionsView {
   };
 }
 
+function pricingChoiceView(
+  state: GameState,
+  model: PricingModel,
+  tier: PriceTier,
+): PricingChoiceView {
+  const factors = pricingFactors(model, tier);
+  const revenue = difficultyOf(state.mode).revenue;
+  const arpu = BALANCE.economy.arpuMonthly * factors.arpu * revenue;
+  const usersLost = state.gauges.users * pricingChangeLoss(state.pricing, model, tier);
+  return {
+    model,
+    tier,
+    arpu,
+    oneTime: oneTimePrice(model, tier) * revenue,
+    acquisition: factors.acquisition,
+    churn: factors.churn,
+    userValue: userValue(model, tier),
+    usersLost,
+    hype: pricingChangeHype(state.pricing, model, tier),
+    monthlyRevenue: (state.gauges.users - usersLost) * arpu,
+  };
+}
+
+function pricingView(state: GameState): PricingView {
+  const { model, tier, changedSprint, changes } = state.pricing;
+  return {
+    current: pricingChoiceView(state, model, tier),
+    choices: PRICING_MODELS.flatMap((m) => PRICE_TIERS.map((t) => pricingChoiceView(state, m, t))),
+    changes,
+    blocker:
+      state.stage === 'PITCH' || state.stage === 'ENDED'
+        ? 'WRONG_STAGE'
+        : changedSprint === state.sprint
+          ? 'COOLDOWN'
+          : null,
+  };
+}
+
 function cleaningView(state: GameState): CleaningView {
   const cleaning = state.cleaning;
   const visitCost = visitPrice(state);
@@ -1010,6 +1060,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     walls: wallsView(state),
     servers: serversView(state),
     cleaning: cleaningView(state),
+    pricing: pricingView(state),
     subscriptions: subscriptionsView(state),
     floors: floorsView(state),
     canIpo:
@@ -1206,5 +1257,7 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SUBSCRIBE_CLEANING', plan: command.plan };
     case 'cancelCleaning':
       return { type: 'CANCEL_CLEANING' };
+    case 'setPricing':
+      return { type: 'SET_PRICING', model: command.model, tier: command.tier };
   }
 }

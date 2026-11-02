@@ -30,6 +30,7 @@ import { hypeDrift } from './systems/daily';
 import { rollObjective, settleObjective } from './taskFlow';
 import { refillBacklog } from './tasks';
 import { raisePlanning } from './raises';
+import { acquireUsers, currentPricing } from './pricing';
 import { emergencySale, ventureSprint } from './ventures';
 
 /** Remise à zéro des compteurs du sprint. */
@@ -157,7 +158,7 @@ export function endSprint(state: GameState, ctx: SimContext): void {
     const quality = task.progress > 0 ? task.qualitySum / task.progress : 0.5;
     usersGained += task.size * perPoint * (0.5 + quality) * hypeFactor * stabilityFactor * designer;
   }
-  addUsers(state, usersGained);
+  usersGained = acquireUsers(state, usersGained);
   // Plus la hype est haute, plus il est dur de la faire monter encore.
   const hypeRoom = Math.max(0, 1 - state.gauges.hype / BALANCE.hype.softCap);
   addGauge(
@@ -253,7 +254,8 @@ function loseSprint(state: GameState, ctx: SimContext): void {
   addMoney(state, (-monthlyExpenses(state) * days) / 30);
   addMoney(state, (monthlyRevenue(state) * days) / 30);
   repayLoan(state, days);
-  const churn = state.gauges.users * BALANCE.users.baseDailyChurn * days;
+  const churn =
+    state.gauges.users * BALANCE.users.baseDailyChurn * currentPricing(state).churn * days;
   addUsers(state, -churn);
   for (let day = 0; day < days; day++) addGauge(state, 'hype', hypeDrift(state.gauges.hype));
   ventureSprint(state, ctx);

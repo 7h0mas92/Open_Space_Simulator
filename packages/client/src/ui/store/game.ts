@@ -54,6 +54,8 @@ export const PANELS = [
   'pets',
   'servers',
   'cleaning',
+  /** Modèle économique du produit. */
+  'business',
   'subscriptions',
   'funding',
   'mission',
@@ -154,6 +156,7 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   CLEANING_SUBSCRIBED: 'success',
   CLEANING_CANCELLED: 'info',
   CLEANING_CUT: 'error',
+  PRICING_CHANGED: 'info',
   URGENT_TASK: 'error',
   URGENT_DONE: 'success',
   URGENT_MISSED: 'error',

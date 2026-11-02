@@ -1,12 +1,24 @@
-import { BALANCE, difficultyOf, endlessCostMultiplier, type GameState } from '@oss/shared';
+import {
+  BALANCE,
+  difficultyOf,
+  endlessCostMultiplier,
+  userValue,
+  type GameState,
+} from '@oss/shared';
 import { devIds, teamSize } from './helpers';
 import { hostingSaving } from './serverRoom';
 import { subscriptionsMonthly } from './subscriptions';
 import { cleaningMonthly } from './cleaning';
+import { currentPricing } from './pricing';
+
+/** Revenu mensuel par utilisateur, selon le modèle économique et le niveau de prix. */
+export function arpuMonthly(state: GameState): number {
+  return BALANCE.economy.arpuMonthly * currentPricing(state).arpu;
+}
 
 /** Revenu récurrent annuel (ARR), en euros. */
 export function annualRevenue(state: GameState): number {
-  return state.gauges.users * BALANCE.economy.arpuMonthly * 12;
+  return state.gauges.users * arpuMonthly(state) * 12;
 }
 
 /** Masse salariale mensuelle chargée. */
@@ -69,14 +81,18 @@ export function monthlyExpenses(state: GameState): number {
   );
 }
 
-/** Revenus mensuels (abonnements des utilisateurs), plus maigres en Hardcore. */
+/**
+ * Revenus mensuels des utilisateurs (selon le modèle économique), plus maigres en Hardcore. Les
+ * achats uniques sont encaissés à l'arrivée de chaque utilisateur (`acquireUsers`).
+ */
 export function monthlyRevenue(state: GameState): number {
-  return state.gauges.users * BALANCE.economy.arpuMonthly * difficultyOf(state.mode).revenue;
+  return state.gauges.users * arpuMonthly(state) * difficultyOf(state.mode).revenue;
 }
 
 /**
- * Valorisation de la startup. Ce que regardent les investisseurs : les utilisateurs
- * et le chiffre d'affaires, gonflés par la hype, plombés par la dette et l'instabilité.
+ * Valorisation de la startup. Ce que regardent les investisseurs : les utilisateurs (un client
+ * qui paie compte plus qu'un visiteur, selon le modèle économique) et le chiffre d'affaires,
+ * gonflés par la hype, plombés par la dette et l'instabilité.
  */
 export function computeValuation(state: GameState): number {
   const { valuation } = BALANCE;
@@ -84,7 +100,7 @@ export function computeValuation(state: GameState): number {
   const raw =
     valuation.base +
     teamSize(state) * valuation.perDev +
-    users * valuation.perUser +
+    users * valuation.perUser * userValue(state.pricing.model, state.pricing.tier) +
     annualRevenue(state) * valuation.arrMultiple;
   const hypeFactor = 0.4 + hype / 60;
   const debtFactor = 1 - debt / 200;

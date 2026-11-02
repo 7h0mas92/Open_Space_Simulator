@@ -19,6 +19,8 @@ import type {
   ComputerId,
   CleanerTool,
   CleaningPlanId,
+  PriceTier,
+  PricingModel,
   ServerRoomNeed,
   SubscriptionRequirement,
   SubscriptionService,
@@ -727,6 +729,37 @@ export interface CleaningView {
   readonly spent: number;
 }
 
+/** Un réglage du modèle économique et ce qu'il donnerait avec les utilisateurs actuels. */
+export interface PricingChoiceView {
+  readonly model: PricingModel;
+  readonly tier: PriceTier;
+  /** Revenu par utilisateur et par mois (difficulté du mode comprise). */
+  readonly arpu: number;
+  /** Achat unique : payé une fois par chaque nouvel utilisateur (0 sinon). */
+  readonly oneTime: number;
+  /** Coefficients d'arrivées et de départs d'utilisateurs (1 = freemium standard). */
+  readonly acquisition: number;
+  readonly churn: number;
+  /** Valeur d'un utilisateur pour les investisseurs (1 = freemium). */
+  readonly userValue: number;
+  /** Utilisateurs qui partiraient tout de suite en passant à ce réglage. */
+  readonly usersLost: number;
+  /** Hype gagnée ou perdue en passant à ce réglage. */
+  readonly hype: number;
+  /** Revenus mensuels des utilisateurs restants avec ce réglage. */
+  readonly monthlyRevenue: number;
+}
+
+/** Modèle économique en cours et tous les réglages possibles. */
+export interface PricingView {
+  readonly current: PricingChoiceView;
+  readonly choices: readonly PricingChoiceView[];
+  /** Changements faits dans la partie. */
+  readonly changes: number;
+  /** Ce qui empêche de changer maintenant (`COOLDOWN` : déjà changé ce sprint). */
+  readonly blocker: 'COOLDOWN' | 'WRONG_STAGE' | null;
+}
+
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
 export interface WallZoneView {
   readonly zone: WallZone;
@@ -855,6 +888,8 @@ export interface GameView {
   /** Salles des serveurs. */
   /** Saleté du bureau et entreprise de nettoyage. */
   readonly cleaning: CleaningView;
+  /** Modèle économique du produit. */
+  readonly pricing: PricingView;
   readonly servers: ServersView;
   /** Abonnements (internet…). */
   readonly subscriptions: SubscriptionsView;
@@ -965,7 +1000,9 @@ export type GameCommand =
   /** Appelle l'entreprise de nettoyage (ce soir, ou en express). */
   | { readonly type: 'callCleaning'; readonly express: boolean }
   | { readonly type: 'subscribeCleaning'; readonly plan: CleaningPlanId }
-  | { readonly type: 'cancelCleaning' };
+  | { readonly type: 'cancelCleaning' }
+  /** Change le modèle économique et le niveau de prix (une fois par sprint). */
+  | { readonly type: 'setPricing'; readonly model: PricingModel; readonly tier: PriceTier };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

@@ -25,6 +25,7 @@ import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
 import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
+import { setPricing } from './pricing';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -203,5 +204,7 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return subscribeCleaning(state, ctx, command.plan);
     case 'CANCEL_CLEANING':
       return cancelCleaning(state, ctx);
+    case 'SET_PRICING':
+      return setPricing(state, ctx, command.model, command.tier);
   }
 }
