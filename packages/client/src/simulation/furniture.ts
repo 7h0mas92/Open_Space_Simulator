@@ -34,6 +34,8 @@ import { serverGearEffects } from './serverRoom';
 import { subscriptionEffects } from './subscriptions';
 import { wallEffects } from './walls';
 import { colorUnlocked, hasUnlock } from './unlocks';
+import { absenceOn } from './teamLife';
+import { getClock } from './time';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
 export function phaseIndex(phase: Phase): number {
@@ -688,7 +690,10 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
   effects.moral += floors.moral;
   effects.quality += floors.quality;
   effects.hypePerDay += floors.hypePerDay;
-  const inOffice = devIds(state).filter((id) => !(id in state.components.remote));
+  const today = getClock(state).day;
+  const inOffice = devIds(state).filter(
+    (id) => !(id in state.components.remote) && absenceOn(state, id, today) === null,
+  );
   effects.seatProductivity = distribute(productivitySeats, inOffice);
   effects.seatEnergySaving = distribute(energySeats, inOffice);
   inOffice.forEach((id, index) => {

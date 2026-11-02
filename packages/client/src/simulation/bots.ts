@@ -1,6 +1,9 @@
 import {
   FURNITURE_CATALOG,
   ROLE_PROFILES,
+  TEAM_LIFE,
+  OUTINGS,
+  OUTING_DEFINITIONS,
   getMeetingFormat,
   ROLE_TRADE,
   TRAININGS,
@@ -31,6 +34,9 @@ import { hasSkillTree, skillPoints } from './skills';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
 import { tasksInColumn } from './tasks';
+import { leaveSlots } from './teamLife';
+import { retroWinner } from './retro';
+import { outingBlocker } from './teamBuilding';
 import { activeVentures, investableCash, ventureBlocker, ventureOffers } from './ventures';
 
 /**
@@ -112,6 +118,12 @@ interface PlanningStyle {
   meetingRoom?: (state: Readonly<GameState>) => MeetingFormatId | null;
   /** Utilise les autres financements (prêt, business angels…) quand l'argent manque. */
   finances?: boolean;
+  /** Pose des congés à ceux qui ont 5 jours en réserve (vie d'équipe). */
+  booksLeave?: boolean;
+  /** Tient la rétrospective et suit le vote de l'équipe. */
+  holdsRetro?: boolean;
+  /** Réserve une sortie d'équipe quand le moral moyen passe sous 50. */
+  teamBuilds?: boolean;
   /** Dépense les points de compétence et paie des formations (arbre de compétences). */
   skills?: boolean;
 }
@@ -143,6 +155,11 @@ class PlannerBot implements Bot {
               accept: runwayMonths(state as GameState) >= this.style.hireRunway / 2,
             },
           ];
+        // Rétrospective : l'action votée par l'équipe (moral pour tous, bonus au sprint).
+        if (this.style.holdsRetro && state.retro.pending?.sprint === state.sprint) {
+          const { options, votes } = state.retro.pending;
+          return [{ type: 'HOLD_RETRO', action: retroWinner(options, votes) }, ...this.plan(state)];
+        }
         return this.plan(state);
       default:
         return [];
@@ -210,6 +227,12 @@ class PlannerBot implements Bot {
       const blocker = meetingFormatBlocker(state as GameState, getMeetingFormat(format));
       if (blocker === null) commands.push({ type: 'FIT_MEETING_ROOM', format });
     }
+
+    // 2 ter. Congés : une semaine à ceux qui ont 5 jours en réserve, s'il reste une place.
+    if (style.booksLeave) commands.push(...leaveBookings(state));
+
+    // 2 quater. Team building : la meilleure sortie possible quand le moral flanche.
+    if (style.teamBuilds) commands.push(...teamOuting(state, runway));
 
     // 3. Recrutement.
     if (teamSize(state) < teamMax(state) && runway > style.hireRunway) {
@@ -388,6 +411,38 @@ class RandomBot implements Bot {
   }
 }
 
+/** Congés qu'un joueur attentif poserait : 5 jours aux devs qui les ont, une semaine libre. */
+export function leaveBookings(state: Readonly<GameState>): Command[] {
+  const life = state.teamLife;
+  if (!life) return [];
+  const slots = leaveSlots(state as GameState);
+  const firstDay = (state.sprint - 1) * 14;
+  const taken = [0, 1].map(
+    (week) =>
+      Object.values(life.absences).filter(
+        (absence) => absence.kind === 'LEAVE' && absence.from === firstDay + week * 7,
+      ).length,
+  );
+  const commands: Command[] = [];
+  for (const id of devIds(state)) {
+    if ((life.leave[id] ?? 0) < TEAM_LIFE.leaveDaysMax || life.absences[id]) continue;
+    const week = taken.findIndex((count) => count < slots);
+    if (week !== 0 && week !== 1) break;
+    taken[week] = (taken[week] ?? 0) + 1;
+    commands.push({ type: 'BOOK_LEAVE', devId: id, week, days: TEAM_LIFE.leaveDaysMax });
+  }
+  return commands;
+}
+
+/** La sortie qu'un joueur attentif réserverait : la plus chère qu'il peut se permettre. */
+export function teamOuting(state: Readonly<GameState>, runway: number): Command[] {
+  if (teamMoral(state) >= 50 || runway < 6 || teamSize(state) < 2) return [];
+  const outing = [...OUTINGS]
+    .reverse()
+    .find((id) => outingBlocker(state as GameState, OUTING_DEFINITIONS[id]) === null);
+  return outing ? [{ type: 'BOOK_TEAM_BUILDING', outing }] : [];
+}
+
 const fixPriority = (state: Readonly<GameState>) => state.gauges.stability < 60;
 
 /** Branches préférées d'un profil, dans l'ordre : ce qu'un joueur logique choisirait. */
@@ -465,6 +520,9 @@ export const BOT_NAMES = [
   'investor',
   'organizer',
   'financier',
+  'rested',
+  'retro',
+  'teambuilder',
   'coach',
 ] as const;
 export type BotName = (typeof BOT_NAMES)[number];
@@ -583,6 +641,40 @@ export function createBot(name: BotName, seed: string): Bot {
         pitchRunway: 10,
         buysFurniture: true,
         finances: true,
+      });
+    case 'rested':
+      // Comme « balanced », mais il pose les congés de l'équipe au lieu d'attendre qu'ils
+      // les réclament.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        booksLeave: true,
+      });
+    case 'retro':
+      // Comme « balanced », mais il tient la rétrospective et suit le vote de l'équipe.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        holdsRetro: true,
+      });
+    case 'teambuilder':
+      // Comme « balanced », mais il emmène l'équipe en sortie quand le moral flanche.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        teamBuilds: true,
       });
     case 'coach':
       // Comme « balanced », mais il fait progresser l'équipe : arbre de compétences et formations.

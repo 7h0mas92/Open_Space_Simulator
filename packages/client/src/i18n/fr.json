@@ -425,7 +425,8 @@
     "leaving": "🚪 A démissionné : part au début du sprint {{sprint}}.",
     "leavingShort": "🚪 part au sprint {{sprint}}",
     "specialty": "Spécialité : {{specialty}} (+20 % sur les {{focus}})",
-    "stack": "Côté de la stack : {{stack}}"
+    "stack": "Côté de la stack : {{stack}}",
+    "officeSummaryAway": "{{office}} au bureau · {{remote}} en télétravail · {{away}} absent·e(s) · {{desks}} bureaux"
   },
   "teamFilters": {
     "sortLabel": "Trier par",
@@ -448,7 +449,8 @@
       "TIRED": "Fatigué·e",
       "LOW_MORALE": "Moral bas",
       "REMOTE": "Télétravail",
-      "OFFICE": "Au bureau"
+      "OFFICE": "Au bureau",
+      "ABSENT": "Absent·e"
     },
     "sorts": {
       "PERF_DESC": "Meilleure performance",
@@ -743,7 +745,9 @@
     "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
     "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
     "INVENTORY_FULL": "L’inventaire est plein : revends des objets rangés.",
-    "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation."
+    "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation.",
+    "NOT_ENOUGH_LEAVE": "Pas assez de jours de congé en réserve.",
+    "LEAVE_SLOTS_FULL": "Trop de monde en congé cette semaine-là : choisis l’autre semaine."
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
@@ -2285,6 +2289,159 @@
     "kinds": {
       "URGENT": "Urgent",
       "WEEKLY": "Semaine"
+    }
+  },
+  "leave": {
+    "title": "Congés",
+    "balance": "Réserve : {{days}}/{{max}} jours",
+    "claim": "réclame ses vacances (−1 moral par jour)",
+    "week": "Semaine",
+    "weekOption": "Semaine {{week}} du sprint",
+    "days": "Durée",
+    "daysOption_one": "{{count}} jour",
+    "daysOption_other": "{{count}} jours",
+    "book": "Poser des congés",
+    "cancel": "Annuler",
+    "planned_one": "Congés prévus semaine {{week}} : {{count}} jour",
+    "planned_other": "Congés prévus semaine {{week}} : {{count}} jours",
+    "plannedShort": "congés S{{week}}",
+    "current": {
+      "LEAVE": "En congés ({{days}} j), retour le {{date}}",
+      "BRIDGE": "Fait le pont, retour le {{date}}",
+      "SICK": "Arrêt maladie ({{days}} j), retour le {{date}}",
+      "BURNOUT": "Burn-out : arrêt de {{days}} jours ouvrés, retour le {{date}}"
+    },
+    "short": {
+      "LEAVE": "en congés",
+      "BRIDGE": "fait le pont",
+      "SICK": "malade",
+      "BURNOUT": "burn-out"
+    },
+    "hint": "1 jour gagné par sprint, 10 au plus. Au retour : énergie au maximum et +{{moral}} moral par jour posé. {{slots}} dev(s) en congé à la fois par semaine. Réserve pleine trop longtemps : le dev pose 5 jours lui-même.",
+    "hintLater": "Les congés se posent pendant la planification.",
+    "bridge": "🌉 Pont ce sprint : ceux qui ont des jours en réserve feront le pont.",
+    "bridgeRefused": "🌉 Ponts refusés : tout le monde viendra travailler (−{{moral}} moral pour ceux qui comptaient le faire).",
+    "refuseBridges": "Refuser les ponts",
+    "acceptBridges": "Accepter les ponts",
+    "holiday": "Jour férié : {{name}}",
+    "holidays": {
+      "NEW_YEAR": "Jour de l’an",
+      "EASTER_MONDAY": "Lundi de Pâques",
+      "LABOUR_DAY": "Fête du Travail",
+      "VICTORY_1945": "Victoire 1945",
+      "ASCENSION": "Ascension",
+      "WHIT_MONDAY": "Lundi de Pentecôte",
+      "BASTILLE_DAY": "Fête nationale",
+      "ASSUMPTION": "Assomption",
+      "ALL_SAINTS": "Toussaint",
+      "ARMISTICE": "Armistice",
+      "CHRISTMAS": "Noël"
+    }
+  },
+  "retro": {
+    "title": "Rétrospective",
+    "kicker": "Fin de sprint, post-it et café tiède",
+    "intro": "L’équipe propose une action pour le prochain sprint. Suivre son vote : +{{follow}} moral pour tous. Imposer autre chose : −{{impose}} moral pour ceux qui ont voté autrement.",
+    "teamChoice": "choix de l’équipe",
+    "votes_one": "1 voix : {{names}}",
+    "votes_other": "{{count}} voix : {{names}}",
+    "noVote": "Aucune voix",
+    "skip": "Passer la rétro",
+    "active": "Action de la rétro : {{action}}",
+    "actions": {
+      "MORE_TESTS": {
+        "name": "Plus de tests",
+        "problem": "La prod est tombée plusieurs fois.",
+        "effect": "−15 % de dette sur les features livrées"
+      },
+      "CODE_REVIEW": {
+        "name": "Revue de code obligatoire",
+        "problem": "La dette technique est haute.",
+        "effect": "+5 % de qualité, −5 % de vitesse"
+      },
+      "COFFEE_BAR": {
+        "name": "Café en libre-service",
+        "problem": "Le café a manqué.",
+        "effect": "−30 % de consommation de café"
+      },
+      "NO_MEETING_WEDNESDAY": {
+        "name": "Mercredi sans réunion",
+        "problem": "Trop de réunions.",
+        "effect": "Pas de réunion ni de malus de réunion le mercredi"
+      },
+      "MEDIATION": {
+        "name": "Médiation",
+        "problem": "Des collègues sont en conflit.",
+        "effect": "+15 d’affinité pour chaque relation tendue, tout de suite"
+      },
+      "ON_CALL": {
+        "name": "Astreinte organisée",
+        "problem": "Des urgences ont été ratées.",
+        "effect": "+25 % de vitesse sur les urgences"
+      },
+      "FLEX_HOURS": {
+        "name": "Horaires flexibles",
+        "problem": "L’équipe est fatiguée.",
+        "effect": "−15 % de fatigue au travail"
+      },
+      "SMALLER_TICKETS": {
+        "name": "Découper les tickets",
+        "problem": "Presque rien n’a été livré.",
+        "effect": "+8 % de vitesse sur les petites tâches (2 points au plus)"
+      },
+      "KUDOS": {
+        "name": "Kudos du vendredi",
+        "problem": "Le moral est bas.",
+        "effect": "+1 moral par jour ouvré"
+      },
+      "KEEP_GOING": {
+        "name": "Continuer comme ça",
+        "problem": "Rien de grave à signaler.",
+        "effect": "+3 % de vitesse"
+      }
+    }
+  },
+  "teamBuilding": {
+    "title": "Team building",
+    "intro": "Une sortie par sprint, en fin de 2e semaine. Payée à la réservation, elle coûte du temps de travail et répare le moral et les conflits. Sorties faites : {{count}}.",
+    "booked": "{{outing}} réservé {{when}} ({{cost}}).",
+    "cancel": "Annuler (remboursé à {{refund}} %)",
+    "hoursLost_one": "{{when}} : {{count}} heure de travail perdue",
+    "hoursLost_other": "{{when}} : {{count}} heures de travail perdues",
+    "noTimeLost": "{{when}} : aucune heure de travail perdue",
+    "repeat": "Déjà fait au dernier sprint : moral divisé par deux.",
+    "locked": "Disponible dès la phase {{phase}}",
+    "blockers": {
+      "COOLDOWN": "Une sortie est déjà prévue ce sprint.",
+      "NOT_ENOUGH_MONEY": "Pas assez de trésorerie.",
+      "LOCKED": "Pas encore disponible."
+    },
+    "outings": {
+      "afterwork": {
+        "name": "Afterwork pizza-bière",
+        "when": "jeudi soir de la 2e semaine",
+        "effect": "+6 moral, +8 d’affinité entre tous ; −15 d’énergie le lendemain"
+      },
+      "escape-game": {
+        "name": "Escape game",
+        "when": "vendredi après-midi de la 2e semaine",
+        "effect": "+10 moral, +25 d’affinité pour les paires en conflit (15 % de chance que ça empire)"
+      },
+      "laser-game": {
+        "name": "Laser game",
+        "when": "vendredi après-midi de la 2e semaine",
+        "effect": "+12 moral, +10 d’affinité entre tous ; les gros egos perdants boudent"
+      },
+      "seminar": {
+        "name": "Séminaire au vert",
+        "when": "vendredi de la 2e semaine",
+        "effect": "+20 moral, +20 d’affinité, +40 d’énergie, +3 hype"
+      },
+      "offsite": {
+        "name": "Off-site à Lisbonne",
+        "when": "jeudi et vendredi de la 2e semaine",
+        "effect": "+30 moral, +30 d’affinité, +20 d’énergie, +8 hype, −5 de dette"
+      }
     }
   },
   "skills": {

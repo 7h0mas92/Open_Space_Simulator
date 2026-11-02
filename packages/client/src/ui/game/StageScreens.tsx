@@ -6,10 +6,13 @@ import {
   getStoryReward,
   isEndless,
   type SprintObjective,
+  RETRO,
+  type RetroAction,
 } from '@oss/shared';
 import { MissionGoals } from '../story/MissionGoals';
 import { useTranslation } from 'react-i18next';
 import type {
+  RetroView,
   DevView,
   EventView,
   GameView,
@@ -46,18 +49,23 @@ export function StageScreens({ view }: { view: GameView }) {
       const dev = request && view.devs.find((candidate) => candidate.id === request.devId);
       return request && dev ? <RaiseScreen request={request} dev={dev} /> : null;
     }
+    case 'retro':
+      return view.retro && <RetroScreen retro={view.retro} devs={view.devs} />;
     default:
       return null;
   }
 }
 
 /** Écran d'étape affiché pour cet instantané, ou `null` quand la partie est jouable. */
-export function stageScreen(view: GameView): 'end' | 'pitch' | 'demo' | 'event' | 'raise' | null {
+export function stageScreen(
+  view: GameView,
+): 'end' | 'pitch' | 'demo' | 'event' | 'raise' | 'retro' | null {
   if (view.step === 'ENDED') return 'end';
   if (view.step === 'PITCH' && view.pitch) return 'pitch';
   if (view.step === 'DEMO') return 'demo';
   if (view.event) return 'event';
   if (view.step === 'PLANNING' && view.raiseRequest) return 'raise';
+  if (view.step === 'PLANNING' && view.retro) return 'retro';
   return null;
 }
 
@@ -287,6 +295,83 @@ function RaiseScreen({ request, dev }: { request: RaiseRequestView; dev: DevView
           </button>
         </li>
       </ul>
+    </Dialog>
+  );
+}
+
+/**
+ * Rétrospective : 3 actions d'amélioration, les votes de l'équipe, et le choix du joueur
+ * (suivre le vote, imposer une autre action, ou passer).
+ */
+function RetroScreen({ retro, devs }: { retro: RetroView; devs: readonly DevView[] }) {
+  const { t } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const title = t('retro.title');
+  const hold = (action: RetroAction | null) => void dispatch({ type: 'holdRetro', action });
+  const names = (ids: readonly string[]) =>
+    ids.map((id) => devs.find((dev) => dev.id === id)?.name ?? '?').join(', ');
+
+  // Touches 1 à 3 : choisir une action ; 0 : passer.
+  useEffect(() => {
+    const onKey = (keyEvent: KeyboardEvent) => {
+      const index = Number(keyEvent.key);
+      if (!Number.isInteger(index) || index > retro.options.length) return;
+      keyEvent.preventDefault();
+      void dispatch({
+        type: 'holdRetro',
+        action: index === 0 ? null : (retro.options[index - 1]?.action ?? null),
+      });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dispatch, retro]);
+
+  return (
+    <Dialog title={title} className="retro-screen">
+      <p className="eyebrow">
+        <span aria-hidden="true">🔁 </span>
+        {t('retro.kicker')}
+      </p>
+      <h2>{title}</h2>
+      <p>{t('retro.intro', { follow: RETRO.followMoral, impose: RETRO.imposeMoral })}</p>
+      <ul className="choices">
+        {retro.options.map(({ action, voters }, index) => (
+          <li key={action}>
+            <button
+              type="button"
+              className={`choice ${action === retro.winner ? 'is-winner' : ''}`}
+              aria-keyshortcuts={String(index + 1)}
+              onClick={() => hold(action)}
+            >
+              <span className="choice-key" aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className="choice-body">
+                <strong>
+                  {t(`retro.actions.${action}.name`)}
+                  {action === retro.winner && (
+                    <span className="retro-winner"> · {t('retro.teamChoice')}</span>
+                  )}
+                </strong>
+                <span className="retro-problem">{t(`retro.actions.${action}.problem`)}</span>
+                <ul className="effects">
+                  <li className="up">{t(`retro.actions.${action}.effect`)}</li>
+                </ul>
+                <span className="retro-votes">
+                  {voters.length > 0
+                    ? t('retro.votes', { count: voters.length, names: names(voters) })
+                    : t('retro.noVote')}
+                </span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div className="stage-actions">
+        <button type="button" aria-keyshortcuts="0" onClick={() => hold(null)}>
+          {t('retro.skip')}
+        </button>
+      </div>
     </Dialog>
   );
 }

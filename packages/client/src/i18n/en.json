@@ -425,7 +425,8 @@
     "leaving": "🚪 Handed in their notice: leaves at the start of sprint {{sprint}}.",
     "leavingShort": "🚪 leaves at sprint {{sprint}}",
     "specialty": "Specialty: {{specialty}} (+20% on {{focus}})",
-    "stack": "Stack side: {{stack}}"
+    "stack": "Stack side: {{stack}}",
+    "officeSummaryAway": "{{office}} at the office · {{remote}} remote · {{away}} away · {{desks}} desks"
   },
   "teamFilters": {
     "sortLabel": "Sort by",
@@ -448,7 +449,8 @@
       "TIRED": "Tired",
       "LOW_MORALE": "Low morale",
       "REMOTE": "Remote",
-      "OFFICE": "At the office"
+      "OFFICE": "At the office",
+      "ABSENT": "Away"
     },
     "sorts": {
       "PERF_DESC": "Best performance",
@@ -743,7 +745,9 @@
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
     "NOT_AVAILABLE": "This financing is not available right now.",
     "INVENTORY_FULL": "The inventory is full: sell some stored items.",
-    "RAISE_PENDING": "Answer the raise request first."
+    "RAISE_PENDING": "Answer the raise request first.",
+    "NOT_ENOUGH_LEAVE": "Not enough leave days saved up.",
+    "LEAVE_SLOTS_FULL": "Too many people on leave that week: pick the other week."
   },
   "dashboard": {
     "intro": "Gauge history, one point per day.",
@@ -2285,6 +2289,159 @@
     "kinds": {
       "URGENT": "Urgent",
       "WEEKLY": "Weekly"
+    }
+  },
+  "leave": {
+    "title": "Leave",
+    "balance": "Saved up: {{days}}/{{max}} days",
+    "claim": "wants a holiday (−1 morale per day)",
+    "week": "Week",
+    "weekOption": "Sprint week {{week}}",
+    "days": "Length",
+    "daysOption_one": "{{count}} day",
+    "daysOption_other": "{{count}} days",
+    "book": "Book leave",
+    "cancel": "Cancel",
+    "planned_one": "Leave booked in week {{week}}: {{count}} day",
+    "planned_other": "Leave booked in week {{week}}: {{count}} days",
+    "plannedShort": "leave W{{week}}",
+    "current": {
+      "LEAVE": "On leave ({{days}} d), back on {{date}}",
+      "BRIDGE": "Taking the bridge day, back on {{date}}",
+      "SICK": "Sick leave ({{days}} d), back on {{date}}",
+      "BURNOUT": "Burnout: {{days}} working days off, back on {{date}}"
+    },
+    "short": {
+      "LEAVE": "on leave",
+      "BRIDGE": "bridge day",
+      "SICK": "sick",
+      "BURNOUT": "burnout"
+    },
+    "hint": "1 day earned per sprint, 10 at most. On return: full energy and +{{moral}} morale per day off. {{slots}} dev(s) on leave at a time per week. Saved up too long: the dev books 5 days on their own.",
+    "hintLater": "Leave is booked during planning.",
+    "bridge": "🌉 Bridge day this sprint: anyone with days saved up will take it off.",
+    "bridgeRefused": "🌉 Bridge days refused: everyone comes in (−{{moral}} morale for those who planned to take it).",
+    "refuseBridges": "Refuse bridge days",
+    "acceptBridges": "Allow bridge days",
+    "holiday": "Public holiday: {{name}}",
+    "holidays": {
+      "NEW_YEAR": "New Year’s Day",
+      "EASTER_MONDAY": "Easter Monday",
+      "LABOUR_DAY": "Labour Day",
+      "VICTORY_1945": "Victory in Europe Day",
+      "ASCENSION": "Ascension Day",
+      "WHIT_MONDAY": "Whit Monday",
+      "BASTILLE_DAY": "Bastille Day",
+      "ASSUMPTION": "Assumption Day",
+      "ALL_SAINTS": "All Saints’ Day",
+      "ARMISTICE": "Armistice Day",
+      "CHRISTMAS": "Christmas Day"
+    }
+  },
+  "retro": {
+    "title": "Retrospective",
+    "kicker": "End of sprint, sticky notes and lukewarm coffee",
+    "intro": "The team suggests one action for the next sprint. Follow their vote: +{{follow}} morale for everyone. Impose something else: −{{impose}} morale for those who voted otherwise.",
+    "teamChoice": "team’s pick",
+    "votes_one": "1 vote: {{names}}",
+    "votes_other": "{{count}} votes: {{names}}",
+    "noVote": "No votes",
+    "skip": "Skip the retro",
+    "active": "Retro action: {{action}}",
+    "actions": {
+      "MORE_TESTS": {
+        "name": "More tests",
+        "problem": "Prod went down several times.",
+        "effect": "−15% debt on shipped features"
+      },
+      "CODE_REVIEW": {
+        "name": "Mandatory code review",
+        "problem": "Tech debt is high.",
+        "effect": "+5% quality, −5% speed"
+      },
+      "COFFEE_BAR": {
+        "name": "Self-service coffee",
+        "problem": "We ran out of coffee.",
+        "effect": "−30% coffee consumption"
+      },
+      "NO_MEETING_WEDNESDAY": {
+        "name": "No-meeting Wednesday",
+        "problem": "Too many meetings.",
+        "effect": "No meetings and no meeting penalty on Wednesdays"
+      },
+      "MEDIATION": {
+        "name": "Mediation",
+        "problem": "Some colleagues are in conflict.",
+        "effect": "+15 affinity for every strained relationship, right away"
+      },
+      "ON_CALL": {
+        "name": "Organised on-call",
+        "problem": "Urgent tasks were missed.",
+        "effect": "+25% speed on urgent tasks"
+      },
+      "FLEX_HOURS": {
+        "name": "Flexible hours",
+        "problem": "The team is tired.",
+        "effect": "−15% fatigue at work"
+      },
+      "SMALLER_TICKETS": {
+        "name": "Smaller tickets",
+        "problem": "Almost nothing shipped.",
+        "effect": "+8% speed on small tasks (2 points or less)"
+      },
+      "KUDOS": {
+        "name": "Friday kudos",
+        "problem": "Morale is low.",
+        "effect": "+1 morale per working day"
+      },
+      "KEEP_GOING": {
+        "name": "Keep it up",
+        "problem": "Nothing serious to report.",
+        "effect": "+3% speed"
+      }
+    }
+  },
+  "teamBuilding": {
+    "title": "Team building",
+    "intro": "One outing per sprint, at the end of week 2. Paid when booked, it costs working time and repairs morale and conflicts. Outings so far: {{count}}.",
+    "booked": "{{outing}} booked {{when}} ({{cost}}).",
+    "cancel": "Cancel ({{refund}}% refunded)",
+    "hoursLost_one": "{{when}}: {{count}} working hour lost",
+    "hoursLost_other": "{{when}}: {{count}} working hours lost",
+    "noTimeLost": "{{when}}: no working hours lost",
+    "repeat": "Already done last sprint: morale gain halved.",
+    "locked": "Available from the {{phase}} phase",
+    "blockers": {
+      "COOLDOWN": "An outing is already booked this sprint.",
+      "NOT_ENOUGH_MONEY": "Not enough cash.",
+      "LOCKED": "Not available yet."
+    },
+    "outings": {
+      "afterwork": {
+        "name": "Pizza & beer afterwork",
+        "when": "Thursday evening of week 2",
+        "effect": "+6 morale, +8 affinity between everyone; −15 energy the next day"
+      },
+      "escape-game": {
+        "name": "Escape game",
+        "when": "Friday afternoon of week 2",
+        "effect": "+10 morale, +25 affinity for pairs in conflict (15% chance it backfires)"
+      },
+      "laser-game": {
+        "name": "Laser tag",
+        "when": "Friday afternoon of week 2",
+        "effect": "+12 morale, +10 affinity between everyone; big egos on the losing side sulk"
+      },
+      "seminar": {
+        "name": "Countryside seminar",
+        "when": "Friday of week 2",
+        "effect": "+20 morale, +20 affinity, +40 energy, +3 hype"
+      },
+      "offsite": {
+        "name": "Lisbon off-site",
+        "when": "Thursday and Friday of week 2",
+        "effect": "+30 morale, +30 affinity, +20 energy, +8 hype, −5 debt"
+      }
     }
   },
   "skills": {

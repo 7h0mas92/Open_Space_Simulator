@@ -2911,6 +2911,134 @@ legend {
   font-size: 0.85rem;
 }
 
+/* --- Team building ------------------------------------------------------------------ */
+.team-building {
+  margin: 4px 0 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.team-building summary {
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.team-building-booked {
+  color: var(--accent);
+}
+
+.team-building-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-building-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.team-building-outing {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 400;
+}
+
+.team-building-icon {
+  flex: none;
+  width: 2rem;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.team-building-body {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+
+.team-building-body strong {
+  font-size: 1rem;
+}
+
+/* --- Rétrospective de sprint ------------------------------------------------------- */
+.retro-screen .choice.is-winner {
+  border-color: var(--accent);
+}
+
+.retro-winner {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.retro-problem,
+.retro-votes {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* --- Congés, ponts et arrêts maladie ------------------------------------------------- */
+.leave-bridge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 4px 0 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.leave-bridge p {
+  flex: 1 1 220px;
+  margin: 0;
+}
+
+.leave-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.leave-claim,
+.leave-badge {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.leave-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.leave-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
 /* --- Encadrement de l'équipe (directeur, managers, scrum master...) ----------------- */
 .leadership {
   margin: 0 0 8px;

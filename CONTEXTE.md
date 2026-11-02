@@ -1,9 +1,7 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : arbre de
-> compétences des devs (tâche T3 de [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md)),
-> PR #150 fusionnée dans `develop` (validée par Thomas), après les offres internet et la
-> température des salles des serveurs de Melvin (PR #129, commit `7de22b1`).
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : team building
+> (tâche T5, 3e des 3 PR). Base : `develop` avec les congés (#149) et la rétrospective (#155).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -74,7 +72,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                |
 | **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                |
 | Histoire longue, rivaux, arbre R&D (T2, T4)         | Thomas          | Proposition prête, rien de codé                 |
-| Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                      |
+| Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)         |
 | Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                             |
 
 **Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
@@ -298,6 +296,9 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                |
 | -------- | --------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/11    | Thomas + Claude | T5 (3/3)          | Team building : 5 sorties réservées en planification, effets à 18h le dernier jour, hasard sur `seed#teambuilding#sprint`. État `teamBuilding` par défaut. T5 terminée : les 3 PR empilées sont fusionnées ensemble par #156 (#149 et #155 fermées, incluses).                                                                                                                                            |
+| 02/11    | Thomas + Claude | T5 (2/3)          | Rétrospective de sprint : 3 actions selon les problèmes du sprint, vote des devs sur `seed#retro#sprint`, effet pendant un sprint. Passer la rétro ne coûte rien (écart avec la proposition, pour garder la partie identique). État `retro` par défaut. Bot « retro » : valorisation médiane 297 M€ contre 266 M€ pour « balanced ».                                                                      |
+| 02/11    | Thomas + Claude | T5 (1/3)          | Congés payés, 11 jours fériés, ponts de mai, arrêts maladie, burn-out au lieu de la démission. État `teamLife` (null = ancienne sauvegarde ou défi 3 sprints : rien ne change), hasard sur `seed#leave#jour`. Les replays des anciens scores Normal et Daily ne rejouent plus à l'identique (comme pour les autres mécaniques automatiques).                                                              |
 | 02/11    | Thomas + Claude | #150              | Tâche T3 : arbre de compétences des devs (1 point par niveau, 3 branches de 5 nœuds, nœud de métier, formations, réinitialisation, Crunch), ouvert partout sauf en Daily. Commandes `LEARN_SKILL`, `RESET_SKILLS`, `TRAIN_DEV`, `USE_CRUNCH`, composant `skills`. Aucun tirage : 48 parties sans arbre identiques à `develop`. Bot « coach ». Fichiers communs : `state.ts`, `bots.ts`, `view/*`, i18n.   |
 | 02/11    | Melvin + Claude | #129              | Internet de la salle des serveurs branché sur les abonnements : 6 offres aux prix réels, capacité en salariés (`maxUsers`), mise en service (`setupFee`), saturation. Température des salles (chaleur et clim en kW, sonde de supervision). Champs `saturated` et `serverHeat` par défaut, aucun tirage. Un champ ajouté à l'état initial suit l'ordre du schéma Zod, sinon le test de sauvegarde échoue. |
 | 02/11    | Melvin + Claude | #127, #140        | Toile du projecteur toute blanche quand elle monte ou descend (plus de cadre noir, `FABRIC_WHITE`), état d'avancement et README à jour.                                                                                                                                                                                                                                                                   |

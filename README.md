@@ -421,6 +421,27 @@ flowchart LR
   salaire. Ouvert dans tous les modes sauf le Daily. Aucun tirage : sans compétence, chaque
   multiplicateur vaut exactement 1 et la partie reste identique au bit près
   (`shared/sim/skills.ts`, `client/src/simulation/skills.ts`, `ui/team/SkillTree.tsx`).
+- **Congés, jours fériés et arrêts maladie** : les 11 jours fériés français ferment le bureau.
+  Chaque dev gagne un jour de congé par sprint (10 au plus) et le joueur les pose pendant la
+  planification, dans la fiche du dev (1 à 5 jours, un absent pour 4 devs à la fois) : le dev
+  revient reposé et de meilleure humeur. Celui qui garde trop longtemps une réserve pleine râle,
+  puis pose ses jours tout seul. Les ponts de mai sont faits par défaut ; les refuser garde la
+  semaine entière mais vexe l'équipe. Des arrêts maladie de 1 à 3 jours tombent au hasard (plus
+  souvent l'hiver). Un dev à bout ne démissionne plus aussitôt : il part 10 jours en arrêt pour
+  burn-out et ne démissionne qu'en cas de rechute. Hasard sur une graine à part ; les anciennes
+  sauvegardes et le défi « 3 sprints » restent sans congés (`client/src/simulation/teamLife.ts`).
+- **Rétrospective** : dès le 2e sprint, la planification s'ouvre sur une rétro. L'équipe propose
+  trois actions tirées des problèmes du sprint écoulé (plus de tests après des pannes, médiation
+  après des disputes, café en libre-service quand la machine a été vidée…) et vote selon les goûts
+  de chacun. Suivre le vote remonte le moral de tous, imposer autre chose vexe ceux qui ont voté
+  autrement. L'action choisie vaut pour le sprint qui commence (🔁 dans le HUD). On peut passer la
+  rétro sans pénalité (`client/src/simulation/retro.ts`).
+- **Team building** : pendant la planification, le panneau Équipe propose une sortie pour la fin
+  du sprint : afterwork, escape game, laser game (Seed), séminaire au vert (Série A) ou off-site à
+  Lisbonne (Licorne). Elle se paie par participant et coûte des heures de travail, mais remonte
+  le moral et rapproche l'équipe ; l'escape game peut réconcilier deux devs en conflit, ou
+  empirer les choses. Refaire la même sortie au sprint suivant rapporte moitié moins
+  (`client/src/simulation/teamBuilding.ts`).
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une

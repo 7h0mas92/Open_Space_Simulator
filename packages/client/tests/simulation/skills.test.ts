@@ -363,9 +363,13 @@ describe('Arbre de compétences : effets', () => {
     state.gauges.debt = 100; // le moral redescend à 0 malgré la bonne humeur
     dailySystem(state, ctx, { ...clockAt(1, 0), hour: 0 });
     expect(victim in state.components.identity).toBe(true);
-    // Sans leader, il démissionne.
+    // Sans leader, il part en arrêt pour burn-out (congés activés) ou démissionne (sans congés).
     give(state, ids[0] ?? '', ['stamina']);
     const after = state.components.mood[victim];
+    if (after) after.moral = 0;
+    dailySystem(state, ctx, { ...clockAt(1, 0), hour: 0 });
+    expect(state.teamLife?.absences[victim]?.kind).toBe('BURNOUT');
+    state.teamLife = null;
     if (after) after.moral = 0;
     dailySystem(state, ctx, { ...clockAt(1, 0), hour: 0 });
     expect(victim in state.components.identity).toBe(false);

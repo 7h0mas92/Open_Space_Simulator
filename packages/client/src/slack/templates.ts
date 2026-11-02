@@ -1043,6 +1043,153 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── Congés, arrêts maladie, jours fériés ─────────────────────────────────
+  {
+    trigger: 'DEV_ON_LEAVE',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🏖️ {event} Son message d’absence renvoie vers « quelqu’un d’autre ».',
+      '🏖️ {event} Their out-of-office points to "someone else".',
+    ),
+  },
+  {
+    trigger: 'DEV_ON_LEAVE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Qui a le mot de passe de son poste ? Je demande pour la prod.',
+      '{event} Who has their laptop password? Asking for prod.',
+    ),
+  },
+  {
+    trigger: 'DEV_ON_LEAVE',
+    channel: 'random',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} Je décale ses 6 réunions à son retour, ça lui fera plaisir.',
+      '{event} I’ll move their 6 meetings to when they’re back, they’ll love it.',
+    ),
+  },
+  {
+    trigger: 'DEV_SICK',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🤒 {event} Merci d’envoyer l’arrêt de travail, pas une photo du thermomètre.',
+      '🤒 {event} Please send the doctor’s note, not a photo of the thermometer.',
+    ),
+  },
+  {
+    trigger: 'DEV_SICK',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Il·elle a toussé sur le clavier partagé vendredi. Je dis ça, je dis rien.',
+      '{event} They coughed on the shared keyboard on Friday. Just saying.',
+    ),
+  },
+  {
+    trigger: 'DEV_BURNOUT',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🔥 {event} On réfléchit à un atelier « bien-être » d’une heure, après 19h.',
+      '🔥 {event} We’re considering a one-hour "wellbeing" workshop, after 7pm.',
+    ),
+  },
+  {
+    trigger: 'DEV_BURNOUT',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} On aurait peut-être dû écouter quand il·elle parlait de dormir sous son bureau.',
+      '{event} Maybe we should have listened when they talked about sleeping under their desk.',
+    ),
+  },
+  {
+    trigger: 'DEV_BACK',
+    channel: 'general',
+    author: dev(),
+    text: t(
+      '{event} 437 messages non lus. Bon retour !',
+      '{event} 437 unread messages. Welcome back!',
+    ),
+  },
+  {
+    trigger: 'PUBLIC_HOLIDAY',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('{event} Astreinte : moi. Comme d’habitude.', '{event} On call: me. As usual.'),
+  },
+  {
+    trigger: 'PUBLIC_HOLIDAY',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Quelqu’un a vu passer un déploiement ce matin ? Non ? Tant mieux.',
+      '{event} Anyone see a deploy go out this morning? No? Good.',
+    ),
+  },
+
+  // ─── RETRO_HELD ───────────────────────────────────────────────────────────
+  {
+    trigger: 'RETRO_HELD',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} J’ai pris une photo du tableau de post-it, je la range avec les 14 autres.',
+      '{event} I took a photo of the sticky-note board, filing it with the other 14.',
+    ),
+  },
+  {
+    trigger: 'RETRO_HELD',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Qui a écrit « moins de rétros » sur un post-it ? Courageux.',
+      '{event} Who wrote "fewer retros" on a sticky note? Brave.',
+    ),
+  },
+
+  // ─── TEAM_BUILDING ────────────────────────────────────────────────────────
+  {
+    trigger: 'TEAM_BUILDING_BOOKED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '{event} Présence obligatoire. Fun obligatoire aussi.',
+      '{event} Attendance is mandatory. So is fun.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_BOOKED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Est-ce que ça compte comme du temps de travail ? Je demande pour ma motivation.',
+      '{event} Does it count as working time? Asking for my motivation.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_DONE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Photos dans #random, vidéos nulle part.',
+      '{event} Photos in #random, videos nowhere.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_DONE',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} J’ai déjà prévu le debrief du team building. Lundi, 2h.',
+      '{event} I’ve already booked the team building debrief. Monday, 2 hours.',
+    ),
+  },
+
   // ─── DEV_BIRTHDAY ─────────────────────────────────────────────────────────
   {
     trigger: 'DEV_BIRTHDAY',

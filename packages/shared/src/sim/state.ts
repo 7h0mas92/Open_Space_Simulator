@@ -25,6 +25,9 @@ import { VentureSchema } from './ventures.js';
 import { FloorFinishesSchema } from './floors.js';
 import { WallFinishesSchema } from './walls.js';
 import { AnnexDecorSchema } from './annexDecor.js';
+import { TeamLifeStateSchema } from './teamLife.js';
+import { emptyRetroState, RetroStateSchema } from './retro.js';
+import { emptyTeamBuildingState, TeamBuildingStateSchema } from './teamBuilding.js';
 import { StoryMissionIdSchema } from '../story/campaign.js';
 import { StoryRewardIdSchema } from '../story/rewards.js';
 
@@ -230,6 +233,10 @@ export const GameStatsSchema = z.object({
   maxUsers: z.number(),
   /** Journées de télétravail cumulées (hors Dev Fantôme). */
   remoteDays: z.number().int().default(0),
+  /** Jours de congé pris (congés posés et ponts), jours d'arrêt maladie, arrêts pour burn-out. */
+  leaveDays: z.number().int().default(0),
+  sickDays: z.number().int().default(0),
+  burnoutLeaves: z.number().int().default(0),
   /** Filiales créées, et dividendes et reventes encaissés. */
   venturesFounded: z.number().int().default(0),
   ventureCashIn: z.number().default(0),
@@ -286,6 +293,17 @@ export const NOTIFICATION_KINDS = [
   'CRUNCH',
   'DEV_BIRTHDAY',
   'DEV_REMOTE',
+  /** Congés posés ou pont, arrêt maladie, arrêt pour burn-out, retour d'absence, jour férié. */
+  'DEV_ON_LEAVE',
+  'DEV_SICK',
+  'DEV_BURNOUT',
+  'DEV_BACK',
+  'PUBLIC_HOLIDAY',
+  /** Rétrospective tenue : action choisie par l'équipe ou imposée. */
+  'RETRO_HELD',
+  /** Team building réservé, puis terminé (avec ses effets). */
+  'TEAM_BUILDING_BOOKED',
+  'TEAM_BUILDING_DONE',
   'RUST_CONVERT',
   'FUNDS_RAISED',
   'PITCH_FAILED',
@@ -445,6 +463,15 @@ export const GameStateSchema = z.object({
   pets: z.array(PetSchema).max(PETS.max).default([]),
   /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */
   raises: RaisesStateSchema.default(emptyRaisesState),
+  /**
+   * Congés, ponts et arrêts maladie (null : vieilles sauvegardes et défi « 3 sprints », où un
+   * moral à 0 mène directement à la démission).
+   */
+  teamLife: TeamLifeStateSchema.nullable().default(null),
+  /** Rétrospective de sprint : proposée, et action en vigueur (absente des vieilles sauvegardes). */
+  retro: RetroStateSchema.default(emptyRetroState),
+  /** Team building réservé et sorties faites (absent des vieilles sauvegardes). */
+  teamBuilding: TeamBuildingStateSchema.default(emptyTeamBuildingState),
   /**
    * Ancien champ de l'abonnement fibre, d'avant la rubrique Abonnements : repris dans
    * `subscriptions` au chargement (`migrateLegacyFibre`), toujours null ensuite.
