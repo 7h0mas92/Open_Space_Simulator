@@ -608,6 +608,12 @@ sequenceDiagram
   Facile, Normal et dans les défis, jamais en Daily. Les récompenses d'une partie sont fixées au
   départ, envoyées avec le score et rejouées par le serveur, qui refuse celles qui ne sont pas
   gagnées sur le compte (`UNLOCK_NOT_EARNED`). Les missions n'ont pas de classement.
+- **Histoire en 5 actes** (« Ctrl+Alt+Fonder », `packages/shared/src/story/acts.ts`) : une seule
+  longue partie de 60 sprints, du garage à la Bourse. Chaque acte a un objectif principal avec
+  une date limite et des objectifs secondaires, qui sont les 10 missions courtes (mêmes
+  récompenses, même vérification par rejeu côté serveur, avec `campaign: true`). Un point de
+  sauvegarde est pris au début de chaque acte sur l'appareil, pour reprendre un acte raté. Les
+  missions courtes restent jouables dans l'onglet « Missions ». Calibrage : `pnpm balance:campaign`.
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le

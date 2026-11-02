@@ -1,4 +1,5 @@
 import {
+  STORY_CAMPAIGN,
   type EventCard,
   type GameMode,
   type GameResult,
@@ -6,6 +7,7 @@ import {
   type LoggedCommand,
   type StoryMissionId,
   type StoryRewardId,
+  type StoryStart,
 } from '@oss/shared';
 import { CardLibrary, replay, ReplayError } from '@oss/client/simulation';
 import { AppError } from '../lib/errors.js';
@@ -23,8 +25,8 @@ export interface VerifiedGame {
 export function verifyGame(input: {
   seed: string;
   mode: GameMode;
-  /** Mode Histoire : la mission jouée. */
-  mission?: StoryMissionId;
+  /** Mode Histoire : la mission jouée, ou la longue partie en actes. */
+  mission?: StoryStart;
   /** Récompenses du mode Histoire utilisées par la partie (déjà vérifiées par l'appelant). */
   unlocks?: readonly StoryRewardId[];
   commands: readonly LoggedCommand[];
@@ -68,4 +70,38 @@ export function verifyMission(input: {
   if (!mission || mission.id !== input.missionId || !mission.success)
     throw new AppError(422, 'MISSION_NOT_COMPLETED', 'La mission n’est pas réussie au rejeu');
   return verified;
+}
+
+/**
+ * Mode Histoire, longue partie en actes : rejoue l'histoire jusqu'à la dernière commande (la
+ * partie peut être encore en cours) et vérifie que l'objectif est bien rempli.
+ */
+export function verifyCampaignGoal(input: {
+  missionId: StoryMissionId;
+  seed: string;
+  commands: readonly LoggedCommand[];
+  cards: readonly EventCard[];
+}): GameState {
+  let state: GameState;
+  try {
+    state = replay({
+      seed: input.seed,
+      mode: 'STORY',
+      mission: STORY_CAMPAIGN,
+      commands: input.commands,
+      cards: new CardLibrary(input.cards),
+    }).state;
+  } catch (error) {
+    if (error instanceof ReplayError) {
+      throw new AppError(
+        422,
+        'REPLAY_REJECTED',
+        `Rejeu impossible (commande n°${error.commandIndex + 1}) : ${error.message}`,
+      );
+    }
+    throw error;
+  }
+  if (!state.story?.campaign?.done.includes(input.missionId))
+    throw new AppError(422, 'MISSION_NOT_COMPLETED', 'L’objectif n’est pas rempli au rejeu');
+  return state;
 }

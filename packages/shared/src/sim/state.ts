@@ -27,6 +27,7 @@ import { WallFinishesSchema } from './walls.js';
 import { AnnexDecorSchema } from './annexDecor.js';
 import { StoryMissionIdSchema } from '../story/campaign.js';
 import { StoryRewardIdSchema } from '../story/rewards.js';
+import { CampaignResultSchema, CampaignStateSchema } from '../story/acts.js';
 
 /**
  * État complet d'une partie. Il est 100 % sérialisable en JSON : une sauvegarde est
@@ -329,6 +330,8 @@ export const NOTIFICATION_KINDS = [
   'OBJECTIVE_FAILED',
   'CAREER_MILESTONE',
   'CAREER_MISSED',
+  'STORY_ACT',
+  'STORY_GOAL',
   'SPRINT_LOST',
   'GAME_OVER',
   'ACHIEVEMENT_UNLOCKED',
@@ -369,14 +372,23 @@ export const GameResultSchema = z.object({
       failure: z.enum(['CONSTRAINT', 'BANKRUPTCY', 'TIME', 'SOLD']).nullable(),
     })
     .optional(),
+  /** Mode Histoire, longue partie en actes : acte atteint, réussite et fin (absent sinon). */
+  campaign: CampaignResultSchema.optional(),
 });
 export type GameResult = z.infer<typeof GameResultSchema>;
 
-/** Mission en cours du mode Histoire (voir `story/campaign.ts`). */
+/**
+ * Partie du mode Histoire : une mission courte (`missionId`, voir `story/campaign.ts`) ou la
+ * longue partie en actes (`campaign`, voir `story/acts.ts`).
+ */
 export const StoryStateSchema = z.object({
-  missionId: StoryMissionIdSchema,
-  /** Statistiques au lancement : les objectifs comptent depuis le début de la mission. */
+  missionId: StoryMissionIdSchema.optional(),
+  /**
+   * Premier sprint compté par les objectifs : début de la mission, ou de l'acte en cours dans
+   * la longue partie.
+   */
   startSprint: z.number().int().min(1),
+  campaign: CampaignStateSchema.optional(),
 });
 export type StoryState = z.infer<typeof StoryStateSchema>;
 

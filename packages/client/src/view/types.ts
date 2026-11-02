@@ -10,6 +10,7 @@
  */
 import type {
   MissionGoal,
+  StoryActId,
   StoryMissionId,
   StoryRewardId,
   AcquisitionOffer,
@@ -829,6 +830,31 @@ export interface StoryView {
   readonly sprints: number;
 }
 
+/** Un objectif secondaire de l'acte : une mission de la campagne courte. */
+export interface CampaignSideView {
+  readonly id: StoryMissionId;
+  /** Rempli, raté (contrainte enfreinte ou acte passé) ou en cours. */
+  readonly status: 'done' | 'missed' | 'active';
+  readonly goals: readonly MissionGoalView[];
+  readonly constraints: readonly MissionGoalView[];
+}
+
+/** Mode Histoire, longue partie en actes : l'acte en cours et ses objectifs. */
+export interface CampaignView {
+  readonly act: StoryActId;
+  /** 0 pour le prologue, puis 1 à 4. */
+  readonly actIndex: number;
+  /** Sprint de la date limite de l'objectif principal. */
+  readonly deadline: number;
+  /** Objectif principal (vide au dernier acte : il se termine par une sortie). */
+  readonly goals: readonly MissionGoalView[];
+  readonly side: readonly CampaignSideView[];
+  /** Objectifs secondaires remplis depuis le début de l'histoire. */
+  readonly done: readonly StoryMissionId[];
+  /** Sprints terminés depuis le début de l'acte. */
+  readonly sprintsDone: number;
+}
+
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
 export interface GameNotification {
   readonly tick: number;
@@ -916,6 +942,8 @@ export interface GameView {
   readonly result: GameResult | null;
   /** Mode Histoire : la mission en cours (null dans les autres modes). */
   readonly story: StoryView | null;
+  /** Mode Histoire : la longue partie en actes (null dans les autres modes et les missions). */
+  readonly campaign: CampaignView | null;
   /** Récompenses du mode Histoire utilisables dans cette partie. */
   readonly unlocks: readonly StoryRewardId[];
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */

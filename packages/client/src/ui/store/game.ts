@@ -12,7 +12,7 @@ import {
   utcDate,
   careerSeed,
   type CareerLegendId,
-  type StoryMissionId,
+  type StoryStart,
   type StoryRewardId,
   type EventCard,
   type FurnitureColor,
@@ -172,6 +172,8 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   OBJECTIVE_FAILED: 'info',
   CAREER_MILESTONE: 'success',
   CAREER_MISSED: 'error',
+  STORY_ACT: 'success',
+  STORY_GOAL: 'info',
   SPRINT_LOST: 'error',
   ACHIEVEMENT_UNLOCKED: 'success',
 };
@@ -185,7 +187,7 @@ export interface StartOptions {
   /** Mode Carrière : la légende à suivre (écrite dans la graine). */
   legend?: CareerLegendId;
   /** Mode Histoire : la mission à jouer. */
-  mission?: StoryMissionId;
+  mission?: StoryStart;
   /** Source déjà prête (tests). */
   source?: GameSource;
   /** Reprendre une sauvegarde. */

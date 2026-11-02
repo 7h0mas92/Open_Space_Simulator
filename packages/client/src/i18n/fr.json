@@ -1425,7 +1425,7 @@
           },
           "story": {
             "title": "La mission",
-            "body": "Lis bien le briefing : il donne le point de départ (phase, équipe, trésorerie), la durée en sprints et les objectifs.\n\n• ✓ : objectif rempli ;\n• ○ : objectif à remplir ;\n• 🛡️ : contrainte à respecter jusqu'au bout.\n\nUne mission réussie débloque la suivante et une récompense."
+            "body": "Lis bien le briefing : il donne le point de départ, la durée et les objectifs. Dans l’histoire en 5 actes, chaque acte a un objectif principal à remplir avant sa date limite, et des objectifs secondaires qui rapportent des récompenses.\n\n• ✓ : objectif rempli ;\n• ○ : objectif à remplir ;\n• 🛡️ : contrainte à respecter jusqu'au bout.\n\nUne mission réussie débloque la suivante et une récompense ; un acte réussi ouvre le suivant."
           },
           "storyTips": {
             "title": "Les récompenses",
@@ -2169,6 +2169,56 @@
         "BANKRUPTCY": "La trésorerie est tombée à zéro : faillite.",
         "TIME": "Le temps de la mission est écoulé avant d’avoir rempli tous les objectifs.",
         "SOLD": "La startup a été vendue avant la fin de la mission."
+      }
+    },
+    "tabs": {
+      "label": "Mode Histoire",
+      "campaign": "📖 Histoire",
+      "missions": "🎯 Missions"
+    },
+    "campaign": {
+      "eyebrow": "Une seule longue partie, en 5 actes",
+      "meta": "Environ {{sprints}} sprints · {{done}} objectifs sur {{total}} déjà remplis (histoire et missions) · un point de sauvegarde au début de chaque acte",
+      "prologue": "Prologue",
+      "actNumber": "Acte {{number}}",
+      "deadline_one": "Objectif principal avant la fin du sprint {{sprint}} (encore {{count}} sprint)",
+      "deadline_other": "Objectif principal avant la fin du sprint {{sprint}} (encore {{count}} sprints)",
+      "exitGoal": "Dernier acte : entre en Bourse ou accepte un rachat avant la fin du sprint {{sprint}}.",
+      "deadlineShort": "Avant le sprint {{sprint}}",
+      "exitShort": "Bourse ou rachat",
+      "sideTitle": "Objectifs secondaires",
+      "sideCount_one": "{{count}} objectif secondaire",
+      "sideCount_other": "{{count}} objectifs secondaires",
+      "side": {
+        "done": "✓ Rempli",
+        "missed": "✕ Raté",
+        "active": "En cours"
+      },
+      "start": "Commencer l’histoire",
+      "restart": "Recommencer l’histoire du début",
+      "continueHint": "Pour continuer ton histoire, utilise « Continuer » dans le menu principal.",
+      "resume": "Reprendre « {{act}} »",
+      "noCheckpoint": "Pas de point de sauvegarde pour cet acte sur cet appareil.",
+      "endings": {
+        "IPO": {
+          "title": "Fin : la cloche de la Bourse",
+          "text": "Tu sonnes la cloche. Bastien Lemaître regarde le direct depuis la tour d’en face, et Mamie Josette t’envoie un SMS tout en majuscules."
+        },
+        "ACQUISITION": {
+          "title": "Fin : le chèque de Gigacorp",
+          "text": "Tu signes. Gigacorp rachète ta startup, et Bastien Lemaître apprend la nouvelle dans un article d’Inès Kader. Ton idée a gagné, même si elle porte un autre logo."
+        }
+      },
+      "end": {
+        "failure": "Histoire arrêtée",
+        "failures": {
+          "TIME": "L’objectif principal de l’acte n’était pas rempli à temps.",
+          "BANKRUPTCY": "Faillite : il n’y a plus d’argent pour payer l’équipe.",
+          "SOLD": "Startup vendue trop tôt : l’histoire ne se finit pas comme ça."
+        },
+        "goals": "Objectifs remplis en tout : {{count}} sur {{total}}",
+        "retry": "Reprendre « {{act}} »",
+        "restart": "Recommencer l’histoire"
       }
     }
   },

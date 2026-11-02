@@ -16,6 +16,11 @@ export const MissionCompletionSchema = z.object({
   seed: z.string().min(1).max(64),
   commands: CommandLogSchema,
   cardsVersion: CardsVersionSchema,
+  /**
+   * Objectif rempli pendant la longue partie en actes (et non dans la mission courte) : le
+   * serveur rejoue alors l'histoire jusqu'à la dernière commande.
+   */
+  campaign: z.boolean().optional(),
 });
 export type MissionCompletion = z.infer<typeof MissionCompletionSchema>;
 

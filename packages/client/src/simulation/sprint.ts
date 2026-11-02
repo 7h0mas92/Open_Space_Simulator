@@ -14,7 +14,7 @@ import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
 import { endGame, endOfTime } from './endings';
-import { missionTimeUp } from './story';
+import { campaignDeadline, missionTimeUp } from './story';
 import { phaseIndex } from './furniture';
 import { closeSprintPerformance } from './performance';
 import {
@@ -316,9 +316,11 @@ export function endDemo(state: GameState, ctx: SimContext): CommandResult {
     }
   }
   state.lostSprintsPending = 0;
+  // Mode Histoire, longue partie : l'objectif principal de l'acte doit être rempli à temps.
+  if (campaignDeadline(state, ctx)) return { ok: true };
   if (state.sprint >= state.totalSprints) {
     // Mode Histoire : le temps de la mission est écoulé, ses objectifs décident de la fin.
-    if (state.story) missionTimeUp(state, ctx);
+    if (state.story?.missionId) missionTimeUp(state, ctx);
     else endOfTime(state, ctx);
     return { ok: true };
   }

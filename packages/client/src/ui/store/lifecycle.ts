@@ -8,7 +8,9 @@ import { metaApi } from '../../api/meta';
 import { pendingAchievements } from '../../save/achievements';
 import { localScores } from '../../save/localScores';
 import { saves } from '../../save/saves';
+import { storyCheckpoints } from '../../save/story';
 import { recordCareer } from '../career/records';
+import type { StoryMissionId } from '@oss/shared';
 import type { GameView } from '../../view/types';
 import { useGame } from './game';
 import { useSession } from './session';
@@ -86,6 +88,54 @@ export async function recordMission(): Promise<void> {
   );
 }
 
+/**
+ * Longue partie du mode Histoire : chaque objectif secondaire rempli (une mission de la
+ * campagne) est gardé avec de quoi le rejouer et envoyé au serveur, comme une mission réussie.
+ */
+export async function recordCampaignGoals(ids: readonly StoryMissionId[]): Promise<void> {
+  const { source, view, replayOf } = useGame.getState();
+  if (!source || !view || replayOf !== null || ids.length === 0) return;
+  const data = await source.save();
+  for (const missionId of ids)
+    await useStory.getState().complete(
+      {
+        missionId,
+        seed: view.seed,
+        commands: data.commands,
+        cardsVersion: source.cardsVersion,
+        campaign: true,
+      },
+      isOnline(),
+    );
+}
+
+/** Actes dont le point de sauvegarde est déjà vérifié (« graine:acte »), pour ne relire qu'une fois. */
+const checkpointed = new Set<string>();
+
+/** Point de sauvegarde de l'acte en cours, pris à sa première planification. */
+async function keepActCheckpoint(view: GameView): Promise<void> {
+  const { source, replayOf } = useGame.getState();
+  if (!source || replayOf !== null || !view.campaign) return;
+  const act = view.campaign.actIndex;
+  const key = `${view.seed}:${act}`;
+  if (checkpointed.has(key)) return;
+  checkpointed.add(key);
+  if (await storyCheckpoints.has(view.seed, act)) return;
+  const data = await source.save();
+  await storyCheckpoints.keep(view.seed, { act, data, cardsVersion: source.cardsVersion });
+}
+
+/** Reprend un acte de la longue partie depuis son point de sauvegarde. Faux s'il n'y en a pas. */
+export async function resumeAct(act: number): Promise<boolean> {
+  const checkpoint = await storyCheckpoints.resume(act);
+  if (!checkpoint) return false;
+  checkpointed.clear();
+  await useGame
+    .getState()
+    .start({ save: { data: checkpoint.data, cardsVersion: checkpoint.cardsVersion } });
+  return true;
+}
+
 async function rememberAchievements(ids: readonly string[]): Promise<void> {
   await pendingAchievements.add(ids);
   if (isOnline()) await pendingAchievements.sync().catch(() => undefined);
@@ -95,6 +145,12 @@ function onViewChange(view: GameView | null, previous: GameView | null): void {
   if (!view || !previous || view.seed !== previous.seed || view.replay) return;
   if (view.step === 'PLANNING' && previous.step !== 'PLANNING') {
     void saveGame(1).catch(() => undefined);
+  }
+  if (view.campaign && view.step === 'PLANNING')
+    void keepActCheckpoint(view).catch(() => undefined);
+  if (view.campaign && previous.campaign) {
+    const fresh = view.campaign.done.filter((id) => !previous.campaign?.done.includes(id));
+    if (fresh.length > 0) void recordCampaignGoals(fresh).catch(() => undefined);
   }
   if (view.step === 'ENDED' && previous.step !== 'ENDED') {
     void submitScore();

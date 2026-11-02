@@ -1,10 +1,4 @@
-import type {
-  GameMode,
-  GameState,
-  LoggedCommand,
-  StoryMissionId,
-  StoryRewardId,
-} from '@oss/shared';
+import type { GameMode, GameState, LoggedCommand, StoryStart, StoryRewardId } from '@oss/shared';
 import type { CardLibrary } from '../events/library';
 import { Simulation } from './simulation';
 
@@ -23,7 +17,7 @@ export interface ReplayOptions {
   seed: string;
   mode: GameMode;
   /** Mode Histoire : la mission jouée. */
-  mission?: StoryMissionId;
+  mission?: StoryStart;
   /** Récompenses du mode Histoire utilisées par la partie (son point de départ). */
   unlocks?: readonly StoryRewardId[];
   commands: readonly LoggedCommand[];

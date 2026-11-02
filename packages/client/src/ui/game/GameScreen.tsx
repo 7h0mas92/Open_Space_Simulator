@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BuildMode } from '../build/BuildMode';
 import { CareerPanel } from '../career/CareerPanel';
@@ -25,6 +25,7 @@ import { SubscriptionsPanel } from '../subscriptions/Subscriptions';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
+import { CampaignPanel } from '../story/CampaignPanel';
 import { MissionPanel } from '../story/MissionPanel';
 import {
   ActionBar,
@@ -71,7 +72,11 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
     case 'career':
       return <CareerPanel view={view} />;
     case 'mission':
-      return <MissionPanel view={view} />;
+      return view.campaign ? (
+        <CampaignPanel campaign={view.campaign} sprint={view.time.sprint} />
+      ) : (
+        <MissionPanel view={view} />
+      );
     case 'dashboard':
       return <Dashboard view={view} />;
     case 'slack':
@@ -155,6 +160,14 @@ function useMissionBriefing() {
     // Une seule fois par mission lancée.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seed]);
+  // Longue partie : le panneau s'ouvre aussi au début de chaque acte.
+  const act = useGame((s) => (s.replayOf ? null : (s.view?.campaign?.actIndex ?? null)));
+  const lastAct = useRef(act);
+  useEffect(() => {
+    if (act !== null && lastAct.current !== null && act > lastAct.current)
+      useGame.getState().openPanel('mission');
+    lastAct.current = act;
+  }, [act]);
 }
 
 export function GameScreen() {

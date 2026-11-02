@@ -70,7 +70,7 @@ import {
 } from '@oss/shared';
 import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
-import { completedSprints, missionProgress } from '../simulation/story';
+import { actProgress, completedSprints, missionProgress } from '../simulation/story';
 import { hasUnlock } from '../simulation/unlocks';
 import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
@@ -125,6 +125,7 @@ import {
 } from '../simulation/serverRoom';
 import type {
   StoryView,
+  CampaignView,
   CandidateView,
   DevActivity,
   DevView,
@@ -1006,6 +1007,25 @@ function storyView(state: GameState): StoryView | null {
   };
 }
 
+function campaignView(state: GameState): CampaignView | null {
+  const progress = actProgress(state);
+  if (!progress) return null;
+  return {
+    act: progress.act.id,
+    actIndex: progress.campaign.act,
+    deadline: progress.act.deadline,
+    goals: progress.goals,
+    side: progress.side.map((side) => ({
+      id: side.mission.id,
+      status: side.status,
+      goals: side.goals,
+      constraints: side.constraints,
+    })),
+    done: [...progress.campaign.done],
+    sprintsDone: completedSprints(state),
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -1086,6 +1106,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       state.gauges.stability >= BALANCE.phases.ipoMinStability,
     result: state.result,
     story: storyView(state),
+    campaign: campaignView(state),
     unlocks: [...state.unlocks],
     achievements: [...state.achievements],
     replay: context.replay ?? null,
