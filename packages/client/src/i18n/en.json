@@ -2337,5 +2337,37 @@
       "ARMISTICE": "Armistice Day",
       "CHRISTMAS": "Christmas Day"
     }
+  },
+  "skills": {
+    "tabs": "Dev sheet",
+    "tabSheet": "Sheet",
+    "tabSkills": "Skills",
+    "badge_one": "{{count}} skill point to spend",
+    "badge_other": "{{count}} skill points to spend",
+    "pointsAvailable_one": "⭐ {{count}} point to spend.",
+    "pointsAvailable_other": "⭐ {{count}} points to spend.",
+    "noPoints": "No points to spend: the next level will give one.",
+    "pointsHint": "1 point per level gained, {{spent}} spent. Each node requires the previous one.",
+    "branches": {
+      "TECH": "🛠️ Technical",
+      "SPEED": "⚡ Speed",
+      "HUMAN": "🤝 Human"
+    },
+    "roleNode": "Role",
+    "power": "Power",
+    "learn": "Learn \"{{name}}\" (1 point)",
+    "learned": "Learned",
+    "locked": "Locked",
+    "crunch": "Start the crunch",
+    "crunchActive": "Crunch in progress",
+    "crunchHint": "+50% speed for 24 h, -10 morale. Once per sprint.",
+    "crunchActiveHint": "Cold pizza and energy drinks: full speed until tomorrow.",
+    "crunchUnavailable": "Only during a sprint, once per sprint.",
+    "trainings": "Training",
+    "trainingsHint": "One training per dev per sprint.",
+    "trainingsPlanningOnly": "Training is booked during planning.",
+    "trainedThisSprint": "Already trained this sprint.",
+    "reset": "Reset the tree ({{cost}})",
+    "resetConfirm": "Refund all of {{name}}'s points for {{cost}} (one month of salary)?"
   }
 }
