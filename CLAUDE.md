@@ -382,7 +382,7 @@ et du README.
 - La CI tourne sur toutes les branches et toutes les PR ; l'ÉTAT D'AVANCEMENT ci-dessous décrit
   `develop`, la date de la dernière mise en production est dans `CONTEXTE.md`.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 13 octobre 2026)
+# ÉTAT D'AVANCEMENT (mis à jour le 2 novembre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
@@ -787,6 +787,18 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `UNLOCK_NOT_EARNED`). Champs `story` (null) et `unlocks` ([]) par défaut, aucun tirage de plus.
   Calibrage par les bots : `pnpm balance:story` (chapitre 1 facile, chapitres 3 et 4 difficiles).
 
+- Daily et appli de tickets « Kanbanana » (`shared/sim/meetings.ts` : `DAILY_SYNC`,
+  `MorningSyncSchema` ; `client/src/simulation/meetings.ts`, `view/ticketBoard.ts`,
+  `render/dailyBoard.ts`, `ui/meetings/TicketApp.tsx`, `ui/meetings/DailyMoment.tsx`) : le Daily
+  de 9h fait le point sur les tickets, chaque participant note l'avancement du sien (hier,
+  aujourd'hui). Daily utile : +5 % de productivité aux participants jusqu'au soir. Sans Daily ce
+  matin-là, ou pour les absents, dès la Seed : travail en double à 10h, une partie d'un ticket
+  est à refaire (graine à part `seed#duplicate#tick`, stat `duplicateWork`, notification
+  `DUPLICATE_WORK`). Dans la salle, écran déroulant et projecteur de plafond affichent Kanbanana
+  (nom et logo inventés) : colonnes, clés OSS-42, type, points, avatars, point de chacun ; panneau
+  « 📽️ » en grand, lecture seule. Le temps s'arrête 6 s au début du Daily (option « Pause pendant
+  le Daily », active par défaut, jamais en Hardcore ni en replay). État `morningSync` (null par
+  défaut). `pnpm balance` : aménager la salle rapporte plus (bot organizer 352 → 434 M€ médians).
 - Placement à la demi-case (`GridPositionSchema` dans `shared/sim/components.ts`, `view/partitions.ts`) :
   tous les objets se posent et se déplacent d'une demi-case (souris, doigt, flèches du clavier) ;
   la demi-case libre de part et d'autre d'un mur fin (cloison du plan ou mur posé) se meuble tant

@@ -2,7 +2,7 @@
 
 > **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin) : partage du travail
 > en cours entre Thomas et Melvin, voir [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md).
-> Dernier commit de `develop` : `a77f906` (PR #144), puis la doc du placement à la demi-case
+> Dernier commit de `develop` : `b593c76` (PR #146), puis la doc du placement à la demi-case
 > (PR #141) ; dernier commit de `main` : `d28c381`
 > (PR #143). **`main` a 5 PR absentes de `develop`** (#121, #137, #138, #142, #143) : à
 > réintégrer en premier (tâche T1 de la passation).
@@ -261,6 +261,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                             |
 | -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/11    | Melvin + Claude | #146              | Daily et Kanbanana (#133) décrits dans `CLAUDE.md` et le README. Nouveau champ `morningSync` et stat `duplicateWork` (défauts pour les anciennes sauvegardes). Idées de suite proposées à Melvin pour le Daily : blocage signalé, pair programming, Daily qui dérape, retard, rétro de fin de sprint, succès.                                                                          |
 | 02/11    | Melvin + Claude | #132              | Placement à la demi-case : objets décalables d'une demi-case, demi-case libre le long des murs fins utilisable, centrage d'un objet de 3 cases dans 4.                                                                                                                                                                                                                                 |
 | 02/11    | Melvin + Claude | (cette PR)        | Partage du travail : `docs/PASSATION-THOMAS.md` (tâches T1 à T6 pour Thomas avec un prompt chacune, M1 à M4 pour Melvin) et `docs/proposition-mode-histoire.md`. `main` a 5 PR absentes de `develop` : à réintégrer d'abord.                                                                                                                                                           |
 | 02/11    | Thomas + Claude | #123 à #135       | CI de nouveau active. `develop` avancé jusqu'à `main` (mode Histoire), puis 11 PR de Melvin fusionnées dans `develop` après résolution des conflits : #123 à #128, #130 à #133, #135. Ménage à côté du modèle des abonnements, frais de l'illimité et du Hardcore cumulés, doublons du journal retirés. Restent #129 (à refaire sur les abonnements) et #134 (brouillon).              |
