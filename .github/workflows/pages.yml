@@ -1,6 +1,7 @@
 name: GitHub Pages
 
-# Publie le client en mode invité sur GitHub Pages à chaque push sur main.
+# Publie le client en mode invité sur GitHub Pages à chaque push sur main, donc à chaque
+# fusion de develop dans main. Rien n'est publié depuis develop ni depuis une branche de travail.
 # Pages n'héberge que des fichiers statiques : sans serveur, le jeu se joue en invité
 # avec les 100 cartes intégrées (pas de compte, de classement ni de Slack IA).
 on:

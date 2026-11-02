@@ -59,6 +59,38 @@ function overlaps(a: Footprint, b: Footprint): boolean {
   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.depth && b.y < a.y + a.depth;
 }
 
+/**
+ * Un mur fin occupe une case mais n'est qu'un trait au milieu de celle-ci, dans son sens
+ * (rotation paire : le long de x). Un objet peut donc occuper la demi-case de part et d'autre :
+ * il ne gêne le mur que s'il traverse ce trait.
+ */
+function crossesPartition(wall: Footprint, rotation: number, area: Footprint): boolean {
+  if (rotation % 2 === 0) {
+    const line = wall.y + 0.5;
+    return (
+      area.y < line &&
+      line < area.y + area.depth &&
+      area.x < wall.x + 1 &&
+      wall.x < area.x + area.width
+    );
+  }
+  const line = wall.x + 0.5;
+  return (
+    area.x < line &&
+    line < area.x + area.width &&
+    area.y < wall.y + 1 &&
+    wall.y < area.y + area.depth
+  );
+}
+
+/** Les murs fins et les fenêtres restent sur des cases entières (raccords entre voisins). */
+function onWholeCells(item: FurnitureDefinition, x: number, y: number): boolean {
+  return (
+    !(item.wall === true || item.partition !== undefined) ||
+    (Number.isInteger(x) && Number.isInteger(y))
+  );
+}
+
 /** Vérifie qu'un objet tient dans le bureau sans chevaucher les autres. */
 export function canPlace(
   state: GameState,
@@ -73,6 +105,7 @@ export function canPlace(
   const depth = officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds));
   const area = footprint(item, x, y, rotation);
   if (area.x + area.width > width || area.y + area.depth > depth) return false;
+  if (!onWholeCells(item, x, y)) return false;
   // Une fenêtre est fixée contre le mur du fond (rotation 0) ou le mur de gauche (rotation 1).
   const wall = item.wall === true;
   if (wall && !(rotation === 0 ? y === 0 : rotation === 1 && x === 0)) return false;
@@ -91,7 +124,18 @@ export function canPlace(
     const fullHeight = definition.partition === 'glass' || item.partition === 'glass';
     if ((definition.ceiling === true) !== ceiling && !fullHeight) continue;
     if (wall && placed.rotation !== rotation) continue;
-    if (overlaps(area, footprint(definition, placed.x, placed.y, placed.rotation))) return false;
+    const other = footprint(definition, placed.x, placed.y, placed.rotation);
+    // Un mur fin et un objet ordinaire : seul le trait du mur compte.
+    const wallInCell = definition.partition !== undefined && item.partition === undefined;
+    const cellOfWall = item.partition !== undefined && definition.partition === undefined;
+    if (
+      wallInCell
+        ? crossesPartition(other, placed.rotation, area)
+        : cellOfWall
+          ? crossesPartition(area, rotation, other)
+          : overlaps(area, other)
+    )
+      return false;
   }
   return true;
 }

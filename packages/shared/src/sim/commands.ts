@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EntityIdSchema, FurnitureColorSchema } from './components.js';
+import { EntityIdSchema, FurnitureColorSchema, GridPositionSchema } from './components.js';
 import { ComputerIdSchema } from './computers.js';
 import { MeetingFormatIdSchema } from './meetings.js';
 import { MonitorModelSchema, MonitorMountSchema, MonitorSizeSchema } from './monitors.js';
@@ -43,8 +43,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('BUY_FURNITURE'),
     itemId: z.string(),
-    x: z.number().int().nonnegative(),
-    y: z.number().int().nonnegative(),
+    x: GridPositionSchema,
+    y: GridPositionSchema,
     rotation: z.number().int().min(0).max(3),
     color: FurnitureColorSchema.optional(),
   }),
@@ -85,16 +85,16 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('MOVE_FURNITURE'),
     furnitureId: EntityIdSchema,
-    x: z.number().int().nonnegative(),
-    y: z.number().int().nonnegative(),
+    x: GridPositionSchema,
+    y: GridPositionSchema,
     rotation: z.number().int().min(0).max(3),
   }),
   /** Déplace ou tourne un objet du décor offert avec une annexe (voir `annexDecor.ts`). */
   z.object({
     type: z.literal('MOVE_ANNEX_DECOR'),
     key: z.string().max(8),
-    x: z.number().int().nonnegative(),
-    y: z.number().int().nonnegative(),
+    x: GridPositionSchema,
+    y: GridPositionSchema,
     rotation: z.number().int().min(0).max(3),
   }),
   /** Allume ou éteint un projecteur : allumé, il déroule l'écran posé en face de lui. */
@@ -110,8 +110,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
     type: z.literal('PLACE_STORED'),
     itemId: z.string(),
     color: FurnitureColorSchema.optional(),
-    x: z.number().int().nonnegative(),
-    y: z.number().int().nonnegative(),
+    x: GridPositionSchema,
+    y: GridPositionSchema,
     rotation: z.number().int().min(0).max(3),
   }),
   /** Ressort un accessoire de l'inventaire (même règle) et le pose sur un meuble à plateau. */

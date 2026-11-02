@@ -1232,7 +1232,7 @@
       "off": "Off"
     },
     "decor": {
-      "intro": "Each theme decorates the office: garlands on the walls, items on the floor and on desks. By default, a theme decorates the office during its period in the game calendar (Halloween at the end of October, Christmas in December…), along with its seasonal events. You can also turn it off or keep it always on. Players see changes when they start their next game.",
+      "intro": "Each theme decorates the office: garlands on the walls and a small item on each desk. By default, a theme decorates the office during its period in the game calendar (Halloween at the end of October, Christmas in December…), along with its seasonal events. You can also turn it off or keep it always on. Players see changes when they start their next game.",
       "legend": "Setting for the {{theme}} theme",
       "previewAlt": "An office corner decorated for the {{theme}} theme",
       "live": "Showing right now",
@@ -1567,7 +1567,7 @@
           },
           "manage": {
             "title": "Rotate, paint, move, sell",
-            "body": "In build mode, tap an item already placed to rotate, paint, move or sell it (selling refunds half the price). With an item in hand, R rotates it and Esc puts it back in the catalog. \"Done\" closes build mode.\n\nThe Accessories shelf (lamp, mug, rubber duck…) goes on desks, the bookcase or the fridge, and follows its furniture.\n\nSome items only unlock in later stages, when the office grows."
+            "body": "In build mode, tap an item already placed to rotate, paint, move or sell it (selling refunds half the price). With an item in hand, R rotates it, the arrow keys shift it by half a tile and Esc puts it back in the catalog. Items snap to half tiles: the free half of a tile next to a thin wall can be furnished, and a 3-tile item can be centred in a 4-tile room (thin walls and windows stay on whole tiles). \"Done\" closes build mode.\n\nThe Accessories shelf (lamp, mug, rubber duck…) goes on desks, the bookcase or the fridge, and follows its furniture.\n\nSome items only unlock in later stages, when the office grows."
           },
           "items": {
             "title": "Useful items",

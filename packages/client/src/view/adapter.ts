@@ -434,7 +434,7 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
  */
 function annexDecorViews(state: GameState, furniture: readonly PlacedItemView[]): PlacedItemView[] {
   const { phase, annexes, wings } = wallOffice(state);
-  const layout = officeLayout(phase, wings, annexes, state.seed);
+  const layout = officeLayout(phase, wings, annexes);
   const view = (fixture: Fixture): PlacedItemView => {
     const moved = state.annexDecor[fixture.key];
     return {

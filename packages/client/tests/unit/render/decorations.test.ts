@@ -7,8 +7,6 @@ import { decorKey, planDecor } from '../../../src/view/decor';
 import { officeLayout, roomAt, type Cell } from '../../../src/view/layout';
 import { officeSimulation, SEED_OFFICE, viewOf } from '../fixtures/game';
 
-const floorCount = (theme: (typeof DECOR_THEMES)[number]) => THEME_MODELS[theme].floor.length;
-
 function meshCount(object: THREE.Object3D): number {
   let count = 0;
   object.traverse((child) => {
@@ -18,35 +16,27 @@ function meshCount(object: THREE.Object3D): number {
 }
 
 describe('Décorations de saison', () => {
-  it('chaque thème a 3 objets au sol, un objet de bureau et un décor mural', () => {
+  it('chaque thème a un objet de bureau et un décor mural', () => {
     for (const theme of DECOR_THEMES) {
       const models = THEME_MODELS[theme];
-      expect(models.floor, theme).toHaveLength(3);
-      for (const build of models.floor) expect(meshCount(build()), theme).toBeGreaterThan(1);
       expect(meshCount(models.desk()), theme).toBeGreaterThan(0);
       expect(meshCount(models.wall(14, 10)), theme).toBeGreaterThan(10);
     }
   });
 
-  it('les objets au sol tiennent dans leur case et ne dépassent pas les murs', () => {
-    for (const theme of DECOR_THEMES) {
-      for (const build of THEME_MODELS[theme].floor) {
-        const box = new THREE.Box3().setFromObject(build());
-        expect(box.max.x - box.min.x, theme).toBeLessThanOrEqual(1.1);
-        expect(box.max.z - box.min.z, theme).toBeLessThanOrEqual(1.1);
-        expect(box.max.y, theme).toBeLessThanOrEqual(2.2);
-      }
-    }
-  });
-
-  it('les décorations ne coupent jamais le chemin vers un meuble', () => {
+  it('aucune décoration de saison au sol : ni déplaçable ni rangeable, elle n’a rien à y faire', () => {
     const view = viewOf(officeSimulation(SEED_OFFICE));
     const layout = officeLayout(view.phase);
-    const plan = planDecor(layout, view.items, ['HALLOWEEN', 'CHRISTMAS'], true, floorCount);
-    expect(plan.floor.length).toBeGreaterThanOrEqual(4);
-    expect(new Set(plan.floor.map((piece) => piece.theme))).toEqual(
-      new Set(['HALLOWEEN', 'CHRISTMAS']),
-    );
+    const plan = planDecor(layout, view.items, ['HALLOWEEN', 'CHRISTMAS'], false);
+    expect(plan.themes).toEqual(['HALLOWEEN', 'CHRISTMAS']);
+    expect(plan.blocked).toEqual([]);
+  });
+
+  it('le décor ne coupe jamais le chemin vers un meuble', () => {
+    const view = viewOf(officeSimulation(SEED_OFFICE));
+    const layout = officeLayout(view.phase);
+    const plan = planDecor(layout, view.items, ['HALLOWEEN', 'CHRISTMAS'], true, 'brainstorm');
+    expect(plan.blocked.length).toBeGreaterThan(2);
 
     const grid = buildNavGrid(layout, view.items);
     for (const cell of plan.blocked) {
@@ -72,15 +62,14 @@ describe('Décorations de saison', () => {
   it('installe la table d’anniversaire dans la cuisine, sur deux cases, accessible', () => {
     const view = viewOf(officeSimulation(SEED_OFFICE));
     const layout = officeLayout(view.phase);
-    const plan = planDecor(layout, view.items, [], true, floorCount);
-    expect(plan.floor).toHaveLength(0);
+    const plan = planDecor(layout, view.items, [], true);
     expect(plan.party).not.toBeNull();
     const party = plan.party!;
     expect(roomAt(layout, party.cell)?.kind).toBe('kitchen');
     expect(plan.blocked).toEqual([party.cell, { x: party.cell.x + 1, z: party.cell.z }]);
     expect(buildNavGrid(layout, view.items).walkable(party.access.x, party.access.z)).toBe(true);
     // Pas de fête : pas de table.
-    expect(planDecor(layout, view.items, [], false, floorCount).party).toBeNull();
+    expect(planDecor(layout, view.items, [], false).party).toBeNull();
   });
 
   it('ne reconstruit le décor que si quelque chose change', () => {

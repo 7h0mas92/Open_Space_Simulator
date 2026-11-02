@@ -109,7 +109,6 @@ export class DecorationsView {
 
     this.clear();
     this.root.add(...this.walls(plan.themes, layout));
-    this.root.add(...this.floor(plan));
     this.root.add(...this.desks(plan.themes, items));
     if (plan.party && table) {
       const party = new THREE.Group();
@@ -147,26 +146,6 @@ export class DecorationsView {
       const wall = withShadows(THEME_MODELS[theme].wall(layout.width, layout.depth));
       wall.position.y = -index * WALL_OFFSET;
       return wall;
-    });
-  }
-
-  private floor(plan: DecorPlan): THREE.Object3D[] {
-    const groups = new Map<string, THREE.Matrix4[]>();
-    for (const piece of plan.floor) {
-      // Le long du mur de gauche, les objets se tournent vers l'intérieur de la pièce (+x).
-      const facing = piece.cell.x === 0 && piece.cell.z > 0 ? Math.PI / 2 : 0;
-      const matrix = new THREE.Matrix4().compose(
-        new THREE.Vector3(piece.cell.x, 0, piece.cell.z),
-        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), facing),
-        new THREE.Vector3(1, 1, 1),
-      );
-      const id = `${piece.theme}:${piece.index}`;
-      groups.set(id, [...(groups.get(id) ?? []), matrix]);
-    }
-    return [...groups].map(([id, matrices]) => {
-      const [theme, index] = id.split(':') as [DecorTheme, string];
-      const build = THEME_MODELS[theme].floor[Number(index)];
-      return build ? instanced(build(), matrices) : new THREE.Group();
     });
   }
 
