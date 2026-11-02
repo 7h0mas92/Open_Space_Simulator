@@ -1,6 +1,6 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 13 octobre 2026**, par Claude (projet de Thomas), avec le mode
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas), avec le mode
 > Histoire. Dernier commit de `main` au moment de l'écriture : `83fec14` (PR #120) ; le mode
 > Histoire est sur la branche `claude/mode-histoire-dky33a` (PR ouverte, en attente de Thomas).
 
@@ -83,8 +83,14 @@ invités. C'est ce que fait le mode Histoire (`UNLOCK_MODES` dans `packages/shar
 
 ## En attente d'une décision
 
-- **Mode Histoire** : Thomas doit valider la PR (et le choix de récompenses nouvelles plutôt que
-  d'objets existants verrouillés) avant la fusion.
+- **Mode Histoire** : Thomas doit valider la PR #122 (et le choix de récompenses nouvelles
+  plutôt que d'objets existants verrouillés) avant la fusion.
+- **GitHub Actions bloqué** : depuis le 13 octobre, chaque job de la CI s'arrête en 3 secondes
+  sans runner ni log, sur toutes les PR (#121 à #135). À vérifier dans les réglages de facturation
+  du compte GitHub (minutes ou limite de dépenses). En attendant, vérifier en local avant de
+  fusionner. Plusieurs PR ouvertes ajoutent un mode de jeu (#121 Carrière, #122 Histoire,
+  #135 Illimité, #130 difficulté par mode) : la deuxième fusionnée devra intégrer `main` et
+  fusionner `GAME_MODES` à la main.
 
 - **Succès « Décaféiné »** (5 jours sans café, `packages/shared/src/meta/achievements.ts`) :
   depuis le télétravail automatique, il ne se débloque plus que dans ~1 % des parties (contre
@@ -231,7 +237,8 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR          | Ce qui a changé / à savoir                                                                                                                                                                                                                       |
 | -------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 13/10    | Thomas + Claude | à venir     | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
+| 02/11    | Thomas + Claude | #122        | Reprise : `main` inchangé depuis le 13/10, la PR n'a pas besoin d'être rebasée ; CI toujours bloquée par GitHub Actions.                                                                                                                         |
+| 13/10    | Thomas + Claude | #122        | Mode Histoire : 4 chapitres, 10 missions, 10 récompenses pour les autres modes (jamais en Daily). Progression vérifiée par rejeu (`POST /api/story/complete`, table `StoryMission`), `Score.unlocks`. `pnpm balance:story`.                      |
 | 13/10    | Thomas + Claude | #120        | Création de `CONTEXTE.md`. Modes Histoire et Carrière décidés, chacun dans son fil.                                                                                                                                                              |
 | 11/10    | Melvin          | #109 à #119 | Sols par pièce, décor des annexes déplaçable, le plan cède la place aux meubles, salle des serveurs et fibre, bruits de souris.                                                                                                                  |
 | 10–11/10 | Melvin          | #93 à #108  | Cuisine séparée, ordinateurs et écrans des postes, murs fins, vidéoprojecteurs, bruits de clavier.                                                                                                                                               |
