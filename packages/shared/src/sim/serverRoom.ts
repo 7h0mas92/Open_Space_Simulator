@@ -5,7 +5,7 @@ import { TIME } from './balance.js';
 import { getFurniture, type FurnitureEffects } from './furniture.js';
 
 /**
- * Salle des serveurs, température et abonnement internet.
+ * Salle des serveurs, température et offres internet.
  *
  * Le joueur achète une salle (un local vitré au sol technique, posé comme un meuble) puis choisit
  * le matériel qu'il y installe : serveurs, switch, box fibre, climatisations, supervision,
@@ -88,7 +88,7 @@ export interface FibrePlan {
   readonly monthlyPrice: number;
   /** Frais de mise en service, payés une fois à la souscription. */
   readonly setupFee: number;
-  /** Salariés au bureau que la ligne supporte : au-delà, elle sature (voir `INTERNET_SATURATION`). */
+  /** Salariés que la ligne supporte : au-delà, elle sature (voir `INTERNET_SATURATION`). */
   readonly maxUsers: number;
   readonly minPhase: Phase;
   /**
@@ -221,11 +221,6 @@ export const INTERNET_SATURATION = {
   maxPenalty: 0.12,
 } as const;
 
-/** Charge de la ligne : salariés sur salariés supportés (au-delà de 1 : saturée). */
-export function internetLoad(plan: FibrePlan, users: number): number {
-  return users / plan.maxUsers;
-}
-
 /** Malus de productivité d'une ligne saturée (0 si elle tient la charge). */
 export function saturationPenalty(load: number): number {
   if (load <= 1) return 0;
@@ -281,7 +276,10 @@ export function isSummerMonth(month: number): boolean {
   return month >= 6 && month <= 8;
 }
 
-/** Abonnement internet en cours (gardé sous le nom `fibre` dans l'état). */
+/**
+ * Ancien abonnement fibre, d'avant la rubrique Abonnements : repris dans `subscriptions` au
+ * chargement des vieilles sauvegardes.
+ */
 export const FibreSubscriptionSchema = z.object({
   plan: FibrePlanIdSchema,
   /** Tick jusqu'auquel la ligne est payée : la semaine suivante est facturée à ce moment-là. */
@@ -290,8 +288,6 @@ export const FibreSubscriptionSchema = z.object({
   since: z.number().int().min(1),
   /** Total payé pour la ligne depuis la souscription (frais de mise en service compris). */
   totalPaid: z.number().nonnegative(),
-  /** La ligne saturait au dernier pas (pour prévenir quand ça change ; absent = non). */
-  saturated: z.boolean().optional(),
 });
 export type FibreSubscription = z.infer<typeof FibreSubscriptionSchema>;
 

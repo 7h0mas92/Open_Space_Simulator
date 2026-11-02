@@ -17,10 +17,10 @@ import type {
   FloorMaterialId,
   FloorZone,
   ComputerId,
-  FibrePlanId,
-  InternetTechnology,
   ServerHeatLevel,
   ServerRoomNeed,
+  SubscriptionRequirement,
+  SubscriptionService,
   WallFinishId,
   WallZone,
   Birthday,
@@ -594,26 +594,7 @@ export interface ServerRoomView {
   readonly slots: number;
 }
 
-/** Une offre internet et pourquoi on ne peut pas y souscrire maintenant. */
-export interface FibrePlanView {
-  readonly id: FibrePlanId;
-  readonly name: LocalizedText;
-  readonly description: LocalizedText;
-  readonly speed: LocalizedText;
-  readonly technology: InternetTechnology;
-  readonly monthlyPrice: number;
-  readonly weeklyPrice: number;
-  readonly setupFee: number;
-  /** Ce que coûte la souscription : première semaine et mise en service. */
-  readonly firstPayment: number;
-  readonly maxUsers: number;
-  readonly needsRouter: boolean;
-  readonly minPhase: Phase;
-  /** `CURRENT` : c'est l'offre en cours ; `NO_BOX` : fibre dédiée sans box fibre dans une salle. */
-  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'NO_BOX' | 'CURRENT' | 'WRONG_STAGE' | null;
-}
-
-/** Salles des serveurs et abonnement internet. */
+/** Salles des serveurs (l'abonnement fibre est dans `GameView.subscriptions`). */
 export interface ServersView {
   readonly rooms: readonly ServerRoomView[];
   /** Part de la facture d'hébergement épargnée grâce aux serveurs (0.18 = -18 %). */
@@ -623,23 +604,68 @@ export interface ServersView {
   readonly hasBox: boolean;
   /** L'été réchauffe les salles. */
   readonly summer: boolean;
-  /** Salariés qui utilisent la connexion (toute l'équipe). */
+}
+
+/**
+ * Pourquoi on ne peut pas souscrire à une offre maintenant. `CURRENT` : c'est l'offre en cours ;
+ * `REQUIREMENT` : l'installation demandée (`requires`) manque.
+ */
+export type SubscriptionBlocker =
+  'LOCKED' | 'NOT_ENOUGH_MONEY' | 'REQUIREMENT' | 'CURRENT' | 'WRONG_STAGE' | null;
+
+/** Une offre d'abonnement. */
+export interface SubscriptionOfferView {
+  readonly id: string;
+  readonly service: SubscriptionService;
+  readonly name: LocalizedText;
+  readonly description: LocalizedText;
+  readonly detail: LocalizedText | null;
+  /** Prix d'une période, et sa durée en jours de jeu. */
+  readonly price: number;
+  readonly periodDays: number;
+  readonly minPhase: Phase;
+  /** Frais de mise en service (0 si aucun) et total payé à la souscription. */
+  readonly setupFee: number;
+  readonly firstPayment: number;
+  /** Salariés que l'offre supporte (null : pas de limite). */
+  readonly maxUsers: number | null;
+  readonly requires: SubscriptionRequirement | null;
+  readonly blocker: SubscriptionBlocker;
+}
+
+/** L'abonnement en cours d'un service. */
+export interface CurrentSubscriptionView {
+  readonly offer: SubscriptionOfferView;
+  /** L'installation demandée est là : ses effets comptent (sinon il est payé pour rien). */
+  readonly active: boolean;
+  /** Jours de jeu avant le prochain prélèvement. */
+  readonly nextBillDays: number;
+  /** Sprint de la souscription. */
+  readonly since: number;
+  readonly totalPaid: number;
+  /** Coût ramené à 30 jours de jeu. */
+  readonly monthly: number;
+  /** Productivité perdue parce que l'offre sature (0 si elle tient la charge). */
+  readonly penalty: number;
+}
+
+/** Un service (internet, ménage…), son abonnement en cours et ses offres. */
+export interface SubscriptionServiceView {
+  readonly id: SubscriptionService;
+  readonly icon: string;
+  readonly current: CurrentSubscriptionView | null;
+  readonly offers: readonly SubscriptionOfferView[];
+}
+
+/** Rubrique « Abonnements ». */
+export interface SubscriptionsView {
+  readonly services: readonly SubscriptionServiceView[];
+  /** Salariés qui utilisent les services (toute l'équipe, télétravail compris). */
   readonly users: number;
-  /** Abonnement en cours, sinon null. */
-  readonly fibre: {
-    readonly plan: FibrePlanId;
-    /** La ligne arrive (box fibre posée pour la fibre dédiée) : ses effets comptent. */
-    readonly connected: boolean;
-    /** Charge de la ligne : au-delà de 1, elle sature. */
-    readonly load: number;
-    /** Productivité perdue par la saturation (0 si elle tient). */
-    readonly penalty: number;
-    /** Jours de jeu avant le prochain prélèvement. */
-    readonly nextBillDays: number;
-    readonly weeklyPrice: number;
-    readonly totalPaid: number;
-  } | null;
-  readonly plans: readonly FibrePlanView[];
+  /** Nombre d'abonnements en cours. */
+  readonly count: number;
+  /** Total des abonnements ramené à 30 jours de jeu. */
+  readonly monthlyTotal: number;
 }
 
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
@@ -767,8 +793,10 @@ export interface GameView {
   readonly pets: PetsView;
   /** Peintures et papiers peints des murs. */
   readonly walls: WallsView;
-  /** Salles des serveurs et abonnement fibre. */
+  /** Salles des serveurs. */
   readonly servers: ServersView;
+  /** Abonnements (internet…). */
+  readonly subscriptions: SubscriptionsView;
   /** Sols des pièces. */
   readonly floors: FloorsView;
   readonly canIpo: boolean;
@@ -870,9 +898,9 @@ export type GameCommand =
   | { readonly type: 'coverFloor'; readonly zone: FloorZone; readonly finish: FloorFinish }
   | { readonly type: 'adoptPet'; readonly coat: PetCoat }
   | { readonly type: 'rehomePet'; readonly petId: string }
-  /** Souscrit à une offre fibre (ou en change). */
-  | { readonly type: 'subscribeFibre'; readonly plan: FibrePlanId }
-  | { readonly type: 'cancelFibre' };
+  /** Souscrit à une offre (ou change d'offre pour son service). */
+  | { readonly type: 'subscribe'; readonly offer: string }
+  | { readonly type: 'cancelSubscription'; readonly service: SubscriptionService };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

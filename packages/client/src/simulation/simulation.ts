@@ -30,8 +30,9 @@ import { taskFlowSystem } from './taskFlow';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
 import { emergencySale } from './ventures';
-import { fibreSystem, isSummer, serverHeatSystem } from './serverRoom';
+import { isSummer, serverHeatSystem } from './serverRoom';
 import { checkMission } from './story';
+import { migrateLegacyFibre, subscriptionSystem } from './subscriptions';
 
 /** Un système = une fonction qui fait évoluer l'état pendant un tick. */
 export type System = (state: GameState, ctx: SimContext, clock: SimClock) => void;
@@ -48,7 +49,7 @@ export const SYSTEMS: readonly System[] = [
   eventSystem,
   dailySystem,
   calendarSystem,
-  (state, ctx) => fibreSystem(state, ctx),
+  (state, ctx) => subscriptionSystem(state, ctx),
   (state, ctx) => serverHeatSystem(state, ctx),
 ];
 
@@ -89,6 +90,8 @@ export class Simulation {
     migrateRenamedItems(state);
     // Vieilles sauvegardes : les combinés meuble + appareil de cuisine deviennent deux objets.
     migrateLegacyKitchen(state);
+    // Vieilles sauvegardes : l'abonnement fibre rejoint la liste des abonnements.
+    migrateLegacyFibre(state);
     return new Simulation(state, cards, commands);
   }
 
@@ -97,12 +100,12 @@ export class Simulation {
    * ou en retire une (un des deux compteurs change). Les postes vont aux devs présents au
    * bureau : la liste des télétravailleurs fait donc aussi partie de la clé, comme la formule
    * de la salle de réunion, les ordinateurs des bureaux (changés sans nouvelle entité),
-   * l'abonnement internet, la salle de chaque équipement serveur (déplaçable d'une salle à
-   * l'autre) et l'été (les salles des serveurs chauffent plus).
+   * les abonnements, la salle de chaque équipement serveur (déplaçable d'une salle à l'autre)
+   * et l'été (les salles des serveurs chauffent plus).
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.fibre?.plan ?? '-'}:${serverGearKey(state)}:${isSummer(state) ? 'été' : ''}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.subscriptions.map((s) => s.offer).join(',')}:${serverGearKey(state)}:${isSummer(state) ? 'été' : ''}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;

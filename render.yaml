@@ -13,6 +13,8 @@ services:
     runtime: node
     plan: free
     region: frankfurt
+    # Seul main est déployé ; develop sert aux tests avant la mise en production.
+    branch: main
     healthCheckPath: /api/health
     buildCommand: >-
       corepack enable &&

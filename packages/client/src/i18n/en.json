@@ -320,7 +320,8 @@
     "funding": "Raise funds",
     "pets": "Office cats",
     "servers": "Server room",
-    "mission": "Mission"
+    "mission": "Mission",
+    "subscriptions": "Subscriptions"
   },
   "kanban": {
     "columns": {
@@ -1234,7 +1235,7 @@
       "off": "Off"
     },
     "decor": {
-      "intro": "Each theme decorates the office: garlands on the walls, items on the floor and on desks. By default, a theme decorates the office during its period in the game calendar (Halloween at the end of October, Christmas in December…), along with its seasonal events. You can also turn it off or keep it always on. Players see changes when they start their next game.",
+      "intro": "Each theme decorates the office: garlands on the walls and a small item on each desk. By default, a theme decorates the office during its period in the game calendar (Halloween at the end of October, Christmas in December…), along with its seasonal events. You can also turn it off or keep it always on. Players see changes when they start their next game.",
       "legend": "Setting for the {{theme}} theme",
       "previewAlt": "An office corner decorated for the {{theme}} theme",
       "live": "Showing right now",
@@ -1569,7 +1570,7 @@
           },
           "manage": {
             "title": "Rotate, paint, move, sell",
-            "body": "In build mode, tap an item already placed to rotate, paint, move or sell it (selling refunds half the price). With an item in hand, R rotates it and Esc puts it back in the catalog. \"Done\" closes build mode.\n\nThe Accessories shelf (lamp, mug, rubber duck…) goes on desks, the bookcase or the fridge, and follows its furniture.\n\nSome items only unlock in later stages, when the office grows."
+            "body": "In build mode, tap an item already placed to rotate, paint, move or sell it (selling refunds half the price). With an item in hand, R rotates it, the arrow keys shift it by half a tile and Esc puts it back in the catalog. Items snap to half tiles: the free half of a tile next to a thin wall can be furnished, and a 3-tile item can be centred in a 4-tile room (thin walls and windows stay on whole tiles). \"Done\" closes build mode.\n\nThe Accessories shelf (lamp, mug, rubber duck…) goes on desks, the bookcase or the fridge, and follows its furniture.\n\nSome items only unlock in later stages, when the office grows."
           },
           "items": {
             "title": "Useful items",
@@ -1946,41 +1947,6 @@
     "fibreCard": "Internet subscription",
     "fibreCardCurrent": "Subscribed: {{plan}}. Tap to change plan or cancel.",
     "fibreCardReady": "From a 4G box to dedicated fibre: pick the plan that fits your team.",
-    "fibre": {
-      "title": "Internet subscription",
-      "intro": "Each plan handles a number of employees: beyond that, the network saturates and the whole team slows down. The price is monthly and charged every week (every 7 game days); setup is paid when you subscribe. If the treasury can’t cover the bill, the provider cuts the line.",
-      "none": "No subscription: the team shares the founder’s phone hotspot. Pick a plan below.",
-      "needBoxShort": "Dedicated fibre comes into a fibre router installed in a server room.",
-      "connected": "The line handles the load: {{count}}/{{max}} employees.",
-      "noBox": "No fibre router in a room: you pay for dedicated fibre but it goes nowhere.",
-      "nextBill_one": "Next €{{price}} charge in {{count}} day",
-      "nextBill_other": "Next €{{price}} charge in {{count}} days",
-      "totalPaid": "€{{price}} paid in total",
-      "perWeek": "€{{price}} charged every week",
-      "subscribe": "Subscribe (€{{price}} now)",
-      "switch": "Switch to this plan (€{{price}})",
-      "currentPlan": "Your current plan",
-      "cancel": "Cancel",
-      "cancelWarning": "The line will be cut right away, with no refund for the current week.",
-      "cancelConfirm": "Cancel the subscription",
-      "users_one": "{{count}} employee uses the connection (remote workers included, through the VPN).",
-      "users_other": "{{count}} employees use the connection (remote workers included, through the VPN).",
-      "saturated": "Network saturated: {{count}} employees for {{max}} planned, −{{percent}}% productivity. Upgrade your plan.",
-      "perMonth": "€{{price}} excl. VAT / month",
-      "fromPerMonth": "from €{{price}} excl. VAT / month",
-      "maxUsers_one": "Up to {{count}} employee",
-      "maxUsers_other": "Up to {{count}} employees",
-      "tooSmall": "too small for your team",
-      "setupFee": "Setup: €{{price}}",
-      "noSetupFee": "Free setup",
-      "needsRouter": "fibre router in a server room",
-      "prices": "Prices excluding VAT seen at French business providers (2026), for reference.",
-      "tech": {
-        "mobile": "4G / 5G Wi-Fi box",
-        "ftth": "Shared fibre (FTTH)",
-        "ftto": "Dedicated fibre (FTTO)"
-      }
-    },
     "warm": "It’s running hot: the servers throttle and give only {{percent}}% of their effects.",
     "overheat": "Overheating: the servers crash, no effects at all and prod suffers. Add cooling or remove hardware.",
     "statusWarm": "Running hot · {{count}}/{{max}} slots",
@@ -2123,5 +2089,49 @@
         "SOLD": "The startup was sold before the end of the mission."
       }
     }
+  },
+  "subscriptions": {
+    "intro": "Services paid at regular intervals. The first period is paid when you subscribe, then at each due date; switching plan starts a new period paid right away. If the treasury can’t cover a bill, the provider cuts the service. Cancelling stops it right away, with no refund.",
+    "summaryNone": "No active subscription.",
+    "summary_one": "{{count}} active subscription · about €{{price}} a month",
+    "summary_other": "{{count}} active subscriptions · about €{{price}} a month",
+    "services": {
+      "internet": {
+        "name": "Internet",
+        "intro": "From a 4G router to dedicated fibre. Each plan supports a number of employees: beyond that, the network saturates and the whole team slows down. Monthly prices excluding VAT, as charged by French operators to businesses (2026), billed every week (every 7 game days); the setup fee is paid when you subscribe."
+      }
+    },
+    "requires": {
+      "fibreBox": {
+        "long": "Dedicated fibre comes into a fibre router: install one in a server room (Servers aisle).",
+        "short": "Dedicated fibre needs a fibre router in a server room.",
+        "inactive": "No fibre router in a room: you pay for dedicated fibre but it goes nowhere."
+      }
+    },
+    "none": "No subscription: pick a plan below.",
+    "active": "Active: the plan gives its effects.",
+    "nextBill_one": "Next €{{price}} charge in {{count}} day",
+    "nextBill_other": "Next €{{price}} charge in {{count}} days",
+    "totalPaid": "€{{price}} paid in total",
+    "since": "since sprint {{sprint}}",
+    "perWeek": "€{{price}} / week",
+    "perMonth": "€{{price}} / month",
+    "perDays_one": "€{{price}} / day",
+    "perDays_other": "€{{price}} / {{count}} days",
+    "subscribe": "Subscribe (€{{price}} now)",
+    "switch": "Switch to this plan (€{{price}})",
+    "currentOffer": "Your current plan",
+    "cancel": "Cancel",
+    "cancelWarning": "The service stops right away, with no refund for the current period.",
+    "cancelConfirm": "Cancel {{offer}}",
+    "manageAll": "See all subscriptions",
+    "users_one": "{{count}} employee uses the connection (remote workers included, over the VPN).",
+    "users_other": "{{count}} employees use the connection (remote workers included, over the VPN).",
+    "activeUsers": "The line handles the load: {{count}}/{{max}} employees.",
+    "saturated": "Network saturated: {{count}} employees for {{max}} planned, −{{percent}}% productivity. Move to a bigger plan.",
+    "maxUsers_one": "Up to {{count}} employee",
+    "maxUsers_other": "Up to {{count}} employees",
+    "tooSmall": "too small for your team",
+    "setupFee": "Setup fee: €{{price}}, paid when you subscribe"
   }
 }

@@ -250,9 +250,9 @@ function AdoptCard({ view }: { view: GameView }) {
 function FibreCard({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const openPanel = useGame((s) => s.openPanel);
-  const { fibre, plans } = view.servers;
-  const current = fibre ? plans.find((plan) => plan.id === fibre.plan) : undefined;
-  const cheapest = Math.min(...plans.map((plan) => plan.monthlyPrice));
+  const internet = view.subscriptions.services.find((service) => service.id === 'internet');
+  const current = internet?.current?.offer;
+  const cheapest = Math.min(...(internet?.offers ?? []).map((offer) => offer.price));
   return (
     <button
       type="button"
@@ -266,11 +266,9 @@ function FibreCard({ view }: { view: GameView }) {
       <span className="catalog-card-name">{t('servers.fibreCard')}</span>
       <span className="catalog-card-meta">
         <span className="catalog-card-price">
-          {current
-            ? t('servers.fibre.perMonth', {
-                price: formatMoney(current.monthlyPrice, i18n.language),
-              })
-            : t('servers.fibre.fromPerMonth', { price: formatMoney(cheapest, i18n.language) })}
+          {t('subscriptions.perWeek', {
+            price: formatMoney(current?.price ?? cheapest, i18n.language),
+          })}
         </span>
       </span>
       <span className="catalog-card-text">

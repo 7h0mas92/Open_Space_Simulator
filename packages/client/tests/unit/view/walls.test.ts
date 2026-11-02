@@ -8,7 +8,7 @@ import type { WallOpening } from '../../../src/view/windows';
 
 describe('zones de mur sur le plan', () => {
   it('une zone par pièce le long de chaque mur, sans trou ni chevauchement', () => {
-    const layout = officeLayout('UNICORN', 2, 3, 'seed');
+    const layout = officeLayout('UNICORN', 2, 3);
     const spans = wallZoneSpans(layout);
     expect(spans.map((s) => s.zone)).toEqual(wallZones({ phase: 'UNICORN', wings: 2, annexes: 3 }));
     for (const wall of [0, 1] as const) {

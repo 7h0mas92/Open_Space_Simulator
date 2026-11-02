@@ -320,7 +320,8 @@
     "funding": "Lever des fonds",
     "pets": "Chats du bureau",
     "servers": "Salle des serveurs",
-    "mission": "Mission"
+    "mission": "Mission",
+    "subscriptions": "Abonnements"
   },
   "kanban": {
     "columns": {
@@ -1234,7 +1235,7 @@
       "off": "Désactivé"
     },
     "decor": {
-      "intro": "Chaque thème décore le bureau : guirlandes aux murs, objets au sol et sur les bureaux. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
+      "intro": "Chaque thème décore le bureau : guirlandes aux murs et un petit objet sur chaque bureau. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
       "legend": "Réglage du thème {{theme}}",
       "previewAlt": "Un coin de bureau décoré pour le thème {{theme}}",
       "live": "Affiché en ce moment",
@@ -1569,7 +1570,7 @@
           },
           "manage": {
             "title": "Tourner, peindre, déplacer, revendre",
-            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
+            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne, les flèches le décalent d'une demi-case et Échap le repose dans le catalogue. Les objets se posent à la demi-case près : contre un mur fin, la moitié de case libre se meuble, et un objet de 3 cases se centre dans une pièce de 4 (les murs fins et les fenêtres restent sur des cases entières). « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
           },
           "items": {
             "title": "Les objets utiles",
@@ -1946,41 +1947,6 @@
     "fibreCard": "Abonnement internet",
     "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
     "fibreCardReady": "De la box 4G à la fibre dédiée : choisis l’offre qui suit ton équipe.",
-    "fibre": {
-      "title": "Abonnement internet",
-      "intro": "Chaque offre supporte un nombre de salariés : au-delà, le réseau sature et toute l’équipe ralentit. Le prix est mensuel et prélevé chaque semaine (tous les 7 jours de jeu) ; la mise en service se paie à la souscription. Si la trésorerie ne couvre plus la facture, l’opérateur coupe la ligne.",
-      "none": "Pas d’abonnement : l’équipe se partage la 4G du téléphone du fondateur. Choisis une offre ci-dessous.",
-      "needBoxShort": "La fibre dédiée arrive dans une box fibre posée dans une salle des serveurs.",
-      "connected": "La ligne tient la charge : {{count}}/{{max}} salariés.",
-      "noBox": "Aucune box fibre dans une salle : tu paies la fibre dédiée mais elle n’arrive nulle part.",
-      "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
-      "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
-      "totalPaid": "{{price}} € payés en tout",
-      "perWeek": "{{price}} € prélevés chaque semaine",
-      "subscribe": "S’abonner ({{price}} € tout de suite)",
-      "switch": "Passer à cette offre ({{price}} €)",
-      "currentPlan": "Ton offre actuelle",
-      "cancel": "Résilier",
-      "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
-      "cancelConfirm": "Résilier l’abonnement",
-      "users_one": "{{count}} salarié utilise la connexion (télétravail compris, par le VPN).",
-      "users_other": "{{count}} salariés utilisent la connexion (télétravail compris, par le VPN).",
-      "saturated": "Réseau saturé : {{count}} salariés pour {{max}} prévus, −{{percent}} % de productivité. Passe à une offre plus grosse.",
-      "perMonth": "{{price}} € HT / mois",
-      "fromPerMonth": "dès {{price}} € HT / mois",
-      "maxUsers_one": "Jusqu’à {{count}} salarié",
-      "maxUsers_other": "Jusqu’à {{count}} salariés",
-      "tooSmall": "trop petite pour ton équipe",
-      "setupFee": "Mise en service : {{price}} €",
-      "noSetupFee": "Mise en service offerte",
-      "needsRouter": "box fibre en salle des serveurs",
-      "prices": "Prix hors taxes constatés chez les opérateurs français pour les entreprises (2026), à titre indicatif.",
-      "tech": {
-        "mobile": "Box 4G / 5G en Wi-Fi",
-        "ftth": "Fibre mutualisée (FTTH)",
-        "ftto": "Fibre dédiée (FTTO)"
-      }
-    },
     "warm": "Elle chauffe : les serveurs ralentissent et ne donnent que {{percent}} % de leurs effets.",
     "overheat": "Surchauffe : les serveurs plantent, plus aucun effet et la prod se dégrade. Ajoute de la clim ou retire du matériel.",
     "statusWarm": "Elle chauffe · {{count}}/{{max}} emplacements",
@@ -2123,5 +2089,49 @@
         "SOLD": "La startup a été vendue avant la fin de la mission."
       }
     }
+  },
+  "subscriptions": {
+    "intro": "Les services payés à intervalle régulier. La première période se paie à la souscription, puis à chaque échéance ; changer d’offre repart pour une période payée tout de suite. Si la trésorerie ne couvre plus une échéance, le prestataire coupe le service. Résilier l’arrête tout de suite, sans remboursement.",
+    "summaryNone": "Aucun abonnement en cours.",
+    "summary_one": "{{count}} abonnement en cours · environ {{price}} € par mois",
+    "summary_other": "{{count}} abonnements en cours · environ {{price}} € par mois",
+    "services": {
+      "internet": {
+        "name": "Internet",
+        "intro": "De la box 4G à la fibre dédiée. Chaque offre supporte un nombre de salariés : au-delà, le réseau sature et toute l’équipe ralentit. Prix mensuels hors taxes constatés chez les opérateurs français pour les entreprises (2026), prélevés chaque semaine (tous les 7 jours de jeu) ; la mise en service se paie à la souscription."
+      }
+    },
+    "requires": {
+      "fibreBox": {
+        "long": "La fibre dédiée arrive dans une box fibre : installe-la dans une salle des serveurs (rayon Serveurs).",
+        "short": "La fibre dédiée arrive dans une box fibre posée dans une salle des serveurs.",
+        "inactive": "Aucune box fibre dans une salle : tu paies la fibre dédiée mais elle n’arrive nulle part."
+      }
+    },
+    "none": "Pas d’abonnement : choisis une offre ci-dessous.",
+    "active": "Actif : l’offre donne ses effets.",
+    "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
+    "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
+    "totalPaid": "{{price}} € payés en tout",
+    "since": "depuis le sprint {{sprint}}",
+    "perWeek": "{{price}} € / semaine",
+    "perMonth": "{{price}} € / mois",
+    "perDays_one": "{{price}} € / jour",
+    "perDays_other": "{{price}} € / {{count}} jours",
+    "subscribe": "S’abonner ({{price}} € tout de suite)",
+    "switch": "Passer à cette offre ({{price}} €)",
+    "currentOffer": "Ton offre actuelle",
+    "cancel": "Résilier",
+    "cancelWarning": "Le service s’arrête tout de suite, sans remboursement de la période entamée.",
+    "cancelConfirm": "Résilier {{offer}}",
+    "manageAll": "Voir tous les abonnements",
+    "users_one": "{{count}} salarié utilise la connexion (télétravail compris, par le VPN).",
+    "users_other": "{{count}} salariés utilisent la connexion (télétravail compris, par le VPN).",
+    "activeUsers": "La ligne tient la charge : {{count}}/{{max}} salariés.",
+    "saturated": "Réseau saturé : {{count}} salariés pour {{max}} prévus, −{{percent}} % de productivité. Passe à une offre plus grosse.",
+    "maxUsers_one": "Jusqu’à {{count}} salarié",
+    "maxUsers_other": "Jusqu’à {{count}} salariés",
+    "tooSmall": "trop petite pour ton équipe",
+    "setupFee": "Mise en service : {{price}} €, payée à la souscription"
   }
 }
