@@ -432,7 +432,9 @@ flowchart LR
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
 - **Murs fins** : le rayon Cloisons propose un mur fin à mi-hauteur et un mur fin vitré du sol
-  au plafond, posés case par case. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
+  au plafond, posés case par case. Les autres objets se posent à la demi-case près : la moitié
+  de case libre de chaque côté d'un mur fin se meuble, et un objet de 3 cases se centre dans une
+  pièce de 4. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
   eux (angles, T, croix), sans jour entre deux murs, et se tournent, se repeignent et se revendent.
   Un mur qui enfermerait une zone est refusé, pour que chacun puisse toujours rejoindre son bureau.
   Quand le bureau s'agrandit, le plan cède la place aux meubles déjà posés : une cloison qui

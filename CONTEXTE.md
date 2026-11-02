@@ -4,6 +4,7 @@
 > dans `develop` (tâche T1 de [`docs/PASSATION-THOMAS.md`](docs/PASSATION-THOMAS.md)). Base :
 > `develop` au commit `5e65463` (PR #145) et `main` au commit `d28c381` (PR #143). Une fois cette
 > PR fusionnée, `develop` contient tout `main` : Carrière, Nouvelle partie, Supabase, Vercel.
+> Placement à la demi-case (PR #132) documenté par la PR #141.
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -243,6 +244,10 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   réutiliser `nearestValidCell` et `shopStatus` (`view/placement.ts`). Chaque objet du catalogue
   a un rendu distinct (test) ; chaque bureau a une place d'écran (`SCREEN_MOUNTS`, test) ; chaque
   forme Three.js a une entrée `credits.missingItems` en FR et EN.
+- **Positions à la demi-case** : `x` / `y` des objets sont des multiples de 0,5
+  (`GridPositionSchema`). Murs fins et fenêtres restent entiers (`snapsToHalf`, `canPlace`). Pour
+  une emprise, utiliser `itemBounds` (bords) ou `itemCells` (cases chevauchées) de `ai/grid.ts`,
+  jamais `x + dx` sur des entiers ; un mur fin ne compte que par son trait (`segmentCrosses`).
 - **Nouveau mode de jeu** : l'ajouter à `GAME_MODES`, à l'enum Prisma `GameMode` (migration
   `ALTER TYPE`), à `MODE_ICONS`, à `ALL_BUT` de `lessons.ts` (avec ses étapes `rules`) et au
   test des onglets du classement. Un réglage propre à une partie peut s'écrire dans la graine
@@ -292,6 +297,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 | -------- | --------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 02/11    | Thomas + Claude | #148              | Tâche T1 : `main` réintégré dans `develop` (merge commit). 13 conflits résolus en gardant les deux côtés : Carrière et Illimité, trésorerie de la légende multipliée par `difficultyOf`, ménage et abonnements à côté de `career`, succès de l'Illimité et de la Carrière (70). Carrière ajoutée à `GLOBAL_EXCLUDED_MODES`.                                                            |
 | 02/11    | Melvin + Claude | #146              | Daily et Kanbanana (#133) décrits dans `CLAUDE.md` et le README. Nouveau champ `morningSync` et stat `duplicateWork` (défauts pour les anciennes sauvegardes). Idées de suite proposées à Melvin pour le Daily : blocage signalé, pair programming, Daily qui dérape, retard, rétro de fin de sprint, succès.                                                                          |
+| 02/11    | Melvin + Claude | #132              | Placement à la demi-case : objets décalables d'une demi-case, demi-case libre le long des murs fins utilisable, centrage d'un objet de 3 cases dans 4.                                                                                                                                                                                                                                 |
 | 02/11    | Melvin + Claude | #145              | Partage du travail : `docs/PASSATION-THOMAS.md` (tâches T1 à T6 pour Thomas avec un prompt chacune, M1 à M4 pour Melvin) et `docs/proposition-mode-histoire.md`. `main` a 5 PR absentes de `develop` : à réintégrer d'abord.                                                                                                                                                           |
 | 02/11    | Thomas + Claude | #143              | Jeu en ligne avec comptes : client Vercel `open-space-simulator.vercel.app`, `CLIENT_URL` réglé sur Render, inscription testée par Thomas (compte créé dans Supabase). Reste l'OAuth GitHub.                                                                                                                                                                                           |
 | 02/11    | Thomas + Claude | #142              | Serveur Render en ligne (`oss-server-e90i.onrender.com`), branché sur Supabase et rempli par le seed (130 cartes, 67 succès, admin). `vercel.json` pointe dessus. Reste : projet Vercel, `CLIENT_URL` sur Render, OAuth GitHub.                                                                                                                                                        |
