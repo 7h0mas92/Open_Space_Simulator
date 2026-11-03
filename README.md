@@ -368,6 +368,20 @@ flowchart LR
   N features, finir N tâches, zéro panne, baisser la dette, gagner N utilisateurs), facile,
   moyen ou difficile, récompensé à la démo selon sa difficulté. Le hasard est tiré sur une
   graine à part (`shared/sim/taskFlow.ts`, `client/src/simulation/taskFlow.ts`).
+- **Charge du sprint selon l'équipe** (`client/src/simulation/sprintLoad.ts`) : 3 idées par
+  personne qui prend des tâches et par sprint (`TASK_FLOW.ideasPerDev`, l'encadrement ne compte
+  pas), backlog jusqu'à 4 par dev. Chaque matin de semaine à 9h, le rythme de chaque métier depuis
+  le début du sprint (`tracker.workByTrade`) est comparé au travail restant : s'il manque de quoi
+  tenir jusqu'à la démo, des tâches passent du backlog au « À faire », sinon de nouvelles idées
+  sont créées (`TODO_TOPPED_UP`) ; à 14h, un dev qui attend sans tâche en reçoit une. Au 6e jour
+  ouvré, une équipe nettement en retard est prévenue (`SPRINT_BEHIND`), rien n'est retiré. Ligne
+  au-dessus du Kanban : équipe, tâches finissables d'ici la démo, tâches prévues. Les devs ne
+  chôment plus (avant : environ 60 % du temps sans tâche), donc tâches du backlog plus longues
+  (`BALANCE.work.unitsPerPoint` 5 → 14, urgences et hebdo à 5) et chaque point livré pèse moins
+  (`BALANCE.work.pointEffect` 0,13). Nouvelles idées sur `seed#tasks#topup#…` ; règle qui change
+  toutes les parties (anciens replays de scores divergent). 192 titres de plus
+  (`data/moreTasks.ts`, 439 au total), 5 urgences et 5 tâches de la semaine de plus, 150 titres
+  récents gardés.
 - **Tâches par métier** : chaque carte du Kanban affiche son métier, 💻 Code, 🎨 Design (la
   designeuse) ou 📋 Produit (le Product Owner). Les nouvelles idées suivent les métiers présents
   dans l'équipe, et une tâche que le joueur n'assigne pas lui-même ne part qu'à quelqu'un du bon

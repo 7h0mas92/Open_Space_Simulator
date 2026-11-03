@@ -345,6 +345,8 @@
     "nobody": "Personne",
     "moveLeft": "Déplacer vers {{column}}",
     "moveRight": "Déplacer vers {{column}}",
+    "load_one": "{{count}} personne prend des tâches : environ {{capacity}} tâches finies d’ici la démo, {{planned}} prévues. Si ça va plus vite, d’autres tâches arrivent en cours de sprint.",
+    "load_other": "{{count}} personnes prennent des tâches : environ {{capacity}} tâches finies d’ici la démo, {{planned}} prévues. Si ça va plus vite, d’autres tâches arrivent en cours de sprint.",
     "dragHint": "Glisse une carte entre Backlog et À faire, ou utilise les flèches. Chacun prend tout seul les tâches « À faire » de son métier.",
     "impact": "Impact",
     "empty": "Rien ici. Profite.",

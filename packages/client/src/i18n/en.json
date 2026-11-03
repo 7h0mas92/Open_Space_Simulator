@@ -345,6 +345,8 @@
     "nobody": "Nobody",
     "moveLeft": "Move to {{column}}",
     "moveRight": "Move to {{column}}",
+    "load_one": "{{count}} person takes tasks: about {{capacity}} tasks done before the demo, {{planned}} planned. If it goes faster, more tasks arrive during the sprint.",
+    "load_other": "{{count}} people take tasks: about {{capacity}} tasks done before the demo, {{planned}} planned. If it goes faster, more tasks arrive during the sprint.",
     "dragHint": "Drag a card between Backlog and To do, or use the arrows. Everyone picks up the \"To do\" tasks of their own job.",
     "impact": "Impact",
     "empty": "Nothing here. Enjoy.",

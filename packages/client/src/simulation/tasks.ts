@@ -109,23 +109,34 @@ function pickTrade(rng: Rng, team: Record<TaskTrade, number>): TaskTrade {
 
 /** Taille maximale du backlog : elle grandit avec l'équipe. */
 export function backlogMax(state: GameState): number {
-  const team = Object.keys(state.components.identity).length;
+  const team = taskTakers(state);
   return Math.max(BALANCE.start.backlogMax, Math.ceil(team * TASK_FLOW.backlogPerDev));
 }
 
+/** Membres de l'équipe qui prennent des tâches (l'encadrement n'en prend pas). */
+export function taskTakers(state: GameState): number {
+  const team = teamByTrade(state);
+  return team.DEV + team.DESIGN + team.PRODUCT + team.QA;
+}
+
+/** Nouvelles idées pour le sprint qui commence : 3 par dev, au moins `newTasksPerSprint`. */
+export function sprintIdeas(state: GameState): number {
+  return Math.max(
+    BALANCE.start.newTasksPerSprint,
+    Math.ceil(taskTakers(state) * TASK_FLOW.ideasPerDev),
+  );
+}
+
 /**
- * Nouvelles idées à chaque sprint : au moins `newTasksPerSprint`, sinon 2 par dev. Le backlog
- * garde jusqu'à `backlogMax` idées (davantage pour une grande équipe) ; au-delà, les plus
- * vieilles sont oubliées.
+ * Nouvelles idées à chaque sprint : au moins `newTasksPerSprint`, sinon 3 par dev qui prend
+ * des tâches. Le backlog garde jusqu'à `backlogMax` idées (davantage pour une grande équipe) ;
+ * au-delà, les plus vieilles sont oubliées. Pendant le sprint, `sprintLoad.ts` complète le
+ * « À faire » si l'équipe avance plus vite que prévu.
  */
 export function refillBacklog(state: GameState, rng: Rng): void {
   const { start } = BALANCE;
   const existing = tasksInColumn(state, 'BACKLOG').length;
-  const team = Object.keys(state.components.identity).length;
-  const toCreate =
-    existing === 0
-      ? start.backlogSize
-      : Math.max(start.newTasksPerSprint, Math.ceil(team * TASK_FLOW.ideasPerDev));
+  const toCreate = existing === 0 ? start.backlogSize : sprintIdeas(state);
   const trades = teamByTrade(state);
   for (let i = 0; i < toCreate; i++) createTask(state, rng, undefined, pickTrade(rng, trades));
   const backlog = tasksInColumn(state, 'BACKLOG');

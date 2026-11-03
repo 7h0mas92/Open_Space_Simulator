@@ -781,6 +781,12 @@ button.danger {
 
 /* --- Kanban --------------------------------------------------------------------------- */
 
+.kanban-load {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 .kanban-toolbar {
   display: flex;
   flex-wrap: wrap;

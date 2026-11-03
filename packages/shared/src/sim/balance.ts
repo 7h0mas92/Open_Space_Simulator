@@ -196,8 +196,21 @@ export const BALANCE = {
     backlogMax: 24,
   },
   work: {
-    /** Unités de travail par point de tâche (1 unité = 1 h d'un dev de vitesse 5). */
-    unitsPerPoint: 5,
+    /**
+     * Unités de travail par point d'une tâche du backlog (1 unité = 1 h d'un dev de vitesse 5,
+     * avant bonus). Avec 3 idées par dev et par sprint et le réapprovisionnement du « À faire »,
+     * un dev ne reste plus les bras croisés : les tâches sont donc plus longues qu'avant (5),
+     * pour qu'un dev en finisse environ 3 par sprint et que l'équilibrage tienne.
+     */
+    unitsPerPoint: 14,
+    /**
+     * Poids d'un point livré sur les jauges et les utilisateurs. L'équipe ne chôme plus (le
+     * « À faire » est réapprovisionné), elle livre donc bien plus de points qu'avant : chaque
+     * point compte moins, pour garder le dilemme dette / hype et l'équilibrage (`pnpm balance`).
+     */
+    pointEffect: 0.13,
+    /** Unités par point des urgences et tâches de la semaine (délais courts, inchangés). */
+    specialUnitsPerPoint: 5,
     /** Arrivée et départ du bureau (heures). */
     arrivalHour: 9,
     leaveHour: 19,

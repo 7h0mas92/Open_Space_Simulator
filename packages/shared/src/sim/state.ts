@@ -7,6 +7,7 @@ import {
   FurnitureColorSchema,
   IdentitySchema,
   StatsSchema,
+  TaskTradeSchema,
 } from './components.js';
 import { CareerResultSchema, CareerStateSchema } from './career.js';
 import { CommandLogSchema } from './commands.js';
@@ -212,6 +213,11 @@ export const SprintTrackerSchema = z.object({
   /** Tâches urgentes et hebdomadaires réussies et ratées pendant le sprint. */
   specialDone: z.number().int().default(0),
   specialMissed: z.number().int().default(0),
+  /**
+   * Travail abattu pendant le sprint, par métier (unités de travail) : sert à mesurer le
+   * rythme de l'équipe pour réapprovisionner le « À faire » (vide pour une vieille sauvegarde).
+   */
+  workByTrade: z.partialRecord(TaskTradeSchema, z.number()).default({}),
 });
 export type SprintTracker = z.infer<typeof SprintTrackerSchema>;
 
@@ -376,6 +382,10 @@ export const NOTIFICATION_KINDS = [
   'URGENT_MISSED',
   'WEEKLY_TASKS',
   'WEEKLY_MISSED',
+  /** L'équipe avance plus vite que prévu : des tâches arrivent dans « À faire ». */
+  'TODO_TOPPED_UP',
+  /** L'équipe est en retard : une partie du « À faire » ne sera pas finie avant la démo. */
+  'SPRINT_BEHIND',
   'OBJECTIVE_SET',
   'OBJECTIVE_DONE',
   'OBJECTIVE_FAILED',
@@ -448,7 +458,7 @@ export type StoryState = z.infer<typeof StoryStateSchema>;
 export const STATE_VERSION = 1;
 
 /** Nombre de titres de tâches récents gardés en mémoire pour éviter les répétitions. */
-export const RECENT_TASK_TITLES_MAX = 60;
+export const RECENT_TASK_TITLES_MAX = 150;
 
 export const GameStateSchema = z.object({
   version: z.literal(STATE_VERSION),

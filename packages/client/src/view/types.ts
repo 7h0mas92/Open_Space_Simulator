@@ -376,6 +376,16 @@ export interface ObjectiveView {
   readonly reward: SprintObjective['reward'];
 }
 
+/** Charge du sprint : taille de l'équipe et tâches qu'elle peut encore finir (Kanban). */
+export interface SprintLoadView {
+  /** Membres de l'équipe qui prennent des tâches (l'encadrement n'en prend pas). */
+  readonly takers: number;
+  /** Tâches que l'équipe devrait encore finir d'ici la démo, au rythme actuel. */
+  readonly capacity: number;
+  /** Tâches en « À faire » et « En cours ». */
+  readonly planned: number;
+}
+
 /** Un jalon de la légende suivie en mode Carrière. */
 export interface CareerMilestoneView {
   readonly id: string;
@@ -1177,6 +1187,8 @@ export interface GameView {
   readonly lastReport: SprintReport | null;
   /** Objectif du sprint en cours (certains sprints seulement), sinon null. */
   readonly objective: ObjectiveView | null;
+  /** Charge du sprint, affichée au-dessus du Kanban. */
+  readonly sprintLoad: SprintLoadView;
   /** Mode Carrière : légende et jalons (null dans les autres modes). */
   readonly career: LegendRunView | null;
   readonly pitch: PitchView | null;

@@ -222,6 +222,81 @@ export const URGENT_TEMPLATES: readonly SpecialTaskTemplate[] = [
     reward: { hype: 1 },
     penalty: { hype: -3, usersShare: -0.01 },
   },
+  {
+    id: 'dns-down',
+    kind: 'URGENT',
+    type: 'INFRA',
+    size: 1,
+    title: ['Le nom de domaine a expiré', 'The domain name has expired'],
+    alert: [
+      'Urgent : notre nom de domaine a expiré, le site affiche une pub pour des casinos.',
+      'Urgent: our domain expired and the site now shows a casino ad.',
+    ],
+    deadlineHours: 6,
+    weight: 2,
+    reward: { stability: 1 },
+    penalty: { hype: -4, usersShare: -0.01 },
+  },
+  {
+    id: 'api-key-leak',
+    kind: 'URGENT',
+    type: 'INFRA',
+    size: 2,
+    title: ['Une clé d’API traîne sur GitHub', 'An API key is sitting on GitHub'],
+    alert: [
+      'Urgent : une clé d’API de production est publique sur GitHub. La facture grimpe.',
+      'Urgent: a production API key is public on GitHub. The bill is climbing.',
+    ],
+    deadlineHours: 8,
+    weight: 2,
+    reward: {},
+    penalty: { treasuryMonths: -0.12, stability: -2 },
+  },
+  {
+    id: 'press-article',
+    kind: 'URGENT',
+    type: 'FEATURE',
+    size: 2,
+    title: ['Finir la feature citée dans la presse', 'Finish the feature quoted in the press'],
+    alert: [
+      'Urgent : un journaliste a annoncé une feature qui n’existe pas encore. L’article sort après-demain.',
+      'Urgent: a journalist announced a feature that does not exist yet. The article comes out in two days.',
+    ],
+    deadlineHours: 20,
+    weight: 2,
+    reward: { hype: 3 },
+    penalty: { hype: -3 },
+  },
+  {
+    id: 'login-down',
+    kind: 'URGENT',
+    type: 'BUGFIX',
+    size: 1,
+    title: ['Plus personne ne peut se connecter', 'Nobody can log in anymore'],
+    alert: [
+      'Urgent : la page de connexion tourne dans le vide pour tout le monde.',
+      'Urgent: the login page spins forever for everyone.',
+    ],
+    deadlineHours: 6,
+    weight: 2,
+    reward: { stability: 1 },
+    penalty: { usersShare: -0.02, hype: -2 },
+  },
+  {
+    id: 'accessibility-audit',
+    kind: 'URGENT',
+    type: 'BUGFIX',
+    size: 3,
+    title: ['Corriger l’audit d’accessibilité', 'Fix the accessibility audit'],
+    alert: [
+      'Urgent : un grand client exige un site accessible avant de signer, vendredi.',
+      'Urgent: a big customer requires an accessible site before signing on Friday.',
+    ],
+    deadlineHours: 24,
+    weight: 1,
+    reward: { treasuryMonths: 0.08, hype: 1 },
+    penalty: { hype: -2 },
+  },
 ];
 
 export const WEEKLY_TEMPLATES: readonly SpecialTaskTemplate[] = [
@@ -351,6 +426,56 @@ export const WEEKLY_TEMPLATES: readonly SpecialTaskTemplate[] = [
     reward: { stability: 1 },
     penalty: { debt: 1 },
   },
+  {
+    id: 'cost-review',
+    kind: 'WEEKLY',
+    type: 'INFRA',
+    size: 1,
+    title: ['Relire la facture du cloud', 'Review the cloud bill'],
+    weight: 2,
+    reward: { treasuryMonths: 0.02 },
+    penalty: { treasuryMonths: -0.02 },
+  },
+  {
+    id: 'onboarding-doc',
+    kind: 'WEEKLY',
+    type: 'REFACTO',
+    size: 1,
+    title: ['Mettre à jour le guide d’arrivée', 'Update the onboarding guide'],
+    weight: 2,
+    reward: { moral: 1 },
+    penalty: { debt: 1 },
+  },
+  {
+    id: 'error-triage',
+    kind: 'WEEKLY',
+    type: 'BUGFIX',
+    size: 1,
+    title: ['Trier les erreurs remontées par la prod', 'Triage the errors reported by prod'],
+    weight: 2,
+    reward: { stability: 1 },
+    penalty: { stability: -2 },
+  },
+  {
+    id: 'access-review',
+    kind: 'WEEKLY',
+    type: 'INFRA',
+    size: 1,
+    title: ['Retirer les accès des anciens stagiaires', 'Revoke former interns’ access'],
+    weight: 2,
+    reward: { stability: 1 },
+    penalty: { stability: -2 },
+  },
+  {
+    id: 'perf-check',
+    kind: 'WEEKLY',
+    type: 'REFACTO',
+    size: 2,
+    title: ['Chasser la requête la plus lente', 'Hunt down the slowest query'],
+    weight: 2,
+    reward: { debt: -1 },
+    penalty: { debt: 2 },
+  },
 ];
 
 const ALL_TEMPLATES = [...URGENT_TEMPLATES, ...WEEKLY_TEMPLATES];
@@ -403,10 +528,34 @@ export type SprintObjective = z.infer<typeof SprintObjectiveSchema>;
 
 /** Constantes d'équilibrage des tâches dynamiques (ajustées avec `pnpm balance`). */
 export const TASK_FLOW = {
-  /** Idées ajoutées au backlog à chaque sprint : au moins `BALANCE.start.newTasksPerSprint`. */
-  ideasPerDev: 2,
+  /**
+   * Idées ajoutées au backlog à chaque sprint, par membre de l'équipe qui prend des tâches
+   * (l'encadrement ne compte pas) : au moins `BALANCE.start.newTasksPerSprint`.
+   */
+  ideasPerDev: 3,
   /** Taille max du backlog : au moins `BALANCE.start.backlogMax`, sinon par dev. */
-  backlogPerDev: 2.5,
+  backlogPerDev: 4,
+  /**
+   * Réapprovisionnement du « À faire » pendant le sprint. Chaque matin de semaine (9h), le
+   * rythme de chaque métier depuis le début du sprint (travail abattu par jour ouvré) est
+   * comparé au travail qui reste : s'il manque de quoi tenir jusqu'à la démo, des tâches
+   * passent du backlog au « À faire » (ou sont créées). À 14h, un métier dont un dev attend
+   * sans tâche est dépanné tout de suite.
+   */
+  topUp: {
+    morningHour: 9,
+    middayHour: 14,
+    /** Marge : on prévoit 15 % de travail en plus du rythme mesuré. */
+    margin: 1.15,
+    /** Au plus 2 tâches ajoutées par membre du métier et par passage. */
+    maxPerDev: 2,
+    /** Au 1er matin, pas encore de rythme : estimation en unités par dev et par jour ouvré. */
+    defaultUnitsPerDevDay: 6,
+    /** En retard : prévenu une fois par sprint, à partir de ce jour ouvré (6e jour sur 10). */
+    behindFromWorkday: 5,
+    /** En retard quand le travail restant dépasse 1,5 fois ce que le rythme permet. */
+    behindRatio: 1.5,
+  },
   /** Chance d'une tâche urgente au hasard à 10h un jour ouvré : base + par dev, plafonnée. */
   urgentBaseChance: 0.02,
   urgentChancePerDev: 0.005,
