@@ -325,11 +325,13 @@
     "pets": "Office cats",
     "servers": "Server room",
     "mission": "Mission",
+    "lobby": "Lobby",
     "subscriptions": "Subscriptions",
     "cleaning": "Cleaning",
     "tickets": "Kanbanana, the ticket app",
     "leaderboard": "Leaderboard",
-    "market": "Market"
+    "market": "Market",
+    "business": "Business"
   },
   "kanban": {
     "columns": {
@@ -611,7 +613,8 @@
       "wing-3": "Wing 3",
       "arcade": "Arcade",
       "garden": "Garden",
-      "auditorium": "Auditorium"
+      "auditorium": "Auditorium",
+      "lobby": "Lobby"
     }
   },
   "build": {
@@ -642,7 +645,8 @@
       "accessory": "Accessories",
       "monitors": "Monitors",
       "devices": "Devices",
-      "servers": "Servers"
+      "servers": "Servers",
+      "lobby": "Lobby"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -650,6 +654,7 @@
     "soldOut": "Limit reached ({{max}})",
     "tooExpensive": "Not enough cash",
     "annexDecor": "Decor that came with the annex: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
+    "lobbyDecor": "Decor that came with the lobby: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
     "rotate": "Rotate",
     "sell": "Sell (€{{price}})",
     "move": "Move",
@@ -882,6 +887,8 @@
       "projectionScreenMedium": "Pull-up projection screen (medium): aluminium case, feet, animated fabric, pole and bar",
       "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar",
       "serverCloset": "Server closet: raised floor tiles, glass walls, badge-reader door, cable tray",
+      "receptionDesk": "Reception desk: wooden front, stone top, two screens, visitor log and bell",
+      "badgeGates": "Lobby: stainless steel badge gates with glass flaps, receptionists, security guard and camera",
       "serverRoom": "Server room: raised floor, perforated tiles, glass walls, badge-reader door, cable tray",
       "rackServer": "1U server rack: cabinet, six servers with LEDs, patch panel and smoked door",
       "bladeServer": "Blade server chassis: two enclosures of vertical blades with blue LEDs",
@@ -1976,6 +1983,32 @@
     "adoptCardMissing_other": "{{count}} pieces of equipment still missing: litter box, bowl and cat tree.",
     "adoptCardReady": "All set: pick a coat and adopt."
   },
+  "lobby": {
+    "card": "Lobby",
+    "cardBuilt": "Built",
+    "cardBuild": "Ground-floor lobby: badge doors, reception desk, security.",
+    "cardStatus_one": "{{count}} receptionist · security: {{security}}",
+    "cardStatus_other": "{{count}} receptionists · security: {{security}}",
+    "open": "Reception and security",
+    "intro": "The ground-floor lobby welcomes the team and visitors: you come in, badge, then go up to the office. It sits in front of every other room.",
+    "buildTitle": "Build the lobby",
+    "features": {
+      "gates": "Two magnetic badge doors between the lobby and the office (+stability)",
+      "desk": "A reception desk for two receptionists",
+      "waiting": "A bench and two plants for visitors (+hype, +morale)"
+    },
+    "build": "Start the works (€{{price}})",
+    "built": "Lobby built: everyone comes in through the badge doors.",
+    "receptionTitle": "Reception",
+    "receptionHint": "Up to two receptionists screen calls, parcels and visitors: +1% productivity, +morale and +hype each. Salary: €{{salary}} a month, added to expenses.",
+    "receptionists_zero": "No receptionist (out of {{max}})",
+    "receptionists_one": "{{count}} receptionist out of {{max}}",
+    "receptionists_other": "{{count}} receptionists out of {{max}}",
+    "hire": "Hire a receptionist (€{{salary}} a month)",
+    "dismiss": "Let a receptionist go",
+    "payroll": "Reception salaries: €{{price}} a month.",
+    "noSecurity": "none"
+  },
   "servers": {
     "intro": "A server room hosts part of the product: the hosting bill goes down and prod holds up better. Buy a room (Servers aisle of build mode), then choose the hardware to install in it. Every device runs hot: plan enough cooling.",
     "roomsTitle": "Your rooms",
@@ -2274,6 +2307,38 @@
       }
     }
   },
+  "cleaning": {
+    "intro": "Every weekday, the team in the office makes a mess: wrappers, cups, cans, pizza boxes… The longer you wait, the faster it gets dirty, and a dirty office slows down everyone working there (not remote workers). Call the Nickel Chrome cleaning company or take a subscription.",
+    "dirtTitle": "Office dirt",
+    "dirt": "{{percent}}% dirty",
+    "levels": {
+      "clean": "Clean",
+      "warn": "Watch out",
+      "dirty": "Dirty"
+    },
+    "loss": "The team on site works {{percent}}% slower.",
+    "noLoss": "Spotless office: no work lost.",
+    "days_one": "{{count}} day without cleaning",
+    "days_other": "{{count}} days without cleaning",
+    "crewTitle": "Nickel Chrome, cleaning company",
+    "tools": {
+      "cart": "team lead, cart",
+      "vacuum": "vacuum cleaner",
+      "mop": "mop"
+    },
+    "status": {
+      "visit": "Cleaning in progress ({{percent}}%)",
+      "express": "The express crew is on its way",
+      "booked_one": "The crew comes in {{count}} hour",
+      "booked_other": "The crew comes in {{count}} hours"
+    },
+    "call": "Book for tonight (€{{price}})",
+    "express": "Express, right now (€{{price}})",
+    "callHint": "A call is paid when booked: the crew comes at 7 pm, or right away for express.",
+    "history_one": "{{count}} visit, €{{price}} spent on calls",
+    "history_other": "{{count}} visits, €{{price}} spent on calls",
+    "button": "Cleaning: {{percent}}% dirty"
+  },
   "subscriptions": {
     "intro": "Services paid at regular intervals. The first period is paid when you subscribe, then at each due date; switching plan starts a new period paid right away. If the treasury can’t cover a bill, the provider cuts the service. Cancelling stops it right away, with no refund.",
     "summaryNone": "No active subscription.",
@@ -2283,6 +2348,14 @@
       "internet": {
         "name": "Internet",
         "intro": "From a 4G router to dedicated fibre. Each plan supports a number of employees: beyond that, the network saturates and the whole team slows down. Monthly prices excluding VAT, as charged by French operators to businesses (2026), billed every week (every 7 game days); the setup fee is paid when you subscribe."
+      },
+      "cleaning": {
+        "name": "Cleaning",
+        "intro": "Nickel Chrome comes at 7 pm on the plan’s days and brings dirt back to zero. Paid every week (every 7 game days), cheaper than a call; the price follows the size of the office."
+      },
+      "security": {
+        "name": "Security",
+        "intro": "A security service at market prices, paid every week (every 7 game days). The guard stands in the lobby, next to the badge doors."
       }
     },
     "requires": {
@@ -2290,6 +2363,11 @@
         "long": "Dedicated fibre comes into a fibre router: install one in a server room (Servers aisle).",
         "short": "Dedicated fibre needs a fibre router in a server room.",
         "inactive": "No fibre router in a room: you pay for dedicated fibre but it goes nowhere."
+      },
+      "lobby": {
+        "long": "To subscribe, first build the lobby (Lobby aisle): the guard and the badge doors are there.",
+        "short": "A lobby is needed.",
+        "inactive": "No lobby: you pay for the service but it does nothing."
       }
     },
     "none": "No subscription: pick a plan below.",
@@ -2346,17 +2424,8 @@
     "call": "Book for tonight (€{{price}})",
     "express": "Express, right now (€{{price}})",
     "callHint": "A call is paid when booked: the crew comes at 7 pm, or right away for express.",
-    "history_one": "{{count}} visit, €{{price}} spent",
-    "history_other": "{{count}} visits, €{{price}} spent",
-    "planTitle": "Cleaning subscription",
-    "none": "No subscription: the crew only comes when you call.",
-    "nextBill_one": "Next €{{price}} payment in {{count}} day",
-    "nextBill_other": "Next €{{price}} payment in {{count}} days",
-    "totalPaid": "€{{price}} paid in total",
-    "discount": "(-{{percent}}% per visit)",
-    "cancel": "Cancel",
-    "cancelWarning": "The crew won’t come any more; the current week isn’t refunded.",
-    "cancelConfirm": "Cancel cleaning",
+    "history_one": "{{count}} visit, €{{price}} spent on calls",
+    "history_other": "{{count}} visits, €{{price}} spent on calls",
     "button": "Cleaning: {{percent}}% dirty"
   },
   "daily": {
@@ -2387,6 +2456,109 @@
     "kinds": {
       "URGENT": "Urgent",
       "WEEKLY": "Weekly"
+    }
+  },
+  "business": {
+    "intro": "Your product has to make money, but every euro you charge drives users away. Cash follows revenue, valuation mostly follows your user count (a paying customer counts more for investors).",
+    "pricing": {
+      "title": "Business model",
+      "model": "Model",
+      "tier": "Price level",
+      "current": "Current: {{model}}, {{tier}} price",
+      "revenue": "{{price}} a month from users",
+      "inUse": "current",
+      "tiers": {
+        "LOW": "low",
+        "STANDARD": "standard",
+        "PREMIUM": "premium"
+      },
+      "arpu": "Revenue per user per month",
+      "oneTime": "Paid once by each new user",
+      "acquisition": "New users",
+      "churn": "Users leaving",
+      "userValue": "Value of a user for investors",
+      "monthly": "Monthly revenue with this setting",
+      "loss": "Price rise: {{users}} users leave right away and hype drops {{hype}} points.",
+      "cut": "Price cut: +{{hype}} hype points.",
+      "unchanged": "This is your current setting. Pick another model or price to compare.",
+      "apply": "Apply this model",
+      "blockers": {
+        "COOLDOWN": "Already changed this sprint: customers need some stability. Try again next sprint.",
+        "WRONG_STAGE": "Not during a fundraising pitch."
+      }
+    },
+    "clients": {
+      "title": "B2B clients",
+      "intro": "Companies want your product, provided you deliver the work they ask for before the deadline. They pay a signing bonus, a monthly fee and a delivery bonus. Every outage costs you a penalty (SLA), and a missed deadline costs a lot. Points are earned at the demo, with finished tasks of the right type.",
+      "slots": "Active deals: {{used}}/{{max}}",
+      "monthly": "{{price}} a month",
+      "record": "{{delivered}} delivered, {{lost}} lost",
+      "contracts": "Signed deals",
+      "offers": "This sprint's offers",
+      "noOffers": "No offers yet: new clients show up at every planning.",
+      "sizes": {
+        "SMALL": "small deal",
+        "MEDIUM": "medium deal",
+        "LARGE": "big deal"
+      },
+      "needs": {
+        "FEATURE": "feature",
+        "INFRA": "infra",
+        "BUGFIX": "bugfix"
+      },
+      "need_one": "Deliver {{count}} {{type}} point in {{sprints}} sprints",
+      "need_other": "Deliver {{count}} {{type}} points in {{sprints}} sprints",
+      "fee": "Monthly fee",
+      "signing": "On signing",
+      "delivery": "On delivery",
+      "users_one": "{{users}} user",
+      "users_other": "{{users}} users",
+      "risks": "Risks",
+      "riskText": "{{penalty}} if missed, {{sla}} per outage",
+      "sign": "Sign the deal",
+      "blockers": {
+        "NO_SLOT": "No room for another active deal: deliver or cancel one first.",
+        "WRONG_STAGE": "Not during a fundraising pitch."
+      },
+      "progress": "{{done}}/{{total}} points delivered",
+      "left_one": "last sprint to deliver",
+      "left_other": "{{count}} sprints to deliver",
+      "maintenance_one": "Delivered, on maintenance for {{count}} more sprint",
+      "maintenance_other": "Delivered, on maintenance for {{count}} more sprints",
+      "paying": "Pays {{price}} a month",
+      "breaches": "{{count}}/{{max}} outages tolerated",
+      "drop": "Cancel the deal",
+      "end": "End maintenance",
+      "dropWarning": "Cancelling now costs {{penalty}} in penalties and some hype.",
+      "endWarning": "The client leaves at no cost: no more fee, no more outage penalty.",
+      "dropConfirm": "Confirm"
+    },
+    "support": {
+      "title": "Customer support",
+      "intro": "Your users write in: bugs, questions, “it doesn’t work”. The more users, the higher the debt and the shakier the platform, the more tickets. Unanswered, satisfaction drops and they leave; happy, they recommend the product.",
+      "satisfaction": "Satisfaction {{value}}/100",
+      "satisfactionLabel": "User satisfaction",
+      "levels": {
+        "happy": "Delighted",
+        "ok": "Fine",
+        "angry": "Furious"
+      },
+      "churn": "Users leave {{percent}}% faster.",
+      "happy": "They recommend the product: +{{percent}}% growth and a little hype.",
+      "ok": "Above {{threshold}}, they would recommend the product.",
+      "tickets": "{{backlog}} tickets waiting · {{perDay}} per workday · {{capacity}} solved per day",
+      "agents_one": "{{count}} support agent",
+      "agents_other": "{{count}} support agents",
+      "agentInfo": "{{salary}} a month each, {{capacity}} tickets a day, {{max}} at most in this phase",
+      "hire": "Hire an agent",
+      "fire": "Let an agent go",
+      "monthly": "Support payroll: {{price}} a month",
+      "duty": "Devs on support duty",
+      "duties": {
+        "NONE": "None",
+        "LIGHT": "A little ({{percent}}%)",
+        "HEAVY": "A lot ({{percent}}%)"
+      }
     }
   },
   "leave": {

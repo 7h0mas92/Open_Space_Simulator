@@ -3,21 +3,30 @@ import {
   difficultyOf,
   endlessCostMultiplier,
   freeSeasonStart,
+  userValue,
   type GameState,
 } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
+import { receptionistsMonthly } from './lobby';
 import { hostingSaving } from './serverRoom';
 import { subscriptionsMonthly } from './subscriptions';
-import { cleaningMonthly } from './cleaning';
+import { currentPricing } from './pricing';
+import { clientsMonthly } from './clients';
+import { supportMonthly } from './support';
 
-/** Revenu récurrent annuel (ARR), en euros. */
-export function annualRevenue(state: GameState): number {
-  return state.gauges.users * BALANCE.economy.arpuMonthly * 12;
+/** Revenu mensuel par utilisateur, selon le modèle économique et le niveau de prix. */
+export function arpuMonthly(state: GameState): number {
+  return BALANCE.economy.arpuMonthly * currentPricing(state).arpu;
 }
 
-/** Masse salariale mensuelle chargée. */
+/** Revenu récurrent annuel (ARR), en euros : utilisateurs et contrats des clients B2B. */
+export function annualRevenue(state: GameState): number {
+  return (state.gauges.users * arpuMonthly(state) + clientsMonthly(state)) * 12;
+}
+
+/** Masse salariale mensuelle chargée (devs, et secrétaires de l'accueil). */
 export function monthlyPayroll(state: GameState): number {
-  let total = 0;
+  let total = receptionistsMonthly(state);
   for (const id of devIds(state)) total += state.components.employment[id]?.salary ?? 0;
   return total;
 }
@@ -61,7 +70,8 @@ export function fixedCosts(state: GameState): number {
 }
 
 /**
- * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, prêt. Les
+ * Dépenses mensuelles totales : salaires, frais par dev, frais fixes, hébergement, agents de
+ * support, prêt. Les
  * abonnements, payés à part à chaque échéance, n'y sont pas. Plus chères
  * en Hardcore (`difficultyOf`).
  */
@@ -71,19 +81,24 @@ export function monthlyExpenses(state: GameState): number {
       teamSize(state) * BALANCE.economy.overheadPerDevMonthly +
       fixedCosts(state) +
       hostingCost(state) +
+      supportMonthly(state) +
       loanPayment(state)) *
     difficultyOf(state.mode).expenses
   );
 }
 
-/** Revenus mensuels (abonnements des utilisateurs), plus maigres en Hardcore. */
+/**
+ * Revenus mensuels des utilisateurs (selon le modèle économique), plus maigres en Hardcore. Les
+ * achats uniques sont encaissés à l'arrivée de chaque utilisateur (`acquireUsers`).
+ */
 export function monthlyRevenue(state: GameState): number {
-  return state.gauges.users * BALANCE.economy.arpuMonthly * difficultyOf(state.mode).revenue;
+  return state.gauges.users * arpuMonthly(state) * difficultyOf(state.mode).revenue;
 }
 
 /**
- * Valorisation de la startup. Ce que regardent les investisseurs : les utilisateurs
- * et le chiffre d'affaires, gonflés par la hype, plombés par la dette et l'instabilité.
+ * Valorisation de la startup. Ce que regardent les investisseurs : les utilisateurs (un client
+ * qui paie compte plus qu'un visiteur, selon le modèle économique) et le chiffre d'affaires,
+ * gonflés par la hype, plombés par la dette et l'instabilité.
  */
 export function computeValuation(state: GameState): number {
   const { valuation } = BALANCE;
@@ -91,7 +106,7 @@ export function computeValuation(state: GameState): number {
   const raw =
     valuation.base +
     teamSize(state) * valuation.perDev +
-    users * valuation.perUser +
+    users * valuation.perUser * userValue(state.pricing.model, state.pricing.tier) +
     annualRevenue(state) * valuation.arrMultiple;
   const hypeFactor = 0.4 + hype / 60;
   const debtFactor = 1 - debt / 200;
@@ -115,9 +130,9 @@ export function portfolioValue(state: GameState): number {
 export function runwayMonths(state: GameState): number {
   const burn =
     monthlyExpenses(state) +
-    subscriptionsMonthly(state) +
-    cleaningMonthly(state) -
-    monthlyRevenue(state);
+    subscriptionsMonthly(state) -
+    monthlyRevenue(state) -
+    clientsMonthly(state) * difficultyOf(state.mode).revenue;
   if (burn <= 0) return Number.POSITIVE_INFINITY;
   return state.gauges.treasury / burn;
 }

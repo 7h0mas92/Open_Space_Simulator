@@ -325,11 +325,13 @@
     "pets": "Chats du bureau",
     "servers": "Salle des serveurs",
     "mission": "Mission",
+    "lobby": "Hall d’entrée",
     "subscriptions": "Abonnements",
     "cleaning": "Ménage",
     "tickets": "Kanbanana, l’appli de tickets",
     "leaderboard": "Classement",
-    "market": "Marché"
+    "market": "Marché",
+    "business": "Business"
   },
   "kanban": {
     "columns": {
@@ -611,7 +613,8 @@
       "wing-3": "Aile 3",
       "arcade": "Arcade",
       "garden": "Jardin",
-      "auditorium": "Auditorium"
+      "auditorium": "Auditorium",
+      "lobby": "Hall"
     }
   },
   "build": {
@@ -642,7 +645,8 @@
       "accessory": "Accessoires",
       "monitors": "Écrans",
       "devices": "Périphériques",
-      "servers": "Serveurs"
+      "servers": "Serveurs",
+      "lobby": "Accueil"
     },
     "price": "{{price}} €",
     "owned": "{{count}}/{{max}}",
@@ -650,6 +654,7 @@
     "soldOut": "Maximum atteint ({{max}})",
     "tooExpensive": "Pas assez de trésorerie",
     "annexDecor": "Décor offert avec l’annexe : tu peux le déplacer et le tourner, mais il n’a pas d’effet et ne se revend pas. Le même objet est en vente dans la boutique.",
+    "lobbyDecor": "Décor offert avec le hall : tu peux le déplacer et le tourner, mais il n’a pas d’effet et ne se revend pas. Le même objet est en vente dans la boutique.",
     "rotate": "Tourner",
     "sell": "Revendre ({{price}} €)",
     "move": "Déplacer",
@@ -882,6 +887,8 @@
       "projectionScreenMedium": "Écran de projection déroulant (moyen) : caisson alu, pieds, toile, mât et barre animés",
       "projectionScreenLarge": "Écran de projection déroulant (grand) : caisson alu, pieds, toile, mât et barre animés",
       "serverCloset": "Local serveurs : sol technique en dalles, cloisons vitrées, porte à badge, chemin de câbles",
+      "receptionDesk": "Comptoir d’accueil : façade en bois, plateau de pierre, deux écrans, registre des visiteurs et sonnette",
+      "badgeGates": "Hall d’entrée : portiques à badge en inox à portillons vitrés, secrétaires, agent de sécurité et caméra",
       "serverRoom": "Salle des serveurs : sol technique, dalles perforées, cloisons vitrées, porte à badge, chemin de câbles",
       "rackServer": "Baie de serveurs 1U : armoire, six serveurs à voyants, brassage et porte fumée",
       "bladeServer": "Châssis de serveurs lames : deux châssis de lames verticales aux voyants bleus",
@@ -1976,6 +1983,32 @@
     "adoptCardMissing_other": "Il manque encore {{count}} équipements : litière, gamelle et arbre à chat.",
     "adoptCardReady": "Tout est prêt : choisis sa robe et adopte-le."
   },
+  "lobby": {
+    "card": "Hall d’entrée",
+    "cardBuilt": "Aménagé",
+    "cardBuild": "Hall au rez-de-chaussée : portes à badge, comptoir d’accueil, sécurité.",
+    "cardStatus_one": "{{count}} secrétaire · sécurité : {{security}}",
+    "cardStatus_other": "{{count}} secrétaires · sécurité : {{security}}",
+    "open": "Accueil et sécurité",
+    "intro": "Le hall du rez-de-chaussée accueille l’équipe et les visiteurs : on y entre, on badge, puis on monte au bureau. Il passe devant toutes les autres pièces.",
+    "buildTitle": "Aménager le hall",
+    "features": {
+      "gates": "Deux portes à badge magnétique entre le hall et le bureau (+stabilité)",
+      "desk": "Un comptoir d’accueil pour deux secrétaires",
+      "waiting": "Une banquette et deux plantes pour les visiteurs (+hype, +moral)"
+    },
+    "build": "Lancer les travaux ({{price}} €)",
+    "built": "Hall aménagé : tout le monde entre par les portes à badge.",
+    "receptionTitle": "Accueil",
+    "receptionHint": "Jusqu’à deux secrétaires filtrent les appels, les colis et les visiteurs : +1 % de productivité, +moral et +hype chacun. Salaire : {{salary}} € par mois, ajouté aux dépenses.",
+    "receptionists_zero": "Aucune secrétaire (sur {{max}})",
+    "receptionists_one": "{{count}} secrétaire sur {{max}}",
+    "receptionists_other": "{{count}} secrétaires sur {{max}}",
+    "hire": "Embaucher une secrétaire ({{salary}} € par mois)",
+    "dismiss": "Se séparer d’une secrétaire",
+    "payroll": "Salaires de l’accueil : {{price}} € par mois.",
+    "noSecurity": "aucune"
+  },
   "servers": {
     "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer. Chaque appareil chauffe : prévois assez de clim.",
     "roomsTitle": "Tes salles",
@@ -2274,6 +2307,38 @@
       }
     }
   },
+  "cleaning": {
+    "intro": "Chaque jour de semaine, l’équipe présente au bureau le salit : emballages, gobelets, canettes, boîtes de pizza… Plus tu attends, plus la saleté monte vite, et un bureau sale ralentit tous ceux qui y travaillent (pas les télétravailleurs). Appelle l’entreprise de nettoyage Nickel Chrome ou prends un abonnement.",
+    "dirtTitle": "Saleté du bureau",
+    "dirt": "{{percent}} % de saleté",
+    "levels": {
+      "clean": "Propre",
+      "warn": "À surveiller",
+      "dirty": "Sale"
+    },
+    "loss": "L’équipe sur place travaille {{percent}} % moins vite.",
+    "noLoss": "Bureau impeccable : aucun travail perdu.",
+    "days_one": "{{count}} jour sans ménage",
+    "days_other": "{{count}} jours sans ménage",
+    "crewTitle": "Nickel Chrome, entreprise de nettoyage",
+    "tools": {
+      "cart": "cheffe d’équipe, chariot",
+      "vacuum": "aspirateur",
+      "mop": "serpillière"
+    },
+    "status": {
+      "visit": "Ménage en cours ({{percent}} %)",
+      "express": "L’équipe express arrive tout de suite",
+      "booked_one": "L’équipe passe dans {{count}} heure",
+      "booked_other": "L’équipe passe dans {{count}} heures"
+    },
+    "call": "Appeler pour ce soir ({{price}} €)",
+    "express": "Express, tout de suite ({{price}} €)",
+    "callHint": "Un appel est payé à la réservation : l’équipe passe le soir à 19h, ou tout de suite en express.",
+    "history_one": "{{count}} passage, {{price}} € dépensés en appels",
+    "history_other": "{{count}} passages, {{price}} € dépensés en appels",
+    "button": "Ménage : {{percent}} % de saleté"
+  },
   "subscriptions": {
     "intro": "Les services payés à intervalle régulier. La première période se paie à la souscription, puis à chaque échéance ; changer d’offre repart pour une période payée tout de suite. Si la trésorerie ne couvre plus une échéance, le prestataire coupe le service. Résilier l’arrête tout de suite, sans remboursement.",
     "summaryNone": "Aucun abonnement en cours.",
@@ -2283,6 +2348,14 @@
       "internet": {
         "name": "Internet",
         "intro": "De la box 4G à la fibre dédiée. Chaque offre supporte un nombre de salariés : au-delà, le réseau sature et toute l’équipe ralentit. Prix mensuels hors taxes constatés chez les opérateurs français pour les entreprises (2026), prélevés chaque semaine (tous les 7 jours de jeu) ; la mise en service se paie à la souscription."
+      },
+      "cleaning": {
+        "name": "Ménage",
+        "intro": "Nickel Chrome passe le soir à 19h, les jours prévus par l’offre, et remet la saleté à zéro. Payé chaque semaine (tous les 7 jours de jeu), moins cher qu’un appel ; le prix suit la taille du bureau."
+      },
+      "security": {
+        "name": "Sécurité",
+        "intro": "Un service de sécurité aux prix du marché, payé chaque semaine (tous les 7 jours de jeu). L’agent se tient dans le hall, à côté des portes à badge."
       }
     },
     "requires": {
@@ -2290,6 +2363,11 @@
         "long": "La fibre dédiée arrive dans une box fibre : installe-la dans une salle des serveurs (rayon Serveurs).",
         "short": "La fibre dédiée arrive dans une box fibre posée dans une salle des serveurs.",
         "inactive": "Aucune box fibre dans une salle : tu paies la fibre dédiée mais elle n’arrive nulle part."
+      },
+      "lobby": {
+        "long": "Pour t’abonner, aménage d’abord le hall d’entrée (rayon Accueil) : l’agent et les portes à badge y sont.",
+        "short": "Il faut un hall d’entrée.",
+        "inactive": "Pas de hall d’entrée : tu paies le service mais il ne sert à rien."
       }
     },
     "none": "Pas d’abonnement : choisis une offre ci-dessous.",
@@ -2346,17 +2424,8 @@
     "call": "Appeler pour ce soir ({{price}} €)",
     "express": "Express, tout de suite ({{price}} €)",
     "callHint": "Un appel est payé à la réservation : l’équipe passe le soir à 19h, ou tout de suite en express.",
-    "history_one": "{{count}} passage, {{price}} € dépensés",
-    "history_other": "{{count}} passages, {{price}} € dépensés",
-    "planTitle": "Abonnement de ménage",
-    "none": "Pas d’abonnement : l’équipe ne vient que si tu l’appelles.",
-    "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
-    "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
-    "totalPaid": "{{price}} € payés en tout",
-    "discount": "(-{{percent}} % par passage)",
-    "cancel": "Résilier",
-    "cancelWarning": "L’équipe ne viendra plus, sans remboursement de la semaine entamée.",
-    "cancelConfirm": "Résilier le ménage",
+    "history_one": "{{count}} passage, {{price}} € dépensés en appels",
+    "history_other": "{{count}} passages, {{price}} € dépensés en appels",
     "button": "Ménage : {{percent}} % de saleté"
   },
   "daily": {
@@ -2387,6 +2456,109 @@
     "kinds": {
       "URGENT": "Urgent",
       "WEEKLY": "Semaine"
+    }
+  },
+  "business": {
+    "intro": "Ton produit doit rapporter de l’argent, mais chaque euro demandé fait fuir des utilisateurs. La trésorerie suit le revenu, la valorisation suit surtout le nombre d’utilisateurs (un client qui paie compte plus pour les investisseurs).",
+    "pricing": {
+      "title": "Modèle économique",
+      "model": "Modèle",
+      "tier": "Niveau de prix",
+      "current": "En cours : {{model}}, prix {{tier}}",
+      "revenue": "{{price}} par mois de revenus des utilisateurs",
+      "inUse": "en cours",
+      "tiers": {
+        "LOW": "bas",
+        "STANDARD": "standard",
+        "PREMIUM": "premium"
+      },
+      "arpu": "Revenu par utilisateur et par mois",
+      "oneTime": "Payé une fois par nouvel utilisateur",
+      "acquisition": "Nouveaux utilisateurs",
+      "churn": "Départs d’utilisateurs",
+      "userValue": "Valeur d’un utilisateur pour les investisseurs",
+      "monthly": "Revenus mensuels avec ce réglage",
+      "loss": "Hausse de prix : {{users}} utilisateurs partent tout de suite et la hype perd {{hype}} points.",
+      "cut": "Baisse de prix : +{{hype}} points de hype.",
+      "unchanged": "C’est le réglage en cours. Choisis un autre modèle ou un autre prix pour comparer.",
+      "apply": "Appliquer ce modèle",
+      "blockers": {
+        "COOLDOWN": "Déjà changé ce sprint : les clients ont besoin d’un peu de stabilité. Réessaie au prochain sprint.",
+        "WRONG_STAGE": "Pas pendant une levée de fonds."
+      }
+    },
+    "clients": {
+      "title": "Clients B2B",
+      "intro": "Des entreprises veulent ton produit, à condition que tu fasses le travail qu’elles demandent avant l’échéance. Elles paient une prime à la signature, un forfait chaque mois et une prime à la livraison. Chaque panne de prod te coûte une pénalité (SLA), et une échéance ratée coûte cher. Les points se gagnent à la démo, avec les tâches du bon type terminées.",
+      "slots": "Contrats en cours : {{used}}/{{max}}",
+      "monthly": "{{price}} par mois",
+      "record": "{{delivered}} livré(s), {{lost}} perdu(s)",
+      "contracts": "Contrats signés",
+      "offers": "Offres de ce sprint",
+      "noOffers": "Aucune offre pour l’instant : de nouveaux clients se présentent à chaque planification.",
+      "sizes": {
+        "SMALL": "petit contrat",
+        "MEDIUM": "contrat moyen",
+        "LARGE": "gros contrat"
+      },
+      "needs": {
+        "FEATURE": "feature",
+        "INFRA": "infra",
+        "BUGFIX": "bugfix"
+      },
+      "need_one": "Livrer {{count}} point de {{type}} en {{sprints}} sprints",
+      "need_other": "Livrer {{count}} points de {{type}} en {{sprints}} sprints",
+      "fee": "Forfait mensuel",
+      "signing": "À la signature",
+      "delivery": "À la livraison",
+      "users_one": "{{users}} utilisateur",
+      "users_other": "{{users}} utilisateurs",
+      "risks": "Risques",
+      "riskText": "{{penalty}} si raté, {{sla}} par panne",
+      "sign": "Signer le contrat",
+      "blockers": {
+        "NO_SLOT": "Plus de place pour un contrat en cours : livre ou romps d’abord un contrat.",
+        "WRONG_STAGE": "Pas pendant une levée de fonds."
+      },
+      "progress": "{{done}}/{{total}} points livrés",
+      "left_one": "dernier sprint pour livrer",
+      "left_other": "{{count}} sprints pour livrer",
+      "maintenance_one": "Livré, en maintenance encore {{count}} sprint",
+      "maintenance_other": "Livré, en maintenance encore {{count}} sprints",
+      "paying": "Paie {{price}} par mois",
+      "breaches": "{{count}}/{{max}} pannes tolérées",
+      "drop": "Rompre le contrat",
+      "end": "Arrêter la maintenance",
+      "dropWarning": "Rompre maintenant coûte {{penalty}} de pénalités et de la hype.",
+      "endWarning": "Le client part sans frais : plus de forfait, plus de pénalité de panne.",
+      "dropConfirm": "Confirmer"
+    },
+    "support": {
+      "title": "Support client",
+      "intro": "Tes utilisateurs écrivent : bugs, questions, « ça marche pas ». Plus ils sont nombreux, plus la dette est haute et la prod instable, plus il y a de tickets. Sans réponse, la satisfaction baisse et ils partent ; contents, ils recommandent le produit.",
+      "satisfaction": "Satisfaction {{value}}/100",
+      "satisfactionLabel": "Satisfaction des utilisateurs",
+      "levels": {
+        "happy": "Ravis",
+        "ok": "Ça va",
+        "angry": "Furieux"
+      },
+      "churn": "Les utilisateurs partent {{percent}} % plus vite.",
+      "happy": "Ils recommandent le produit : +{{percent}} % de croissance et un peu de hype.",
+      "ok": "Au-dessus de {{threshold}}, ils recommanderaient le produit.",
+      "tickets": "{{backlog}} tickets en attente · {{perDay}} par jour ouvré · {{capacity}} traités par jour",
+      "agents_one": "{{count}} agent de support",
+      "agents_other": "{{count}} agents de support",
+      "agentInfo": "{{salary}} par mois chacun, {{capacity}} tickets par jour, {{max}} au plus dans cette phase",
+      "hire": "Embaucher un agent",
+      "fire": "Remercier un agent",
+      "monthly": "Salaires du support : {{price}} par mois",
+      "duty": "Devs de garde au support",
+      "duties": {
+        "NONE": "Aucun",
+        "LIGHT": "Un peu ({{percent}} %)",
+        "HEAVY": "Beaucoup ({{percent}} %)"
+      }
     }
   },
   "leave": {

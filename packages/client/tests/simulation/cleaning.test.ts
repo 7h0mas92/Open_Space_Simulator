@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CLEANING,
-  CLEANING_WEEK_TICKS,
+  CLEANING_VISIT_PRICE,
   GameStateSchema,
   TIME,
   cleaningCallPrice,
@@ -10,15 +10,35 @@ import {
   dirtGrowth,
   dirtProductivity,
   getCleaningPlan,
+  getSubscriptionOffer,
+  type CleaningPlan,
   type Notification,
   type Task,
 } from '@oss/shared';
-import { cleaningMonthly, dirtMultiplier, planWeeklyPrice } from '../../src/simulation/cleaning';
+import { dirtMultiplier } from '../../src/simulation/cleaning';
+import {
+  offerPrice,
+  subscriptionOf,
+  subscriptionsMonthly,
+} from '../../src/simulation/subscriptions';
 import { productivity } from '../../src/simulation/systems/work';
 import type { Simulation } from '../../src/simulation/simulation';
 import { getClock } from '../../src/simulation/time';
 import { toGameView } from '../../src/view/adapter';
 import { makeContext, newSimulation, stateWithTeam } from './fixtures';
+
+const planOf = (id: string): CleaningPlan => {
+  const plan = getCleaningPlan(id);
+  if (!plan) throw new Error(id);
+  return plan;
+};
+
+/** Prix de la semaine d'une offre de ménage pour la partie en cours. */
+function weeklyPrice(simulation: Simulation, id: string): number {
+  const offer = getSubscriptionOffer(id);
+  if (!offer) throw new Error(id);
+  return offerPrice(simulation.state, offer);
+}
 
 const viewOf = (simulation: Simulation) =>
   toGameView(simulation.state, { speed: 1, running: false, card: () => undefined });
@@ -62,7 +82,7 @@ describe('Saleté du bureau', () => {
     const old = structuredClone(simulation.state) as Partial<typeof simulation.state>;
     delete old.cleaning;
     const parsed = GameStateSchema.parse(old);
-    expect(parsed.cleaning).toMatchObject({ dirt: 0, plan: null, booking: null, visit: null });
+    expect(parsed.cleaning).toMatchObject({ dirt: 0, booking: null, visit: null });
   });
 
   it('monte pendant les heures de bureau, plus vite quand on attend', () => {
@@ -167,17 +187,16 @@ describe('Entreprise de nettoyage', () => {
     expect(viewOf(simulation).cleaning.callBlocker).toBe('NOT_ENOUGH_MONEY');
   });
 
-  it('abonnement : passages les soirs prévus, facture chaque semaine', () => {
+  it('abonnement Ménage du modèle commun : passages les soirs prévus, facture chaque semaine', () => {
     const simulation = newSimulation('menage');
-    const plan = getCleaningPlan('cleaning-twice');
-    const weekly = cleaningWeeklyPrice(plan, cleaningVisitPrice('GARAGE'));
-    expect(planWeeklyPrice(simulation.state, 'cleaning-twice')).toBe(weekly);
+    const weekly = cleaningWeeklyPrice(planOf('cleaning-twice'), cleaningVisitPrice('GARAGE'));
+    expect(weeklyPrice(simulation, 'cleaning-twice')).toBe(weekly);
     const treasury = simulation.state.gauges.treasury;
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_CLEANING', plan: 'cleaning-twice' }).result.ok,
-    ).toBe(true);
+    expect(simulation.dispatch({ type: 'SUBSCRIBE', offer: 'cleaning-twice' }).result.ok).toBe(
+      true,
+    );
     expect(simulation.state.gauges.treasury).toBe(treasury - weekly);
-    expect(cleaningMonthly(simulation.state)).toBeCloseTo((weekly * 30) / 7);
+    expect(subscriptionsMonthly(simulation.state)).toBeCloseTo((weekly * 30) / 7);
     // Lundi : pas de passage ; mardi 19h : passage.
     runTo(simulation, 0, 23);
     expect(simulation.state.cleaning.visits).toBe(0);
@@ -186,44 +205,62 @@ describe('Entreprise de nettoyage', () => {
     runTo(simulation, 4, 23);
     expect(simulation.state.cleaning.visits).toBe(2);
     // La semaine suivante est facturée 7 jours après la souscription.
-    const paidUntil = simulation.state.cleaning.plan?.paidUntil ?? 0;
-    expect(paidUntil).toBe(CLEANING_WEEK_TICKS);
+    expect(subscriptionOf(simulation.state, 'cleaning')?.subscription.paidUntil).toBe(
+      7 * TIME.ticksPerDay,
+    );
     runTo(simulation, 7, 9);
-    expect(simulation.state.cleaning.plan?.totalPaid).toBe(weekly * 2);
+    expect(subscriptionOf(simulation.state, 'cleaning')?.subscription.totalPaid).toBe(weekly * 2);
   });
 
   it('impayé : l’abonnement est coupé', () => {
     const simulation = newSimulation('menage');
-    simulation.dispatch({ type: 'SUBSCRIBE_CLEANING', plan: 'cleaning-daily' });
+    simulation.dispatch({ type: 'SUBSCRIBE', offer: 'cleaning-daily' });
     // Juste avant la deuxième facture, il manque 1 € dans la caisse.
     runTo(simulation, 7, 7.5);
-    simulation.state.gauges.treasury = planWeeklyPrice(simulation.state, 'cleaning-daily') - 1;
+    simulation.state.gauges.treasury = weeklyPrice(simulation, 'cleaning-daily') - 1;
     const notes: Notification[] = [];
-    for (let i = 0; i < 40 && simulation.state.cleaning.plan; i++) {
+    for (let i = 0; i < 40 && subscriptionOf(simulation.state, 'cleaning'); i++) {
       if (simulation.state.events.pending)
         simulation.dispatch({ type: 'RESOLVE_EVENT', choiceIndex: 0 });
       notes.push(...simulation.step());
     }
-    expect(simulation.state.cleaning.plan).toBeNull();
+    expect(subscriptionOf(simulation.state, 'cleaning')).toBeNull();
     expect(notes.some((n) => n.kind === 'CLEANING_CUT')).toBe(true);
   });
 
-  it('change de formule ou résilie sans remboursement', () => {
+  it('change de formule ou résilie sans remboursement, depuis la rubrique Abonnements', () => {
     const simulation = newSimulation('menage');
-    simulation.dispatch({ type: 'SUBSCRIBE_CLEANING', plan: 'cleaning-weekly' });
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_CLEANING', plan: 'cleaning-weekly' }).result.ok,
-    ).toBe(false);
-    expect(
-      simulation.dispatch({ type: 'SUBSCRIBE_CLEANING', plan: 'cleaning-daily' }).result.ok,
-    ).toBe(true);
-    const view = viewOf(simulation).cleaning;
-    expect(view.plan?.plan).toBe('cleaning-daily');
-    expect(view.plans.find((p) => p.id === 'cleaning-daily')?.blocker).toBe('CURRENT');
+    simulation.dispatch({ type: 'SUBSCRIBE', offer: 'cleaning-weekly' });
+    expect(simulation.dispatch({ type: 'SUBSCRIBE', offer: 'cleaning-weekly' }).result.ok).toBe(
+      false,
+    );
+    expect(simulation.dispatch({ type: 'SUBSCRIBE', offer: 'cleaning-daily' }).result.ok).toBe(
+      true,
+    );
+    expect(simulation.state.subscriptions).toHaveLength(1);
+    const service = viewOf(simulation).subscriptions.services.find((s) => s.id === 'cleaning');
+    expect(service?.current?.offer.id).toBe('cleaning-daily');
+    expect(service?.offers.find((o) => o.id === 'cleaning-daily')?.blocker).toBe('CURRENT');
     const treasury = simulation.state.gauges.treasury;
-    expect(simulation.dispatch({ type: 'CANCEL_CLEANING' }).result.ok).toBe(true);
+    expect(
+      simulation.dispatch({ type: 'CANCEL_SUBSCRIPTION', service: 'cleaning' }).result.ok,
+    ).toBe(true);
     expect(simulation.state.gauges.treasury).toBe(treasury);
-    expect(simulation.dispatch({ type: 'CANCEL_CLEANING' }).result.ok).toBe(false);
+    expect(
+      simulation.dispatch({ type: 'CANCEL_SUBSCRIPTION', service: 'cleaning' }).result.ok,
+    ).toBe(false);
+  });
+
+  it('le prix de l’abonnement suit le bureau', () => {
+    const simulation = newSimulation('menage');
+    const garage = weeklyPrice(simulation, 'cleaning-daily');
+    expect(getSubscriptionOffer('cleaning-daily')?.price).toBe(garage);
+    simulation.state.phase = 'SEED';
+    const seed = weeklyPrice(simulation, 'cleaning-daily');
+    expect(seed).toBe(cleaningWeeklyPrice(planOf('cleaning-daily'), CLEANING_VISIT_PRICE.SEED));
+    expect(
+      viewOf(simulation).subscriptions.services.find((s) => s.id === 'cleaning')?.offers,
+    ).toContainEqual(expect.objectContaining({ id: 'cleaning-daily', price: seed }));
   });
 
   it('les tarifs suivent la taille du bureau', () => {
@@ -232,7 +269,7 @@ describe('Entreprise de nettoyage', () => {
       cleaningVisitPrice('SEED') + 2 * CLEANING.extraRoomPrice,
     );
     const visit = cleaningVisitPrice('SERIES_A');
-    expect(cleaningWeeklyPrice(getCleaningPlan('cleaning-daily'), visit)).toBeLessThan(5 * visit);
+    expect(cleaningWeeklyPrice(planOf('cleaning-daily'), visit)).toBeLessThan(5 * visit);
   });
 
   it('rejoue la même partie à l’identique (aucun tirage)', () => {

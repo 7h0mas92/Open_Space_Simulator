@@ -10,6 +10,25 @@
 import {
   ANNEXES,
   BALANCE,
+  CLIENT_COMPANIES,
+  SUPPORT,
+  SUPPORT_MAX_AGENTS,
+  supportChurnFactor,
+  supportGrowthFactor,
+  CLIENT_SLOTS,
+  CLIENTS,
+  contractMonthly,
+  type ClientOffer,
+  difficultyOf,
+  oneTimePrice,
+  PRICE_TIERS,
+  PRICING_MODELS,
+  pricingChangeHype,
+  pricingChangeLoss,
+  pricingFactors,
+  userValue,
+  type PriceTier,
+  type PricingModel,
   DEFAULT_COMPUTER,
   hasComputer,
   DAILY_SYNC,
@@ -54,9 +73,10 @@ import {
   WALL_FINISHES,
   floorZones,
   wallZones,
+  LOBBY,
+  SECURITY_PLANS,
   CLEANING,
   CLEANING_CREW,
-  CLEANING_PLANS,
   cleaningCallPrice,
   dirtProductivity,
   HOSTING_SAVING_MAX,
@@ -131,9 +151,11 @@ import { leavingAtSprint } from '../simulation/raises';
 import { holidayOf, leaveSlots, sprintHasBridge } from '../simulation/teamLife';
 import { activeRetro, retroWinner } from '../simulation/retro';
 import { outingBlocker, outingPrice } from '../simulation/teamBuilding';
-import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
+import { visitPrice } from '../simulation/cleaning';
 import {
+  activeOffer,
   offerLoad,
+  offerPrice,
   requirementMet,
   serviceUsers,
   subscriptionOf,
@@ -145,6 +167,8 @@ import {
   serverRoomItems,
   serverRoomStatuses,
 } from '../simulation/serverRoom';
+import { clientsMonthly, freeClientSlots } from '../simulation/clients';
+import { supportCapacity, supportMonthly, ticketsToday } from '../simulation/support';
 import type {
   AbsenceView,
   TeamBuildingView,
@@ -152,6 +176,11 @@ import type {
   StoryView,
   CampaignView,
   MarketView,
+  ClientDealView,
+  ClientsView,
+  SupportView,
+  PricingChoiceView,
+  PricingView,
   CandidateView,
   DevActivity,
   DevView,
@@ -170,6 +199,7 @@ import type {
   DailyView,
   PetsView,
   ServersView,
+  LobbyView,
   CleaningView,
   SubscriptionOfferView,
   SubscriptionServiceView,
@@ -631,8 +661,8 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
  * seulement (identifiant `annex:<clé>`, jamais celui d'une entité).
  */
 function annexDecorViews(state: GameState, furniture: readonly PlacedItemView[]): PlacedItemView[] {
-  const { phase, annexes, wings } = wallOffice(state);
-  const layout = officeLayout(phase, wings, annexes);
+  const { phase, annexes, wings, lobby } = wallOffice(state);
+  const layout = officeLayout(phase, wings, annexes, lobby === true);
   const view = (fixture: Fixture): PlacedItemView => {
     const moved = state.annexDecor[fixture.key];
     return {
@@ -967,17 +997,18 @@ function subscriptionOfferView(
   offer: SubscriptionOffer,
   currentId: string | undefined,
 ): SubscriptionOfferView {
+  const price = offerPrice(state, offer);
   return {
     id: offer.id,
     service: offer.service,
     name: offer.name,
     description: offer.description,
     detail: offer.detail ?? null,
-    price: offer.price,
+    price,
     periodDays: offer.periodDays,
     minPhase: offer.minPhase,
     setupFee: offer.setupFee ?? 0,
-    firstPayment: firstPayment(offer),
+    firstPayment: firstPayment(offer, price),
     maxUsers: offer.maxUsers ?? null,
     requires: offer.requires ?? null,
     blocker:
@@ -989,7 +1020,7 @@ function subscriptionOfferView(
             ? 'WRONG_STAGE'
             : !requirementMet(state, offer)
               ? 'REQUIREMENT'
-              : state.gauges.treasury < firstPayment(offer)
+              : state.gauges.treasury < firstPayment(offer, price)
                 ? 'NOT_ENOUGH_MONEY'
                 : null,
   };
@@ -1012,7 +1043,7 @@ function subscriptionsView(state: GameState): SubscriptionsView {
             ),
             since: current.subscription.since,
             totalPaid: current.subscription.totalPaid,
-            monthly: monthlyPrice(current.offer),
+            monthly: monthlyPrice(current.offer, offerPrice(state, current.offer)),
             penalty: saturationPenalty(offerLoad(state, current.offer)),
           }
         : null,
@@ -1027,6 +1058,146 @@ function subscriptionsView(state: GameState): SubscriptionsView {
   };
 }
 
+function pricingChoiceView(
+  state: GameState,
+  model: PricingModel,
+  tier: PriceTier,
+): PricingChoiceView {
+  const factors = pricingFactors(model, tier);
+  const revenue = difficultyOf(state.mode).revenue;
+  const arpu = BALANCE.economy.arpuMonthly * factors.arpu * revenue;
+  const usersLost = state.gauges.users * pricingChangeLoss(state.pricing, model, tier);
+  return {
+    model,
+    tier,
+    arpu,
+    oneTime: oneTimePrice(model, tier) * revenue,
+    acquisition: factors.acquisition,
+    churn: factors.churn,
+    userValue: userValue(model, tier),
+    usersLost,
+    hype: pricingChangeHype(state.pricing, model, tier),
+    monthlyRevenue: (state.gauges.users - usersLost) * arpu,
+  };
+}
+
+function clientDealView(deal: ClientOffer): ClientDealView {
+  const company = CLIENT_COMPANIES[deal.company];
+  return {
+    id: deal.id,
+    company: company?.name ?? '?',
+    icon: company?.icon ?? '🏢',
+    sector: company?.sector ?? { fr: '', en: '' },
+    size: deal.size,
+    need: deal.need,
+    points: deal.points,
+    sprints: deal.sprints,
+    monthlyFee: deal.monthlyFee,
+    users: deal.users,
+    signingBonus: deal.monthlyFee * CLIENTS.signingMonths,
+    deliveryBonus: deal.monthlyFee * CLIENTS.deliveryMonths,
+    penalty: deal.monthlyFee * CLIENTS.penaltyMonths,
+    slaPenalty: deal.monthlyFee * CLIENTS.slaPenaltyMonths,
+  };
+}
+
+function clientsView(state: GameState): ClientsView {
+  const clients = state.clients;
+  const free = freeClientSlots(state);
+  const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
+  return {
+    offers: clients.offers.map((offer) => ({
+      ...clientDealView(offer),
+      blocker: wrongStage ? 'WRONG_STAGE' : free === 0 ? 'NO_SLOT' : null,
+    })),
+    contracts: clients.contracts.map((contract) => ({
+      ...clientDealView(contract),
+      status: contract.status,
+      progress: contract.progress,
+      sprintsLeft:
+        contract.status === 'ACTIVE' ? Math.max(0, contract.dueSprint - state.sprint + 1) : 0,
+      maintenanceLeft:
+        contract.deliveredSprint === null
+          ? 0
+          : Math.max(0, CLIENTS.maintenanceSprints - (state.sprint - contract.deliveredSprint)),
+      breaches: contract.breaches,
+      maxBreaches: CLIENTS.maxBreaches,
+      monthly: contractMonthly(contract),
+    })),
+    slots: CLIENT_SLOTS[state.phase],
+    freeSlots: free,
+    monthlyTotal: clientsMonthly(state),
+    signed: clients.signed,
+    delivered: clients.delivered,
+    lost: clients.lost,
+    earned: clients.earned,
+  };
+}
+
+function supportView(state: GameState): SupportView {
+  const support = state.support;
+  return {
+    satisfaction: support.satisfaction,
+    churnThreshold: SUPPORT.churnThreshold,
+    happyThreshold: SUPPORT.happyThreshold,
+    backlog: support.backlog,
+    ticketsPerDay: ticketsToday(state),
+    capacity: supportCapacity(state),
+    agents: support.agents,
+    maxAgents: SUPPORT_MAX_AGENTS[state.phase],
+    agentSalary: SUPPORT.agentSalary,
+    agentCapacity: SUPPORT.agentCapacity,
+    monthly: supportMonthly(state),
+    duty: support.duty,
+    dutyShare: SUPPORT.dutyShare,
+    churnFactor: supportChurnFactor(support.satisfaction),
+    growthFactor: supportGrowthFactor(support.satisfaction),
+    solved: support.solved,
+    blocker: state.stage === 'PITCH' || state.stage === 'ENDED' ? 'WRONG_STAGE' : null,
+  };
+}
+
+function pricingView(state: GameState): PricingView {
+  const { model, tier, changedSprint, changes } = state.pricing;
+  return {
+    current: pricingChoiceView(state, model, tier),
+    choices: PRICING_MODELS.flatMap((m) => PRICE_TIERS.map((t) => pricingChoiceView(state, m, t))),
+    changes,
+    blocker:
+      state.stage === 'PITCH' || state.stage === 'ENDED'
+        ? 'WRONG_STAGE'
+        : changedSprint === state.sprint
+          ? 'COOLDOWN'
+          : null,
+  };
+}
+
+function lobbyView(state: GameState): LobbyView {
+  const phase = PHASES.indexOf(state.phase);
+  const built = state.lobby !== null;
+  const security = activeOffer(state, 'security');
+  return {
+    built,
+    price: LOBBY.price,
+    minPhase: LOBBY.minPhase,
+    buildBlocker: built
+      ? null
+      : PHASES.indexOf(LOBBY.minPhase) > phase
+        ? 'LOCKED'
+        : state.stage === 'PITCH'
+          ? 'WRONG_STAGE'
+          : state.gauges.treasury < LOBBY.price
+            ? 'NOT_ENOUGH_MONEY'
+            : null,
+    receptionists: state.lobby?.receptionists ?? 0,
+    maxReceptionists: LOBBY.maxReceptionists,
+    receptionistMonthly: LOBBY.receptionistMonthly,
+    guard: security
+      ? (SECURITY_PLANS.find((plan) => plan.id === security.id)?.guard ?? null)
+      : null,
+  };
+}
+
 function cleaningView(state: GameState): CleaningView {
   const cleaning = state.cleaning;
   const visitCost = visitPrice(state);
@@ -1034,7 +1205,6 @@ function cleaningView(state: GameState): CleaningView {
   const expressPrice = cleaningCallPrice(visitCost, true);
   const busy = cleaning.booking !== null || cleaning.visit !== null;
   const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
-  const plan = cleaning.plan;
   const visit = cleaning.visit;
   return {
     dirt: cleaning.dirt,
@@ -1053,33 +1223,6 @@ function cleaningView(state: GameState): CleaningView {
           inHours: Math.max(0, (cleaning.booking.start - state.tick) / TIME.ticksPerHour),
         }
       : null,
-    plan: plan
-      ? {
-          plan: plan.plan,
-          weeklyPrice: planWeeklyPrice(state, plan.plan),
-          nextBillDays: Math.max(0, (plan.paidUntil - state.tick) / TIME.ticksPerDay),
-          totalPaid: plan.totalPaid,
-        }
-      : null,
-    plans: CLEANING_PLANS.map((option) => {
-      const weeklyPrice = planWeeklyPrice(state, option.id);
-      return {
-        id: option.id,
-        name: option.name,
-        description: option.description,
-        days: [...option.days],
-        weeklyPrice,
-        discount: option.discount,
-        blocker:
-          plan?.plan === option.id
-            ? 'CURRENT'
-            : wrongStage
-              ? 'WRONG_STAGE'
-              : state.gauges.treasury < weeklyPrice
-                ? 'NOT_ENOUGH_MONEY'
-                : null,
-      };
-    }),
     visitPrice: visitCost,
     callPrice,
     expressPrice,
@@ -1274,7 +1417,11 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    lobby: lobbyView(state),
     cleaning: cleaningView(state),
+    pricing: pricingView(state),
+    clients: clientsView(state),
+    support: supportView(state),
     subscriptions: subscriptionsView(state),
     floors: floorsView(state),
     canIpo:
@@ -1485,12 +1632,12 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SUBSCRIBE', offer: command.offer };
     case 'cancelSubscription':
       return { type: 'CANCEL_SUBSCRIPTION', service: command.service };
+    case 'buildLobby':
+      return { type: 'BUILD_LOBBY' };
+    case 'setReceptionists':
+      return { type: 'SET_RECEPTIONISTS', count: command.count };
     case 'callCleaning':
       return { type: 'CALL_CLEANING', express: command.express };
-    case 'subscribeCleaning':
-      return { type: 'SUBSCRIBE_CLEANING', plan: command.plan };
-    case 'cancelCleaning':
-      return { type: 'CANCEL_CLEANING' };
     case 'learnSkill':
       return { type: 'LEARN_SKILL', devId: command.devId, skill: command.skill };
     case 'resetSkills':
@@ -1499,5 +1646,13 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'TRAIN_DEV', devId: command.devId, kind: command.kind };
     case 'useCrunch':
       return { type: 'USE_CRUNCH', devId: command.devId };
+    case 'setPricing':
+      return { type: 'SET_PRICING', model: command.model, tier: command.tier };
+    case 'signClient':
+      return { type: 'SIGN_CLIENT', offerId: command.offerId };
+    case 'dropClient':
+      return { type: 'DROP_CLIENT', contractId: command.contractId };
+    case 'setSupport':
+      return { type: 'SET_SUPPORT', agents: command.agents, duty: command.duty };
   }
 }

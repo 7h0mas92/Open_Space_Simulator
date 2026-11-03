@@ -22,6 +22,8 @@ import {
   type SkillId,
   type TaskTrade,
   type TaskType,
+  SUPPORT,
+  SUPPORT_MAX_AGENTS,
 } from '@oss/shared';
 import type { CardLibrary } from '../events/library';
 import { runwayMonths } from './economy';
@@ -33,7 +35,9 @@ import { meetingFormatBlocker } from './meetings';
 import { hasSkillTree, skillPoints } from './skills';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
+import { subscriptionOf } from './subscriptions';
 import { tasksInColumn } from './tasks';
+import { ticketsToday } from './support';
 import { leaveSlots } from './teamLife';
 import { retroWinner } from './retro';
 import { outingBlocker } from './teamBuilding';
@@ -257,8 +261,11 @@ class PlannerBot implements Bot {
     if (style.buysFurniture) {
       commands.push(...this.furniture(state));
       const plan = sensibleCleaningPlan(state);
-      if (plan && plan !== state.cleaning.plan?.plan && runway > 6)
-        commands.push({ type: 'SUBSCRIBE_CLEANING', plan });
+      if (plan && plan !== subscriptionOf(state, 'cleaning')?.offer.id && runway > 6)
+        commands.push({ type: 'SUBSCRIBE', offer: plan });
+      const agents = sensibleSupportAgents(state);
+      if (agents !== state.support.agents)
+        commands.push({ type: 'SET_SUPPORT', agents, duty: state.support.duty });
     }
 
     // 5. Kanban : on remplit TODO selon la capacité estimée de chaque métier (un 10x ou une
@@ -580,6 +587,15 @@ export function sensibleCleaningPlan(state: Readonly<GameState>): CleaningPlanId
   const team = teamSize(state);
   if (team === 0) return null;
   return team <= 2 ? 'cleaning-weekly' : team <= 6 ? 'cleaning-twice' : 'cleaning-daily';
+}
+
+/**
+ * Les agents de support qu'un joueur attentif garderait : de quoi traiter les tickets du jour et
+ * résorber l'attente en une semaine, dans la limite de la phase.
+ */
+export function sensibleSupportAgents(state: Readonly<GameState>): number {
+  const needed = (ticketsToday(state) + state.support.backlog / 5) / SUPPORT.agentCapacity;
+  return Math.min(SUPPORT_MAX_AGENTS[state.phase], Math.ceil(needed - 0.25));
 }
 
 /** Crée un bot par son nom. `seed` ne sert qu'au bot aléatoire. */

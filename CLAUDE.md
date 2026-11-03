@@ -943,6 +943,31 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   vaut 1 (48 parties de 4 modes comparées à `develop`, état identique) ; une compétence qui change
   une probabilité garde le même tirage. Bot « coach » dans `pnpm balance`.
 
+- Saleté et ménage (`shared/sim/cleaning.ts`, `client/src/simulation/cleaning.ts`, bouton 🧹 en
+  haut, panneau « Ménage », `ui/cleaning/Cleaning.tsx`) : chaque jour de semaine, l'équipe présente
+  salit le bureau (0 à 100 %, de plus en plus vite sans ménage, chats compris) ; un dev sur place
+  perd jusqu'à 40 % de travail (-20 % à 50 %, `dirtProductivity`), pas les télétravailleurs, le Dev
+  Fantôme ni l'IA Agent ; alerte à 50 %. Entreprise de nettoyage Nickel Chrome (Fatou, Jean-Marc,
+  Lucía) : appel le soir à 19h ou en express (`CALL_CLEANING`, payé à la réservation), ou
+  abonnement « Ménage » du modèle commun (service `cleaning`, 3 offres de 1 à 5 soirs par semaine).
+  Prix selon la phase et les ailes ou annexes (`PRICE_RULES` dans `simulation/subscriptions.ts`).
+  Déchets en InstancedMesh placés par hachage de la graine et 3 agents animés en A*
+  (`render/cleaning.ts`, formes des assets manquants). État `cleaning` par défaut, aucun tirage ;
+  règle qui change toutes les parties (anciens replays de scores divergent).
+
+- Hall d'entrée (`shared/sim/lobby.ts`, `client/src/simulation/lobby.ts`, rayon « 🛎️ Accueil » du
+  mode construction, panneau « Hall d'entrée », `ui/lobby/Lobby.tsx`) : dès la Seed, 18 000 €
+  pour un hall au rez-de-chaussée devant toutes les pièces (pièce `lobby`, `LobbyPlan` dans
+  `view/layout.ts`), cloison percée de deux portes à badge (portillons qui s'ouvrent au passage),
+  entrée du bureau par le hall ; comptoir d'accueil, banquette et deux plantes offerts et
+  déplaçables (clés `L-0` à `L-3`), comptoir aussi en vente (2 500 €). Jusqu'à 2 secrétaires
+  (3 100 € par mois, +1 % de productivité, +moral, +hype), au comptoir en semaine de 8h à 19h.
+  Sécurité en abonnement du modèle commun (service `security`, installation `lobby`) :
+  télésurveillance (95 €/mois), agent en journée (5 600 €, visible de 8h à 20h), gardiennage
+  24 h/24 (16 500 €, Série A), payés chaque semaine. Rendu `render/lobby.ts` et
+  `render/lobbyFurniture.ts` (formes `receptionDesk` et `badgeGates` des assets manquants).
+  Commandes `BUILD_LOBBY` / `SET_RECEPTIONISTS`, état `lobby` (null par défaut), aucun tirage.
+
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback
   `https://open-space-simulator.vercel.app/api/auth/github/callback`) et mettre ses clés sur

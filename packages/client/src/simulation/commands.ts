@@ -24,10 +24,14 @@ import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
+import { buildLobby, setReceptionists } from './lobby';
 import { bookLeave, cancelLeave, refuseBridges } from './teamLife';
 import { holdRetro } from './retro';
 import { bookTeamBuilding, cancelTeamBuilding } from './teamBuilding';
-import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
+import { callCleaning } from './cleaning';
+import { setPricing } from './pricing';
+import { dropClient, signClient } from './clients';
+import { setSupport } from './support';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -218,12 +222,12 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return subscribe(state, ctx, command.offer);
     case 'CANCEL_SUBSCRIPTION':
       return cancelSubscription(state, ctx, command.service);
+    case 'BUILD_LOBBY':
+      return buildLobby(state, ctx);
+    case 'SET_RECEPTIONISTS':
+      return setReceptionists(state, ctx, command.count);
     case 'CALL_CLEANING':
       return callCleaning(state, ctx, command.express);
-    case 'SUBSCRIBE_CLEANING':
-      return subscribeCleaning(state, ctx, command.plan);
-    case 'CANCEL_CLEANING':
-      return cancelCleaning(state, ctx);
     case 'LEARN_SKILL':
       return learnSkill(state, ctx, command.devId, command.skill);
     case 'RESET_SKILLS':
@@ -232,5 +236,13 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return trainDev(state, ctx, command.devId, command.kind);
     case 'USE_CRUNCH':
       return startCrunch(state, ctx, command.devId);
+    case 'SET_PRICING':
+      return setPricing(state, ctx, command.model, command.tier);
+    case 'SIGN_CLIENT':
+      return signClient(state, ctx, command.offerId);
+    case 'DROP_CLIENT':
+      return dropClient(state, ctx, command.contractId);
+    case 'SET_SUPPORT':
+      return setSupport(state, ctx, command.agents, command.duty);
   }
 }

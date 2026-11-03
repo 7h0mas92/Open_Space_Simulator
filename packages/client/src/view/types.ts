@@ -26,7 +26,11 @@ import type {
   ComputerId,
   ServerHeatLevel,
   CleanerTool,
-  CleaningPlanId,
+  PriceTier,
+  PricingModel,
+  ClientNeed,
+  ClientSize,
+  SupportDuty,
   ServerRoomNeed,
   SubscriptionRequirement,
   SubscriptionService,
@@ -840,18 +844,23 @@ export interface SubscriptionsView {
   readonly monthlyTotal: number;
 }
 
-/** Une formule d'abonnement de ménage, son prix pour le bureau actuel et ce qui bloque. */
-export interface CleaningPlanView {
-  readonly id: CleaningPlanId;
-  readonly name: LocalizedText;
-  readonly description: LocalizedText;
-  /** Jours de passage, de 1 (lundi) à 5 (vendredi). */
-  readonly days: readonly number[];
-  readonly weeklyPrice: number;
-  /** Remise par rapport au prix d'un passage (0.25 = -25 %). */
-  readonly discount: number;
-  /** `CURRENT` : c'est la formule en cours. */
-  readonly blocker: 'NOT_ENOUGH_MONEY' | 'CURRENT' | 'WRONG_STAGE' | null;
+/** Hall d'entrée du rez-de-chaussée, ses secrétaires et l'agent de sécurité. */
+export interface LobbyView {
+  /** Le hall est aménagé. */
+  readonly built: boolean;
+  /** Prix des travaux et phase à partir de laquelle on peut les lancer. */
+  readonly price: number;
+  readonly minPhase: Phase;
+  /** Pourquoi on ne peut pas aménager le hall maintenant (`null` si c'est possible ou fait). */
+  readonly buildBlocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'WRONG_STAGE' | null;
+  readonly receptionists: number;
+  readonly maxReceptionists: number;
+  readonly receptionistMonthly: number;
+  /**
+   * Agent de sécurité de l'abonnement en cours (service `security`, actif seulement avec le
+   * hall) : aucun, en journée, ou jour et nuit. `null` sans abonnement de sécurité actif.
+   */
+  readonly guard: 'none' | 'day' | 'always' | null;
 }
 
 /** Saleté du bureau et entreprise de nettoyage. */
@@ -868,14 +877,6 @@ export interface CleaningView {
   readonly visit: { readonly express: boolean; readonly progress: number } | null;
   /** Appel réservé : dans combien d'heures de jeu l'équipe arrive. */
   readonly booking: { readonly express: boolean; readonly inHours: number } | null;
-  readonly plan: {
-    readonly plan: CleaningPlanId;
-    readonly weeklyPrice: number;
-    /** Jours de jeu avant le prochain prélèvement. */
-    readonly nextBillDays: number;
-    readonly totalPaid: number;
-  } | null;
-  readonly plans: readonly CleaningPlanView[];
   /** Prix d'un passage (base des tarifs), d'un appel pour ce soir et d'un appel express. */
   readonly visitPrice: number;
   readonly callPrice: number;
@@ -889,6 +890,115 @@ export interface CleaningView {
   }[];
   readonly visits: number;
   readonly spent: number;
+}
+
+/** Un réglage du modèle économique et ce qu'il donnerait avec les utilisateurs actuels. */
+export interface PricingChoiceView {
+  readonly model: PricingModel;
+  readonly tier: PriceTier;
+  /** Revenu par utilisateur et par mois (difficulté du mode comprise). */
+  readonly arpu: number;
+  /** Achat unique : payé une fois par chaque nouvel utilisateur (0 sinon). */
+  readonly oneTime: number;
+  /** Coefficients d'arrivées et de départs d'utilisateurs (1 = freemium standard). */
+  readonly acquisition: number;
+  readonly churn: number;
+  /** Valeur d'un utilisateur pour les investisseurs (1 = freemium). */
+  readonly userValue: number;
+  /** Utilisateurs qui partiraient tout de suite en passant à ce réglage. */
+  readonly usersLost: number;
+  /** Hype gagnée ou perdue en passant à ce réglage. */
+  readonly hype: number;
+  /** Revenus mensuels des utilisateurs restants avec ce réglage. */
+  readonly monthlyRevenue: number;
+}
+
+/** Modèle économique en cours et tous les réglages possibles. */
+export interface PricingView {
+  readonly current: PricingChoiceView;
+  readonly choices: readonly PricingChoiceView[];
+  /** Changements faits dans la partie. */
+  readonly changes: number;
+  /** Ce qui empêche de changer maintenant (`COOLDOWN` : déjà changé ce sprint). */
+  readonly blocker: 'COOLDOWN' | 'WRONG_STAGE' | null;
+}
+
+/** Ce qu'un client B2B demande et paie (offre ou contrat signé). */
+export interface ClientDealView {
+  readonly id: string;
+  readonly company: string;
+  readonly icon: string;
+  readonly sector: LocalizedText;
+  readonly size: ClientSize;
+  readonly need: ClientNeed;
+  /** Points de travail du type demandé à livrer. */
+  readonly points: number;
+  readonly sprints: number;
+  readonly monthlyFee: number;
+  readonly users: number;
+  readonly signingBonus: number;
+  readonly deliveryBonus: number;
+  /** Pénalité si le contrat est rompu avant la livraison. */
+  readonly penalty: number;
+  /** Pénalité de SLA à chaque panne de prod. */
+  readonly slaPenalty: number;
+}
+
+export interface ClientOfferView extends ClientDealView {
+  /** `NO_SLOT` : plus de place pour un contrat en cours dans cette phase. */
+  readonly blocker: 'NO_SLOT' | 'WRONG_STAGE' | null;
+}
+
+export interface ClientContractView extends ClientDealView {
+  readonly status: 'ACTIVE' | 'DELIVERED';
+  readonly progress: number;
+  /** Sprints restants pour livrer, ce sprint compris (0 : en maintenance). */
+  readonly sprintsLeft: number;
+  /** Sprints de maintenance restants, une fois livré. */
+  readonly maintenanceLeft: number;
+  readonly breaches: number;
+  readonly maxBreaches: number;
+  /** Ce que le client paie chaque mois en ce moment. */
+  readonly monthly: number;
+}
+
+/** Clients B2B : offres de la planification et contrats en cours. */
+export interface ClientsView {
+  readonly offers: readonly ClientOfferView[];
+  readonly contracts: readonly ClientContractView[];
+  /** Contrats en cours au plus dans cette phase, et places libres. */
+  readonly slots: number;
+  readonly freeSlots: number;
+  readonly monthlyTotal: number;
+  readonly signed: number;
+  readonly delivered: number;
+  readonly lost: number;
+  readonly earned: number;
+}
+
+/** Support client : tickets, agents, devs de garde et satisfaction des utilisateurs. */
+export interface SupportView {
+  /** Satisfaction de 0 à 100, et seuils des départs et des recommandations. */
+  readonly satisfaction: number;
+  readonly churnThreshold: number;
+  readonly happyThreshold: number;
+  /** Tickets en attente, attendus par jour ouvré et traités par jour. */
+  readonly backlog: number;
+  readonly ticketsPerDay: number;
+  readonly capacity: number;
+  readonly agents: number;
+  readonly maxAgents: number;
+  readonly agentSalary: number;
+  readonly agentCapacity: number;
+  readonly monthly: number;
+  readonly duty: SupportDuty;
+  /** Part du travail des devs passée au support, pour chaque niveau de garde. */
+  readonly dutyShare: Readonly<Record<SupportDuty, number>>;
+  /** Départs d'utilisateurs (1 = normal) et croissance organique selon la satisfaction. */
+  readonly churnFactor: number;
+  readonly growthFactor: number;
+  readonly solved: number;
+  readonly blocker: 'WRONG_STAGE' | null;
 }
 
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
@@ -1085,10 +1195,18 @@ export interface GameView {
   readonly pets: PetsView;
   /** Peintures et papiers peints des murs. */
   readonly walls: WallsView;
-  /** Salles des serveurs. */
   /** Saleté du bureau et entreprise de nettoyage. */
   readonly cleaning: CleaningView;
+  /** Modèle économique du produit. */
+  readonly pricing: PricingView;
+  /** Clients B2B. */
+  readonly clients: ClientsView;
+  /** Support client. */
+  readonly support: SupportView;
+  /** Salles des serveurs. */
   readonly servers: ServersView;
+  /** Hall d'entrée, accueil et sécurité. */
+  readonly lobby: LobbyView;
   /** Abonnements (internet…). */
   readonly subscriptions: SubscriptionsView;
   /** Sols des pièces. */
@@ -1209,14 +1327,22 @@ export type GameCommand =
   /** Souscrit à une offre (ou change d'offre pour son service). */
   | { readonly type: 'subscribe'; readonly offer: string }
   | { readonly type: 'cancelSubscription'; readonly service: SubscriptionService }
+  /** Aménage le hall d'entrée, règle l'accueil. */
+  | { readonly type: 'buildLobby' }
+  | { readonly type: 'setReceptionists'; readonly count: number }
   /** Appelle l'entreprise de nettoyage (ce soir, ou en express). */
   | { readonly type: 'callCleaning'; readonly express: boolean }
-  | { readonly type: 'subscribeCleaning'; readonly plan: CleaningPlanId }
-  | { readonly type: 'cancelCleaning' }
   | { readonly type: 'learnSkill'; readonly devId: string; readonly skill: SkillId }
   | { readonly type: 'resetSkills'; readonly devId: string }
   | { readonly type: 'trainDev'; readonly devId: string; readonly kind: TrainingKind }
-  | { readonly type: 'useCrunch'; readonly devId: string };
+  | { readonly type: 'useCrunch'; readonly devId: string }
+  /** Change le modèle économique et le niveau de prix (une fois par sprint). */
+  | { readonly type: 'setPricing'; readonly model: PricingModel; readonly tier: PriceTier }
+  /** Signe l'offre d'un client B2B, ou rompt un contrat. */
+  | { readonly type: 'signClient'; readonly offerId: string }
+  | { readonly type: 'dropClient'; readonly contractId: string }
+  /** Règle le support client : agents et devs de garde. */
+  | { readonly type: 'setSupport'; readonly agents: number; readonly duty: SupportDuty };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

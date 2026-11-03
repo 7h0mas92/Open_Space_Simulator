@@ -60,8 +60,14 @@ describe('Sols : catalogue', () => {
       'garden',
     ]);
     expect(floorZones({ phase: 'UNICORN', wings: 9, annexes: 9 })).toEqual(
-      FLOOR_ZONES.filter((zone) => zone !== 'lounge'),
+      FLOOR_ZONES.filter((zone) => zone !== 'lounge' && zone !== 'lobby'),
     );
+    expect(floorZones({ phase: 'SEED', wings: 0, annexes: 0, lobby: true })).toEqual([
+      'open',
+      'kitchen',
+      'meeting',
+      'lobby',
+    ]);
   });
 
   it('les effets ne comptent que les pièces qui existent', () => {

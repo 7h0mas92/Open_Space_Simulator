@@ -4721,3 +4721,390 @@ button.skill-node.available {
 .skill-price {
   font-weight: 600;
 }
+
+/* --- Hall d'entrée et sécurité ------------------------------------------------------------ */
+
+.lobby-features {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lobby-panel section > button {
+  align-self: flex-start;
+}
+
+.lobby-reception {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lobby-reception button {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1.2rem;
+}
+
+/* Panneau « Business » : modèle économique du produit. */
+.business-panel,
+.pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.business-panel p,
+.pricing p {
+  margin: 0;
+}
+
+.pricing-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #7fd18b;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.pricing fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pricing legend {
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.pricing-models {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 8px;
+}
+
+.pricing-model {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: var(--touch);
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--text);
+  text-align: left;
+}
+
+.pricing-model.selected,
+.pricing-tier-row button.selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.pricing-badge {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #7fd18b;
+  color: var(--accent-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pricing-tier-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.pricing-tier-row button {
+  min-height: var(--touch);
+  text-transform: capitalize;
+}
+
+.support-duties .pricing-tier-row button {
+  text-transform: none;
+}
+
+.pricing-preview {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.pricing-preview dl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 6px;
+}
+
+.pricing-preview dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pricing-preview dt {
+  color: var(--text-muted);
+}
+
+.pricing-preview dd {
+  margin: 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pricing-preview dd.good {
+  color: #7fd18b;
+}
+
+.pricing-preview dd.bad,
+.pricing-warning {
+  color: var(--danger);
+}
+
+/*
+ * Téléphone en portrait : les boutons système (ménage, business, abonnements, sauvegardes,
+ * classement, options) ne tiennent plus à côté de l'horloge, ils passent sur leur propre ligne.
+ */
+@media (max-width: 599px) and (min-height: 501px) {
+  .hud-top {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'gauges gauges'
+      'company clock'
+      'system system';
+  }
+
+  .hud-system {
+    justify-content: space-between;
+  }
+}
+
+/* Téléphone en paysage : on serre les boutons système pour laisser la place aux jauges. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hud-system {
+    gap: 0;
+  }
+
+  .hud-top .gauge .tooltip-trigger {
+    gap: 3px 2px;
+    padding: 4px 3px;
+  }
+}
+
+/* Clients B2B du panneau Business. */
+.clients {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clients p,
+.clients h4 {
+  margin: 0;
+}
+
+.clients-subtitle {
+  margin-top: 4px;
+  font-size: 1rem;
+}
+
+.client-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.client-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.client-card.contract.active {
+  border-left-color: #6fb3ff;
+}
+
+.client-card.contract.delivered {
+  border-left-color: #7fd18b;
+}
+
+.client-card h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 1rem;
+}
+
+.client-card > button {
+  margin-top: auto;
+}
+
+.client-terms {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.client-terms div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.client-terms dt {
+  color: var(--text-muted);
+}
+
+.client-terms dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.client-terms dd.good {
+  color: #7fd18b;
+}
+
+.client-terms dd.bad,
+.client-due.soon {
+  color: var(--danger);
+}
+
+.client-progress {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.client-progress span {
+  display: block;
+  height: 100%;
+  background: #6fb3ff;
+}
+
+/*
+ * Entre 1024 et 1279 px, six boutons système et le nom de la phase ne laissent plus de place
+ * aux valeurs des jauges : la phase et l'autonomie restent dans l'infobulle de l'icône.
+ */
+@media (min-width: 1024px) and (max-width: 1279px) and (min-height: 501px) {
+  .company-text,
+  .company-facts {
+    display: none;
+  }
+
+  .hud-company {
+    padding-right: 8px;
+  }
+}
+
+/* Support client du panneau Business. */
+.support {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.support p {
+  margin: 0;
+}
+
+.support-card,
+.support-agents {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #7fd18b;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.support-card.support-ok {
+  border-left-color: var(--accent);
+}
+
+.support-card.support-angry {
+  border-left-color: var(--danger);
+}
+
+.support-agents {
+  border-left-color: var(--border);
+}
+
+.support-value {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 8px;
+}
+
+.support-bar {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.support-bar span {
+  display: block;
+  height: 100%;
+  background: #7fd18b;
+}
+
+.support-ok .support-bar span {
+  background: var(--accent);
+}
+
+.support-angry .support-bar span {
+  background: var(--danger);
+}
+
+.support-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.support-stepper button {
+  width: var(--touch);
+  min-height: var(--touch);
+  font-size: 1.2rem;
+}
+
+.support-stepper span {
+  min-width: 2ch;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+}

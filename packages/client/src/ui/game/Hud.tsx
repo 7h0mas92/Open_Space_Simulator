@@ -39,7 +39,7 @@ const GAME_ACTIONS = [
   'slack',
 ] as const;
 type GameAction = (typeof GAME_ACTIONS)[number];
-const SYSTEM_PANELS = ['subscriptions', 'saves', 'leaderboard', 'settings'] as const;
+const SYSTEM_PANELS = ['business', 'subscriptions', 'saves', 'leaderboard', 'settings'] as const;
 
 /** Icône de chaque bouton du HUD, reprise dans l'en-tête du panneau ouvert. */
 export const PANEL_ICONS: Record<PanelId | 'build', string> = {
@@ -51,7 +51,9 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   tickets: '📽️',
   pets: '🐈',
   servers: '🗄️',
+  lobby: '🛎️',
   cleaning: '🧹',
+  business: '💶',
   subscriptions: '🧾',
   funding: '💼',
   career: '🧭',

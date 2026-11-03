@@ -20,8 +20,10 @@ import { StoryScene, useStoryScene, useStoryScenes } from '../story/StoryScene';
 import { MeetingRoom } from '../meetings/MeetingRoom';
 import { TicketApp } from '../meetings/TicketApp';
 import { Pets } from '../pets/Pets';
+import { Lobby } from '../lobby/Lobby';
 import { ServerRoom } from '../servers/ServerRoom';
 import { Cleaning } from '../cleaning/Cleaning';
+import { Business } from '../business/Business';
 import { SubscriptionsPanel } from '../subscriptions/Subscriptions';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
@@ -65,8 +67,12 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Pets view={view} />;
     case 'servers':
       return <ServerRoom view={view} />;
+    case 'lobby':
+      return <Lobby view={view} />;
     case 'cleaning':
       return <Cleaning view={view} />;
+    case 'business':
+      return <Business view={view} />;
     case 'subscriptions':
       return <SubscriptionsPanel view={view} />;
     case 'funding':

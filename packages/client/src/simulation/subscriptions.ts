@@ -6,10 +6,14 @@
 import {
   SUBSCRIPTION_SERVICE_INFO,
   TIME,
+  cleaningVisitPrice,
+  cleaningWeeklyPrice,
   firstPayment,
+  getCleaningPlan,
   getSubscriptionOffer,
   hasFibreBox,
   monthlyPrice,
+  officeExtraRooms,
   saturationPenalty,
   type CommandResult,
   type GameState,
@@ -32,7 +36,28 @@ export const REQUIREMENT_CHECKS: Readonly<
   Record<SubscriptionRequirement, (state: GameState) => boolean>
 > = {
   fibreBox: (state) => hasFibreBox(serverRoomItems(state)),
+  lobby: (state) => state.lobby !== null,
 };
+
+/**
+ * Prix d'une période qui suit la partie, service par service. Sans règle, c'est le prix de
+ * l'offre (`price`).
+ */
+export const PRICE_RULES: Partial<
+  Record<SubscriptionService, (state: GameState, offer: SubscriptionOffer) => number>
+> = {
+  // Ménage : selon la phase (taille du bureau) et les ailes ou annexes ouvertes.
+  cleaning: (state, offer) => {
+    const plan = getCleaningPlan(offer.id);
+    const visit = cleaningVisitPrice(state.phase, officeExtraRooms(state));
+    return plan ? cleaningWeeklyPrice(plan, visit) : offer.price;
+  },
+};
+
+/** Prix d'une période de cette offre, pour la partie en cours. */
+export function offerPrice(state: GameState, offer: SubscriptionOffer): number {
+  return PRICE_RULES[offer.service]?.(state, offer) ?? offer.price;
+}
 
 export function requirementMet(state: GameState, offer: SubscriptionOffer): boolean {
   return offer.requires === undefined || REQUIREMENT_CHECKS[offer.requires](state);
@@ -92,7 +117,7 @@ export function subscriptionEffects(state: GameState): SubscriptionEffects[] {
 export function subscriptionsMonthly(state: GameState): number {
   return state.subscriptions.reduce((sum, subscription) => {
     const offer = getSubscriptionOffer(subscription.offer);
-    return sum + (offer ? monthlyPrice(offer) : 0);
+    return sum + (offer ? monthlyPrice(offer, offerPrice(state, offer)) : 0);
   }, 0);
 }
 
@@ -116,7 +141,8 @@ export function subscribe(state: GameState, ctx: SimContext, offerId: string): C
   const previous = subscriptionOf(state, offer.service);
   if (previous?.offer.id === offer.id) return { ok: false, error: 'NOT_ELIGIBLE' };
   if (!requirementMet(state, offer)) return { ok: false, error: 'NOT_ELIGIBLE' };
-  const cost = firstPayment(offer);
+  const price = offerPrice(state, offer);
+  const cost = firstPayment(offer, price);
   if (state.gauges.treasury < cost) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
   addMoney(state, -cost);
   const next: Subscription = {
@@ -133,7 +159,7 @@ export function subscribe(state: GameState, ctx: SimContext, offerId: string): C
   const params = {
     offer: offer.name,
     detail: offer.detail ?? offer.name,
-    price: moneyText(offer.price),
+    price: moneyText(price),
     period: periodText(offer.periodDays),
   };
   notify(
@@ -215,7 +241,8 @@ export function subscriptionSystem(state: GameState, ctx: SimContext): void {
     if (current) watchSaturation(state, ctx, subscription, current);
     if (state.tick < subscription.paidUntil) continue;
     const offer = getSubscriptionOffer(subscription.offer);
-    if (!offer || state.gauges.treasury < offer.price) {
+    const price = offer ? offerPrice(state, offer) : 0;
+    if (!offer || state.gauges.treasury < price) {
       state.subscriptions.splice(state.subscriptions.indexOf(subscription), 1);
       if (!offer) continue;
       notify(
@@ -232,9 +259,9 @@ export function subscriptionSystem(state: GameState, ctx: SimContext): void {
       );
       continue;
     }
-    addMoney(state, -offer.price);
+    addMoney(state, -price);
     subscription.paidUntil += offer.periodDays * TIME.ticksPerDay;
-    subscription.totalPaid += offer.price;
+    subscription.totalPaid += price;
   }
 }
 

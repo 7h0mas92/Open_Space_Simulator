@@ -5,6 +5,7 @@ import {
   officeDepthWithAnnexes,
   annexCount,
   annexDecorItem,
+  lobbyDecorItem,
   PHASES,
   DEFAULT_MONITOR,
   getFurniture,
@@ -30,6 +31,7 @@ import { meetingFormat } from './meetings';
 import { petEffects } from './pets';
 import { projectionEffects } from './projection';
 import { floorEffects } from './floors';
+import { lobbyDepth, lobbyEffects } from './lobby';
 import { serverGearEffects } from './serverRoom';
 import { subscriptionEffects } from './subscriptions';
 import { wallEffects } from './walls';
@@ -104,7 +106,8 @@ export function canPlace(
 ): boolean {
   const office = OFFICE_SIZE[state.phase];
   const width = officeWidthWithWings(office.width, state.ventures.length);
-  const depth = officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds));
+  const depth =
+    officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds)) + lobbyDepth(state);
   const area = footprint(item, x, y, rotation);
   if (area.x + area.width > width || area.y + area.depth > depth) return false;
   if (!onWholeCells(item, x, y)) return false;
@@ -491,7 +494,9 @@ export function moveAnnexDecor(
   y: number,
   rotation: number,
 ): CommandResult {
-  const itemId = annexDecorItem(key, annexCount(state.fundingRounds));
+  const itemId =
+    annexDecorItem(key, annexCount(state.fundingRounds)) ??
+    lobbyDecorItem(key, state.lobby !== null);
   const item = itemId ? getFurniture(itemId) : undefined;
   if (!item) return { ok: false, error: 'NOT_FOUND' };
   if (!canPlace(state, item, x, y, rotation)) return { ok: false, error: 'INVALID_PLACEMENT' };
@@ -660,6 +665,13 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.hypePerDay += e.hypePerDay ?? 0;
     effects.stabilityPerDay += e.stabilityPerDay ?? 0;
     effects.debtPerDay += e.debtPerDay ?? 0;
+  }
+  // Hall d'entrée : le hall, ses portes à badge, les secrétaires et le service de sécurité.
+  for (const e of lobbyEffects(state)) {
+    effects.moral += e.moral ?? 0;
+    effects.teamProductivity += e.teamProductivity ?? 0;
+    effects.hypePerDay += e.hypePerDay ?? 0;
+    effects.stabilityPerDay += e.stabilityPerDay ?? 0;
   }
   // L'aménagement de la salle de réunion s'ajoute au mobilier (bonus et malus).
   const room = meetingFormat(state);

@@ -1,8 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : socle du mode Histoire
-> en 5 actes (T2, PR 1 sur 4, #157), PR ouverte vers `develop` (base `75c45aa`, après les
-> congés, la rétrospective et le team building T5, PR #156).
+> **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : histoire en 5 actes
+> (T2), PR #157 vers `develop` avec le socle, les rivaux, les scènes, les fins et la Saison libre
+> (choix de Thomas : PR 1 à 3 réunies). Base `d16616a` (modèle économique, B2B, support de Melvin).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -62,20 +62,20 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 
 ## Travaux en cours
 
-| Sujet                                               | Qui             | État                                            |
-| --------------------------------------------------- | --------------- | ----------------------------------------------- |
-| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                |
-| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné (#121), réintégré dans `develop` (T1)  |
-| Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135) |
-| Offres internet et température des salles (#129)    | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #129) |
-| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation       |
-| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné dans `develop` (PR #148)               |
-| **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                |
-| **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                |
-| Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | #157 ouverte, PR 2 et 3 prêtes, PR 4 à venir    |
-| Arbre R&D des objets (T4)                           | Thomas          | Après T2                                        |
-| Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)         |
-| Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                             |
+| Sujet                                               | Qui             | État                                             |
+| --------------------------------------------------- | --------------- | ------------------------------------------------ |
+| Mode **Histoire** (campagne en chapitres)           | Thomas + Claude | Fusionné le 2 novembre (PR #122)                 |
+| Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné (#121), réintégré dans `develop` (T1)   |
+| Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135)  |
+| Offres internet et température des salles (#129)    | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #129)  |
+| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Fusionné dans `develop` le 2 novembre            |
+| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné dans `develop` le 2 novembre (PR #148)  |
+| **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                 |
+| **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                 |
+| Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | #157 : socle, rivaux, fins ; équilibrage à venir |
+| Arbre R&D des objets (T4)                           | Thomas          | Après T2                                         |
+| Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)          |
+| Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                              |
 
 **Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
 progression et la vie de l'équipe. Détail, dépendances, fichiers à éviter et prompts prêts à coller
@@ -301,6 +301,8 @@ Le plus récent en haut. Une ligne par travail terminé.
 | 02/11    | Thomas + Claude | T2, PR 3 sur 4    | Scènes dialoguées (`shared/story/scenes.ts`, `ui/story/StoryScene.tsx`), 10 cartes d'histoire hors base, poids 0, imposées sans tirage (`STORY_CARD_SCHEDULE`, `events/storyCards.ts`), effet de carte `rivals`, SMS de Mamie Josette et articles d'Inès dans le Slack, fins écrites, Saison libre après l'entrée en Bourse (`campaign.freeSeason`, `END_STORY`, `freeSeasonStart` passé aux fonctions de `endless.ts`). Nouveau type de notification `STORY_END`.                                                                                                                       |
 | 02/11    | Thomas + Claude | T2, PR 2 sur 4    | Rivaux de l'histoire : Synergix, Pivotly, Gigacorp simulés à chaque démo sur `seed#rival#sprint`, part de marché qui ajoute du churn, objectifs `rivalUsers` et `marketShare`, panneau Marché, enseignes sur les toits. État `campaign.rivals` et `campaign.usersHistory` vides par défaut ; les autres modes ne changent pas.                                                                                                                                                                                                                                                           |
 | 02/11    | Thomas + Claude | T2, PR 1 sur 4    | Histoire en 5 actes, socle : `mission: 'campaign'`, 60 sprints, actes et dates limites dans `shared/story/acts.ts`, les 10 missions deviennent les objectifs secondaires (mêmes récompenses), `POST /api/story/complete` avec `campaign: true`, point de sauvegarde par acte sur l'appareil, onglets Histoire et Missions. Champ `story.campaign` optionnel, `story.missionId` devenu optionnel, aucun tirage. Réponses aux questions de la proposition : partir de #122, arbre des devs dans tous les modes sauf Daily (fil T3), 60 sprints, noms tels quels, missions courtes gardées. |
+| 02/11    | Melvin + Claude | #134              | Hall d'entrée au rez-de-chaussée (rayon Accueil) : portes à badge, comptoir, 2 secrétaires. Sécurité branchée sur le modèle commun (service `security`, installation `lobby` dans `REQUIREMENT_CHECKS`). État `lobby` null par défaut, aucun tirage.                                                                                                                                                                                                                                                                                                                                     |
+| 02/11    | Melvin + Claude | #147              | Ménage branché sur le modèle commun d'abonnements : service « cleaning » (🧹), 3 offres, `SUBSCRIBE` / `CANCEL_SUBSCRIPTION` à la place de `SUBSCRIBE_CLEANING` / `CANCEL_CLEANING`, `cleaning.plan` retiré. `PRICE_RULES` : prix d'une offre qui suit la partie (ménage selon la taille du bureau).                                                                                                                                                                                                                                                                                     |
 | 02/11    | Thomas + Claude | T5 (3/3)          | Team building : 5 sorties réservées en planification, effets à 18h le dernier jour, hasard sur `seed#teambuilding#sprint`. État `teamBuilding` par défaut. T5 terminée : les 3 PR empilées sont fusionnées ensemble par #156 (#149 et #155 fermées, incluses).                                                                                                                                                                                                                                                                                                                           |
 | 02/11    | Thomas + Claude | T5 (2/3)          | Rétrospective de sprint : 3 actions selon les problèmes du sprint, vote des devs sur `seed#retro#sprint`, effet pendant un sprint. Passer la rétro ne coûte rien (écart avec la proposition, pour garder la partie identique). État `retro` par défaut. Bot « retro » : valorisation médiane 297 M€ contre 266 M€ pour « balanced ».                                                                                                                                                                                                                                                     |
 | 02/11    | Thomas + Claude | T5 (1/3)          | Congés payés, 11 jours fériés, ponts de mai, arrêts maladie, burn-out au lieu de la démission. État `teamLife` (null = ancienne sauvegarde ou défi 3 sprints : rien ne change), hasard sur `seed#leave#jour`. Les replays des anciens scores Normal et Daily ne rejouent plus à l'identique (comme pour les autres mécaniques automatiques).                                                                                                                                                                                                                                             |

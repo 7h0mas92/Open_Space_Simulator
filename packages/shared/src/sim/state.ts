@@ -18,7 +18,11 @@ import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { FibreSubscriptionSchema, ServerHeatLevelSchema } from './serverRoom.js';
+import { LobbyStateSchema } from './lobby.js';
 import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
+import { defaultPricing, PricingStateSchema } from './pricing.js';
+import { ClientsStateSchema, emptyClientsState } from './clients.js';
+import { emptySupportState, SupportStateSchema } from './support.js';
 import { SubscriptionsSchema } from './subscriptions.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
@@ -330,6 +334,14 @@ export const NOTIFICATION_KINDS = [
   'FIBRE_CANCELLED',
   /** L'opérateur coupe la ligne : la trésorerie ne couvrait plus la semaine. */
   'FIBRE_CUT',
+  /** Hall d'entrée aménagé, secrétaire embauchée ou partie. */
+  'LOBBY_BUILT',
+  'RECEPTIONIST_HIRED',
+  'RECEPTIONIST_LEFT',
+  /** Abonnement de sécurité souscrit, changé, résilié ou suspendu faute de paiement. */
+  'SECURITY_SUBSCRIBED',
+  'SECURITY_CANCELLED',
+  'SECURITY_CUT',
   /** Trop de salariés au bureau pour l'offre internet : la ligne sature (ou ne sature plus). */
   'INTERNET_SATURATED',
   'INTERNET_OK',
@@ -347,6 +359,18 @@ export const NOTIFICATION_KINDS = [
   'CLEANING_SUBSCRIBED',
   'CLEANING_CANCELLED',
   'CLEANING_CUT',
+  /** Modèle économique ou niveau de prix changé. */
+  'PRICING_CHANGED',
+  /** Clients B2B : contrat signé, livré, panne facturée (SLA), client perdu. */
+  'CLIENT_SIGNED',
+  'CLIENT_DELIVERED',
+  'CLIENT_SLA',
+  'CLIENT_LOST',
+  /** Fin normale d'un contrat de maintenance. */
+  'CLIENT_ENDED',
+  /** Support client : agents embauchés ou remerciés, satisfaction sous le seuil des départs. */
+  'SUPPORT_STAFFED',
+  'SUPPORT_UNHAPPY',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -491,8 +515,16 @@ export const GameStateSchema = z.object({
    * `subscriptions` au chargement (`migrateLegacyFibre`), toujours null ensuite.
    */
   fibre: FibreSubscriptionSchema.nullable().default(null),
+  /** Hall d'entrée au rez-de-chaussée (null : pas de hall, ou sauvegarde d'avant son ajout). */
+  lobby: LobbyStateSchema.nullable().default(null),
   /** Saleté du bureau et entreprise de nettoyage (bureau propre dans les vieilles sauvegardes). */
   cleaning: CleaningStateSchema.default(emptyCleaningState),
+  /** Modèle économique et niveau de prix (freemium standard dans les vieilles sauvegardes). */
+  pricing: PricingStateSchema.default(defaultPricing),
+  /** Clients B2B : offres du sprint et contrats (aucun dans les vieilles sauvegardes). */
+  clients: ClientsStateSchema.default(emptyClientsState),
+  /** Support client : tickets, agents, satisfaction (au départ d'une partie dans les vieilles sauvegardes). */
+  support: SupportStateSchema.default(emptySupportState),
   /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */
   subscriptions: SubscriptionsSchema.default([]),
   /** Mode Carrière : légende suivie et jalons (null dans les autres modes). */
