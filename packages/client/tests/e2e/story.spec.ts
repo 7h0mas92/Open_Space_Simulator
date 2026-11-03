@@ -49,7 +49,7 @@ test('l’histoire en 5 actes commence au prologue, avec sa date limite', async 
   const panel = page.getByTestId('campaign-panel');
   await expect(panel).toBeVisible();
   await expect(panel).toContainText('Le garage');
-  await expect(page.getByTestId('campaign-deadline')).toContainText('sprint 12');
+  await expect(page.getByTestId('campaign-deadline')).toContainText('sprint 8');
   await expect(page.getByTestId('side-first-commit')).toContainText('Livrer 3 features');
   expect(errors).toEqual([]);
 });
