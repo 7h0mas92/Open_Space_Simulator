@@ -11,6 +11,7 @@ import {
   RESEARCH_TREE,
   WALL_FINISHES,
   researchNodeOf,
+  type FurnitureDefinition,
   type GameState,
   type ResearchKey,
 } from '@oss/shared';
@@ -48,7 +49,7 @@ function buy(simulation: Simulation, itemId: string) {
 describe('Arbre R&D : catalogue', () => {
   it('chaque contenu du catalogue est au départ, dans un seul niveau, ou en Prestige', () => {
     const keys: { key: ResearchKey; unlock?: string | undefined }[] = [
-      ...FURNITURE_CATALOG.map((item) => ({
+      ...(FURNITURE_CATALOG as readonly FurnitureDefinition[]).map((item) => ({
         key: `item:${item.id}` as const,
         unlock: item.unlock,
       })),
