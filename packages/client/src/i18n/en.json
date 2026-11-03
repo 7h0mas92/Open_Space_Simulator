@@ -787,7 +787,8 @@
     "volumes": {
       "musicVolume": "Music",
       "sfxVolume": "Effects",
-      "ambienceVolume": "Ambience"
+      "ambienceVolume": "Ambience",
+      "sfxNone": "No sound effects in the game yet: this slider will apply once they are added."
     },
     "slackAi": "AI-driven Slack",
     "slackAiHint": "Devs react live thanks to AI (daily quota). Unchecked: classic messages.",

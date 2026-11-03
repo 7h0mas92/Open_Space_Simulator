@@ -561,7 +561,8 @@ flowchart LR
   « tycoon 1 » en planification et à la démo, les quatre « Détente » enchaînés pendant le sprint,
   « aria math » en levée de fonds et à l'écran de fin. Fondu enchaîné entre deux moments, reprise
   du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
-  lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
+  lecture en flux par une balise audio dont le volume passe par Web Audio, `audio/musicTrack.ts` :
+  Safari sur iPhone et iPad ignore le volume d'une balise audio). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
   le jeu reste jouable sans musique.
 - **Bruits de bureau** : en zoomant sur une zone, on entend le clavier et la souris des devs qui
   travaillent près du centre de l'écran, à la même distance, placés à gauche ou à droite selon

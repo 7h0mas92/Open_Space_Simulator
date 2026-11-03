@@ -787,7 +787,8 @@
     "volumes": {
       "musicVolume": "Musique",
       "sfxVolume": "Effets",
-      "ambienceVolume": "Ambiance"
+      "ambienceVolume": "Ambiance",
+      "sfxNone": "Aucun effet sonore dans le jeu pour l'instant : ce curseur servira quand ils seront ajoutés."
     },
     "slackAi": "Slack piloté par l'IA",
     "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques.",

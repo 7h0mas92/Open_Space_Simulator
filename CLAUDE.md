@@ -612,7 +612,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   espace ni accent) : tycoon au menu, tycoon 1 en planification et démo, les 4 Détente en playlist
   pendant le sprint, aria math en levée de fonds et à l'écran de fin (`audio/music.ts`,
   `musicMoodOf`, `ui/useMusic.ts`). Fondu de 1,5 s, reprise du morceau là où il était, lecture en
-  flux HTML5, démarrage au premier clic, volume « Musique » des options. Hors précache de la PWA
+  flux par une balise `<audio>` branchée sur un gain Web Audio (`audio/musicTrack.ts`, le volume
+  marche aussi sur iPhone et iPad, où Safari ignore celui de la balise), démarrage au premier clic,
+  volume « Musique » des options ; sous « Effets », une mention dit qu'aucun effet n'est encore là. Hors précache de la PWA
   (25 Mo) : hors ligne, pas de musique. Crédits : « compositions originales de l'équipe du projet ».
 - Canapé et bibliothèque détaillés (`render/furnitureDetail.ts`, formes `sofa` et `bookcase` des
   assets manquants) : canapé en tissu gris-bleu (pieds en bois, accoudoirs roulés, coussins
