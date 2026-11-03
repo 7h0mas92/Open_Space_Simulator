@@ -2388,6 +2388,52 @@
         "COOLDOWN": "Already changed this sprint: customers need some stability. Try again next sprint.",
         "WRONG_STAGE": "Not during a fundraising pitch."
       }
+    },
+    "clients": {
+      "title": "B2B clients",
+      "intro": "Companies want your product, provided you deliver the work they ask for before the deadline. They pay a signing bonus, a monthly fee and a delivery bonus. Every outage costs you a penalty (SLA), and a missed deadline costs a lot. Points are earned at the demo, with finished tasks of the right type.",
+      "slots": "Active deals: {{used}}/{{max}}",
+      "monthly": "{{price}} a month",
+      "record": "{{delivered}} delivered, {{lost}} lost",
+      "contracts": "Signed deals",
+      "offers": "This sprint's offers",
+      "noOffers": "No offers yet: new clients show up at every planning.",
+      "sizes": {
+        "SMALL": "small deal",
+        "MEDIUM": "medium deal",
+        "LARGE": "big deal"
+      },
+      "needs": {
+        "FEATURE": "feature",
+        "INFRA": "infra",
+        "BUGFIX": "bugfix"
+      },
+      "need_one": "Deliver {{count}} {{type}} point in {{sprints}} sprints",
+      "need_other": "Deliver {{count}} {{type}} points in {{sprints}} sprints",
+      "fee": "Monthly fee",
+      "signing": "On signing",
+      "delivery": "On delivery",
+      "users_one": "{{users}} user",
+      "users_other": "{{users}} users",
+      "risks": "Risks",
+      "riskText": "{{penalty}} if missed, {{sla}} per outage",
+      "sign": "Sign the deal",
+      "blockers": {
+        "NO_SLOT": "No room for another active deal: deliver or cancel one first.",
+        "WRONG_STAGE": "Not during a fundraising pitch."
+      },
+      "progress": "{{done}}/{{total}} points delivered",
+      "left_one": "last sprint to deliver",
+      "left_other": "{{count}} sprints to deliver",
+      "maintenance_one": "Delivered, on maintenance for {{count}} more sprint",
+      "maintenance_other": "Delivered, on maintenance for {{count}} more sprints",
+      "paying": "Pays {{price}} a month",
+      "breaches": "{{count}}/{{max}} outages tolerated",
+      "drop": "Cancel the deal",
+      "end": "End maintenance",
+      "dropWarning": "Cancelling now costs {{penalty}} in penalties and some hype.",
+      "endWarning": "The client leaves at no cost: no more fee, no more outage penalty.",
+      "dropConfirm": "Confirm"
     }
   },
   "leave": {

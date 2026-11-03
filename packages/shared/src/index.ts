@@ -9,6 +9,7 @@ export * from './sim/career.js';
 export * from './sim/cards.js';
 export * from './sim/cleaning.js';
 export * from './sim/pricing.js';
+export * from './sim/clients.js';
 export * from './sim/commands.js';
 export * from './sim/components.js';
 export * from './sim/computers.js';

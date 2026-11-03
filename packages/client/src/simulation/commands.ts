@@ -30,6 +30,7 @@ import { holdRetro } from './retro';
 import { bookTeamBuilding, cancelTeamBuilding } from './teamBuilding';
 import { callCleaning } from './cleaning';
 import { setPricing } from './pricing';
+import { dropClient, signClient } from './clients';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -231,5 +232,9 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return startCrunch(state, ctx, command.devId);
     case 'SET_PRICING':
       return setPricing(state, ctx, command.model, command.tier);
+    case 'SIGN_CLIENT':
+      return signClient(state, ctx, command.offerId);
+    case 'DROP_CLIENT':
+      return dropClient(state, ctx, command.contractId);
   }
 }

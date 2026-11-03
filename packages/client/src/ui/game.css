@@ -4902,6 +4902,111 @@ button.skill-node.available {
   }
 }
 
+/* Clients B2B du panneau Business. */
+.clients {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clients p,
+.clients h4 {
+  margin: 0;
+}
+
+.clients-subtitle {
+  margin-top: 4px;
+  font-size: 1rem;
+}
+
+.client-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.client-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.client-card.contract.active {
+  border-left-color: #6fb3ff;
+}
+
+.client-card.contract.delivered {
+  border-left-color: #7fd18b;
+}
+
+.client-card h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 1rem;
+}
+
+.client-card > button {
+  margin-top: auto;
+}
+
+.client-terms {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.client-terms div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.client-terms dt {
+  color: var(--text-muted);
+}
+
+.client-terms dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.client-terms dd.good {
+  color: #7fd18b;
+}
+
+.client-terms dd.bad,
+.client-due.soon {
+  color: var(--danger);
+}
+
+.client-progress {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.client-progress span {
+  display: block;
+  height: 100%;
+  background: #6fb3ff;
+}
+
 /*
  * Entre 1024 et 1279 px, six boutons système et le nom de la phase ne laissent plus de place
  * aux valeurs des jauges : la phase et l'autonomie restent dans l'infobulle de l'icône.

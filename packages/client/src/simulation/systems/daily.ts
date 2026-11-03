@@ -17,6 +17,7 @@ import {
 } from '../helpers';
 import { applyDailyLeadership } from '../leadership';
 import { acquireUsers, currentPricing } from '../pricing';
+import { payClients } from '../clients';
 import { applyDailySkills, skillTeamEffects, type SkillTeamEffects } from '../skills';
 import { log10Approx, round } from '../math';
 import type { SimClock } from '../time';
@@ -25,10 +26,11 @@ import { thinksInRust } from './work';
 
 const DAYS_PER_MONTH = 30;
 
-/** Économie du jour : salaires, loyer, serveurs ; revenus des abonnements. */
+/** Économie du jour : salaires, loyer, serveurs ; revenus des utilisateurs et des clients B2B. */
 function economy(state: GameState): void {
   addMoney(state, -monthlyExpenses(state) / DAYS_PER_MONTH);
   addMoney(state, monthlyRevenue(state) / DAYS_PER_MONTH);
+  payClients(state, 1);
   repayLoan(state, 1);
 }
 

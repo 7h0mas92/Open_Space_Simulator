@@ -486,6 +486,15 @@ test('le panneau Business change le modèle économique', async ({ page }) => {
   await expect(page.getByTestId('pricing-apply')).toBeDisabled();
 });
 
+test('le panneau Business signe un contrat avec un client B2B', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: 'Business', exact: true }).click();
+  await expect(page.getByTestId('clients-summary')).toContainText('0/1');
+  await page.locator('[data-testid^="client-sign-"]').first().click();
+  await expect(page.getByTestId('clients-summary')).toContainText('1/1');
+  await expect(page.locator('[data-testid^="client-contract-"]')).toHaveCount(1);
+});
+
 test('mode Carrière : choisir une légende, suivre ses jalons depuis le HUD', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('oss.language', 'fr');

@@ -25,6 +25,8 @@ import type {
   CleanerTool,
   PriceTier,
   PricingModel,
+  ClientNeed,
+  ClientSize,
   ServerRoomNeed,
   SubscriptionRequirement,
   SubscriptionService,
@@ -917,6 +919,59 @@ export interface PricingView {
   readonly blocker: 'COOLDOWN' | 'WRONG_STAGE' | null;
 }
 
+/** Ce qu'un client B2B demande et paie (offre ou contrat signé). */
+export interface ClientDealView {
+  readonly id: string;
+  readonly company: string;
+  readonly icon: string;
+  readonly sector: LocalizedText;
+  readonly size: ClientSize;
+  readonly need: ClientNeed;
+  /** Points de travail du type demandé à livrer. */
+  readonly points: number;
+  readonly sprints: number;
+  readonly monthlyFee: number;
+  readonly users: number;
+  readonly signingBonus: number;
+  readonly deliveryBonus: number;
+  /** Pénalité si le contrat est rompu avant la livraison. */
+  readonly penalty: number;
+  /** Pénalité de SLA à chaque panne de prod. */
+  readonly slaPenalty: number;
+}
+
+export interface ClientOfferView extends ClientDealView {
+  /** `NO_SLOT` : plus de place pour un contrat en cours dans cette phase. */
+  readonly blocker: 'NO_SLOT' | 'WRONG_STAGE' | null;
+}
+
+export interface ClientContractView extends ClientDealView {
+  readonly status: 'ACTIVE' | 'DELIVERED';
+  readonly progress: number;
+  /** Sprints restants pour livrer, ce sprint compris (0 : en maintenance). */
+  readonly sprintsLeft: number;
+  /** Sprints de maintenance restants, une fois livré. */
+  readonly maintenanceLeft: number;
+  readonly breaches: number;
+  readonly maxBreaches: number;
+  /** Ce que le client paie chaque mois en ce moment. */
+  readonly monthly: number;
+}
+
+/** Clients B2B : offres de la planification et contrats en cours. */
+export interface ClientsView {
+  readonly offers: readonly ClientOfferView[];
+  readonly contracts: readonly ClientContractView[];
+  /** Contrats en cours au plus dans cette phase, et places libres. */
+  readonly slots: number;
+  readonly freeSlots: number;
+  readonly monthlyTotal: number;
+  readonly signed: number;
+  readonly delivered: number;
+  readonly lost: number;
+  readonly earned: number;
+}
+
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
 export interface WallZoneView {
   readonly zone: WallZone;
@@ -1058,6 +1113,8 @@ export interface GameView {
   readonly cleaning: CleaningView;
   /** Modèle économique du produit. */
   readonly pricing: PricingView;
+  /** Clients B2B. */
+  readonly clients: ClientsView;
   /** Salles des serveurs. */
   readonly servers: ServersView;
   /** Hall d'entrée, accueil et sécurité. */
@@ -1189,7 +1246,10 @@ export type GameCommand =
   | { readonly type: 'trainDev'; readonly devId: string; readonly kind: TrainingKind }
   | { readonly type: 'useCrunch'; readonly devId: string }
   /** Change le modèle économique et le niveau de prix (une fois par sprint). */
-  | { readonly type: 'setPricing'; readonly model: PricingModel; readonly tier: PriceTier };
+  | { readonly type: 'setPricing'; readonly model: PricingModel; readonly tier: PriceTier }
+  /** Signe l'offre d'un client B2B, ou rompt un contrat. */
+  | { readonly type: 'signClient'; readonly offerId: string }
+  | { readonly type: 'dropClient'; readonly contractId: string };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

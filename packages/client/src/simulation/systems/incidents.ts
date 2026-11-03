@@ -9,6 +9,7 @@ import {
 import { forceCard } from '../../events/draw';
 import { addGauge, addUsers, devsWithRole, notify, text, type SimContext } from '../helpers';
 import { holdCrisisMeeting } from '../meetings';
+import { clientsOutage } from '../clients';
 import { recordIncident } from '../performance';
 import { hasSkill } from '../skills';
 import { urgentProdFix } from '../taskFlow';
@@ -35,6 +36,7 @@ export function prodDown(
   state.stats.prodOutages += 1;
   if (devId) recordIncident(state, devId);
   notify(state, ctx, 'PROD_DOWN', cause, devId);
+  clientsOutage(state, ctx);
   const fixId = urgentProdFix(state, ctx);
   // Salle de réunion aménagée : les personnes concernées s'y réunissent en cellule de crise.
   if (fixId) holdCrisisMeeting(state, ctx, fixId, devId);

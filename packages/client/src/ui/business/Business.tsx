@@ -7,7 +7,13 @@ import {
 } from '@oss/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { GameView, PricingChoiceView } from '../../view/types';
+import type {
+  ClientContractView,
+  ClientDealView,
+  ClientOfferView,
+  GameView,
+  PricingChoiceView,
+} from '../../view/types';
 import { intlLocale, localized } from '../game/format';
 import { useGame } from '../store/game';
 
@@ -15,7 +21,8 @@ import { useGame } from '../store/game';
  * Panneau « Business » (bouton 💶 de la barre du haut) : le modèle économique du produit. Le
  * joueur choisit un modèle (gratuit avec pub, freemium, abonnement, achat unique) et un niveau de
  * prix, voit ce que le changement coûterait (utilisateurs perdus, hype) et ce qu'il rapporterait,
- * puis l'applique (une fois par sprint).
+ * puis l'applique (une fois par sprint). En dessous, les clients B2B : les offres de la
+ * planification et les contrats signés, avec leur avancement, leur échéance et leurs pannes.
  */
 
 /** Montant en euros, avec les centimes quand il est petit (revenu par utilisateur). */
@@ -43,6 +50,7 @@ export function Business({ view }: { view: GameView }) {
     <div className="business-panel">
       <p className="hint">{t('business.intro')}</p>
       <Pricing view={view} />
+      <Clients view={view} />
     </div>
   );
 }
@@ -193,5 +201,210 @@ function Preview({ choice }: { choice: PricingChoiceView }) {
         <p className="hint">{t('business.pricing.cut', { hype: choice.hype })}</p>
       )}
     </div>
+  );
+}
+
+const NEED_ICONS = { FEATURE: '✨', INFRA: '🏗️', BUGFIX: '🐛' } as const;
+
+/** Clients B2B : contrats en cours, puis offres à signer. */
+function Clients({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const { clients } = view;
+  const language = i18n.language;
+  return (
+    <section className="clients" aria-labelledby="clients-title">
+      <h3 id="clients-title" className="group-heading">
+        {t('business.clients.title')}
+      </h3>
+      <p className="hint">{t('business.clients.intro')}</p>
+      <p className="clients-summary" data-testid="clients-summary">
+        {t('business.clients.slots', {
+          used: clients.slots - clients.freeSlots,
+          max: clients.slots,
+        })}
+        {clients.monthlyTotal > 0 &&
+          ` · ${t('business.clients.monthly', { price: euros(clients.monthlyTotal, language) })}`}
+        {clients.signed > 0 &&
+          ` · ${t('business.clients.record', {
+            delivered: clients.delivered,
+            lost: clients.lost,
+          })}`}
+      </p>
+      {clients.contracts.length > 0 && (
+        <ul className="client-list" aria-label={t('business.clients.contracts')}>
+          {clients.contracts.map((contract) => (
+            <li key={contract.id}>
+              <ContractCard contract={contract} />
+            </li>
+          ))}
+        </ul>
+      )}
+      <h4 className="clients-subtitle">{t('business.clients.offers')}</h4>
+      {clients.offers.length === 0 ? (
+        <p className="hint">{t('business.clients.noOffers')}</p>
+      ) : (
+        <ul className="client-list" aria-label={t('business.clients.offers')}>
+          {clients.offers.map((offer) => (
+            <li key={offer.id}>
+              <OfferCard offer={offer} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** En-tête commun d'une offre et d'un contrat : client, taille, ce qu'il demande. */
+function DealHeader({ deal }: { deal: ClientDealView }) {
+  const { t, i18n } = useTranslation();
+  return (
+    <>
+      <h4>
+        <span aria-hidden="true">{deal.icon} </span>
+        {deal.company}
+        <span className="sub-detail">
+          {localized(deal.sector, i18n.language)} · {t(`business.clients.sizes.${deal.size}`)}
+        </span>
+      </h4>
+      <p className="client-need">
+        <span aria-hidden="true">{NEED_ICONS[deal.need]} </span>
+        {t('business.clients.need', {
+          count: deal.points,
+          type: t(`business.clients.needs.${deal.need}`),
+          sprints: deal.sprints,
+        })}
+      </p>
+    </>
+  );
+}
+
+function OfferCard({ offer }: { offer: ClientOfferView }) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const replay = useGame((s) => s.replayOf !== null);
+  const money = (value: number) => euros(value, i18n.language);
+  return (
+    <article className="client-card" data-testid={`client-offer-${offer.id}`}>
+      <DealHeader deal={offer} />
+      <dl className="client-terms">
+        <div>
+          <dt>{t('business.clients.fee')}</dt>
+          <dd>{money(offer.monthlyFee)}</dd>
+        </div>
+        <div>
+          <dt>{t('business.clients.signing')}</dt>
+          <dd className="good">+{money(offer.signingBonus)}</dd>
+        </div>
+        <div>
+          <dt>{t('business.clients.delivery')}</dt>
+          <dd className="good">
+            +{money(offer.deliveryBonus)} ·{' '}
+            {t('business.clients.users', {
+              count: Math.round(offer.users),
+              users: Math.round(offer.users).toLocaleString(intlLocale(i18n.language)),
+            })}
+          </dd>
+        </div>
+        <div>
+          <dt>{t('business.clients.risks')}</dt>
+          <dd className="bad">
+            {t('business.clients.riskText', {
+              penalty: money(offer.penalty),
+              sla: money(offer.slaPenalty),
+            })}
+          </dd>
+        </div>
+      </dl>
+      <button
+        type="button"
+        className="primary"
+        disabled={replay || offer.blocker !== null}
+        onClick={() => void dispatch({ type: 'signClient', offerId: offer.id })}
+        data-testid={`client-sign-${offer.id}`}
+      >
+        {t('business.clients.sign')}
+      </button>
+      {offer.blocker && <p className="hint">{t(`business.clients.blockers.${offer.blocker}`)}</p>}
+    </article>
+  );
+}
+
+function ContractCard({ contract }: { contract: ClientContractView }) {
+  const { t, i18n } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const replay = useGame((s) => s.replayOf !== null);
+  const [confirming, setConfirming] = useState(false);
+  const money = (value: number) => euros(value, i18n.language);
+  const active = contract.status === 'ACTIVE';
+  const percent = Math.round((contract.progress / contract.points) * 100);
+  return (
+    <article
+      className={`client-card contract ${active ? 'active' : 'delivered'}`}
+      data-testid={`client-contract-${contract.id}`}
+    >
+      <DealHeader deal={contract} />
+      {active ? (
+        <>
+          <span
+            className="client-progress"
+            role="progressbar"
+            aria-label={t('business.clients.progress', {
+              done: contract.progress,
+              total: contract.points,
+            })}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percent}
+          >
+            <span style={{ width: `${percent}%` }} />
+          </span>
+          <p className={contract.sprintsLeft <= 1 ? 'client-due soon' : 'client-due'}>
+            {t('business.clients.progress', { done: contract.progress, total: contract.points })} ·{' '}
+            {t('business.clients.left', { count: contract.sprintsLeft })}
+          </p>
+        </>
+      ) : (
+        <p className="server-state up">
+          {t('business.clients.maintenance', { count: contract.maintenanceLeft })}
+        </p>
+      )}
+      <p className="hint">
+        {t('business.clients.paying', { price: money(contract.monthly) })} ·{' '}
+        {t('business.clients.breaches', { count: contract.breaches, max: contract.maxBreaches })}
+      </p>
+      {confirming ? (
+        <div className="sub-actions">
+          <p className="hint">
+            {active
+              ? t('business.clients.dropWarning', { penalty: money(contract.penalty) })
+              : t('business.clients.endWarning')}
+          </p>
+          <button
+            type="button"
+            className="danger"
+            onClick={() => {
+              setConfirming(false);
+              void dispatch({ type: 'dropClient', contractId: contract.id });
+            }}
+            data-testid={`client-drop-confirm-${contract.id}`}
+          >
+            {t('business.clients.dropConfirm')}
+          </button>
+          <button type="button" onClick={() => setConfirming(false)}>
+            {t('group.cancel')}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={replay}
+          onClick={() => setConfirming(true)}
+          data-testid={`client-drop-${contract.id}`}
+        >
+          ✂️ {t(active ? 'business.clients.drop' : 'business.clients.end')}
+        </button>
+      )}
+    </article>
   );
 }

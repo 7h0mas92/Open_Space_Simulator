@@ -21,6 +21,7 @@ import { FibreSubscriptionSchema, ServerHeatLevelSchema } from './serverRoom.js'
 import { LobbyStateSchema } from './lobby.js';
 import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
 import { defaultPricing, PricingStateSchema } from './pricing.js';
+import { ClientsStateSchema, emptyClientsState } from './clients.js';
 import { SubscriptionsSchema } from './subscriptions.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
@@ -358,6 +359,13 @@ export const NOTIFICATION_KINDS = [
   'CLEANING_CUT',
   /** Modèle économique ou niveau de prix changé. */
   'PRICING_CHANGED',
+  /** Clients B2B : contrat signé, livré, panne facturée (SLA), client perdu. */
+  'CLIENT_SIGNED',
+  'CLIENT_DELIVERED',
+  'CLIENT_SLA',
+  'CLIENT_LOST',
+  /** Fin normale d'un contrat de maintenance. */
+  'CLIENT_ENDED',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -495,6 +503,8 @@ export const GameStateSchema = z.object({
   cleaning: CleaningStateSchema.default(emptyCleaningState),
   /** Modèle économique et niveau de prix (freemium standard dans les vieilles sauvegardes). */
   pricing: PricingStateSchema.default(defaultPricing),
+  /** Clients B2B : offres du sprint et contrats (aucun dans les vieilles sauvegardes). */
+  clients: ClientsStateSchema.default(emptyClientsState),
   /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */
   subscriptions: SubscriptionsSchema.default([]),
   /** Mode Carrière : légende suivie et jalons (null dans les autres modes). */
