@@ -9,6 +9,10 @@
  * l'interface envoie des `GameCommand` pour demander un changement.
  */
 import type {
+  AbsenceKind,
+  OutingId,
+  RetroAction,
+  PublicHoliday,
   MissionGoal,
   StoryMissionId,
   StoryRewardId,
@@ -54,6 +58,9 @@ import type {
   TaskKind,
   TaskStack,
   TaskTrade,
+  SkillBranch,
+  SkillId,
+  TrainingKind,
 } from '@oss/shared';
 
 /**
@@ -173,6 +180,49 @@ export interface CareerView {
   readonly currentTask: LocalizedText | null;
 }
 
+/** Un nœud de l'arbre de compétences, tel que la fiche l'affiche. */
+export interface SkillNodeView {
+  readonly id: SkillId;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly effect: LocalizedText;
+  /** Appris, accessible maintenant (un point et le nœud précédent), ou verrouillé. */
+  readonly status: 'LEARNED' | 'AVAILABLE' | 'LOCKED';
+  /** Nœud de métier (propre au profil du dev). */
+  readonly roleNode: boolean;
+  /** Pouvoir à déclencher (le Crunch). */
+  readonly active: boolean;
+}
+
+export interface SkillBranchView {
+  readonly branch: SkillBranch;
+  readonly nodes: readonly SkillNodeView[];
+}
+
+/** Formation proposée dans la fiche (planification seulement). */
+export interface TrainingView {
+  readonly kind: TrainingKind;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly effect: LocalizedText;
+  readonly price: number;
+}
+
+/** Arbre de compétences d'un dev (null : candidat, encadrement ou mode Daily). */
+export interface DevSkillsView {
+  readonly earned: number;
+  readonly spent: number;
+  readonly available: number;
+  readonly branches: readonly SkillBranchView[];
+  /** Formation déjà suivie ce sprint. */
+  readonly trainedThisSprint: boolean;
+  readonly trainings: readonly TrainingView[];
+  /** Prix d'une réinitialisation (un mois de salaire). */
+  readonly resetCost: number;
+  /** Crunch : appris, déclenchable maintenant, en cours. */
+  readonly crunch: { readonly learned: boolean; readonly ready: boolean; readonly active: boolean };
+}
+
 export interface DevView {
   readonly id: string;
   readonly name: string;
@@ -213,6 +263,67 @@ export interface DevView {
   readonly career: CareerView | null;
   /** A démissionné après un refus d'augmentation : sprint de son départ, sinon null. */
   readonly leavingAtSprint: number | null;
+  /** Congé, pont ou arrêt maladie en cours ou prévu (null : aucun, ou candidat). */
+  readonly absence: AbsenceView | null;
+  /** Jours de congé en réserve (null : pas de congés, comme le Dev Fantôme ou l'IA Agent). */
+  readonly leave: number | null;
+  /** Arbre de compétences (null : candidat, encadrement ou mode Daily). */
+  readonly skills: DevSkillsView | null;
+}
+
+/** Absence d'un dev : congé posé, pont, petit arrêt maladie ou burn-out. */
+export interface AbsenceView {
+  readonly kind: AbsenceKind;
+  /** Jours ouvrés d'absence. */
+  readonly days: number;
+  /** Vrai si l'absence a commencé (le dev n'est pas au bureau aujourd'hui). */
+  readonly started: boolean;
+  /** Semaine du sprint où commence un congé prévu (0 ou 1), sinon null. */
+  readonly week: 0 | 1 | null;
+  /** Date réelle du retour au bureau. */
+  readonly returnDate: CalendarDate;
+}
+
+/** Rétrospective proposée en début de planification. */
+export interface RetroView {
+  /** Actions proposées, avec les devs qui ont voté pour chacune. */
+  readonly options: readonly { readonly action: RetroAction; readonly voters: readonly string[] }[];
+  /** Action qui a le plus de voix. */
+  readonly winner: RetroAction | null;
+}
+
+/** Une sortie d'équipe proposée en planification. */
+export interface OutingView {
+  readonly id: OutingId;
+  readonly icon: string;
+  readonly phase: Phase;
+  /** Prix pour l'équipe actuelle. */
+  readonly price: number;
+  /** Ce qui empêche de la réserver (null : possible). */
+  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'COOLDOWN' | null;
+  /** Déjà faite au sprint précédent : moral divisé par deux. */
+  readonly repeat: boolean;
+  readonly moral: number;
+  /** Temps de travail perdu, en heures (0 pour l'afterwork). */
+  readonly hoursLost: number;
+}
+
+export interface TeamBuildingView {
+  /** Sortie réservée pour ce sprint, et son prix. */
+  readonly booked: { readonly outing: OutingId; readonly cost: number } | null;
+  readonly outings: readonly OutingView[];
+  /** Sorties faites depuis le début de la partie. */
+  readonly count: number;
+}
+
+/** Congés et ponts du sprint (null : vieilles sauvegardes et défi « 3 sprints »). */
+export interface TeamLifeView {
+  /** Devs en congé en même temps au plus, par semaine. */
+  readonly slots: number;
+  /** Le sprint qui commence (ou en cours) a un jour de pont. */
+  readonly bridge: boolean;
+  /** Le joueur a refusé les ponts de ce sprint. */
+  readonly bridgesRefused: boolean;
 }
 
 export const TASK_TYPES = ['FEATURE', 'REFACTOR', 'BUGFIX', 'INFRA'] as const;
@@ -864,6 +975,8 @@ export interface CalendarView {
   readonly seasons: readonly DecorTheme[];
   /** Devs dont on fête l'anniversaire aujourd'hui (table de fête au bureau). */
   readonly birthdays: readonly string[];
+  /** Jour férié chômé aujourd'hui, ou null. */
+  readonly holiday: PublicHoliday | null;
 }
 
 export interface GameView {
@@ -879,6 +992,14 @@ export interface GameView {
   /** Historique des jauges, un point par jour simulé. */
   readonly history: readonly Gauges[];
   readonly devs: readonly DevView[];
+  /** Team building : sortie réservée et sorties proposées. */
+  readonly teamBuilding: TeamBuildingView;
+  /** Rétrospective en attente de décision (null : aucune). */
+  readonly retro: RetroView | null;
+  /** Action de la dernière rétro en vigueur ce sprint (null : aucune). */
+  readonly retroAction: RetroAction | null;
+  /** Congés, ponts et arrêts maladie (null : vieilles sauvegardes, défi « 3 sprints »). */
+  readonly teamLife: TeamLifeView | null;
   /** Ce que l'encadrement apporte à l'équipe, et les postes ouverts au recrutement. */
   readonly leadership: LeadershipView;
   readonly tasks: readonly TaskView[];
@@ -1023,6 +1144,17 @@ export type GameCommand =
   | { readonly type: 'endDemo' }
   | { readonly type: 'answerAcquisition'; readonly accept: boolean }
   | { readonly type: 'answerRaise'; readonly accept: boolean }
+  | {
+      readonly type: 'bookLeave';
+      readonly devId: string;
+      readonly week: 0 | 1;
+      readonly days: number;
+    }
+  | { readonly type: 'cancelLeave'; readonly devId: string }
+  | { readonly type: 'refuseBridges'; readonly refuse: boolean }
+  | { readonly type: 'holdRetro'; readonly action: RetroAction | null }
+  | { readonly type: 'bookTeamBuilding'; readonly outing: OutingId }
+  | { readonly type: 'cancelTeamBuilding' }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }
@@ -1041,7 +1173,11 @@ export type GameCommand =
   /** Appelle l'entreprise de nettoyage (ce soir, ou en express). */
   | { readonly type: 'callCleaning'; readonly express: boolean }
   | { readonly type: 'subscribeCleaning'; readonly plan: CleaningPlanId }
-  | { readonly type: 'cancelCleaning' };
+  | { readonly type: 'cancelCleaning' }
+  | { readonly type: 'learnSkill'; readonly devId: string; readonly skill: SkillId }
+  | { readonly type: 'resetSkills'; readonly devId: string }
+  | { readonly type: 'trainDev'; readonly devId: string; readonly kind: TrainingKind }
+  | { readonly type: 'useCrunch'; readonly devId: string };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

@@ -26,6 +26,8 @@ import { dailySystem } from './systems/daily';
 import { incidentSystem } from './systems/incidents';
 import { coffeeSystem, energySystem } from './systems/needs';
 import { remoteSystem } from './systems/remote';
+import { absentIds, teamLifeSystem } from './teamLife';
+import { teamBuildingSystem } from './teamBuilding';
 import { taskFlowSystem } from './taskFlow';
 import { workSystem } from './systems/work';
 import { getClock, type SimClock } from './time';
@@ -43,6 +45,8 @@ export const SYSTEMS: readonly System[] = [
   activitySystem,
   workSystem,
   coffeeSystem,
+  teamLifeSystem,
+  teamBuildingSystem,
   remoteSystem,
   (state, ctx) => energySystem(state, ctx),
   incidentSystem,
@@ -107,7 +111,7 @@ export class Simulation {
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${computersKey(state)}:${state.subscriptions.map((s) => s.offer).join(',')}:${serverGearKey(state)}:${isSummer(state) ? 'été' : ''}:${lobbyKey(state)}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${absentIds(state, getClock(state).day).join(',')}:${computersKey(state)}:${state.subscriptions.map((s) => s.offer).join(',')}:${serverGearKey(state)}:${isSummer(state) ? 'été' : ''}:${lobbyKey(state)}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;

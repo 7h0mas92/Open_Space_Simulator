@@ -720,6 +720,56 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
       return team.length >= 3 && team.every((identity) => identity.role === 'GHOST');
     },
   },
+  // ── Vie de l'équipe ───────────────────────────────────────────────────────
+  {
+    id: 'right-to-disconnect',
+    icon: '🏖️',
+    difficulty: 'MEDIUM',
+    title: t('Droit à la déconnexion', 'Right to Disconnect'),
+    description: t(
+      'Finir une partie sans faillite ni burn-out, avec au moins 40 jours de congé pris.',
+      'Finish a game without bankruptcy or burnout, with at least 40 days of leave taken.',
+    ),
+    check: (state) =>
+      survived(state) && state.stats.leaveDays >= 40 && state.stats.burnoutLeaves === 0,
+  },
+  {
+    id: 'patient-zero',
+    icon: '🤧',
+    difficulty: 'MEDIUM',
+    secret: true,
+    title: t('Patient zéro', 'Patient Zero'),
+    description: t(
+      'Avoir trois devs en arrêt maladie en même temps.',
+      'Have three devs on sick leave at the same time.',
+    ),
+    check: (state) =>
+      Object.values(state.teamLife?.absences ?? {}).filter((absence) => absence.kind === 'SICK')
+        .length >= 3,
+  },
+  {
+    id: 'team-spirit',
+    icon: '🎉',
+    difficulty: 'MEDIUM',
+    title: t('Esprit d’équipe', 'Team Spirit'),
+    description: t(
+      'Faire 5 sorties d’équipe dans une partie.',
+      'Go on 5 team outings in one game.',
+    ),
+    check: (state) => state.teamBuilding.count >= 5,
+  },
+  {
+    id: 'what-happens-in-lisbon',
+    icon: '✈️',
+    difficulty: 'HARD',
+    secret: true,
+    title: t('Ce qui se passe à Lisbonne…', 'What Happens in Lisbon…'),
+    description: t(
+      'Emmener toute l’équipe en off-site à Lisbonne.',
+      'Take the whole team on an off-site in Lisbon.',
+    ),
+    check: (state) => state.teamBuilding.last?.outing === 'offsite',
+  },
   // ── Filiales ──────────────────────────────────────────────────────────────
   {
     id: 'business-angel',

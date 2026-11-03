@@ -125,32 +125,35 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 
 ### `src/sim/` : règles et catalogues de la simulation
 
-| Fichier         | Rôle                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------ |
-| `balance.ts`    | Toutes les constantes d'équilibrage (`BALANCE`) : temps, salaires, jauges, pauses, raises… |
-| `state.ts`      | Schéma Zod de l'état de partie complet (`GameState`), étapes du sprint.                    |
-| `components.ts` | Composants de l'ECS (identité, stats, moral, tâches…), métiers (`ROLE_TRADE`).             |
-| `commands.ts`   | Commandes typées envoyées à la simulation : le seul moyen de modifier une partie.          |
-| `cards.ts`      | Format des cartes d'événements (conditions, choix, effets).                                |
-| `calendar.ts`   | Calendrier : date réelle de chaque jour simulé, 12 saisons à thème.                        |
-| `furniture.ts`  | Catalogue du mode construction : prix, emprise, effets, phase de déblocage.                |
-| `annexDecor.ts` | Décor offert avec chaque annexe (arcade, jardin, auditorium).                              |
-| `computers.ts`  | Ordinateurs des postes (tour sobre, tours gaming, MacBook) et leurs effets.                |
-| `monitors.ts`   | Écrans des postes : 5 modèles, 3 tailles, pied ou bras articulé.                           |
-| `floors.ts`     | Sols : matières, teintes, prix et effets par pièce.                                        |
-| `walls.ts`      | Peintures et papiers peints, zones de mur.                                                 |
-| `projection.ts` | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                |
-| `serverRoom.ts` | Salle des serveurs, équipements, température et offres internet.                           |
-| `lobby.ts`      | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                     |
-| `meetings.ts`   | Formules de salle de réunion, réunion du matin, réunion de crise.                          |
-| `pets.ts`       | Chats du bureau : équipement requis, prix, effets.                                         |
-| `teamRoles.ts`  | Équipe web : devs front, back, fullstack, tech lead, DevOps, QA, encadrement.              |
-| `taskFlow.ts`   | Tâches dynamiques : backlog, urgences, tâches de la semaine, objectif de sprint.           |
-| `raises.ts`     | Demandes d'augmentation : fréquence, montants, conséquences.                               |
-| `pitch.ts`      | Mini-jeu de levée de fonds : questions, arguments, intérêt de l'investisseur.              |
-| `funding.ts`    | Autres financements : business angels, prêt, financement participatif, subvention.         |
-| `ventures.ts`   | Filiales : projets, parts, dividendes, revente.                                            |
-| `career.ts`     | Mode Carrière : les 8 légendes, leur départ, leurs jalons, la légende lue dans la graine.  |
+| Fichier           | Rôle                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| `balance.ts`      | Toutes les constantes d'équilibrage (`BALANCE`) : temps, salaires, jauges, pauses, raises… |
+| `state.ts`        | Schéma Zod de l'état de partie complet (`GameState`), étapes du sprint.                    |
+| `components.ts`   | Composants de l'ECS (identité, stats, moral, tâches…), métiers (`ROLE_TRADE`).             |
+| `commands.ts`     | Commandes typées envoyées à la simulation : le seul moyen de modifier une partie.          |
+| `cards.ts`        | Format des cartes d'événements (conditions, choix, effets).                                |
+| `calendar.ts`     | Calendrier : date réelle de chaque jour simulé, 12 saisons à thème.                        |
+| `furniture.ts`    | Catalogue du mode construction : prix, emprise, effets, phase de déblocage.                |
+| `annexDecor.ts`   | Décor offert avec chaque annexe (arcade, jardin, auditorium).                              |
+| `computers.ts`    | Ordinateurs des postes (tour sobre, tours gaming, MacBook) et leurs effets.                |
+| `monitors.ts`     | Écrans des postes : 5 modèles, 3 tailles, pied ou bras articulé.                           |
+| `floors.ts`       | Sols : matières, teintes, prix et effets par pièce.                                        |
+| `walls.ts`        | Peintures et papiers peints, zones de mur.                                                 |
+| `projection.ts`   | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                |
+| `serverRoom.ts`   | Salle des serveurs, équipements, température et offres internet.                           |
+| `lobby.ts`        | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                     |
+| `meetings.ts`     | Formules de salle de réunion, réunion du matin, réunion de crise.                          |
+| `pets.ts`         | Chats du bureau : équipement requis, prix, effets.                                         |
+| `teamRoles.ts`    | Équipe web : devs front, back, fullstack, tech lead, DevOps, QA, encadrement.              |
+| `taskFlow.ts`     | Tâches dynamiques : backlog, urgences, tâches de la semaine, objectif de sprint.           |
+| `raises.ts`       | Demandes d'augmentation : fréquence, montants, conséquences.                               |
+| `pitch.ts`        | Mini-jeu de levée de fonds : questions, arguments, intérêt de l'investisseur.              |
+| `funding.ts`      | Autres financements : business angels, prêt, financement participatif, subvention.         |
+| `ventures.ts`     | Filiales : projets, parts, dividendes, revente.                                            |
+| `teamLife.ts`     | Congés payés, jours fériés français, ponts, arrêts maladie et burn-out.                    |
+| `retro.ts`        | Rétrospective : les 10 actions, leurs effets, le vote.                                     |
+| `teamBuilding.ts` | Team building : les 5 sorties, prix, horaires et effets.                                   |
+| `career.ts`       | Mode Carrière : les 8 légendes, leur départ, leurs jalons, la légende lue dans la graine.  |
 
 ### `src/meta/` : méta-jeu et contrats de l'API
 
@@ -259,6 +262,9 @@ graine + mêmes commandes = même partie.
 | `fundraising.ts`  | Tour de table : palier, intérêt de l'investisseur, force des arguments.                 |
 | `financing.ts`    | Business angels, prêt, financement participatif, subvention.                            |
 | `ventures.ts`     | Filiales : création, dividendes, revente (graine à part).                               |
+| `teamLife.ts`     | Congés, jours fériés, ponts, arrêts maladie et burn-out (graine à part).                |
+| `retro.ts`        | Rétrospective : problèmes du sprint, votes des devs (graine à part), action active.     |
+| `teamBuilding.ts` | Team building : réservation, absence de l'équipe, effets (graine à part).               |
 | `raises.ts`       | Demandes d'augmentation (graine à part).                                                |
 | `leadership.ts`   | Effets de l'encadrement et de l'équipe qualité (tech lead, DevOps, QA, managers).       |
 | `meetings.ts`     | Salle de réunion, réunion du matin et réunion de crise.                                 |
@@ -457,6 +463,8 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `kanban/Objective.tsx`            | Objectif de sprint affiché en haut du Kanban.                           |
 | `kanban/useDragAndDrop.ts`        | Glisser-déposer souris et tactile du Kanban.                            |
 | `team/Team.tsx`                   | Liste de l'équipe et fiche détaillée d'un dev.                          |
+| `team/Leave.tsx`                  | Congés d'un dev, avis de pont, libellés des absences.                   |
+| `team/TeamBuilding.tsx`           | Bloc « Team building » du panneau Équipe.                               |
 | `team/TeamFilterBar.tsx`          | Tri et filtres de l'équipe.                                             |
 | `team/filters.ts`                 | Logique des filtres et du tri (fonctions pures).                        |
 | `team/Hiring.tsx`                 | Recrutement : candidats, offre, risque de refus.                        |

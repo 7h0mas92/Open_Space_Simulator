@@ -18,6 +18,7 @@ const FLAG_ICONS = {
   LOW_MORALE: '😞',
   REMOTE: '🏠',
   OFFICE: '🏢',
+  ABSENT: '🏖️',
 } as const;
 
 /** Tri toujours visible, filtres combinables repliés derrière un bouton. */

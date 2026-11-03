@@ -157,6 +157,8 @@ describe('Équipe et recrutement', () => {
     simulation.dispatch({ type: 'END_DEMO' });
     playSprint(simulation);
     simulation.dispatch({ type: 'END_DEMO' });
+    // La rétrospective s'ouvre en début de planification : on la passe.
+    simulation.dispatch({ type: 'HOLD_RETRO', action: null });
     await startGame(simulation);
     const dev = useGame.getState().view!.devs.find((d) => d.role !== 'GHOST')!;
     const [last, previous] = dev.performance.lastSprints;
@@ -171,6 +173,23 @@ describe('Équipe et recrutement', () => {
     expect(within(sprints).getByText(`Sprint ${last!.sprint}`)).toBeInTheDocument();
     expect(within(sprints).getByText(`Sprint ${previous!.sprint}`)).toBeInTheDocument();
     expect(screen.getByText('Ancienneté')).toBeInTheDocument();
+  });
+
+  it('ouvre la rétrospective après la démo : les votes, puis le choix du joueur', async () => {
+    const simulation = officeSimulation(SEED_OFFICE);
+    playSprint(simulation);
+    simulation.dispatch({ type: 'END_DEMO' });
+    await startGame(simulation);
+    const dialog = screen.getByRole('dialog', { name: 'Rétrospective' });
+    expect(within(dialog).getByText(/choix de l’équipe/)).toBeInTheDocument();
+    const choices = dialog.querySelectorAll<HTMLButtonElement>('button.choice');
+    expect(choices).toHaveLength(3);
+    expect(within(dialog).getByRole('button', { name: 'Passer la rétro' })).toBeInTheDocument();
+    await userEvent.click(choices[0]!);
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Rétrospective' })).not.toBeInTheDocument(),
+    );
+    expect(useGame.getState().view!.retroAction).not.toBeNull();
   });
 
   it('détaille chaque candidat : performance estimée, marché, chances d’accepter', async () => {

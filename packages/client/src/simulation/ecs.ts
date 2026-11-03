@@ -21,6 +21,7 @@ const COMPONENT_NAMES: readonly ComponentName[] = [
   'remoteReason',
   'rustConverted',
   'performance',
+  'skills',
 ];
 
 /** Réserve un nouvel identifiant d'entité ("e1", "e2"...). */

@@ -2911,6 +2911,134 @@ legend {
   font-size: 0.85rem;
 }
 
+/* --- Team building ------------------------------------------------------------------ */
+.team-building {
+  margin: 4px 0 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.team-building summary {
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.team-building-booked {
+  color: var(--accent);
+}
+
+.team-building-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-building-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.team-building-outing {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 400;
+}
+
+.team-building-icon {
+  flex: none;
+  width: 2rem;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.team-building-body {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+
+.team-building-body strong {
+  font-size: 1rem;
+}
+
+/* --- Rétrospective de sprint ------------------------------------------------------- */
+.retro-screen .choice.is-winner {
+  border-color: var(--accent);
+}
+
+.retro-winner {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.retro-problem,
+.retro-votes {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* --- Congés, ponts et arrêts maladie ------------------------------------------------- */
+.leave-bridge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 4px 0 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.leave-bridge p {
+  flex: 1 1 220px;
+  margin: 0;
+}
+
+.leave-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.leave-claim,
+.leave-badge {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.leave-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.leave-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
 /* --- Encadrement de l'équipe (directeur, managers, scrum master...) ----------------- */
 .leadership {
   margin: 0 0 8px;
@@ -4453,6 +4581,145 @@ legend {
 .career-end-stars {
   color: var(--accent);
   font-weight: 700;
+}
+
+/* ─── Arbre de compétences (onglet « Compétences » de la fiche d'un dev) ─── */
+
+.skill-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skill-points {
+  margin: 0;
+  font-weight: 600;
+}
+
+.skill-points .hint {
+  display: block;
+  font-weight: 400;
+}
+
+.skill-badge {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.skill-crunch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Une colonne sur mobile, trois côte à côte dès que la place le permet. */
+.skill-branches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 12px;
+}
+
+.skill-branch h4,
+.skill-trainings h4 {
+  margin: 0 0 6px;
+}
+
+.skill-branch ol,
+.skill-trainings ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--touch);
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.skill-node.learned {
+  border-color: var(--accent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.skill-node.locked {
+  opacity: 0.6;
+}
+
+button.skill-node.available {
+  border-style: dashed;
+  border-color: var(--accent);
+  cursor: pointer;
+}
+
+.skill-node.role-node {
+  border-width: 2px;
+}
+
+.skill-icon {
+  flex: none;
+  font-size: 1.3rem;
+}
+
+.skill-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+
+.skill-text > span {
+  color: var(--text-muted);
+}
+
+.skill-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.skill-cta {
+  flex: none;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.skill-trainings button {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 2px 8px;
+  width: 100%;
+  min-height: var(--touch);
+  text-align: left;
+}
+
+.skill-trainings button .hint {
+  grid-column: 2 / 4;
+  margin: 0;
+}
+
+.skill-price {
+  font-weight: 600;
 }
 
 /* --- Hall d'entrée et sécurité ------------------------------------------------------------ */
