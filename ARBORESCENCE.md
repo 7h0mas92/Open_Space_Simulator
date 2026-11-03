@@ -140,6 +140,7 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 | `floors.ts`       | Sols : matières, teintes, prix et effets par pièce.                                          |
 | `walls.ts`        | Peintures et papiers peints, zones de mur.                                                   |
 | `projection.ts`   | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                  |
+| `research.ts`     | Arbre R&D des objets (Histoire en actes) : branches, niveaux, coûts, contenus débloqués.     |
 | `serverRoom.ts`   | Salle des serveurs, équipements, température et offres internet.                             |
 | `cleaning.ts`     | Saleté du bureau, entreprise de nettoyage, tarifs et offres de ménage.                       |
 | `lobby.ts`        | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                       |
@@ -288,6 +289,7 @@ graine + mêmes commandes = même partie.
 | `achievements.ts` | Succès vérifiés à partir de l'état.                                                     |
 | `endings.ts`      | Fins de partie et phrase partageable de l'écran de fin.                                 |
 | `story.ts`        | Mode Histoire : départ de la mission, suivi des objectifs et contraintes, fin.          |
+| `research.ts`     | Arbre R&D : commande `RESEARCH_NODE`, points d'innovation à la démo.                    |
 | `career.ts`       | Mode Carrière : départ de la légende, jalons vérifiés à chaque démo, étoiles à la fin.  |
 | `unlocks.ts`      | Récompenses du mode Histoire utilisables dans la partie (`state.unlocks`).              |
 | `bots.ts`         | Stratégies automatiques de `pnpm balance` (random, shipper, balanced, investor…).       |
@@ -352,6 +354,7 @@ Frontière entre la simulation et l'affichage : `render/` et `ui/` ne lisent que
 | `layout.ts`    | Plan du bureau par phase : taille, salles, cloisons, annexes, sols tirés de la graine. |
 | `windows.ts`   | Fenêtres posées dans les murs du fond.                                                 |
 | `walls.ts`     | Zones de mur et allure de chaque peinture ou papier peint.                             |
+| `research.ts`  | Arbre R&D : niveau à prendre pour un contenu, et son nom.                              |
 | `floors.ts`    | Zones de sol et allure de chaque matière dans chaque teinte.                           |
 | `colors.ts`    | Teintes des couleurs de mobilier (peinture).                                           |
 | `decor.ts`     | Où poser les décorations de saison, la table d'anniversaire, la salle de réunion.      |
@@ -494,6 +497,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `story/MissionPanel.tsx`          | Panneau « Mission » en jeu : briefing, objectifs en direct, récompense. |
 | `story/MissionGoals.tsx`          | Liste des objectifs et contraintes avec leur avancement.                |
 | `story/goals.ts`                  | Phrase de chaque objectif (« Livrer 3 features »).                      |
+| `story/ResearchPanel.tsx`         | Panneau « 🔬 R&D » de l'histoire : points, branches, niveaux, Prestige. |
 | `career/CareerPage.tsx`           | Page « Carrière » du menu : choix de la légende et de la difficulté.    |
 | `career/CareerPanel.tsx`          | Panneau des jalons en jeu (bouton 🧭) et bilan de fin.                  |
 | `career/records.ts`               | Meilleur résultat par légende sur l'appareil, étoiles en texte.         |

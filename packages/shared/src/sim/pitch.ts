@@ -425,6 +425,52 @@ export const PITCH_ARGUMENTS: readonly PitchArgumentDefinition[] = [
   },
 ];
 
+/** Jauge sur laquelle s'appuie un argument, pour l'expliquer au joueur. */
+export type PitchBasis =
+  'users' | 'revenue' | 'runway' | 'stability' | 'debt' | 'team' | 'hype' | 'luck' | 'bluff';
+
+export function argumentBasis(argument: PitchArgumentDefinition): PitchBasis {
+  if (argument.bluff) return 'bluff';
+  switch (argument.id) {
+    case 'retention':
+    case 'uptime':
+    case 'live-demo':
+      return 'stability';
+    case 'unit-economics':
+      return 'revenue';
+    case 'path-to-profit':
+      return 'runway';
+    case 'tech-moat':
+      return 'debt';
+    case 'leadership':
+      return 'team';
+    case 'market-share':
+      return 'users';
+  }
+  const byCategory: Record<PitchCategory, PitchBasis> = {
+    TRACTION: 'users',
+    TECH: 'debt',
+    TEAM: 'team',
+    VISION: 'hype',
+    BUZZWORD: 'luck',
+  };
+  return byCategory[argument.category];
+}
+
+/** L'effet de l'argument se joue aux dés (démo en direct, buzzwords, bluffs). */
+export function isRandomArgument(argument: PitchArgumentDefinition): boolean {
+  return argument.bluff === true || argument.id === 'live-demo' || argument.category === 'BUZZWORD';
+}
+
+/** Force d'un argument ou d'un thème, telle que l'interface l'affiche. */
+export const PITCH_RATINGS = ['strong', 'fair', 'weak'] as const;
+export type PitchRating = (typeof PITCH_RATINGS)[number];
+
+/** Seuils de la note : au-dessus de « fort », l'investisseur prend des notes. */
+export function pitchRating(value: number): PitchRating {
+  return value >= 0.8 ? 'strong' : value >= 0.25 ? 'fair' : 'weak';
+}
+
 const ARGUMENTS_BY_ID = new Map(PITCH_ARGUMENTS.map((argument) => [argument.id, argument]));
 
 export function getPitchArgument(id: string): PitchArgumentDefinition | undefined {

@@ -35,6 +35,7 @@ import {
   MEETING_FORMATS,
   PETS,
   FUNDING_TIERS,
+  PITCH_CATEGORIES,
   PITCH_QUESTIONS,
   ROLE_PROFILES,
   ROLE_STACK,
@@ -55,7 +56,10 @@ import {
   getInvestor,
   getVentureIdea,
   seasonsAt,
+  argumentBasis,
   getPitchArgument,
+  isRandomArgument,
+  pitchRating,
   taskTrade,
   type Command,
   type EventCard,
@@ -97,6 +101,11 @@ import {
   skillsEnabled,
   getRival,
   type CampaignState,
+  PRESTIGE_REWARDS,
+  RESEARCH,
+  RESEARCH_TREE,
+  STORY_MISSIONS,
+  researchBlock,
 } from '@oss/shared';
 import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
@@ -115,7 +124,13 @@ import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
-import { currentTier, pitchBar } from '../simulation/fundraising';
+import {
+  categoryStrengths,
+  currentTier,
+  estimatePitchChance,
+  expectedAnswer,
+  pitchBar,
+} from '../simulation/fundraising';
 import { softSigmoid } from '../simulation/math';
 import { countDesks, monitorOf, RESALE_RATIO } from '../simulation/furniture';
 import { activeProjections } from '../simulation/projection';
@@ -175,6 +190,7 @@ import type {
   RetroView,
   StoryView,
   CampaignView,
+  ResearchView,
   MarketView,
   ClientDealView,
   ClientsView,
@@ -188,6 +204,7 @@ import type {
   PerformanceView,
   PitchAnswerView,
   PitchArgumentView,
+  PitchOptionView,
   PitchView,
   SprintPerformanceView,
   EventView,
@@ -781,6 +798,19 @@ function pitchArgumentView(id: string): PitchArgumentView | null {
     : null;
 }
 
+/** Argument proposé, avec sa force attendue face à la question posée. */
+function pitchOptionView(state: GameState, pitch: PitchState, id: string): PitchOptionView | null {
+  const view = pitchArgumentView(id);
+  const argument = getPitchArgument(id);
+  if (!view || !argument) return null;
+  return {
+    ...view,
+    rating: pitchRating(expectedAnswer(state, pitch, id)),
+    basis: argumentBasis(argument),
+    random: isRandomArgument(argument),
+  };
+}
+
 /** Réaction de l'investisseur à une réponse, d'après son effet sur l'intérêt. */
 function reaction(delta: number): PitchAnswerView['reaction'] {
   return delta >= 0.5 ? 'good' : delta <= -0.3 ? 'bad' : 'neutral';
@@ -800,7 +830,7 @@ function pitchView(state: GameState, pitch: PitchState): PitchView {
     round: pitch.round,
     rounds: pitch.manches,
     question: question ? { text: question.text, category: question.category } : null,
-    options: pitch.options.flatMap((id) => pitchArgumentView(id) ?? []),
+    options: pitch.options.flatMap((id) => pitchOptionView(state, pitch, id) ?? []),
     chosen: pitch.chosen.flatMap((id, index) => {
       const argument = pitchArgumentView(id);
       const entry = pitch.log[index];
@@ -824,12 +854,18 @@ function pitchView(state: GameState, pitch: PitchState): PitchView {
 function fundingView(state: GameState): FundingView {
   const next = fundingTier(state.fundingRounds);
   const loan = state.financing.loan;
+  const strengths = categoryStrengths(state);
   return {
     nextRound: {
       name: next.name,
       tier: fundingTierIndex(state.fundingRounds),
       manches: next.manches,
       options: next.options,
+      chance: Math.round(estimatePitchChance(state) * 100) / 100,
+      strengths: PITCH_CATEGORIES.map((category) => ({
+        category,
+        rating: pitchRating(strengths[category]),
+      })),
     },
     tiers: FUNDING_TIERS.length,
     nextPitchSprint:
@@ -1311,6 +1347,39 @@ function marketView(state: GameState, campaign: CampaignState): MarketView {
   };
 }
 
+/** Arbre R&D des objets : niveaux, points et récompenses de Prestige (null hors de l'histoire). */
+function researchView(state: GameState): ResearchView | null {
+  const campaign = state.story?.campaign;
+  const research = campaign?.research;
+  if (!campaign || !research) return null;
+  return {
+    points: research.points,
+    earned: research.earned,
+    nodes: RESEARCH_TREE.map((node) => ({
+      id: node.id,
+      branch: node.branch,
+      level: node.level,
+      name: node.name,
+      cost: RESEARCH.cost[node.level],
+      act: RESEARCH.act[node.level],
+      status: researchBlock(research, campaign.act, node) ?? 'available',
+      keys: node.keys,
+    })),
+    prestige: STORY_MISSIONS.flatMap((mission) =>
+      PRESTIGE_REWARDS.includes(mission.reward)
+        ? [
+            {
+              reward: mission.reward,
+              mission: mission.id,
+              missionTitle: mission.title,
+              unlocked: hasUnlock(state, mission.reward),
+            },
+          ]
+        : [],
+    ),
+  };
+}
+
 function campaignView(state: GameState): CampaignView | null {
   const progress = actProgress(state);
   if (!progress) return null;
@@ -1431,7 +1500,12 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     result: state.result,
     story: storyView(state),
     campaign: campaignView(state),
-    unlocks: [...state.unlocks],
+    research: researchView(state),
+    // Branche Prestige de l'arbre R&D : les récompenses gagnées pendant l'histoire s'y ajoutent.
+    unlocks: [
+      ...state.unlocks,
+      ...PRESTIGE_REWARDS.filter((id) => !state.unlocks.includes(id) && hasUnlock(state, id)),
+    ],
     achievements: [...state.achievements],
     replay: context.replay ?? null,
     running: context.running,
@@ -1607,6 +1681,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'LAUNCH_IPO' };
     case 'endStory':
       return { type: 'END_STORY' };
+    case 'research':
+      return { type: 'RESEARCH_NODE', nodeId: command.nodeId };
     case 'foundVenture':
       return { type: 'FOUND_VENTURE', ideaId: command.ideaId };
     case 'sellVenture':

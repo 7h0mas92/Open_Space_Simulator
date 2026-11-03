@@ -331,6 +331,7 @@
     "tickets": "Kanbanana, the ticket app",
     "leaderboard": "Leaderboard",
     "market": "Market",
+    "research": "R&D",
     "business": "Business"
   },
   "kanban": {
@@ -720,7 +721,8 @@
     "stopInventory": "{{item}}: none left in stock, back to the inventory.",
     "monitor": "Monitor",
     "storyLocked": "🔒 Story mode reward: complete its mission to buy it.",
-    "storyLockedMode": "🔒 Story mode reward, not available in this mode."
+    "storyLockedMode": "🔒 Story mode reward, not available in this mode.",
+    "storyLockedPrestige": "🏆 Prestige: complete the story goal that awards this reward."
   },
   "results": {
     "INVALID_COMMAND": "That can't be done.",
@@ -753,7 +755,8 @@
     "INVENTORY_FULL": "The inventory is full: sell some stored items.",
     "RAISE_PENDING": "Answer the raise request first.",
     "NOT_ENOUGH_LEAVE": "Not enough leave days saved up.",
-    "LEAVE_SLOTS_FULL": "Too many people on leave that week: pick the other week."
+    "LEAVE_SLOTS_FULL": "Too many people on leave that week: pick the other week.",
+    "NOT_ENOUGH_POINTS": "Not enough innovation points: ship features and complete goals."
   },
   "dashboard": {
     "intro": "Gauge history, one point per day.",
@@ -939,7 +942,25 @@
     "short": "Raise",
     "roundTitle": "Fundraising · {{round}}",
     "difficulty": "Difficulty {{level}} of {{total}}",
-    "interest": "Interest",
+    "interest": "Chance they sign",
+    "ratings": {
+      "strong": "strong",
+      "fair": "fair",
+      "weak": "weak"
+    },
+    "ratingTitle": "Expected effect on this investor: {{rating}}, based on {{basis}}.",
+    "random": "random",
+    "basis": {
+      "users": "your users",
+      "revenue": "your revenue",
+      "runway": "your cash",
+      "stability": "prod stability",
+      "debt": "your tech debt",
+      "team": "your team",
+      "hype": "your hype",
+      "luck": "luck",
+      "bluff": "bluffing"
+    },
     "offTopic": "off topic",
     "bluffCaught": "bluff called!",
     "bluffTag": "bluff",
@@ -1443,6 +1464,10 @@
           "storyTips": {
             "title": "Rewards",
             "body": "Each reward (wallpaper, flooring, colour, item or starting perk) can then be used in Easy, Normal, Hardcore, Interns Only and Ship in 3 sprints.\n\nNot in the Daily: today's game stays the same for everyone. Missions have no leaderboard."
+          },
+          "storyResearch": {
+            "title": "The R&D tree",
+            "body": "In the 5-act story, the build catalogue starts small: desks, plants, a coffee maker. The rest is unlocked in the 🔬 R&D panel, top right, with innovation points.\n\n• +1 point per feature shipped, +3 per goal completed, +2 when you gain more users than every rival in a sprint.\n• 5 branches of 4 levels (Comfort, Tech, Ambiance, Kitchen, Organisation): each level needs the previous one and its matching act.\n• Prestige: goal rewards can be bought as soon as the goal is completed.\n\nShort missions and the other modes keep the whole catalogue."
           }
         }
       },
@@ -1667,7 +1692,7 @@
           },
           "pitch": {
             "title": "The pitch",
-            "body": "Facing the investor, you answer their questions, one per round, by picking an argument. Each argument relies on a gauge:\n\n• Traction: you need users.\n• Tech: you need low debt.\n• Team: you need a large, happy team.\n• Stability: some arguments need a reliable prod, and the live demo can crash.\n\nAnswer the question asked: off topic, their interest drops. Each funding round is tougher than the last: more questions, a higher bar, bluffs called more often, and from Series B the investor may walk out. A failed pitch costs hype."
+            "body": "Facing the investor, you answer their questions, one per round, by picking an argument. Each argument relies on a gauge:\n\n• Traction: you need users.\n• Tech: you need low debt.\n• Team: you need a large, happy team.\n• Stability: some arguments need a reliable prod, and the live demo can crash.\n\nAnswer the question asked: off topic, their interest drops. Each funding round is tougher than the last: more questions, a higher bar, bluffs called more often, and from Series B the investor may walk out. A failed pitch costs hype.\n\nBefore you go in, the panel shows your estimated chance and how strong each theme is. During the pitch, each argument on offer shows its strength against this investor (strong, fair, weak) and the gauge it relies on, and the “Chance they sign” gauge is the real probability that the investor signs."
           },
           "dilution": {
             "title": "Dilution",
@@ -1878,6 +1903,9 @@
     "annexes": "Office annexes",
     "nextRound": "Next funding round: {{round}}",
     "difficulty": "Difficulty",
+    "chance": "Estimated chance",
+    "chanceHint": "If you answer every question with a strong argument. During the pitch, the “Chance they sign” gauge shows the real chance, answer after answer.",
+    "strengths": "Your arguments today",
     "roundHint": "Facing an investor: {{manches}} questions, {{options}} possible answers each time. Answer the question asked: an off-topic answer lowers their interest. Each round is tougher than the last.",
     "annexNext": "Closing this round grows the office: a new annex opens, with 2 more seats on the team.",
     "annexLater": "From {{round}} on, each successful round adds an annex to the office.",
@@ -2714,6 +2742,36 @@
         "effect": "+30 morale, +30 affinity, +20 energy, +8 hype, −5 debt"
       }
     }
+  },
+  "research": {
+    "title": "Research and development",
+    "intro": "Unlock the build catalogue with innovation points. Each level needs the previous one and the matching act of the story.",
+    "points": "{{points}} innovation points",
+    "earned": "{{earned}} earned since the story began",
+    "howTo": "+{{feature}} per feature shipped, +{{goal}} per goal completed, +{{rivals}} when you gain more users than every rival in a sprint.",
+    "branches": {
+      "comfort": "Comfort",
+      "tech": "Tech",
+      "ambiance": "Ambiance",
+      "kitchen": "Kitchen",
+      "organisation": "Organisation",
+      "prestige": "Prestige"
+    },
+    "level": "Level {{level}}",
+    "status": {
+      "owned": "✓ Unlocked",
+      "available": "Available",
+      "previous": "🔒 Previous level first",
+      "act": "🔒 From the act “{{act}}”",
+      "points": "{{missing}} points missing"
+    },
+    "take": "Unlock ({{cost}} pts)",
+    "unlocks": "Unlocks: {{list}}",
+    "needed": "🔬 R&D: {{branch}}, level {{level}}",
+    "prestigeIntro": "Rewards of the story goals, no points needed: complete the goal to buy them.",
+    "prestigeDone": "✓ Earned",
+    "prestigeTodo": "Goal: {{mission}}",
+    "free": "To start with: desk, IKEA desk, plants, drip coffee maker, mug, duck, lamp, bin, office tower and monitor."
   },
   "skills": {
     "tabs": "Dev sheet",

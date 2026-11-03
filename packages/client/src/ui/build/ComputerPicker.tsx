@@ -25,11 +25,14 @@ const ICONS: Readonly<Record<ComputerId, string>> = {
 export function ComputerPicker({
   value,
   phase,
+  research,
   treasury,
   onChange,
 }: {
   value: ComputerId;
   phase: Phase;
+  /** Arbre R&D (Histoire) : pour chaque ordinateur pas encore débloqué, le niveau à prendre. */
+  research?: Partial<Record<ComputerId, string>>;
   treasury: number;
   onChange: (computer: ComputerId) => void;
 }) {
@@ -95,7 +98,9 @@ export function ComputerPicker({
             onKeyDown={closeOnEscape}
           >
             {COMPUTERS.map((computer) => {
-              const locked = PHASES.indexOf(phase) < PHASES.indexOf(computer.minPhase);
+              const researchLock = research?.[computer.id] ?? null;
+              const locked =
+                PHASES.indexOf(phase) < PHASES.indexOf(computer.minPhase) || researchLock !== null;
               const tooExpensive = computer.id !== value && treasury + refund < computer.price;
               return (
                 <button
@@ -119,13 +124,17 @@ export function ComputerPicker({
                     <small>{localized(computer.description, i18n.language)}</small>
                   </span>
                   <span className="computer-price">
-                    {locked
-                      ? t('build.computerLocked', { phase: t(`phases.${computer.minPhase}`) })
-                      : computer.id === value
-                        ? t('build.computerCurrent')
-                        : computer.price === 0
-                          ? t('build.computerFree')
-                          : t('build.price', { price: formatMoney(computer.price, i18n.language) })}
+                    {researchLock
+                      ? researchLock
+                      : locked
+                        ? t('build.computerLocked', { phase: t(`phases.${computer.minPhase}`) })
+                        : computer.id === value
+                          ? t('build.computerCurrent')
+                          : computer.price === 0
+                            ? t('build.computerFree')
+                            : t('build.price', {
+                                price: formatMoney(computer.price, i18n.language),
+                              })}
                   </span>
                 </button>
               );

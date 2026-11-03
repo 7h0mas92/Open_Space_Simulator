@@ -399,6 +399,9 @@ export function DifficultyDots({ tier, tiers }: { tier: number; tiers: number })
   );
 }
 
+/** Pictogramme de la force d'un argument (fort, moyen, faible). */
+export const RATING_ICONS = { strong: '▲', fair: '●', weak: '▼' } as const;
+
 const REACTION_ICONS = { good: '👍', neutral: '😐', bad: '👎' } as const;
 
 function PitchScreen({ pitch }: { pitch: PitchView }) {
@@ -483,6 +486,19 @@ function PitchScreen({ pitch }: { pitch: PitchView }) {
                       <span className={`tag category-${option.category}`}>
                         {t(`pitch.categories.${option.category}`)}
                       </span>
+                      <span
+                        className={`tag pitch-rating rating-${option.rating}`}
+                        title={t('pitch.ratingTitle', {
+                          rating: t(`pitch.ratings.${option.rating}`),
+                          basis: t(`pitch.basis.${option.basis}`),
+                        })}
+                      >
+                        {RATING_ICONS[option.rating]} {t(`pitch.ratings.${option.rating}`)} ·{' '}
+                        {t(`pitch.basis.${option.basis}`)}
+                      </span>
+                      {option.random && !option.bluff && (
+                        <span className="tag">🎲 {t('pitch.random')}</span>
+                      )}
                       {option.bluff && (
                         <span className="tag tag-warning">⚠ {t('pitch.bluffTag')}</span>
                       )}

@@ -55,7 +55,9 @@ import type {
   PetNeed,
   NotificationKind,
   Phase,
+  PitchBasis,
   PitchCategory,
+  PitchRating,
   PitchResult,
   VentureRisk,
   VentureStatus,
@@ -68,6 +70,10 @@ import type {
   SkillBranch,
   SkillId,
   TrainingKind,
+  ResearchBranch,
+  ResearchKey,
+  ResearchLevel,
+  ResearchNodeId,
 } from '@oss/shared';
 
 /**
@@ -534,6 +540,16 @@ export interface PitchArgumentView {
   readonly bluff: boolean;
 }
 
+/** Argument proposé à la manche en cours, avec sa force attendue face à cette question. */
+export interface PitchOptionView extends PitchArgumentView {
+  /** Effet attendu sur l'intérêt de cet investisseur (goûts et question compris). */
+  readonly rating: PitchRating;
+  /** Jauge sur laquelle l'argument s'appuie. */
+  readonly basis: PitchBasis;
+  /** Son effet se joue aux dés (démo en direct, buzzwords, bluffs). */
+  readonly random: boolean;
+}
+
 /** Réponse déjà donnée, avec la réaction de l'investisseur. */
 export interface PitchAnswerView extends PitchArgumentView {
   readonly reaction: 'good' | 'neutral' | 'bad';
@@ -553,9 +569,9 @@ export interface PitchView {
   readonly rounds: number;
   /** Question de l'investisseur à cette manche. */
   readonly question: { readonly text: LocalizedText; readonly category: PitchCategory } | null;
-  readonly options: readonly PitchArgumentView[];
+  readonly options: readonly PitchOptionView[];
   readonly chosen: readonly PitchAnswerView[];
-  /** Intérêt de l'investisseur (0 à 1) : sa probabilité actuelle de signer. */
+  /** Intérêt de l'investisseur (0 à 1) : sa probabilité actuelle de signer (la vraie). */
   readonly interest: number;
   /** L'investisseur est parti avant la fin. */
   readonly walkedOut: boolean;
@@ -581,6 +597,13 @@ export interface FundingView {
     readonly tier: number;
     readonly manches: number;
     readonly options: number;
+    /** Chance estimée de signer en répondant à chaque question avec un bon argument (0 à 1). */
+    readonly chance: number;
+    /** Force de chaque thème d'argument d'après l'état de la startup. */
+    readonly strengths: readonly {
+      readonly category: PitchCategory;
+      readonly rating: PitchRating;
+    }[];
   };
   readonly tiers: number;
   /** Sprint à partir duquel on pourra repitcher (cooldown), sinon null. */
@@ -1110,6 +1133,42 @@ export interface CampaignView {
   readonly freeSeasonSprints: number;
 }
 
+/** Pourquoi un niveau de l'arbre R&D n'est pas encore pris (null : il peut l'être). */
+export type ResearchNodeStatus = 'owned' | 'available' | 'previous' | 'act' | 'points';
+
+/** Un niveau de l'arbre R&D des objets. */
+export interface ResearchNodeView {
+  readonly id: ResearchNodeId;
+  readonly branch: ResearchBranch;
+  readonly level: ResearchLevel;
+  readonly name: LocalizedText;
+  readonly cost: number;
+  /** Acte à atteindre (0 = prologue). */
+  readonly act: number;
+  readonly status: ResearchNodeStatus;
+  /** Ce qu'il débloque (clés `item:…`, `wall:…`, `meeting:…`…). */
+  readonly keys: readonly ResearchKey[];
+}
+
+/** Branche Prestige : récompenses des objectifs de l'histoire, jamais achetées. */
+export interface ResearchPrestigeView {
+  readonly reward: StoryRewardId;
+  readonly mission: StoryMissionId;
+  readonly missionTitle: LocalizedText;
+  /** Objectif rempli dans cette partie (ou récompense déjà gagnée avant). */
+  readonly unlocked: boolean;
+}
+
+/** Arbre R&D des objets (longue partie du mode Histoire). */
+export interface ResearchView {
+  /** Points d'innovation à dépenser. */
+  readonly points: number;
+  /** Points gagnés depuis le début de l'histoire. */
+  readonly earned: number;
+  readonly nodes: readonly ResearchNodeView[];
+  readonly prestige: readonly ResearchPrestigeView[];
+}
+
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
 export interface GameNotification {
   readonly tick: number;
@@ -1217,6 +1276,8 @@ export interface GameView {
   readonly story: StoryView | null;
   /** Mode Histoire : la longue partie en actes (null dans les autres modes et les missions). */
   readonly campaign: CampaignView | null;
+  /** Arbre R&D des objets (longue partie du mode Histoire, null ailleurs). */
+  readonly research: ResearchView | null;
   /** Récompenses du mode Histoire utilisables dans cette partie. */
   readonly unlocks: readonly StoryRewardId[];
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */
@@ -1316,6 +1377,8 @@ export type GameCommand =
   | { readonly type: 'cancelTeamBuilding' }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'endStory' }
+  /** Arbre R&D (Histoire) : prendre un niveau contre des points d'innovation. */
+  | { readonly type: 'research'; readonly nodeId: ResearchNodeId }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }
   | { readonly type: 'fitMeetingRoom'; readonly format: MeetingFormatId }
