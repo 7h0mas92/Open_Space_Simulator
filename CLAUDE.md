@@ -612,7 +612,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   espace ni accent) : tycoon au menu, tycoon 1 en planification et démo, les 4 Détente en playlist
   pendant le sprint, aria math en levée de fonds et à l'écran de fin (`audio/music.ts`,
   `musicMoodOf`, `ui/useMusic.ts`). Fondu de 1,5 s, reprise du morceau là où il était, lecture en
-  flux HTML5, démarrage au premier clic, volume « Musique » des options. Hors précache de la PWA
+  flux par une balise `<audio>` branchée sur un gain Web Audio (`audio/musicTrack.ts`, le volume
+  marche aussi sur iPhone et iPad, où Safari ignore celui de la balise), démarrage au premier clic,
+  volume « Musique » des options ; sous « Effets », une mention dit qu'aucun effet n'est encore là. Hors précache de la PWA
   (25 Mo) : hors ligne, pas de musique. Crédits : « compositions originales de l'équipe du projet ».
 - Canapé et bibliothèque détaillés (`render/furnitureDetail.ts`, formes `sofa` et `bookcase` des
   assets manquants) : canapé en tissu gris-bleu (pieds en bois, accoudoirs roulés, coussins
@@ -1040,6 +1042,34 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
     80, +6 % de croissance et un peu de hype. Commande `SET_SUPPORT`, état `support` par défaut,
     aucun tirage ; règle qui change toutes les parties (anciens replays de scores divergent).
     Bot planner : `sensibleSupportAgents`.
+
+
+- **Charge du sprint selon l'équipe** (`client/src/simulation/sprintLoad.ts`) : 3 idées par
+  personne qui prend des tâches et par sprint (`TASK_FLOW.ideasPerDev`, l'encadrement ne compte
+  pas), backlog jusqu'à 4 par dev. Chaque matin de semaine à 9h, le rythme de chaque métier depuis
+  le début du sprint (`tracker.workByTrade`) est comparé au travail restant : s'il manque de quoi
+  tenir jusqu'à la démo, des tâches passent du backlog au « À faire », sinon de nouvelles idées
+  sont créées (`TODO_TOPPED_UP`) ; à 14h, un dev qui attend sans tâche en reçoit une. Au 6e jour
+  ouvré, une équipe nettement en retard est prévenue (`SPRINT_BEHIND`), rien n'est retiré. Ligne
+  au-dessus du Kanban : équipe, tâches finissables d'ici la démo, tâches prévues. Les devs ne
+  chôment plus (avant : environ 60 % du temps sans tâche), donc tâches du backlog plus longues
+  (`BALANCE.work.unitsPerPoint` 5 → 14, urgences et hebdo à 5) et chaque point livré pèse moins
+  (`BALANCE.work.pointEffect` 0,13). Nouvelles idées sur `seed#tasks#topup#…` ; règle qui change
+  toutes les parties (anciens replays de scores divergent). 192 titres de plus
+  (`data/moreTasks.ts`, 439 au total), 5 urgences et 5 tâches de la semaine de plus, 150 titres
+  récents gardés.
+- Voitures et décorations refaites (`render/cars.ts`, `render/decorModels.ts`,
+  `render/decorations.ts`) : 7 modèles de véhicules en formes Three.js dans les rues de la ville
+  (taxi 30 %, berline, citadine, SUV, camionnette, pick-up, bus 4 %), vitres, roues à jantes,
+  phares, feux, pare-chocs ; carrosserie teintée par instance et habillage peint par sommet, deux
+  InstancedMesh par modèle, modèle et couleur figés par le numéro (`carLook`, hachage, aucun
+  tirage). Décorations de saison : guirlandes à fil (ampoules à douille en 3 phases de
+  scintillement, ou fanions triangles, cœurs ou queues d'aronde) tendues en festons entre des
+  clous ; un ornement par emplacement, à mi-chemin entre deux appliques, hors fenêtres, cloisons
+  et meubles hauts (`decorWalls`) ; 24 ornements et 12 objets de bureau redessinés (couronne,
+  chaussette, sapin en pot, horloge de minuit, champagne, écu, bannière, vinyle, cassette, cube,
+  chauves-souris, araignée…). Fusion par matériau (`Pieces`, 4 maillages au plus par mur), deux
+  thèmes se partagent les murs (`shareWalls`). Rendu seulement.
 
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback

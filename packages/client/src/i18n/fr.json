@@ -346,6 +346,8 @@
     "nobody": "Personne",
     "moveLeft": "Déplacer vers {{column}}",
     "moveRight": "Déplacer vers {{column}}",
+    "load_one": "{{count}} personne prend des tâches : environ {{capacity}} tâches finies d’ici la démo, {{planned}} prévues. Si ça va plus vite, d’autres tâches arrivent en cours de sprint.",
+    "load_other": "{{count}} personnes prennent des tâches : environ {{capacity}} tâches finies d’ici la démo, {{planned}} prévues. Si ça va plus vite, d’autres tâches arrivent en cours de sprint.",
     "dragHint": "Glisse une carte entre Backlog et À faire, ou utilise les flèches. Chacun prend tout seul les tâches « À faire » de son métier.",
     "impact": "Impact",
     "empty": "Rien ici. Profite.",
@@ -787,7 +789,8 @@
     "volumes": {
       "musicVolume": "Musique",
       "sfxVolume": "Effets",
-      "ambienceVolume": "Ambiance"
+      "ambienceVolume": "Ambiance",
+      "sfxNone": "Aucun effet sonore dans le jeu pour l'instant : ce curseur servira quand ils seront ajoutés."
     },
     "slackAi": "Slack piloté par l'IA",
     "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques.",
@@ -828,9 +831,9 @@
       "officeCharacters": "Personnages de bureau en Three.js (barbus, Rustacés, designeuses, robot, fantôme…) et accessoires des personnages Kenney",
       "uiPack": "Pack UI Kenney (interface en CSS)",
       "soundPacks": "Packs sons Kenney (effets sonores et ambiance à venir) ; en attendant, clics de souris synthétisés en Web Audio ; frappes au clavier tirées d'un enregistrement fourni par l'équipe du projet",
-      "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit",
+      "seasonalDecor": "Décorations de saison (12 thèmes : guirlandes à fil et ampoules ou fanions, ornements muraux, objets de bureau) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit",
       "meetingRoomProps": "Salle de réunion : tableau blanc, horloge du stand-up, aquarium, écrans de la war room, tableau de la salle du conseil et parois vitrées en formes Three.js, avec les tables et chaises du Furniture Kit",
-      "citySkyline": "Vue par les fenêtres sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve, taxis) en formes Three.js, sans bâtiment réel",
+      "citySkyline": "Vue par les fenêtres sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve) en formes Three.js, sans bâtiment réel, et 7 modèles de véhicules (taxi, berline, citadine, SUV, camionnette, pick-up, bus)",
       "mug": "Mug de dev : anse, bande colorée, café froid et cuillère",
       "rubberDuck": "Canard en plastique : ailes, queue, bec et yeux",
       "trophy": "Trophée de hackathon : socle à deux étages, plaque, coupe à anses et étoile",

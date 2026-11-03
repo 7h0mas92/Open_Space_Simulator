@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { buildCarModels, CAR_MIX, carLook } from '../../../src/render/cars';
 import { describe, expect, it } from 'vitest';
 import type { AssetLibrary } from '../../../src/render/assets';
 import { lightingAt } from '../../../src/render/lighting';
@@ -124,7 +125,8 @@ describe('vue sur New York', () => {
   it('dessine toute la ville en une poignée de maillages et l’allume la nuit', () => {
     const skyline = new SkylineView();
     skyline.setLayout(officeLayout('UNICORN'));
-    expect(skyline.root.children.length).toBeLessThanOrEqual(12);
+    // 11 maillages pour la ville, plus 2 par modèle de voiture (carrosserie, habillage).
+    expect(skyline.root.children.length).toBeLessThanOrEqual(11 + 2 * CAR_MIX.length);
     expect(skyline.root.getObjectByName('skyline-crowns')).toBeDefined();
     const facades = skyline.root.getObjectByName('skyline-facades') as THREE.Mesh;
     const material = facades.material as THREE.ShaderMaterial;
@@ -138,7 +140,7 @@ describe('vue sur New York', () => {
     expect(share()).toBeGreaterThan(noonShare);
 
     // Les voitures roulent, sauf si l'on réduit les animations.
-    const taxis = skyline.root.getObjectByName('skyline-cars') as THREE.InstancedMesh;
+    const taxis = skyline.root.getObjectByName('skyline-cars-taxi') as THREE.InstancedMesh;
     const before = new THREE.Matrix4();
     taxis.getMatrixAt(0, before);
     skyline.update(lightingAt(22 * 60), 22 * 60, 0.5, 40, false);
@@ -195,5 +197,32 @@ describe('fenêtres et lumière du jour', () => {
     lights.update(lightingAt(23 * 60), 40);
     expect(windowGlass.color.getHex()).not.toBe(noon);
     lights.dispose();
+  });
+});
+
+describe('voitures de la ville', () => {
+  it('sept modèles bien distincts, chacun en deux géométries', () => {
+    const models = buildCarModels();
+    expect(models.map((model) => model.id)).toEqual(CAR_MIX.map((entry) => entry.id));
+    expect(new Set(models.map((model) => model.id)).size).toBe(7);
+    for (const model of models) {
+      const box = new THREE.Box3().setFromBufferAttribute(
+        model.paint.getAttribute('position') as THREE.BufferAttribute,
+      );
+      // Posée sur la rue, avant vers +x, longueur annoncée.
+      expect(box.min.y, model.id).toBeGreaterThanOrEqual(-0.001);
+      expect(box.max.x - box.min.x, model.id).toBeLessThanOrEqual(model.length + 0.1);
+      expect(model.trim.getAttribute('color'), model.id).toBeDefined();
+    }
+  });
+
+  it('modèle et couleur de chaque voiture figés par son numéro, tous présents', () => {
+    expect(carLook(42)).toEqual(carLook(42));
+    const seen = new Set(Array.from({ length: 220 }, (_, index) => carLook(index).model));
+    expect(seen.size).toBe(CAR_MIX.length);
+    for (let index = 0; index < 220; index++) {
+      const look = carLook(index);
+      expect(CAR_MIX[look.model]?.colors).toContain(look.color);
+    }
   });
 });

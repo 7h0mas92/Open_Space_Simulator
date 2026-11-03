@@ -19,6 +19,13 @@ import {
   type TradeTaskTemplate,
   type TradeTitles,
 } from './data/tasks';
+import {
+  MORE_DESIGN_TITLES,
+  MORE_GROWTH_TITLES,
+  MORE_PRODUCT_TITLES,
+  MORE_QA_TITLES,
+  MORE_TASK_TITLES,
+} from './data/moreTasks';
 import { QA_TASKS } from './data/qaTasks';
 import { calendarDay } from './systems/calendar';
 import { getClock } from './time';
@@ -55,14 +62,22 @@ function tradeTitles(templates: readonly TradeTaskTemplate[], extra: TradeTitles
 
 /** Tous les titres possibles pour ce métier et ce type, compte tenu de la phase atteinte. */
 export function titlePool(state: GameState, trade: TaskTrade, type: TaskType): TitlePair[] {
-  if (trade === 'DESIGN') return tradeTitles(DESIGN_TASKS, DESIGN_EXTRA_TITLES, type);
-  if (trade === 'PRODUCT') return tradeTitles(PRODUCT_TASKS, PRODUCT_EXTRA_TITLES, type);
-  if (trade === 'QA') return tradeTitles(QA_TASKS, {}, type);
+  if (trade === 'DESIGN')
+    return [
+      ...tradeTitles(DESIGN_TASKS, DESIGN_EXTRA_TITLES, type),
+      ...(MORE_DESIGN_TITLES[type] ?? []),
+    ];
+  if (trade === 'PRODUCT')
+    return [
+      ...tradeTitles(PRODUCT_TASKS, PRODUCT_EXTRA_TITLES, type),
+      ...(MORE_PRODUCT_TITLES[type] ?? []),
+    ];
+  if (trade === 'QA') return tradeTitles(QA_TASKS, MORE_QA_TITLES, type);
   const reached = PHASES.indexOf(state.phase);
   const growth = GROWTH_PHASES.filter((phase) => PHASES.indexOf(phase) <= reached).flatMap(
-    (phase) => GROWTH_TASK_TITLES[phase][type],
+    (phase) => [...GROWTH_TASK_TITLES[phase][type], ...MORE_GROWTH_TITLES[phase][type]],
   );
-  return [...TASK_TITLES[type], ...growth];
+  return [...TASK_TITLES[type], ...MORE_TASK_TITLES[type], ...growth];
 }
 
 /** Titres (en français) des tâches encore sur le tableau, toutes colonnes confondues. */

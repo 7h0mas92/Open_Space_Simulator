@@ -166,6 +166,7 @@ export function createEmptyState(config: GameConfig): GameState {
       incidents: 0,
       specialDone: 0,
       specialMissed: 0,
+      workByTrade: {},
     },
     history: { daily: [], sprints: [] },
     stats: {

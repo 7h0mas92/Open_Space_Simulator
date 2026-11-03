@@ -30,18 +30,15 @@ export async function decorPreview(
   scene.add(floor, wall, desk);
 
   const models = THEME_MODELS[theme];
-  const decor = models.wall(WIDTH, 0.2);
-  // Seul le mur du fond est montré : on retire ce qui a été accroché au mur de gauche.
-  decor.traverse((child) => {
-    if (child.rotation.y !== 0 && child.parent !== decor) child.visible = child.position.x > -0.3;
-  });
+  // Seul le mur du fond est montré : une guirlande d'un bout à l'autre, deux ornements.
+  const decor = models.wall([{ side: 0, spans: [[-0.44, WIDTH - 0.56]], spots: [0.6, 3.4] }]);
   scene.add(decor);
   const small = models.desk();
   small.position.set(2.2, 0.745, 0.15);
   scene.add(small);
 
   const aspect = width / height;
-  const halfHeight = 1.08;
+  const halfHeight = 1.18;
   const camera = new THREE.OrthographicCamera(
     -halfHeight * aspect,
     halfHeight * aspect,
@@ -51,7 +48,7 @@ export async function decorPreview(
     50,
   );
   camera.position.set((WIDTH - 1) / 2 + 2, 3, 8);
-  camera.lookAt((WIDTH - 1) / 2, 0.92, 0);
+  camera.lookAt((WIDTH - 1) / 2, 1.1, 0);
 
   let renderer: THREE.WebGLRenderer | null = null;
   try {

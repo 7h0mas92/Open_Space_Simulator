@@ -188,6 +188,8 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   URGENT_MISSED: 'error',
   WEEKLY_TASKS: 'info',
   WEEKLY_MISSED: 'info',
+  TODO_TOPPED_UP: 'info',
+  SPRINT_BEHIND: 'info',
   OBJECTIVE_SET: 'info',
   OBJECTIVE_DONE: 'success',
   OBJECTIVE_FAILED: 'info',

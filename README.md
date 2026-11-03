@@ -267,8 +267,11 @@ flowchart LR
   objets masqués quand on dézoome (LOD).
 - **Vue sur New York** : on la voit par les fenêtres achetées. Le bureau est au
   dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
-  gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
-  Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
+  gradins, réservoirs d'eau sur les toits, parc, fleuve, circulation), faite de formes
+  Three.js sans aucun bâtiment réel. Sept modèles de véhicules roulent dans les rues
+  (`render/cars.ts`) : taxi à enseigne et damier, berline, citadine, SUV, camionnette, pick-up et
+  bus, avec vitres, roues, phares et pare-chocs ; modèle et couleur figés par le numéro de la
+  voiture, deux InstancedMesh par modèle. La ville est la même à chaque partie (graine fixe, sans le
   hasard du jeu) et tient en une quinzaine d'appels de dessin. Aucun toit proche ne dépasse le
   plancher, donc rien ne cache la salle. Les façades sont dessinées par shader en 5 styles
   (verre qui reflète le ciel, brique, pierre, bandeaux, brownstone), les toits ont muret,
@@ -373,6 +376,20 @@ flowchart LR
   N features, finir N tâches, zéro panne, baisser la dette, gagner N utilisateurs), facile,
   moyen ou difficile, récompensé à la démo selon sa difficulté. Le hasard est tiré sur une
   graine à part (`shared/sim/taskFlow.ts`, `client/src/simulation/taskFlow.ts`).
+- **Charge du sprint selon l'équipe** (`client/src/simulation/sprintLoad.ts`) : 3 idées par
+  personne qui prend des tâches et par sprint (`TASK_FLOW.ideasPerDev`, l'encadrement ne compte
+  pas), backlog jusqu'à 4 par dev. Chaque matin de semaine à 9h, le rythme de chaque métier depuis
+  le début du sprint (`tracker.workByTrade`) est comparé au travail restant : s'il manque de quoi
+  tenir jusqu'à la démo, des tâches passent du backlog au « À faire », sinon de nouvelles idées
+  sont créées (`TODO_TOPPED_UP`) ; à 14h, un dev qui attend sans tâche en reçoit une. Au 6e jour
+  ouvré, une équipe nettement en retard est prévenue (`SPRINT_BEHIND`), rien n'est retiré. Ligne
+  au-dessus du Kanban : équipe, tâches finissables d'ici la démo, tâches prévues. Les devs ne
+  chôment plus (avant : environ 60 % du temps sans tâche), donc tâches du backlog plus longues
+  (`BALANCE.work.unitsPerPoint` 5 → 14, urgences et hebdo à 5) et chaque point livré pèse moins
+  (`BALANCE.work.pointEffect` 0,13). Nouvelles idées sur `seed#tasks#topup#…` ; règle qui change
+  toutes les parties (anciens replays de scores divergent). 192 titres de plus
+  (`data/moreTasks.ts`, 439 au total), 5 urgences et 5 tâches de la semaine de plus, 150 titres
+  récents gardés.
 - **Tâches par métier** : chaque carte du Kanban affiche son métier, 💻 Code, 🎨 Design (la
   designeuse) ou 📋 Produit (le Product Owner). Les nouvelles idées suivent les métiers présents
   dans l'équipe, et une tâche que le joueur n'assigne pas lui-même ne part qu'à quelqu'un du bon
@@ -558,7 +575,8 @@ flowchart LR
   « tycoon 1 » en planification et à la démo, les quatre « Détente » enchaînés pendant le sprint,
   « aria math » en levée de fonds et à l'écran de fin. Fondu enchaîné entre deux moments, reprise
   du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
-  lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
+  lecture en flux par une balise audio dont le volume passe par Web Audio, `audio/musicTrack.ts` :
+  Safari sur iPhone et iPad ignore le volume d'une balise audio). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
   le jeu reste jouable sans musique.
 - **Bruits de bureau** : en zoomant sur une zone, on entend le clavier et la souris des devs qui
   travaillent près du centre de l'écran, à la même distance, placés à gauche ou à droite selon
@@ -740,7 +758,12 @@ bouton 🛠 du menu principal.
   Costumes dans `render/characterPacks.ts`.
 - **Décorations** : un thème par période de l'année (Nouvel An, Saint-Valentin, Pâques, espace,
   Moyen Âge, super-héros, années 80, été, pirates, Halloween, cyberpunk, Noël). Chacun a une
-  guirlande murale et un petit objet par bureau, construits en Three.js, avec un aperçu 3D. Rien
+  guirlande murale (fil et ampoules qui scintillent, ou cordelette et fanions, tendus en festons
+  entre des clous), un ornement accroché entre deux appliques (jamais devant une fenêtre, une
+  cloison ou un grand meuble : `decorWalls` dans `render/decorations.ts`) et un petit objet par
+  bureau, à l'écart de l'écran et des accessoires, construits en Three.js et fusionnés par
+  matériau (4 appels de dessin au plus par mur), avec un aperçu 3D. Deux thèmes actifs se
+  partagent les murs au lieu de s'empiler. Rien
   n'est posé au sol : le joueur ne pourrait ni déplacer ni ranger un objet qu'il n'a pas acheté. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
   période) ou toujours. `GET /api/decor-themes` (public, en cache hors ligne) et
   `PUT /api/admin/decor-themes/:id`.
