@@ -172,6 +172,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   /** Annule la sortie réservée (remboursée à moitié). */
   z.object({ type: z.literal('CANCEL_TEAM_BUILDING') }),
   z.object({ type: z.literal('LAUNCH_IPO') }),
+  /** Histoire en actes, Saison libre : terminer la partie sur la fin « entrée en Bourse ». */
+  z.object({ type: z.literal('END_STORY') }),
   /** Crée une filiale à partir d'un des projets proposés pendant la planification. */
   z.object({ type: z.literal('FOUND_VENTURE'), ideaId: z.string() }),
   /** Revend les parts détenues dans une filiale. */

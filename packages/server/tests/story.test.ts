@@ -1,7 +1,7 @@
 import { BUILTIN_CARDS_VERSION } from '@oss/shared';
 import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { playMission, playWithUnlocks } from './game-fixtures.js';
+import { playCampaign, playMission, playWithUnlocks } from './game-fixtures.js';
 import { createTestApp, registerUser } from './helpers.js';
 
 let app: FastifyInstance;
@@ -62,6 +62,38 @@ describe('/api/story', () => {
     expect(response.statusCode).toBeGreaterThanOrEqual(400);
     expect(response.statusCode).toBeLessThan(500);
     expect((await app.inject({ url: '/api/story', cookies })).json().completed).toEqual([]);
+  });
+});
+
+describe('/api/story/complete et longue partie en actes', () => {
+  it('rejoue l’histoire jusqu’à la dernière commande et garde l’objectif rempli', async () => {
+    const cookies = await player('conteur');
+    const game = playCampaign('histoire-seed');
+    expect(game.state.story?.campaign?.done).toContain('leave-garage');
+    expect(game.state.result).toBeNull();
+    const response = await complete(cookies, {
+      missionId: 'leave-garage',
+      seed: 'histoire-seed',
+      commands: game.commands,
+      cardsVersion: BUILTIN_CARDS_VERSION,
+      campaign: true,
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ completed: ['leave-garage'], unlocks: ['color-gold'] });
+  });
+
+  it('refuse un objectif que l’histoire n’a pas rempli', async () => {
+    const cookies = await player('tricheur');
+    const game = playCampaign('histoire-seed');
+    const response = await complete(cookies, {
+      missionId: 'opening-bell',
+      seed: 'histoire-seed',
+      commands: game.commands,
+      cardsVersion: BUILTIN_CARDS_VERSION,
+      campaign: true,
+    });
+    expect(response.statusCode).toBe(422);
+    expect(response.json().error.code).toBe('MISSION_NOT_COMPLETED');
   });
 });
 

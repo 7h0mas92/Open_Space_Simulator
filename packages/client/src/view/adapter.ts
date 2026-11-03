@@ -95,10 +95,13 @@ import {
   branchNodes,
   isRoleSkill,
   skillsEnabled,
+  getRival,
+  type CampaignState,
 } from '@oss/shared';
 import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
-import { completedSprints, missionProgress } from '../simulation/story';
+import { marketShare } from '../simulation/rivals';
+import { actProgress, completedSprints, missionProgress } from '../simulation/story';
 import { hasUnlock } from '../simulation/unlocks';
 import {
   hasSkill,
@@ -171,6 +174,8 @@ import type {
   TeamBuildingView,
   RetroView,
   StoryView,
+  CampaignView,
+  MarketView,
   ClientDealView,
   ClientsView,
   SupportView,
@@ -1278,6 +1283,58 @@ function storyView(state: GameState): StoryView | null {
   };
 }
 
+function marketView(state: GameState, campaign: CampaignState): MarketView {
+  const total =
+    state.gauges.users +
+    campaign.rivals.reduce((sum, rival) => sum + (rival.alive ? rival.users : 0), 0);
+  return {
+    share: marketShare(state),
+    usersHistory: [...campaign.usersHistory],
+    rivals: campaign.rivals.map((rival) => {
+      const profile = getRival(rival.id);
+      return {
+        id: rival.id,
+        name: profile.name,
+        icon: profile.icon,
+        color: profile.color,
+        tagline: profile.tagline,
+        users: Math.round(rival.users),
+        valuation: Math.round(rival.valuation),
+        share: rival.alive && total > 0 ? rival.users / total : 0,
+        alive: rival.alive,
+        boughtBy: rival.boughtBy,
+        lastAction: rival.lastAction,
+        lastActionSprint: rival.lastActionSprint,
+        history: [...rival.history],
+      };
+    }),
+  };
+}
+
+function campaignView(state: GameState): CampaignView | null {
+  const progress = actProgress(state);
+  if (!progress) return null;
+  return {
+    act: progress.act.id,
+    actIndex: progress.campaign.act,
+    deadline: progress.act.deadline,
+    goals: progress.goals,
+    side: progress.side.map((side) => ({
+      id: side.mission.id,
+      status: side.status,
+      goals: side.goals,
+      constraints: side.constraints,
+    })),
+    done: [...progress.campaign.done],
+    sprintsDone: completedSprints(state),
+    market: marketView(state, progress.campaign),
+    freeSeason: progress.campaign.freeSeason !== undefined,
+    freeSeasonSprints: progress.campaign.freeSeason
+      ? Math.max(0, state.sprint - progress.campaign.freeSeason.fromSprint)
+      : 0,
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -1373,6 +1430,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       state.gauges.stability >= BALANCE.phases.ipoMinStability,
     result: state.result,
     story: storyView(state),
+    campaign: campaignView(state),
     unlocks: [...state.unlocks],
     achievements: [...state.achievements],
     replay: context.replay ?? null,
@@ -1547,6 +1605,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'CANCEL_TEAM_BUILDING' };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
+    case 'endStory':
+      return { type: 'END_STORY' };
     case 'foundVenture':
       return { type: 'FOUND_VENTURE', ideaId: command.ideaId };
     case 'sellVenture':

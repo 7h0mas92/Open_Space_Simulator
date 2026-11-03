@@ -39,7 +39,10 @@ export type SlackTrigger = NotificationKind | AmbientTrigger;
 /** Qui écrit le message : un dev de l'équipe (éventuellement d'un profil donné) ou un bot. */
 export type SlackAuthor =
   | { readonly kind: 'dev'; readonly role?: DevRole }
-  | { readonly kind: 'bot'; readonly bot: 'oncall' | 'github' | 'hr' | 'investors' | 'coffee' };
+  | {
+      readonly kind: 'bot';
+      readonly bot: 'oncall' | 'github' | 'hr' | 'investors' | 'coffee' | 'josette' | 'ines';
+    };
 
 export interface SlackTemplate {
   readonly trigger: SlackTrigger;
@@ -3348,6 +3351,79 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     text: t(
       '🗑️ {event} Les sacs-poubelle sont dans le placard. Bon courage à tous.',
       '🗑️ {event} Trash bags are in the cupboard. Good luck, everyone.',
+    ),
+  },
+  // ─── Histoire en actes : SMS de Mamie Josette, articles d'Inès Kader ──────
+  {
+    trigger: 'STORY_ACT',
+    channel: 'general',
+    author: bot('josette'),
+    text: t(
+      '📱 SMS de Mamie Josette : « {event} ! J’ai tout raconté au club de bridge. Mange un peu. »',
+      '📱 Text from Granny Josette: “{event}! I told the whole bridge club. Eat something.”',
+    ),
+  },
+  {
+    trigger: 'STORY_ACT',
+    channel: 'general',
+    author: bot('ines'),
+    text: t(
+      '📰 TechMatin, par Inès Kader : « {event}. Le garage d’en face ne fait plus rire personne. »',
+      '📰 TechMorning, by Inès Kader: “{event}. The garage across the street isn’t a joke anymore.”',
+    ),
+  },
+  {
+    trigger: 'STORY_GOAL',
+    channel: 'random',
+    author: bot('josette'),
+    text: t(
+      '📱 SMS de Mamie Josette : « {event} Je ne comprends pas tout mais je suis fière. 😘 »',
+      '📱 Text from Granny Josette: “{event} I don’t understand all of it but I’m proud. 😘”',
+    ),
+  },
+  {
+    trigger: 'STORY_END',
+    channel: 'general',
+    author: bot('ines'),
+    text: t(
+      '📰 Une de TechMatin : « Du garage à la Bourse : l’idée volée qui valait des milliards. »',
+      '📰 TechMorning front page: “From garage to stock exchange: the stolen idea worth billions.”',
+    ),
+  },
+  {
+    trigger: 'STORY_END',
+    channel: 'random',
+    author: bot('josette'),
+    text: t(
+      '📱 SMS de Mamie Josette : « J’ai acheté UNE action. Elle est sur le frigo. »',
+      '📱 Text from Granny Josette: “I bought ONE share. It’s on the fridge.”',
+    ),
+  },
+  {
+    trigger: 'RIVAL_ACTION',
+    channel: 'general',
+    author: bot('ines'),
+    text: t(
+      '📰 TechMatin, par Inès Kader : « {event} » Commentaire : la guerre est déclarée.',
+      '📰 TechMorning, by Inès Kader: “{event}” Comment: it’s war.',
+    ),
+  },
+  {
+    trigger: 'RIVAL_ACTION',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Vous avez vu ? {event} On répond quand ?',
+      'Did you see? {event} When do we hit back?',
+    ),
+  },
+  {
+    trigger: 'RIVAL_ACTION',
+    channel: 'random',
+    author: bot('josette'),
+    text: t(
+      '📱 SMS de Mamie Josette : « J’ai lu ça dans le journal. Tu veux que j’appelle sa mère ? »',
+      '📱 Text from Granny Josette: “I read that in the paper. Want me to call his mother?”',
     ),
   },
 ];

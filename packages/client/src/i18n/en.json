@@ -330,6 +330,7 @@
     "cleaning": "Cleaning",
     "tickets": "Kanbanana, the ticket app",
     "leaderboard": "Leaderboard",
+    "market": "Market",
     "business": "Business"
   },
   "kanban": {
@@ -1436,7 +1437,7 @@
           },
           "story": {
             "title": "The mission",
-            "body": "Read the briefing carefully: it gives the starting point (stage, team, cash), the length in sprints and the goals.\n\n• ✓: goal met;\n• ○: goal still to meet;\n• 🛡️: constraint to respect until the end.\n\nWinning a mission unlocks the next one and a reward."
+            "body": "Read the briefing carefully: it gives the starting point, the length and the goals. In the 5-act story, each act has a main goal to complete before its deadline, and side goals that earn rewards.\n\n• ✓: goal met;\n• ○: goal still to meet;\n• 🛡️: constraint to respect until the end.\n\nWinning a mission unlocks the next one and a reward; finishing an act opens the next one."
           },
           "storyTips": {
             "title": "Rewards",
@@ -2192,7 +2193,9 @@
           "max_other": "Hire {{count}} people at most",
           "none": "Hire nobody"
         }
-      }
+      },
+      "rivalUsers": "More users than {{name}}",
+      "marketShare": "At least {{value}}% of the market"
     },
     "end": {
       "success": "Mission complete!",
@@ -2206,6 +2209,101 @@
         "BANKRUPTCY": "Cash hit zero: bankruptcy.",
         "TIME": "Time ran out before every goal was met.",
         "SOLD": "The startup was sold before the end of the mission."
+      }
+    },
+    "tabs": {
+      "label": "Story mode",
+      "campaign": "📖 Story",
+      "missions": "🎯 Missions"
+    },
+    "campaign": {
+      "eyebrow": "One long game, in 5 acts",
+      "meta": "About {{sprints}} sprints · {{done}} of {{total}} goals already completed (story and missions) · a save point at the start of each act",
+      "prologue": "Prologue",
+      "actNumber": "Act {{number}}",
+      "deadline_one": "Main goal before the end of sprint {{sprint}} ({{count}} sprint left)",
+      "deadline_other": "Main goal before the end of sprint {{sprint}} ({{count}} sprints left)",
+      "exitGoal": "Last act: go public or accept a buyout before the end of sprint {{sprint}}.",
+      "deadlineShort": "Before sprint {{sprint}}",
+      "exitShort": "IPO or buyout",
+      "sideTitle": "Side goals",
+      "sideCount_one": "{{count}} side goal",
+      "sideCount_other": "{{count}} side goals",
+      "side": {
+        "done": "✓ Completed",
+        "missed": "✕ Missed",
+        "active": "In progress"
+      },
+      "start": "Start the story",
+      "restart": "Start the story over",
+      "continueHint": "To continue your story, use “Continue” in the main menu.",
+      "resume": "Replay “{{act}}”",
+      "noCheckpoint": "No save point for this act on this device.",
+      "endings": {
+        "IPO": {
+          "title": "Ending: the opening bell",
+          "text": "You ring the bell. Bastien Lemaître watches the live feed from the tower across the street, and Grandma Josette texts you in all caps."
+        },
+        "ACQUISITION": {
+          "title": "Ending: Gigacorp’s check",
+          "text": "You sign. Gigacorp buys your startup, and Bastien Lemaître learns the news from an article by Inès Kader. Your idea won, even under another logo."
+        }
+      },
+      "end": {
+        "failure": "Story stopped",
+        "failures": {
+          "TIME": "The act’s main goal was not completed in time.",
+          "BANKRUPTCY": "Bankruptcy: there is no money left to pay the team.",
+          "SOLD": "Startup sold too early: that is not how the story ends."
+        },
+        "goals": "Goals completed overall: {{count}} of {{total}}",
+        "retry": "Replay “{{act}}”",
+        "restart": "Start the story over",
+        "freeSeason_one": "Free season: {{count}} sprint survived after the IPO.",
+        "freeSeason_other": "Free season: {{count}} sprints survived after the IPO.",
+        "rivals": "How you finished against your rivals",
+        "replayScene": "Watch the ending scene again"
+      },
+      "freeSeason": {
+        "title": "Free season",
+        "text_one": "Story complete: {{count}} sprint survived since the IPO. Every 10 sprints, a new startup goes after your market.",
+        "text_other": "Story complete: {{count}} sprints survived since the IPO. Every 10 sprints, a new startup goes after your market.",
+        "end": "End the game"
+      }
+    },
+    "market": {
+      "yourShare": "Your market share: {{share}}",
+      "chart": "Users compared, sprint after sprint",
+      "you": "Your startup",
+      "boughtBy": "Bought by {{name}}",
+      "bankrupt": "Bankrupt",
+      "rivalLine": "{{share}} of the market · valued at {{valuation}}",
+      "lastAction": "Sprint {{sprint}}: {{action}}",
+      "actions": {
+        "copy": "copied your latest feature",
+        "poach": "tried to poach your best dev",
+        "lawsuit": "sued you",
+        "priceCut": "slashed its prices",
+        "pivot": "pivoted again",
+        "clone": "released a free clone of your product",
+        "adBlitz": "bought every ad in the subway"
+      }
+    },
+    "scene": {
+      "next": "Next",
+      "skip": "Skip",
+      "close": "Your move",
+      "freeSeason": "Keep playing in the Free season",
+      "endHere": "End the game here",
+      "titles": {
+        "prologue": "Prologue · The garage",
+        "race": "Act I · The race",
+        "price-war": "Act II · The price war",
+        "giant": "Act III · The giant",
+        "bell": "Act IV · The bell",
+        "ending-ipo": "Ending · The opening bell",
+        "ending-acquisition": "Ending · Gigacorp's check",
+        "free-season": "Epilogue · Free season"
       }
     }
   },

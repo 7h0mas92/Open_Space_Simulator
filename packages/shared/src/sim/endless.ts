@@ -42,13 +42,23 @@ export function isEndless(mode: GameMode): boolean {
  * Sprints joués au-delà des 18 mois (0 avant, et toujours 0 hors mode illimité). Plus il est
  * grand, plus la concurrence pèse.
  */
-export function endlessPressure(mode: GameMode, sprint: number): number {
+export function endlessPressure(
+  mode: GameMode,
+  sprint: number,
+  /** Saison libre de l'histoire en actes : la pression part de ce sprint (`freeSeasonStart`). */
+  since: number | null = null,
+): number {
+  if (since !== null) return Math.max(0, sprint - since);
   return isEndless(mode) ? Math.max(0, sprint - ENDLESS.pressureAfterSprint) : 0;
 }
 
 /** Multiplicateur des frais fixes de la phase en mode illimité (1 sans pression). */
-export function endlessCostMultiplier(mode: GameMode, sprint: number): number {
-  const pressure = endlessPressure(mode, sprint);
+export function endlessCostMultiplier(
+  mode: GameMode,
+  sprint: number,
+  since: number | null = null,
+): number {
+  const pressure = endlessPressure(mode, sprint, since);
   return (
     1 +
     pressure * ENDLESS.fixedCostGrowthPerSprint +
@@ -57,11 +67,19 @@ export function endlessCostMultiplier(mode: GameMode, sprint: number): number {
 }
 
 /** Part du montant habituel d'une levée encore accordée par les investisseurs (1 sans pression). */
-export function endlessRaiseShare(mode: GameMode, sprint: number): number {
-  return 1 / (1 + endlessPressure(mode, sprint) * ENDLESS.raiseFatiguePerSprint);
+export function endlessRaiseShare(
+  mode: GameMode,
+  sprint: number,
+  since: number | null = null,
+): number {
+  return 1 / (1 + endlessPressure(mode, sprint, since) * ENDLESS.raiseFatiguePerSprint);
 }
 
 /** Départs quotidiens d'utilisateurs ajoutés par la concurrence (0 sans pression). */
-export function endlessExtraChurn(mode: GameMode, sprint: number): number {
-  return endlessPressure(mode, sprint) * ENDLESS.churnPerSprint;
+export function endlessExtraChurn(
+  mode: GameMode,
+  sprint: number,
+  since: number | null = null,
+): number {
+  return endlessPressure(mode, sprint, since) * ENDLESS.churnPerSprint;
 }

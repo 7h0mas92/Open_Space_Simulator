@@ -6,10 +6,15 @@ import {
   getStoryReward,
   isEndless,
   type SprintObjective,
+  STORY_ACT_IDS,
+  getStoryAct,
+  type CampaignResult,
   RETRO,
   type RetroAction,
 } from '@oss/shared';
 import { MissionGoals } from '../story/MissionGoals';
+import { useActLabel } from '../story/CampaignPanel';
+import { resumeAct } from '../store/lifecycle';
 import { useTranslation } from 'react-i18next';
 import type {
   RetroView,
@@ -27,6 +32,8 @@ import { GAUGE_ICONS } from './Hud';
 import { moodEmoji, StatBars } from '../team/StatBars';
 import { CareerMilestones } from '../career/CareerPanel';
 import { starsText } from '../career/records';
+import { MarketShares } from '../story/MarketPanel';
+import { SceneTranscript } from '../story/StoryScene';
 
 /**
  * Écrans qui interrompent la partie : carte d'événement, levée de fonds, démo de fin de
@@ -670,7 +677,13 @@ function EndScreen({ view }: { view: GameView }) {
         lines: [
           result.mission
             ? t(result.mission.success ? 'story.end.success' : 'story.end.failure')
-            : `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
+            : result.campaign
+              ? t(
+                  result.campaign.success
+                    ? `story.campaign.endings.${result.campaign.ending ?? 'IPO'}.title`
+                    : 'story.campaign.end.failure',
+                )
+              : `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
           ...(view.career && result.career
             ? [`${localized(view.career.name, i18n.language)} · ${starsText(result.career.stars)}`]
             : []),
@@ -687,6 +700,8 @@ function EndScreen({ view }: { view: GameView }) {
   }
 
   if (result.mission) return <MissionEnd view={view} onShare={() => void share()} />;
+  if (result.campaign)
+    return <CampaignEnd view={view} result={result.campaign} onShare={() => void share()} />;
 
   return (
     <Dialog title={t(`end.outcomes.${result.outcome}`)} className="end-screen">
@@ -733,6 +748,96 @@ function EndScreen({ view }: { view: GameView }) {
             onClick={() => void start({ mode: view.mode, legend: view.career?.legend })}
           >
             {t('end.again')}
+          </button>
+        )}
+        <button type="button" onClick={quit}>
+          {t('end.menu')}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
+/**
+ * Fin de la longue partie du mode Histoire : une des deux fins écrites, ou l'histoire arrêtée
+ * (date limite dépassée, faillite, startup vendue trop tôt), avec la reprise de l'acte.
+ */
+function CampaignEnd({
+  view,
+  result,
+  onShare,
+}: {
+  view: GameView;
+  result: CampaignResult;
+  onShare: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const start = useGame((s) => s.start);
+  const quit = useGame((s) => s.quit);
+  const notify = useGame((s) => s.notify);
+  const replayOf = useGame((s) => s.replayOf);
+  const label = useActLabel();
+  const actIndex = STORY_ACT_IDS.indexOf(result.act);
+  const act = getStoryAct(actIndex);
+  const done = view.campaign?.done ?? [];
+  const title = result.success
+    ? t(`story.campaign.endings.${result.ending ?? 'IPO'}.title`)
+    : t('story.campaign.end.failure');
+  async function retry() {
+    if (!(await resumeAct(actIndex))) notify('story.campaign.noCheckpoint', 'error');
+  }
+  return (
+    <Dialog title={title} className="end-screen mission-end campaign-end">
+      <p className="eyebrow">
+        {act.icon} {label(actIndex)} · {localized(act.title, i18n.language)}
+      </p>
+      <h2 data-testid="campaign-outcome">{title}</h2>
+      <p className="headline">{localized(view.result?.headline ?? act.title, i18n.language)}</p>
+      {result.success && result.ending && (
+        <p>{t(`story.campaign.endings.${result.ending}.text`)}</p>
+      )}
+      {result.freeSeasonSprints !== undefined && (
+        <p className="mission-reward" data-testid="campaign-free-season-end">
+          {t('story.campaign.end.freeSeason', { count: result.freeSeasonSprints })}
+        </p>
+      )}
+      {result.success && result.ending && (
+        <details className="campaign-end-scene">
+          <summary>{t('story.campaign.end.replayScene')}</summary>
+          <SceneTranscript scene={result.ending === 'IPO' ? 'ending-ipo' : 'ending-acquisition'} />
+        </details>
+      )}
+      {view.campaign && view.campaign.market.rivals.length > 0 && (
+        <section className="campaign-end-market" aria-label={t('story.campaign.end.rivals')}>
+          <h3>{t('story.campaign.end.rivals')}</h3>
+          <MarketShares market={view.campaign.market} />
+        </section>
+      )}
+      {result.failure && (
+        <p className="down">{t(`story.campaign.end.failures.${result.failure}`)}</p>
+      )}
+      <p className="mission-reward" data-testid="campaign-goals-done">
+        {t('story.campaign.end.goals', { count: done.length, total: STORY_MISSION_IDS.length })}
+      </p>
+      <div className="stage-actions">
+        {!replayOf && !result.success && (
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void retry()}
+            data-testid="campaign-retry"
+          >
+            ↻ {t('story.campaign.end.retry', { act: label(actIndex) })}
+          </button>
+        )}
+        {!replayOf && (
+          <button type="button" onClick={() => void start({ mode: 'STORY', mission: 'campaign' })}>
+            ▶ {t('story.campaign.end.restart')}
+          </button>
+        )}
+        {!replayOf && (
+          <button type="button" onClick={onShare}>
+            📤 {t('end.share')}
           </button>
         )}
         <button type="button" onClick={quit}>

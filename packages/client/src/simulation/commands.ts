@@ -39,6 +39,7 @@ import { foundVenture, sellVenture } from './ventures';
 import { coverFloor } from './floors';
 import { coverWall } from './walls';
 import { learnSkill, resetSkills, trainDev, startCrunch } from './skills';
+import { endStory, startFreeSeason } from './story';
 
 const fail = (error: Extract<CommandResult, { ok: false }>['error']): CommandResult => ({
   ok: false,
@@ -195,8 +196,12 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       if (state.phase !== 'UNICORN' || state.gauges.stability < BALANCE.phases.ipoMinStability) {
         return fail('NOT_ELIGIBLE');
       }
+      // Histoire en actes : l'entrée en Bourse écrit la fin, et la partie continue en Saison libre.
+      if (startFreeSeason(state, ctx, state.valuation * 1.2)) return { ok: true };
       endGame(state, ctx, 'IPO', state.valuation * 1.2);
       return { ok: true };
+    case 'END_STORY':
+      return endStory(state, ctx);
     case 'FOUND_VENTURE':
       return foundVenture(state, ctx, command.ideaId);
     case 'SELL_VENTURE':

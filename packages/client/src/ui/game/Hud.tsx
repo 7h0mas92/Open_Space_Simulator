@@ -58,6 +58,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   funding: '💼',
   career: '🧭',
   mission: '🎯',
+  market: '📈',
   build: '🛠️',
   dashboard: '📈',
   slack: '💬',
@@ -255,7 +256,7 @@ export function Clock({ view }: { view: GameView }) {
     <div className="clock" data-tutorial="clock" aria-live="off">
       <p className="clock-line">
         <strong>
-          {isEndless(view.mode)
+          {isEndless(view.mode) || view.campaign?.freeSeason
             ? t('time.sprintEndless', { sprint: time.sprint })
             : t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}
         </strong>
@@ -289,8 +290,14 @@ export function SystemButtons({ view }: { view: GameView }) {
   const replay = useGame((s) => s.replayOf !== null);
   // Mode Histoire : la mission (objectifs en direct) est à un clic, avant les sauvegardes.
   const story = useGame((s) => s.view?.mode === 'STORY');
+  // Histoire en actes : le marché (rivaux) à côté de la mission.
+  const campaign = useGame((s) => s.view?.campaign !== null && s.view?.campaign !== undefined);
   const system = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
-  const panels: readonly PanelId[] = story ? ['mission', ...system] : system;
+  const panels: readonly PanelId[] = campaign
+    ? ['mission', 'market', ...system]
+    : story
+      ? ['mission', ...system]
+      : system;
   const career = view.career;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>

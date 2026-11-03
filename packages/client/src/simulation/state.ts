@@ -5,11 +5,13 @@ import {
   STATE_VERSION,
   difficultyOf,
   emptyCleaningState,
+  STORY_CAMPAIGN,
   defaultPricing,
   emptyClientsState,
   emptySupportState,
   STORY_MISSION_IDS,
   STORY_REWARD_IDS,
+  STORY_TOTAL_SPRINTS,
   UNLOCK_MODES,
   emptyRaisesState,
   emptyTeamLifeState,
@@ -20,8 +22,8 @@ import {
   type DevRole,
   type GameMode,
   type GameState,
-  type StoryMissionId,
   type StoryRewardId,
+  type StoryStart,
 } from '@oss/shared';
 import { generateDev, hireDev } from './devs';
 import { createCareerState, legendOfSeed } from './career';
@@ -32,13 +34,16 @@ import { beginPlanning } from './sprint';
 import { computeValuation } from './economy';
 import { announceSeasons, calendarDay } from './systems/calendar';
 import { recordHistory } from './systems/daily';
-import { applyStartPerks, setupMission, startingCoffeeMaker } from './story';
+import { applyStartPerks, emptyCampaign, setupMission, startingCoffeeMaker } from './story';
 
 export interface GameConfig {
   seed: string;
   mode: GameMode;
-  /** Mode Histoire : la mission jouée (la première de la campagne par défaut). */
-  mission?: StoryMissionId;
+  /**
+   * Mode Histoire : la longue partie en actes (`'campaign'`) ou une mission courte (la première
+   * de la campagne par défaut, pour les vieux replays).
+   */
+  mission?: StoryStart;
   /** Récompenses du mode Histoire débloquées par le joueur (ignorées en Daily et en mission). */
   unlocks?: readonly StoryRewardId[];
 }
@@ -58,8 +63,11 @@ export function createEmptyState(config: GameConfig): GameState {
   const treasury =
     start.treasury * difficultyOf(config.mode).treasury * (legend?.start.treasuryFactor ?? 1);
   const hype = legend?.start.hype ?? start.hype;
+  const campaign = config.mode === 'STORY' && config.mission === STORY_CAMPAIGN;
   const mission =
-    config.mode === 'STORY' ? getStoryMission(config.mission ?? STORY_MISSION_IDS[0]) : undefined;
+    config.mode === 'STORY' && !campaign
+      ? getStoryMission(config.mission ?? STORY_MISSION_IDS[0])
+      : undefined;
   return {
     version: STATE_VERSION,
     seed: config.seed,
@@ -69,11 +77,13 @@ export function createEmptyState(config: GameConfig): GameState {
     sprint: 1,
     totalSprints:
       mission?.sprints ??
-      (config.mode === 'SHIP_IN_3'
-        ? 3
-        : config.mode === 'ENDLESS'
-          ? ENDLESS.sprintCap
-          : GAME.totalSprints),
+      (campaign
+        ? STORY_TOTAL_SPRINTS
+        : config.mode === 'SHIP_IN_3'
+          ? 3
+          : config.mode === 'ENDLESS'
+            ? ENDLESS.sprintCap
+            : GAME.totalSprints),
     sprintTick: 0,
     stage: 'PLANNING',
     phase: 'GARAGE',
@@ -137,7 +147,11 @@ export function createEmptyState(config: GameConfig): GameState {
     career: legend ? createCareerState(config.seed) : null,
     serverHeat: {},
     recentTaskTitles: [],
-    story: mission ? { missionId: mission.id, startSprint: 1 } : null,
+    story: mission
+      ? { missionId: mission.id, startSprint: 1 }
+      : campaign
+        ? { startSprint: 1, campaign: emptyCampaign() }
+        : null,
     unlocks: gameUnlocks(config),
     lostSprintsPending: 0,
     tracker: {

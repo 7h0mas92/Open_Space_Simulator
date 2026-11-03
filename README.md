@@ -672,6 +672,20 @@ sequenceDiagram
   Facile, Normal et dans les défis, jamais en Daily. Les récompenses d'une partie sont fixées au
   départ, envoyées avec le score et rejouées par le serveur, qui refuse celles qui ne sont pas
   gagnées sur le compte (`UNLOCK_NOT_EARNED`). Les missions n'ont pas de classement.
+- **Histoire en 5 actes** (« Ctrl+Alt+Fonder », `packages/shared/src/story/acts.ts`) : une seule
+  longue partie de 60 sprints, du garage à la Bourse. Chaque acte a un objectif principal avec
+  une date limite et des objectifs secondaires, qui sont les 10 missions courtes (mêmes
+  récompenses, même vérification par rejeu côté serveur, avec `campaign: true`). Un point de
+  sauvegarde est pris au début de chaque acte sur l'appareil, pour reprendre un acte raté. Les
+  missions courtes restent jouables dans l'onglet « Missions ». Calibrage : `pnpm balance:campaign`.
+  Trois rivaux inventés (Synergix, Pivotly, Gigacorp, `packages/shared/src/sim/rivals.ts`) se
+  partagent le marché avec le joueur, agissent contre lui (copie, débauche, procès, prix cassés,
+  clone) et ont leur enseigne sur un toit de la ville ; panneau « 📈 Marché ». Leur hasard vient
+  d'une graine à part (`seed#rival#sprint`).
+  Scènes dialoguées à chaque acte, 10 cartes écrites pour l'histoire (`shared/story/cards.ts`,
+  imposées à un sprint fixé, sans tirage), SMS de Mamie Josette et articles d'Inès Kader dans le
+  Slack, deux fins écrites (rachat par Gigacorp, ou entrée en Bourse puis Saison libre sans limite,
+  avec une nouvelle startup rivale tous les 10 sprints).
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le

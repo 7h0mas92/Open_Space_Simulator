@@ -67,6 +67,7 @@ import { pixelRatioFor, QUALITY_PRESETS, type QualityLevel } from './quality';
 import { LobbyRenderer } from './lobby';
 import { ProjectionView, unrolledPreview } from './projection';
 import { ScreenGlow, screenMountOf } from './screens';
+import { RivalTowers } from './rivalTowers';
 import { SkylineView } from './skyline';
 
 export type PickTarget =
@@ -158,6 +159,8 @@ export class GameRenderer {
   private readonly lobby = new LobbyRenderer();
   /** La ville de New York autour de la tour, vue par les baies vitrées. */
   private readonly skyline = new SkylineView();
+  /** Mode Histoire : enseignes des startups rivales sur les toits de la ville. */
+  private readonly rivalTowers = new RivalTowers();
   /** Rôle de chaque dev : choisit le contenu de son écran. */
   private roles = new Map<string, DevRole>();
   private readonly characters = new Map<string, CharacterView>();
@@ -239,6 +242,7 @@ export class GameRenderer {
       this.sun,
       this.sun.target,
       this.skyline.root,
+      this.rivalTowers.root,
       this.office.root,
       this.decorations.root,
       this.meetingRoom.root,
@@ -296,6 +300,7 @@ export class GameRenderer {
     this.layout = layoutOf(view);
     this.office.setLayout(this.layout);
     this.skyline.setLayout(this.layout);
+    this.rivalTowers.setSpots(this.skyline.rivalSpots);
     const english = document.documentElement.lang.startsWith('en');
     this.office.setWingSigns(
       this.layout,
@@ -550,6 +555,7 @@ export class GameRenderer {
     this.dailyBoard.dispose();
     this.roomLights.dispose();
     this.skyline.dispose();
+    this.rivalTowers.dispose();
     this.screens.dispose();
     this.projection.dispose();
     this.lobby.dispose();
@@ -636,6 +642,7 @@ export class GameRenderer {
       const light = this.applyLighting(shownMinute);
       this.roomLights.update(light, this.pixelsPerUnit());
       this.skyline.update(light, shownMinute, delta, this.pixelsPerUnit(), !this.reducedMotion);
+      this.rivalTowers.update(view.campaign?.market ?? null, light);
       this.screens.update(
         { items: view.items, roles: this.roles, agents: this.current },
         delta,

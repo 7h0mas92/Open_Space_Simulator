@@ -16,6 +16,7 @@ import { useSettings } from '../store/settings';
 import { Funding } from '../funding/Funding';
 import { Group } from '../group/Group';
 import { DailyMoment } from '../meetings/DailyMoment';
+import { StoryScene, useStoryScene, useStoryScenes } from '../story/StoryScene';
 import { MeetingRoom } from '../meetings/MeetingRoom';
 import { TicketApp } from '../meetings/TicketApp';
 import { Pets } from '../pets/Pets';
@@ -27,6 +28,8 @@ import { SubscriptionsPanel } from '../subscriptions/Subscriptions';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
+import { CampaignPanel } from '../story/CampaignPanel';
+import { MarketPanel } from '../story/MarketPanel';
 import { MissionPanel } from '../story/MissionPanel';
 import {
   ActionBar,
@@ -76,8 +79,16 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Funding view={view} />;
     case 'career':
       return <CareerPanel view={view} />;
+    case 'market':
+      return view.campaign ? (
+        <MarketPanel market={view.campaign.market} users={view.gauges.users} />
+      ) : null;
     case 'mission':
-      return <MissionPanel view={view} />;
+      return view.campaign ? (
+        <CampaignPanel campaign={view.campaign} sprint={view.time.sprint} />
+      ) : (
+        <MissionPanel view={view} />
+      );
     case 'dashboard':
       return <Dashboard view={view} />;
     case 'slack':
@@ -154,13 +165,18 @@ function useShortcuts() {
 
 /** Mode Histoire : le briefing de la mission s'ouvre au lancement (pas à la reprise). */
 function useMissionBriefing() {
-  const opening = useGame((s) => s.view?.mode === 'STORY' && s.view.tick === 0 && !s.replayOf);
+  // La longue partie ouvre ses objectifs après la scène de l'acte (`useStoryScenes`).
+  const opening = useGame(
+    (s) => s.view?.mode === 'STORY' && !s.view.campaign && s.view.tick === 0 && !s.replayOf,
+  );
   const seed = useGame((s) => s.view?.seed);
   useEffect(() => {
     if (opening) useGame.getState().openPanel('mission');
     // Une seule fois par mission lancée.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seed]);
+  // Longue partie : scènes de l'histoire, puis objectifs de l'acte.
+  useStoryScenes();
 }
 
 export function GameScreen() {
@@ -173,6 +189,7 @@ export function GameScreen() {
   const showFps = useSettings((s) => s.showFps);
   const replayOf = useGame((s) => s.replayOf);
   const building = useGame((s) => s.build !== null);
+  const inScene = useStoryScene((s) => s.scene !== null);
   useShortcuts();
   useGameFeeds();
   useMissionBriefing();
@@ -195,6 +212,7 @@ export function GameScreen() {
       <Scene />
       <Alerts view={view} />
       {!building && <DailyMoment view={view} />}
+      <StoryScene />
       <h1 className="visually-hidden">{t('app.title')}</h1>
       {building ? (
         // Construction : le HUD habituel s'efface pour laisser la scène au joueur.
@@ -240,7 +258,8 @@ export function GameScreen() {
       )}
       {panel !== 'slack' && !building && <SlackDock />}
       {/* Le tutoriel s'adapte au mode de jeu (voir tutorial/lessons.ts). */}
-      {!replayOf && <Guide view={view} />}
+      {/* Le guide attend la fin d'une scène de l'histoire. */}
+      {!replayOf && !inScene && <Guide view={view} />}
       <StageScreens view={view} />
       {panel && (
         <Sheet

@@ -31,6 +31,19 @@ export function playMission(seed: string, mission: StoryMissionId = 'first-commi
   return { commands: simulation.commands as LoggedCommand[], state: simulation.state };
 }
 
+/**
+ * Joue la longue partie du mode Histoire avec un bot jusqu'à ce que l'objectif secondaire soit
+ * rempli (la partie est encore en cours).
+ */
+export function playCampaign(seed: string, goal: StoryMissionId = 'leave-garage') {
+  const cards = new CardLibrary(EVENT_CARDS);
+  const simulation = Simulation.create({ seed, mode: 'STORY', mission: 'campaign' }, cards);
+  playWithBot(simulation, createBot('balanced', seed), cards, (state) =>
+    Boolean(state.story?.campaign?.done.includes(goal)),
+  );
+  return { commands: simulation.commands as LoggedCommand[], state: simulation.state };
+}
+
 /** Partie du défi en 3 sprints jouée avec des récompenses du mode Histoire. */
 export function playWithUnlocks(seed: string, unlocks: StoryRewardId[]) {
   const cards = new CardLibrary(EVENT_CARDS);

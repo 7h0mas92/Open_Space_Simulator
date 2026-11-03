@@ -1,4 +1,4 @@
-import type { MissionGoal } from '@oss/shared';
+import { getRival, type MissionGoal } from '@oss/shared';
 import type { TFunction } from 'i18next';
 import { formatGauge } from '../game/format';
 
@@ -33,6 +33,10 @@ export function goalText(goal: MissionGoal, t: TFunction, language: string): str
       return t('story.goals.pets', { count: goal.min });
     case 'sprints':
       return t('story.goals.sprints', { count: goal.min });
+    case 'rivalUsers':
+      return t('story.goals.rivalUsers', { name: getRival(goal.rival).name });
+    case 'marketShare':
+      return t('story.goals.marketShare', { value: Math.round(goal.min * 100) });
   }
 }
 
@@ -54,6 +58,10 @@ export function goalValue(goal: MissionGoal, value: number, language: string): s
       return `${Math.round(value)}`;
     case 'valuation':
       return formatGauge('treasury', value, language);
+    case 'rivalUsers':
+      return formatGauge('users', value, language);
+    case 'marketShare':
+      return `${Math.round(value * 100)} %`;
     case 'phase':
     case 'serverRoom':
     case 'meetingRoom':

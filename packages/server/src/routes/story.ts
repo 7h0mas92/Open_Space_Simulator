@@ -4,7 +4,7 @@ import type { Prisma } from '../generated/prisma/client.js';
 import { errorResponses } from '../lib/schemas.js';
 import { unlockForUser } from '../services/achievement.service.js';
 import { cardSetByVersion } from '../services/cards.service.js';
-import { verifyMission } from '../services/replay.service.js';
+import { verifyCampaignGoal, verifyMission } from '../services/replay.service.js';
 import { storyProgressOf } from '../services/story.service.js';
 
 /** Taille maximale d'un journal de commandes envoyé (une mission est plus courte qu'une partie). */
@@ -36,17 +36,20 @@ export const storyRoutes: FastifyPluginAsyncZod = async (app) => {
         tags: ['story'],
         summary: 'Enregistrer une mission réussie (rejouée et vérifiée par le serveur)',
         description:
-          'Le serveur rejoue la graine et les commandes de la mission avec la simulation du jeu. Seule une mission réussie au rejeu est gardée sur le compte.',
+          'Le serveur rejoue la graine et les commandes de la mission avec la simulation du jeu. Seule une mission réussie au rejeu est gardée sur le compte. Avec `campaign`, il rejoue la longue partie en actes et vérifie que l’objectif de la mission y est rempli.',
         security: [{ cookieAuth: [] }],
         body: MissionCompletionSchema,
         response: { 200: StoryProgressResponseSchema, ...errorResponses },
       },
     },
     async (request) => {
-      const { missionId, seed, commands, cardsVersion } = request.body;
+      const { missionId, seed, commands, cardsVersion, campaign } = request.body;
       const userId = request.user.sub;
       const { cards } = await cardSetByVersion(app.prisma, cardsVersion);
-      const { state } = verifyMission({ missionId, seed, commands, cards });
+      // Objectif de la longue partie : rejeu de l'histoire jusqu'à la dernière commande.
+      const state = campaign
+        ? verifyCampaignGoal({ missionId, seed, commands, cards })
+        : verifyMission({ missionId, seed, commands, cards }).state;
       const data = {
         seed,
         cardsVersion,

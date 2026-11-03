@@ -6,6 +6,7 @@ import {
   TIME,
   endlessCostMultiplier,
   endlessPressure,
+  freeSeasonStart,
   supportChurnFactor,
   type ClientNeed,
   type CommandResult,
@@ -18,7 +19,8 @@ import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
 import { endGame, endOfTime } from './endings';
-import { missionTimeUp } from './story';
+import { rivalsSprint } from './rivals';
+import { campaignDeadline, missionTimeUp } from './story';
 import { phaseIndex } from './furniture';
 import { closeSprintPerformance } from './performance';
 import {
@@ -75,9 +77,11 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
  * tirage.
  */
 function announceCompetition(state: GameState, ctx: SimContext): void {
-  const pressure = endlessPressure(state.mode, state.sprint);
+  const pressure = endlessPressure(state.mode, state.sprint, freeSeasonStart(state.story));
   if (pressure < 1 || (pressure - 1) % ENDLESS.milestoneSprints !== 0) return;
-  const percent = Math.round((endlessCostMultiplier(state.mode, state.sprint) - 1) * 100);
+  const percent = Math.round(
+    (endlessCostMultiplier(state.mode, state.sprint, freeSeasonStart(state.story)) - 1) * 100,
+  );
   notify(
     state,
     ctx,
@@ -183,6 +187,8 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   clientsDemo(state, ctx, delivered);
   const objective = settleObjective(state, ctx);
   ventureSprint(state, ctx);
+  // Mode Histoire, longue partie : les rivaux jouent leur sprint (graine à part).
+  rivalsSprint(state, ctx);
   state.valuation = computeValuation(state);
 
   state.history.sprints.push({
@@ -338,9 +344,11 @@ export function endDemo(state: GameState, ctx: SimContext): CommandResult {
     }
   }
   state.lostSprintsPending = 0;
+  // Mode Histoire, longue partie : l'objectif principal de l'acte doit être rempli à temps.
+  if (campaignDeadline(state, ctx)) return { ok: true };
   if (state.sprint >= state.totalSprints) {
     // Mode Histoire : le temps de la mission est écoulé, ses objectifs décident de la fin.
-    if (state.story) missionTimeUp(state, ctx);
+    if (state.story?.missionId) missionTimeUp(state, ctx);
     else endOfTime(state, ctx);
     return { ok: true };
   }

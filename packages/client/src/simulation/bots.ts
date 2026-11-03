@@ -189,6 +189,8 @@ class PlannerBot implements Bot {
   private endgame(state: Readonly<GameState>): Command[] {
     // Mode illimité : les bots visent la distance, ils ne vendent pas et n'entrent pas en Bourse.
     if (state.mode === 'ENDLESS') return [];
+    // Histoire en actes : après l'entrée en Bourse, les bots s'arrêtent sur la fin écrite.
+    if (state.story?.campaign?.freeSeason) return [{ type: 'END_STORY' }];
     const offer = state.acquisitionOffer;
     if (
       offer &&

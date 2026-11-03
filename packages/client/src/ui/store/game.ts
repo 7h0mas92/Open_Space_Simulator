@@ -12,7 +12,7 @@ import {
   utcDate,
   careerSeed,
   type CareerLegendId,
-  type StoryMissionId,
+  type StoryStart,
   type StoryRewardId,
   type EventCard,
   type FurnitureColor,
@@ -63,6 +63,8 @@ export const PANELS = [
   'funding',
   'career',
   'mission',
+  /** Mode Histoire, longue partie : parts de marché et startups rivales. */
+  'market',
   'dashboard',
   'slack',
   'saves',
@@ -189,6 +191,10 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   OBJECTIVE_FAILED: 'info',
   CAREER_MILESTONE: 'success',
   CAREER_MISSED: 'error',
+  STORY_ACT: 'success',
+  STORY_END: 'success',
+  STORY_GOAL: 'info',
+  RIVAL_ACTION: 'info',
   SPRINT_LOST: 'error',
   ACHIEVEMENT_UNLOCKED: 'success',
 };
@@ -202,7 +208,7 @@ export interface StartOptions {
   /** Mode Carrière : la légende à suivre (écrite dans la graine). */
   legend?: CareerLegendId;
   /** Mode Histoire : la mission à jouer. */
-  mission?: StoryMissionId;
+  mission?: StoryStart;
   /** Source déjà prête (tests). */
   source?: GameSource;
   /** Reprendre une sauvegarde. */
