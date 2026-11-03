@@ -1469,7 +1469,7 @@
           },
           "storyResearch": {
             "title": "L’arbre R&D",
-            "body": "Dans l’histoire en 5 actes, le catalogue de construction démarre réduit : bureaux, plantes, cafetière. Le reste se débloque dans le panneau 🔬 R&D, en haut à droite, avec des points d’innovation.\n\n• +1 point par feature livrée, +3 par objectif rempli, +2 quand tu gagnes plus d’utilisateurs que tous les rivaux sur un sprint.\n• 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation) : chaque niveau demande le précédent et l’acte qui lui correspond.\n• Prestige : les récompenses des objectifs s’achètent dès que l’objectif est rempli.\n\nLes missions courtes et les autres modes gardent tout le catalogue."
+            "body": "Dans l’histoire en 5 actes, le catalogue de construction démarre réduit : bureaux, plantes, cafetière. Le reste se débloque dans le panneau 🔬 R&D, en haut à droite, avec des points d’innovation.\n\n• +1 point par feature livrée, +3 par objectif rempli, +2 quand tu gagnes plus d’utilisateurs que tous les rivaux sur un sprint.\n• 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation) : chaque niveau demande le précédent et l’acte qui lui correspond.\n• Prestige : les récompenses des objectifs s’achètent dès que l’objectif est rempli.\n\nLes missions courtes gardent tout le catalogue ; les autres modes ont le même arbre, ouvert par les phases."
           }
         }
       },
@@ -1664,6 +1664,10 @@
           "items": {
             "title": "Les objets utiles",
             "body": "• Machine à café : plus de café chaque matin. La premium en remet deux fois plus et remonte le moral.\n• Plantes, tapis, canapé : du moral en plus.\n• Babyfoot : beaucoup de moral, un peu moins de productivité.\n• Écouteurs à réduction de bruit : annulent le malus des réunions du Product Owner.\n• Chaise ergonomique et bureau debout : les devs se fatiguent moins.\n• Baie de serveurs : de la stabilité chaque jour.\n• Écran de dashboard : un peu de hype chaque jour."
+          },
+          "research": {
+            "title": "L’arbre R&D",
+            "body": "Le catalogue de construction démarre réduit : bureaux, plantes, cafetière. Le reste se débloque dans le panneau 🔬 R&D, en haut à droite, avec des points d’innovation.\n\n• +1 point par feature livrée, +3 par levée de fonds réussie, +2 quand l’objectif du sprint est atteint.\n• 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation) : chaque niveau demande le précédent et une phase (niveau 2 en Seed, 3 en Série A, 4 en Licorne).\n\nUn objet à débloquer affiche « 🔬 R&D » et le niveau à prendre dans le catalogue."
           }
         }
       },
@@ -2749,8 +2753,9 @@
     "title": "Recherche et développement",
     "intro": "Débloque le catalogue de construction avec des points d’innovation. Chaque niveau demande le précédent et l’acte de l’histoire qui lui correspond.",
     "points": "{{points}} points d’innovation",
-    "earned": "{{earned}} gagnés depuis le début de l’histoire",
+    "earned": "{{earned}} gagnés depuis le début de la partie",
     "howTo": "+{{feature}} par feature livrée, +{{goal}} par objectif rempli, +{{rivals}} quand tu gagnes plus d’utilisateurs que tous les rivaux sur un sprint.",
+    "howToCompany": "+{{feature}} par feature livrée, +{{round}} par levée de fonds réussie, +{{objective}} par objectif de sprint atteint. Chaque niveau s’ouvre avec une phase : 2 en Seed, 3 en Série A, 4 en Licorne.",
     "branches": {
       "comfort": "Confort",
       "tech": "Tech",
@@ -2765,6 +2770,7 @@
       "available": "Disponible",
       "previous": "🔒 Niveau précédent d’abord",
       "act": "🔒 Dès l’acte « {{act}} »",
+      "phase": "🔒 Dès la phase {{phase}}",
       "points": "Il manque {{missing}} points"
     },
     "take": "Débloquer ({{cost}} pts)",

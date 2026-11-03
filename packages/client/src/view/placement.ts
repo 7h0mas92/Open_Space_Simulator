@@ -363,10 +363,11 @@ export function shopStatus(item: CatalogItem, view: GameView): ShopStatus {
   const block: ShopBlock | null =
     item.unlock !== null && !view.unlocks.includes(item.unlock)
       ? 'storyLocked'
-      : researchNeed(view, `item:${item.kind}`)
-        ? 'researchLocked'
-        : PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
-          ? 'locked'
+      : // La phase d'abord : c'est l'étape la plus lointaine, l'arbre R&D vient ensuite.
+        PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
+        ? 'locked'
+        : researchNeed(view, `item:${item.kind}`)
+          ? 'researchLocked'
           : owned >= item.maxCount
             ? 'soldOut'
             : view.gauges.treasury < item.price

@@ -1,9 +1,10 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : Kanban adapté à la
-> taille et au rythme de l'équipe (#164). Avant : curseur « Musique »
-> réparé sur iPhone et iPad (#163, volume par Web Audio). Avant : voitures (7 modèles)
-> et décorations de saison refaites, fusionnées dans `develop` (PR #162). Avant : arbre R&D des
+> **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : arbre R&D des
+> objets étendu à tous les modes (#165). Avant : Kanban adapté à la
+> taille et au rythme de l'équipe (#164), curseur « Musique »
+> réparé sur iPhone et iPad (#163, volume par Web Audio), voitures (7 modèles)
+> et décorations de saison refaites (#162), arbre R&D des
 > objets (T4, #160), levées de fonds lisibles (#161), histoire en 5 actes (#157, #159) ;
 > plus tôt, modèle économique (#151), clients B2B (#153) et support client
 > (#154) de Melvin, panneau « 💶 Business ».
@@ -80,6 +81,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | #157 et #159 fusionnées le 3 novembre            |
 | Levées de fonds cohérentes avec l'affichage         | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (#161)    |
 | Arbre R&D des objets (T4)                           | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (PR #160) |
+| Arbre R&D dans tous les modes                       | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (#165)    |
 | Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)          |
 | Économie : modèle, B2B, support (M3)                | Melvin + Claude | Fusionné dans `develop` le 3 novembre            |
 | Économie : marketing (M3)                           | Melvin          | Idée, rien de codé                               |
@@ -242,7 +244,7 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   Sinon les replays, le Daily, les sauvegardes et les scores déjà enregistrés cassent. Les PR
   l'écrivent « aucun tirage » ou « graine à part ».
 - **Abonnements payés à la semaine** (fibre, ménage) : tick `paidUntil`, facture dans un système, ligne coupée si la trésorerie manque, coût mensuel ajouté au calcul des mois de trésorerie (`runwayMonths`).
-- **Arbre R&D** (`shared/sim/research.ts`) : en histoire en actes, tout contenu achetable (objet, ordinateur, écran, mur, sol, formule de salle) doit être dans `RESEARCH_FREE` ou dans un niveau de `RESEARCH_TREE`, sinon `research.test.ts` échoue. Vérifier aussi `researchUnlocked(state, clé)` dans la commande d'achat d'un nouveau type de contenu.
+- **Arbre R&D** (`shared/sim/research.ts`) : dans tous les modes (sauf missions courtes), tout contenu achetable (objet, ordinateur, écran, mur, sol, formule de salle) doit être dans `RESEARCH_FREE` ou dans un niveau de `RESEARCH_TREE`, sinon `research.test.ts` échoue. Vérifier aussi `researchUnlocked(state, clé)` dans la commande d'achat d'un nouveau type de contenu. Un test qui achète un objet sans tester l'arbre passe par `openCatalogue` (`tests/simulation/fixtures.ts`).
 - **Bonus sans tirage** (arbre de compétences, encadrement) : sans le bonus, le multiplicateur
   vaut exactement 1 (multiplier par 1 ne change aucun bit). Un bonus qui change une probabilité
   garde le même appel `rng.chance(p)` avec un autre `p`, jamais un tirage de plus ou de moins.
@@ -308,6 +310,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                  | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | -------- | --------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 03/11    | Thomas + Claude | R&D tous modes      | Arbre R&D dans tous les modes (« r&d dans tous les modes ») : `state.research` (null en mission courte et dans les vieilles sauvegardes), niveaux ouverts par la phase, points par feature, levée de fonds et objectif de sprint, bouton 🔬, étape du tutoriel. Vinyle et moquette au niveau 1 d'Ambiance. Règle de toutes les parties : les replays des anciens scores divergent. Tests d'objets : `openCatalogue`.                                                                                                                                                                     |
 | 03/11    | Thomas + Claude | Kanban et équipe    | Le « À faire » suit la taille et le rythme de l'équipe (`sprintLoad.ts`), 192 titres de tâches en plus. Tâches plus longues et `pointEffect` 0,13 pour garder l'équilibrage des bons bots ; le bot random fait faillite plus souvent. Anciens replays de scores divergent. `guide-modes` ENDLESS dépasse déjà son délai sur `develop`.                                                                                                                                                                                                                                                   |
 | 03/11    | Thomas + Claude | #163                | Le curseur « Musique » ne changeait rien sur iPhone et iPad : Safari ignore le volume d'une balise `<audio>`. La musique passe par `audio/musicTrack.ts` (balise en flux branchée sur un gain Web Audio) ; Howler ne sert plus qu'aux effets. Mention sous « Effets » tant que `SOUND_FILES` est vide (côté Melvin). Bruits de clavier et de souris vérifiés : toujours là.                                                                                                                                                                                                              |
 | 03/11    | Thomas + Claude | voitures et déco    | Rendu seulement, aucun tirage ni champ d'état. Voitures de la ville : `render/cars.ts` (7 modèles, `CAR_MIX`, `carLook`), 2 InstancedMesh par modèle dans `skyline.ts` (maillages `skyline-cars-<modèle>`). Décorations : `ThemeModels.wall` prend maintenant les murs (`DecorWall[]` de `decorWalls(layout, items)`) au lieu de `(largeur, profondeur)` ; ornements entre les appliques, hors fenêtres, cloisons et meubles de plus de 1,3 m. Nouveau thème de saison ou nouvel ornement : passer par `Kit` dans `decorModels.ts`. `tint` exporté de `pieces.ts`.                       |

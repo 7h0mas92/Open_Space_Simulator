@@ -1469,7 +1469,7 @@
           },
           "storyResearch": {
             "title": "The R&D tree",
-            "body": "In the 5-act story, the build catalogue starts small: desks, plants, a coffee maker. The rest is unlocked in the 🔬 R&D panel, top right, with innovation points.\n\n• +1 point per feature shipped, +3 per goal completed, +2 when you gain more users than every rival in a sprint.\n• 5 branches of 4 levels (Comfort, Tech, Ambiance, Kitchen, Organisation): each level needs the previous one and its matching act.\n• Prestige: goal rewards can be bought as soon as the goal is completed.\n\nShort missions and the other modes keep the whole catalogue."
+            "body": "In the 5-act story, the build catalogue starts small: desks, plants, a coffee maker. The rest is unlocked in the 🔬 R&D panel, top right, with innovation points.\n\n• +1 point per feature shipped, +3 per goal completed, +2 when you gain more users than every rival in a sprint.\n• 5 branches of 4 levels (Comfort, Tech, Ambiance, Kitchen, Organisation): each level needs the previous one and its matching act.\n• Prestige: goal rewards can be bought as soon as the goal is completed.\n\nShort missions keep the whole catalogue; the other modes have the same tree, opened by the phases."
           }
         }
       },
@@ -1664,6 +1664,10 @@
           "items": {
             "title": "Useful items",
             "body": "• Coffee machine: more coffee every morning. The premium one refills twice as much and lifts morale.\n• Plants, rugs, sofa: extra morale.\n• Foosball: lots of morale, a bit less productivity.\n• Noise-cancelling earbuds: cancel the Product Owner's meeting penalty.\n• Ergonomic chair and standing desk: devs get tired more slowly.\n• Server rack: stability every day.\n• Dashboard screen: a little hype every day."
+          },
+          "research": {
+            "title": "The R&D tree",
+            "body": "The build catalogue starts small: desks, plants, coffee maker. The rest unlocks in the 🔬 R&D panel, top right, with innovation points.\n\n• +1 point per feature shipped, +3 per successful funding round, +2 when the sprint goal is reached.\n• 5 branches of 4 levels (Comfort, Tech, Ambiance, Kitchen, Organisation): each level needs the previous one and a phase (level 2 at Seed, 3 at Series A, 4 at Unicorn).\n\nAn item still locked shows “🔬 R&D” and the level to take in the catalogue."
           }
         }
       },
@@ -2749,8 +2753,9 @@
     "title": "Research and development",
     "intro": "Unlock the build catalogue with innovation points. Each level needs the previous one and the matching act of the story.",
     "points": "{{points}} innovation points",
-    "earned": "{{earned}} earned since the story began",
+    "earned": "{{earned}} earned since the game began",
     "howTo": "+{{feature}} per feature shipped, +{{goal}} per goal completed, +{{rivals}} when you gain more users than every rival in a sprint.",
+    "howToCompany": "+{{feature}} per feature shipped, +{{round}} per successful funding round, +{{objective}} per sprint goal reached. Each level opens with a phase: 2 at Seed, 3 at Series A, 4 at Unicorn.",
     "branches": {
       "comfort": "Comfort",
       "tech": "Tech",
@@ -2765,6 +2770,7 @@
       "available": "Available",
       "previous": "🔒 Previous level first",
       "act": "🔒 From the act “{{act}}”",
+      "phase": "🔒 From the {{phase}} phase",
       "points": "{{missing}} points missing"
     },
     "take": "Unlock ({{cost}} pts)",

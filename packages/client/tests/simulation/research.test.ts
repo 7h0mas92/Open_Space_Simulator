@@ -9,6 +9,7 @@ import {
   RESEARCH,
   RESEARCH_FREE,
   RESEARCH_TREE,
+  emptyResearch,
   WALL_FINISHES,
   researchNodeOf,
   type FurnitureDefinition,
@@ -92,27 +93,53 @@ describe('Arbre R&D : catalogue', () => {
 });
 
 describe('Arbre R&D : partie', () => {
-  it('seule la longue partie du mode Histoire a un arbre', () => {
-    expect(campaign().state.story?.campaign?.research).toEqual({
-      points: RESEARCH.start,
-      earned: RESEARCH.start,
-      nodes: [],
-      goalsCounted: 0,
-    });
-    const normal = Simulation.create({ seed: 'n', mode: 'NORMAL' }, cards);
-    expect(toGameView(normal.state, VIEW_CONTEXT).research).toBeNull();
+  it('chaque mode a un arbre, sauf les missions courtes', () => {
+    expect(campaign().state.story?.campaign?.research).toEqual(emptyResearch());
+    for (const mode of ['NORMAL', 'EASY', 'HARDCORE', 'DAILY', 'ENDLESS', 'SHIP_IN_3'] as const) {
+      const game = Simulation.create({ seed: 'n', mode }, cards);
+      expect(game.state.research).toEqual(emptyResearch());
+      expect(toGameView(game.state, VIEW_CONTEXT).research?.gate).toBe('phase');
+    }
     const mission = Simulation.create({ seed: 'm', mode: 'STORY', mission: 'first-commit' }, cards);
     expect(mission.state.story?.campaign).toBeUndefined();
+    expect(mission.state.research).toBeNull();
+    expect(toGameView(mission.state, VIEW_CONTEXT).research).toBeNull();
     expect(mission.dispatch({ type: 'RESEARCH_NODE', nodeId: 'comfort-1' }).result).toEqual({
       ok: false,
       error: 'NOT_ELIGIBLE',
     });
   });
 
-  it('hors histoire, rien n’est verrouillé par l’arbre', () => {
+  it('hors histoire, les niveaux s’ouvrent avec la phase de l’entreprise', () => {
     const normal = Simulation.create({ seed: 'n', mode: 'NORMAL' }, cards);
+    const { state } = normal;
+    state.gauges.treasury = 1_000_000;
+    expect(buy(normal, 'bookcase')).toEqual({ ok: false, error: 'LOCKED' });
+    expect(normal.dispatch({ type: 'RESEARCH_NODE', nodeId: 'comfort-1' }).result).toEqual({
+      ok: true,
+    });
+    expect(buy(normal, 'bookcase')).toEqual({ ok: true });
+    state.research!.points = 100;
+    // Niveau 2 : il faut être en Seed.
+    expect(normal.dispatch({ type: 'RESEARCH_NODE', nodeId: 'comfort-2' }).result).toEqual({
+      ok: false,
+      error: 'LOCKED',
+    });
+    const view = toGameView(state, VIEW_CONTEXT);
+    expect(view.research?.nodes.find((n) => n.id === 'comfort-2')?.status).toBe('phase');
+    expect(view.research?.prestige).toEqual([]);
+    state.phase = 'SEED';
+    expect(normal.dispatch({ type: 'RESEARCH_NODE', nodeId: 'comfort-2' }).result).toEqual({
+      ok: true,
+    });
+  });
+
+  it('sans arbre (vieille sauvegarde), rien n’est verrouillé', () => {
+    const normal = Simulation.create({ seed: 'n', mode: 'NORMAL' }, cards);
+    normal.state.research = null;
     normal.state.gauges.treasury = 1_000_000;
     expect(buy(normal, 'bookcase')).toEqual({ ok: true });
+    expect(toGameView(normal.state, VIEW_CONTEXT).research).toBeNull();
   });
 
   it('un objet pas encore recherché est refusé, puis en vente une fois le niveau pris', () => {
@@ -209,6 +236,19 @@ describe('Arbre R&D : points d’innovation', () => {
     // Le même objectif ne compte qu'une fois.
     researchSprint(state, ctx, 0);
     expect(research(state).points).toBe(expected);
+  });
+
+  it('hors histoire, levées de fonds et objectif du sprint rapportent des points', () => {
+    const { state } = Simulation.create({ seed: 'n', mode: 'NORMAL' }, cards);
+    const ctx = makeContext(state);
+    state.fundingRounds = 1;
+    researchSprint(state, ctx, 2, true);
+    const expected =
+      RESEARCH.start + 2 * RESEARCH.perFeature + RESEARCH.perRound + RESEARCH.perObjective;
+    expect(state.research).toMatchObject({ points: expected, earned: expected, roundsCounted: 1 });
+    // La même levée ne compte qu'une fois.
+    researchSprint(state, ctx, 0, false);
+    expect(state.research?.points).toBe(expected);
   });
 
   it('battre tous les rivaux sur un sprint rapporte un bonus', () => {

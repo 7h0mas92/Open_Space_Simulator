@@ -18,6 +18,7 @@ import { replay } from '../../src/simulation/replay';
 import { teamSize } from '../../src/simulation/helpers';
 import { toGameView } from '../../src/view/adapter';
 import { makeContext, newSimulation } from './fixtures';
+import { Simulation } from '../../src/simulation/simulation';
 import { CardLibrary } from '../../src/events/library';
 
 const career = (legend: CareerLegendId, base = 'test') =>
@@ -217,8 +218,9 @@ describe('Mode Carrière : jalons', () => {
 describe('Mode Carrière : déterminisme', () => {
   it('se rejoue à l’identique depuis la graine et les commandes', () => {
     const seed = careerSeed('rembobine', 'replay');
-    const simulation = newSimulation(seed, 'CAREER');
+    // Partie avec son arbre R&D, comme le rejeu.
     const cards = new CardLibrary([]);
+    const simulation = Simulation.create({ seed, mode: 'CAREER' }, cards);
     playWithBot(simulation, createBot('balanced', seed), cards);
     const again = replay({
       seed,

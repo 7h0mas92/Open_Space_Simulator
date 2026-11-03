@@ -35,6 +35,7 @@ import { emptyRetroState, RetroStateSchema } from './retro.js';
 import { emptyTeamBuildingState, TeamBuildingStateSchema } from './teamBuilding.js';
 import { StoryMissionIdSchema } from '../story/campaign.js';
 import { StoryRewardIdSchema } from '../story/rewards.js';
+import { ResearchStateSchema } from './research.js';
 import { CampaignResultSchema, CampaignStateSchema } from '../story/acts.js';
 
 /**
@@ -559,6 +560,12 @@ export const GameStateSchema = z.object({
    * et dans les vieilles sauvegardes). Comme la graine, elles font partie du point de départ.
    */
   unlocks: z.array(StoryRewardIdSchema).default([]),
+  /**
+   * Arbre R&D des objets (`sim/research.ts`) hors histoire en actes, qui garde le sien dans
+   * `story.campaign.research`. Null dans les missions courtes et les vieilles sauvegardes :
+   * tout le catalogue est alors ouvert.
+   */
+  research: ResearchStateSchema.nullable().default(null),
   lostSprintsPending: z.number().int().nonnegative(),
   tracker: SprintTrackerSchema,
   history: z.object({

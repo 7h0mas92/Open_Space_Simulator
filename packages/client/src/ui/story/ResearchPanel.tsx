@@ -1,4 +1,5 @@
 import {
+  PHASES,
   PRESTIGE_BRANCH,
   RESEARCH,
   RESEARCH_BRANCHES,
@@ -16,7 +17,9 @@ import { localized } from '../game/format';
 import { useGame } from '../store/game';
 
 type Tab = ResearchBranch | typeof PRESTIGE_BRANCH;
-const TABS: readonly Tab[] = [...RESEARCH_BRANCHES, PRESTIGE_BRANCH];
+/** Onglets : les 5 branches, plus Prestige dans l'histoire en actes (seule à avoir des objectifs). */
+const tabsOf = (research: ResearchView): readonly Tab[] =>
+  research.prestige.length > 0 ? [...RESEARCH_BRANCHES, PRESTIGE_BRANCH] : RESEARCH_BRANCHES;
 
 /** Dernier onglet ouvert, gardé tant que la page vit (comme le rayon du catalogue). */
 let lastTab: Tab = 'comfort';
@@ -26,13 +29,15 @@ function rememberTab(tab: Tab): Tab {
 }
 
 /**
- * Panneau « R&D » de l'histoire : les points d'innovation, puis une branche par onglet avec ses
- * 4 niveaux, et la branche Prestige (récompenses des objectifs). Lecture de la GameView ; la
- * simulation vérifie chaque déblocage (`RESEARCH_NODE`).
+ * Panneau « R&D » : les points d'innovation, puis une branche par onglet avec ses 4 niveaux, et
+ * dans l'histoire en actes la branche Prestige (récompenses des objectifs). Lecture de la
+ * GameView ; la simulation vérifie chaque déblocage (`RESEARCH_NODE`).
  */
 export function ResearchPanel({ research }: { research: ResearchView }) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<Tab>(lastTab);
+  const TABS = tabsOf(research);
+  const [chosen, setTab] = useState<Tab>(lastTab);
+  const tab = TABS.includes(chosen) ? chosen : 'comfort';
   const choose = (next: Tab) => {
     setTab(rememberTab(next));
   };
@@ -56,11 +61,17 @@ export function ResearchPanel({ research }: { research: ResearchView }) {
         <span className="hint">{t('research.earned', { earned: research.earned })}</span>
       </p>
       <p className="hint">
-        {t('research.howTo', {
-          feature: RESEARCH.perFeature,
-          goal: RESEARCH.perGoal,
-          rivals: RESEARCH.beatRivals,
-        })}
+        {research.gate === 'act'
+          ? t('research.howTo', {
+              feature: RESEARCH.perFeature,
+              goal: RESEARCH.perGoal,
+              rivals: RESEARCH.beatRivals,
+            })
+          : t('research.howToCompany', {
+              feature: RESEARCH.perFeature,
+              round: RESEARCH.perRound,
+              objective: RESEARCH.perObjective,
+            })}
       </p>
       <div
         className="research-tabs"
@@ -109,12 +120,15 @@ function ResearchNodeCard({ node, points }: { node: ResearchNodeView; points: nu
   const dispatch = useGame((s) => s.dispatch);
   const ended = useGame((s) => (s.view?.result ?? null) !== null);
   const act = STORY_ACTS[node.act];
+  const phase = PHASES[node.act];
   const status =
     node.status === 'act'
       ? t('research.status.act', { act: act ? localized(act.title, i18n.language) : '' })
-      : node.status === 'points'
-        ? t('research.status.points', { missing: node.cost - points })
-        : t(`research.status.${node.status}`);
+      : node.status === 'phase'
+        ? t('research.status.phase', { phase: phase ? t(`phases.${phase}`) : '' })
+        : node.status === 'points'
+          ? t('research.status.points', { missing: node.cost - points })
+          : t(`research.status.${node.status}`);
   const list = node.keys.map((key) => localized(researchKeyName(key), i18n.language)).join(', ');
   return (
     <li

@@ -294,11 +294,15 @@ export function SystemButtons({ view }: { view: GameView }) {
   // Histoire en actes : le marché (rivaux) à côté de la mission.
   const campaign = useGame((s) => s.view?.campaign !== null && s.view?.campaign !== undefined);
   const system = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
+  // Arbre R&D : dans tous les modes qui en ont un (pas les missions courtes, ni les vieilles parties).
+  const research = view.research !== null;
   const panels: readonly PanelId[] = campaign
     ? ['mission', 'market', 'research', ...system]
     : story
       ? ['mission', ...system]
-      : system;
+      : research
+        ? ['research', ...system]
+        : system;
   const career = view.career;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>

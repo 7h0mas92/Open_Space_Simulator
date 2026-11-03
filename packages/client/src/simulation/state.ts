@@ -15,6 +15,7 @@ import {
   UNLOCK_MODES,
   emptyRaisesState,
   emptyTeamLifeState,
+  emptyResearch,
   emptyRetroState,
   emptyTeamBuildingState,
   teamLifeEnabled,
@@ -153,6 +154,8 @@ export function createEmptyState(config: GameConfig): GameState {
         ? { startSprint: 1, campaign: emptyCampaign() }
         : null,
     unlocks: gameUnlocks(config),
+    // Arbre R&D : partout sauf les missions courtes ; l'histoire en actes a le sien.
+    research: mission || campaign ? null : emptyResearch(),
     lostSprintsPending: 0,
     tracker: {
       usersAtStart: 0,
