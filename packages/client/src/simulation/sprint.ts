@@ -1,3 +1,5 @@
+import { leavePlanning } from './teamLife';
+import { closeRetro, retroPlanning } from './retro';
 import {
   BALANCE,
   ENDLESS,
@@ -9,6 +11,7 @@ import {
   type LocalizedText,
 } from '@oss/shared';
 import { BUYERS, FEEDBACK_BAD, FEEDBACK_GOOD, FEEDBACK_NEUTRAL } from './data/flavor';
+import { careerDemo } from './career';
 import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
@@ -57,6 +60,8 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
   resetTracker(state);
   rollObjective(state, ctx);
   raisePlanning(state, ctx);
+  leavePlanning(state, ctx);
+  retroPlanning(state);
   announceCompetition(state, ctx);
 }
 
@@ -94,6 +99,7 @@ export function startSprint(state: GameState, ctx: SimContext): CommandResult {
   // Une demande d'augmentation attend une réponse avant de lancer le sprint.
   if (state.raises.pending) return { ok: false, error: 'RAISE_PENDING' };
   state.stage = 'EXECUTION';
+  closeRetro(state);
   notify(
     state,
     ctx,
@@ -203,6 +209,7 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   );
 
   checkPhaseAndOffers(state, ctx);
+  careerDemo(state, ctx);
 }
 
 /** Licorne à 1 Md€ de valorisation ; offres de rachat à partir de la Série A. */

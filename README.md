@@ -12,7 +12,9 @@ Le rôle et l'emplacement de chaque fichier du dépôt sont dans [`ARBORESCENCE.
 événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),
 Slack simulé (templates ou IA), back-office, PWA hors ligne et configuration de déploiement.
 
-**Jouer en ligne (mode invité) :** <https://7h0mas92.github.io/Open_Space_Simulator/>
+**Jouer en ligne (comptes, classements, Daily) :** <https://open-space-simulator.vercel.app>
+(le serveur gratuit met environ 50 s à se réveiller après 15 min sans visite) · **Mode invité
+seul :** <https://7h0mas92.github.io/Open_Space_Simulator/>
 
 | Menu                               | Partie (ordinateur)                                         | Partie (mobile)                                        |
 | ---------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
@@ -165,7 +167,7 @@ flowchart LR
     API[api/ client HTTP typé]
   end
   API -- "/api (cookies httpOnly)" --> S[Fastify]
-  S --> DB[(PostgreSQL)]
+  S --> DB[(PostgreSQL<br/>Supabase en prod)]
   SH[[shared/ types + schémas Zod]] -.-> UI
   SH -.-> API
   SH -.-> S
@@ -386,6 +388,15 @@ flowchart LR
   formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
   formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
   part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
+- **Daily et Kanbanana** : le Daily de 9h fait le point sur les tickets. Chacun dit où en est
+  son ticket (hier, aujourd'hui) ; un Daily utile donne +5 % de productivité aux participants
+  jusqu'au soir. Sans Daily, ou pour ceux en télétravail, deux devs finissent parfois par coder la
+  même chose à 10h et une partie d'un ticket est à refaire (dès la Seed, graine à part). Dans la
+  salle, un écran se déroule et un projecteur de plafond affiche **Kanbanana**, l'appli de tickets
+  du jeu (nom et logo inventés) ; le bandeau du Daily ou le bouton « 📽️ Voir Kanbanana » du panneau
+  Réunion l'ouvrent en grand. Le temps s'arrête 6 s au début du Daily pour voir l'équipe s'asseoir
+  (option désactivable, jamais en Hardcore ni en replay) (`view/ticketBoard.ts`,
+  `render/dailyBoard.ts`, `ui/meetings/TicketApp.tsx`, `ui/meetings/DailyMoment.tsx`).
 - **Variété des tâches** : le Kanban pioche dans plus de 250 tâches en français et en anglais.
   Le catalogue grandit avec la startup (page de tarifs en Seed, découper le monolithe en Série A,
   certification SOC 2 en Licorne), et pendant chaque période du calendrier une tâche de code sur
@@ -399,6 +410,38 @@ flowchart LR
   démissionner une fois sur deux (il part deux planifications plus tard, badge « 🚪 » dans
   l'équipe), sinon il reste démotivé et perd deux compétences. Réglages dans `BALANCE.raises` ;
   le hasard est tiré sur une graine à part, sans toucher au tirage du jeu.
+- **Arbre de compétences des devs** : chaque niveau gagné donne un point, à dépenser dans
+  l'onglet « Compétences » de la fiche du dev (badge ⭐ dans la liste de l'équipe). 3 branches de
+  5 nœuds, chacun demandant le précédent : 🛠️ Technique (code propre, débogueur, architecte, revue
+  de code, gardien de la prod), ⚡ Vitesse (raccourcis, concentration, deep work, fin de sprint,
+  Crunch : +50 % pendant 24 h, une fois par sprint) et 🤝 Humain (endurance, diplomate, mentor,
+  bonne humeur, leader : personne ne démissionne tant qu'il est là). Chaque profil qui code a son
+  nœud de métier (le stagiaire ne touche plus à main, l'IA hallucine 2 fois moins…). Formations
+  payantes en planification (livre, formation, conférence) et réinitialisation pour un mois de
+  salaire. Ouvert dans tous les modes sauf le Daily. Aucun tirage : sans compétence, chaque
+  multiplicateur vaut exactement 1 et la partie reste identique au bit près
+  (`shared/sim/skills.ts`, `client/src/simulation/skills.ts`, `ui/team/SkillTree.tsx`).
+- **Congés, jours fériés et arrêts maladie** : les 11 jours fériés français ferment le bureau.
+  Chaque dev gagne un jour de congé par sprint (10 au plus) et le joueur les pose pendant la
+  planification, dans la fiche du dev (1 à 5 jours, un absent pour 4 devs à la fois) : le dev
+  revient reposé et de meilleure humeur. Celui qui garde trop longtemps une réserve pleine râle,
+  puis pose ses jours tout seul. Les ponts de mai sont faits par défaut ; les refuser garde la
+  semaine entière mais vexe l'équipe. Des arrêts maladie de 1 à 3 jours tombent au hasard (plus
+  souvent l'hiver). Un dev à bout ne démissionne plus aussitôt : il part 10 jours en arrêt pour
+  burn-out et ne démissionne qu'en cas de rechute. Hasard sur une graine à part ; les anciennes
+  sauvegardes et le défi « 3 sprints » restent sans congés (`client/src/simulation/teamLife.ts`).
+- **Rétrospective** : dès le 2e sprint, la planification s'ouvre sur une rétro. L'équipe propose
+  trois actions tirées des problèmes du sprint écoulé (plus de tests après des pannes, médiation
+  après des disputes, café en libre-service quand la machine a été vidée…) et vote selon les goûts
+  de chacun. Suivre le vote remonte le moral de tous, imposer autre chose vexe ceux qui ont voté
+  autrement. L'action choisie vaut pour le sprint qui commence (🔁 dans le HUD). On peut passer la
+  rétro sans pénalité (`client/src/simulation/retro.ts`).
+- **Team building** : pendant la planification, le panneau Équipe propose une sortie pour la fin
+  du sprint : afterwork, escape game, laser game (Seed), séminaire au vert (Série A) ou off-site à
+  Lisbonne (Licorne). Elle se paie par participant et coûte des heures de travail, mais remonte
+  le moral et rapproche l'équipe ; l'escape game peut réconcilier deux devs en conflit, ou
+  empirer les choses. Refaire la même sortie au sprint suivant rapporte moitié moins
+  (`client/src/simulation/teamBuilding.ts`).
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une
@@ -421,7 +464,9 @@ flowchart LR
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
 - **Murs fins** : le rayon Cloisons propose un mur fin à mi-hauteur et un mur fin vitré du sol
-  au plafond, posés case par case. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
+  au plafond, posés case par case. Les autres objets se posent à la demi-case près : la moitié
+  de case libre de chaque côté d'un mur fin se meuble, et un objet de 3 cases se centre dans une
+  pièce de 4. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
   eux (angles, T, croix), sans jour entre deux murs, et se tournent, se repeignent et se revendent.
   Un mur qui enfermerait une zone est refusé, pour que chacun puisse toujours rejoindre son bureau.
   Quand le bureau s'agrandit, le plan cède la place aux meubles déjà posés : une cloison qui
@@ -430,9 +475,9 @@ flowchart LR
 - **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble, un
   projecteur fixé au plafond (sans prendre de place au sol ni sur un bureau) et
   trois écrans de projection déroulants (2, 3 et 4 cases). Allumé et tourné vers un écran, le
-  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. Projecteur et
-  écran ne donnent leur effet (moral, qualité, hype, léger malus de productivité) que pendant la
-  projection.
+  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. La toile reste
+  toute blanche, sans cadre noir, quand elle monte ou descend. Projecteur et écran ne donnent leur
+  effet (moral, qualité, hype, léger malus de productivité) que pendant la projection.
 - **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
   fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
   au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
@@ -452,10 +497,32 @@ flowchart LR
   une salle des serveurs vitrée (dès la Série A), à équiper au choix : serveurs rack, lames ou
   GPU, switch, box fibre, climatisation, onduleur, NAS de sauvegarde, pare-feu et extinction
   automatique. Une salle ne tourne qu'avec un serveur, du réseau et du froid ; elle réduit alors la
-  facture d'hébergement (jusqu'à 40 %) et renforce la stabilité. Le panneau « 🗄️ Serveurs »
-  montre ce qui manque et propose trois abonnements fibre payés chaque semaine (400, 900 ou
-  2 500 €), qui demandent une box fibre posée dans une salle ; faute de trésorerie à l'échéance,
-  la ligne est coupée.
+  facture d'hébergement (jusqu'à 40 %) et renforce la stabilité. Chaque appareil chauffe et chaque
+  clim refroidit (climatiseur mural 5 kW, clim de précision 15 kW, clim en rangée 35 kW) : au-delà
+  de 27 °C la salle ne donne que la moitié de ses effets, au-delà de 32 °C elle plante et la prod
+  en pâtit (+3 °C l'été). La sonde de supervision affiche la température et prévient quand elle
+  change. Internet est un abonnement (rubrique 🧾 Abonnements, reprise dans le panneau « 🗄️
+  Serveurs ») : 6 offres aux prix des opérateurs français pour les entreprises, de la box 4G
+  (39 €/mois, 3 salariés) à la fibre dédiée 10 Gb/s (2 600 €/mois, 200 salariés), prélevées
+  chaque semaine, avec frais de mise en service. Au-delà de son nombre de salariés, le réseau
+  sature et toute l'équipe ralentit ; seule la fibre dédiée demande une box fibre dans une salle.
+- **Saleté et ménage** : chaque jour de semaine, l'équipe présente au bureau le salit
+  (emballages, gobelets, canettes, boîtes de pizza, peaux de banane, taches au sol). La saleté
+  monte de plus en plus vite sans ménage et ralentit les devs sur place (-20 % de travail à 50 %
+  de saleté, -40 % à 100 %) ; les télétravailleurs, le Dev Fantôme et l'IA Agent ne sont pas
+  gênés. Le bouton 🧹 en haut affiche le pourcentage et ouvre le panneau « Ménage » : l'entreprise
+  de nettoyage Nickel Chrome (trois agents) passe sur appel le soir à 19h, en express tout de
+  suite (plus cher), ou avec l'abonnement « Ménage » de la rubrique Abonnements (vendredi, mardi
+  et vendredi, ou tous les soirs, prix selon la taille du bureau). Pendant le passage, les agents
+  vont d'un déchet à l'autre et les déchets disparaissent.
+- **Hall d'entrée** : dès la Seed, le rayon Accueil ouvre le panneau « Hall d'entrée ». Pour
+  18 000 €, un hall au rez-de-chaussée s'ajoute devant tout le bureau : on y entre, on passe
+  l'une des deux portes à badge (les portillons s'ouvrent au passage), puis on rejoint l'open
+  space. Il est livré avec un comptoir d'accueil, une banquette et deux plantes, déplaçables.
+  Jusqu'à deux secrétaires (3 100 € par mois chacune) donnent un peu de productivité, de moral
+  et de hype. La sécurité est un abonnement de la rubrique 🧾 Abonnements, payé chaque semaine :
+  télésurveillance, agent en journée ou gardiennage 24 h/24 (Série A) ; l'agent se tient dans
+  le hall (`shared/sim/lobby.ts`, `render/lobby.ts`).
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
@@ -552,14 +619,30 @@ sequenceDiagram
   appareil » (parties terminées ici, même en invité et sans serveur, `save/localScores.ts`).
   Chaque partie a un nom d'entreprise tiré de sa graine par hachage (`companyName`, sans
   tirage) que le serveur retrouve aussi. Onglets global, Daily du jour et par mode ; le global
-  exclut le Facile et l'Illimité ; l'Illimité se classe aux sprints tenus puis à la
+  exclut le Facile, l'Illimité et la Carrière ; l'Illimité se classe aux sprints tenus puis à la
   valorisation (`compareGames`, même règle côté serveur).
+- **Carrière** : refaire le parcours de 8 startups devenues géantes, jamais nommées (Pépin
+  Computer, Matelas & Céréales, Rembobine, MicroMou, Trombinoscope, Orénoque, Centillion, Ampère
+  Motors ; `packages/shared/src/sim/career.ts`). Chaque légende impose son départ (argent, hype,
+  dette, premier profil, parfois un cofondateur) et 4 jalons : une phase, des utilisateurs, une
+  levée ou une équipe avant un sprint donné, puis une façon de finir. Les jalons sont vérifiés à
+  chaque démo, sans un seul tirage (`client/src/simulation/career.ts`) ; à la fin, ★ pour au
+  moins un jalon, ★★ la moitié, ★★★ tous, écrit dans la phrase partageable. La légende est dans
+  la graine (`career:<légende>:<graine>`) : replays, sauvegardes et vérification du score par le
+  serveur marchent sans rien de plus. Bouton 🧭 en haut de l'écran pour suivre les jalons,
+  meilleur résultat de chaque légende gardé sur l'appareil, classement « Carrière » et 2 succès.
+
+| Choix de la légende                                         | Jalons en partie (mobile)                               |
+| ----------------------------------------------------------- | ------------------------------------------------------- |
+| ![Choix de la légende](docs/screenshots/career-desktop.png) | ![Jalons en partie](docs/screenshots/career-mobile.png) |
+
 - **Sauvegardes** : 5 emplacements (le 1er reçoit une sauvegarde automatique à chaque sprint),
   gardés dans IndexedDB puis synchronisés avec le serveur à la connexion. « Continuer » reprend
   la sauvegarde la plus récente d'une partie en cours : à la fin d'une partie, sa sauvegarde
   automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
-  dans « Charger une partie »).
-- **Succès** : 68 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
+  dans « Charger une partie »). Sous « Continuer », le bouton « Nouvelle partie » lance une
+  partie dans le mode suggéré, et les cartes des modes restent disponibles.
+- **Succès** : 70 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
   condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
@@ -646,7 +729,8 @@ financements hors tour de table, organisatrice qui aménage la salle de réunion
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
 collée à 0 ou à 100, et rejoue 700 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
-Only, 3 sprints). Une section suit les tâches dynamiques : urgences et tâches de la semaine
+Only, 3 sprints), puis 140 parties par légende du mode Carrière (étoiles et réussite de chaque
+jalon). Une section suit les tâches dynamiques : urgences et tâches de la semaine
 finies à temps, réussite des objectifs par type et difficulté. Le dernier rapport est dans
 [`docs/balance.md`](docs/balance.md).
 
@@ -713,18 +797,53 @@ squash et le merge commit autorisés.
 
 ## Déploiement
 
-Le client va sur **Vercel**, le serveur et la base sur **Render** (fichiers prêts :
-[`render.yaml`](render.yaml) et [`packages/client/vercel.json`](packages/client/vercel.json)).
+Le client va sur **Vercel**, le serveur sur **Render** et la base PostgreSQL sur **Supabase**
+(fichiers prêts : [`render.yaml`](render.yaml) et
+[`packages/client/vercel.json`](packages/client/vercel.json)). En local, rien ne change : la
+base reste celle de `docker compose`.
 
-1. **Render** → _New_ → _Blueprint_ → ce dépôt. Render crée la base `oss-db` et le service
-   `oss-server` (build, migrations, seed puis démarrage). Il demande :
-   - `CLIENT_URL` : l'URL Vercel du client (par exemple `https://open-space-simulator.vercel.app`) ;
+### Base de données sur Supabase
+
+Le projet Supabase `open-space-simulator` (offre gratuite, région `eu-central-1`, Francfort,
+comme le serveur Render) contient déjà toutes les tables : les migrations Prisma y sont
+appliquées et notées dans `_prisma_migrations`, donc `prisma migrate deploy` ne rejoue que les
+nouvelles. Le serveur ne passe que par Prisma : Supabase sert de PostgreSQL hébergé (pas
+d'auth Supabase, pas de SDK `supabase-js`).
+
+- **Quelle URL ?** _Connect_ → _Session pooler_ (port 5432), en ajoutant `?sslmode=require` :
+  `postgresql://postgres.<ref>:<mot-de-passe>@<hôte>.pooler.supabase.com:5432/postgres?sslmode=require`.
+  La _Direct connection_ n'est joignable qu'en IPv6 sur l'offre gratuite (Render ne l'atteint
+  pas) et le _Transaction pooler_ (6543) ne convient pas aux migrations Prisma. Une seule URL
+  sert donc aux migrations, au seed et au serveur.
+- **Le mot de passe** se choisit dans _Database_ → _Settings_ → _Reset database password_ et ne
+  se saisit que dans Render (variable `DATABASE_URL`) ou dans un `.env` local, jamais dans le
+  dépôt.
+- **SSL** : le driver `pg` lit `sslmode=require` comme `verify-full` et refuserait le certificat
+  de Supabase. `createPrismaClient` (`src/lib/prisma.ts`) ajoute `uselibpqcompat=true` pour lui
+  donner le sens standard de PostgreSQL : connexion chiffrée, comme avec la CLI Prisma.
+- **API publique de Supabase** : Supabase expose le schéma `public` en REST à qui possède la clé
+  publique du projet. La migration `row_level_security` active la RLS sur toutes les tables,
+  sans politique : cette API ne voit aucune ligne, alors que le serveur (rôle propriétaire)
+  n'est pas concerné. Une nouvelle table doit faire de même ; `tests/rls.test.ts` le vérifie.
+- **Remplir la base** (100 cartes, succès, compte administrateur) : c'est fait par le
+  `startCommand` de Render à chaque démarrage (seed idempotent). Depuis un poste, avec l'URL
+  Supabase dans `packages/server/.env` : `pnpm --filter @oss/server db:deploy` puis
+  `SEED_ADMIN_EMAIL=… SEED_ADMIN_PASSWORD=… pnpm --filter @oss/server db:seed`.
+- **Offre gratuite** : 500 Mo, et le projet se met en pause après 7 jours sans requête ; il se
+  relance depuis le tableau de bord Supabase (_Restore project_).
+
+### Serveur sur Render et client sur Vercel
+
+1. **Render** → _New_ → _Blueprint_ → ce dépôt. Render crée le service `oss-server` (build,
+   migrations, seed puis démarrage). Il demande :
+   - `DATABASE_URL` : l'URL Supabase du _Session pooler_ ci-dessus ;
+   - `CLIENT_URL` : l'URL Vercel du client, `https://open-space-simulator.vercel.app` ;
    - `SEED_ADMIN_EMAIL` et `SEED_ADMIN_PASSWORD` : le compte administrateur ;
    - facultatif : `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` (OAuth App GitHub, callback
      `${CLIENT_URL}/api/auth/github/callback`) et `ANTHROPIC_API_KEY` (Slack IA).
      `JWT_SECRET` est généré par Render.
-2. Dans `packages/client/vercel.json`, remplacer `REMPLACER-PAR-L-URL-RENDER` par l'URL du
-   service Render (par exemple `oss-server.onrender.com`).
+2. `packages/client/vercel.json` renvoie `/api` et `/docs` vers le service Render
+   `oss-server-e90i.onrender.com` (à changer si le service est recréé).
 3. **Vercel** → _Add New Project_ → ce dépôt, _Root Directory_ `packages/client`. Les
    commandes d'installation et de build sont dans `vercel.json`.
 
@@ -734,19 +853,19 @@ Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur
 chaque push sur `main`, donc à chaque fusion de `develop` dans `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
 Sans serveur, le jeu se joue en invité avec les 130 cartes intégrées et les sauvegardes
 locales ; le compte, les classements en ligne, le Daily en ligne et le Slack IA demandent le serveur
-(le classement « Sur cet appareil » fonctionne sans)
-Render. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
+Render et sa base Supabase (le classement « Sur cet appareil » fonctionne sans). Dans _Settings_ →
+_Pages_, la source doit être _GitHub Actions_.
 
 Les secrets ne vont jamais dans le dépôt : ils se saisissent dans les tableaux de bord de
-Render et Vercel. Toutes les variables sont décrites dans
+Render et Vercel (le mot de passe de la base, dans Supabase puis dans Render). Toutes les variables sont décrites dans
 [`packages/server/.env.example`](packages/server/.env.example).
 
 ## Ce que l'application fait et ne fait pas
 
-Elle fait : un jeu de gestion solo complet (7 modes dont un mode illimité, 39 sprints, 100 cartes, 8 profils de
+Elle fait : un jeu de gestion solo complet (8 modes dont un mode illimité et la Carrière, 39 sprints, 100 cartes, 8 profils de
 devs et 10 métiers d'une équipe web, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
 anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
-Daily, par mode) et sur l'appareil, replays vérifiés par le serveur, 68 succès (dont 22 secrets), un back-office et un Slack
+Daily, par mode) et sur l'appareil, replays vérifiés par le serveur, 70 succès (dont 22 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 
 Elle ne fait pas : de multijoueur en temps réel, d'achats intégrés ni de publicité, de chat
@@ -767,8 +886,8 @@ génère que des messages Slack.
   MacBook Pro sans logo, cinq écrans sur pied ou sur bras articulé (dont un incurvé), bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran géant des annexes (aussi en vente), ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
   local et salle des serveurs, serveurs rack, lames et GPU, switch, box fibre, climatisation de
-  précision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz,
-  litières,
+  précision, climatiseur mural, clim en rangée, sonde de supervision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz,
+  déchets au sol et agents de nettoyage (chariot, aspirateur, serpillière), litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction

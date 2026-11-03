@@ -46,8 +46,8 @@ describe('compareGames', () => {
     ]);
   });
 
-  it('laisse le Facile et l’Illimité hors du classement global', () => {
-    expect(GLOBAL_EXCLUDED_MODES).toEqual(['EASY', 'ENDLESS']);
+  it('laisse le Facile, l’Illimité et la Carrière hors du classement global', () => {
+    expect(GLOBAL_EXCLUDED_MODES).toEqual(['EASY', 'ENDLESS', 'CAREER']);
   });
 });
 

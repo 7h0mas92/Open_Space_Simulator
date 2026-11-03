@@ -1,4 +1,4 @@
-import { TIME, type GameState } from '@oss/shared';
+import { TIME, calendarStartDays, workingHolidayOn, type GameState } from '@oss/shared';
 
 /** Heure simulée, dérivée du tick : utile au cycle jour/nuit et aux conditions de cartes. */
 export interface SimClock {
@@ -10,7 +10,10 @@ export interface SimClock {
   dayOfWeek: number;
   /** Heure décimale (14.5 = 14h30). */
   hour: number;
+  /** Week-end ou jour férié chômé : personne ne vient au bureau. */
   isWeekend: boolean;
+  /** Jour férié chômé (seulement avec la vie d'équipe : congés, fériés, arrêts). */
+  holiday: boolean;
   /** Vendredi entre 17h et 18h : le moment où la prod tombe. */
   isFriday17: boolean;
 }
@@ -26,12 +29,21 @@ export function clockAt(sprint: number, sprintTick: number): SimClock {
     dayOfWeek,
     hour,
     isWeekend: dayOfWeek >= 6,
+    holiday: false,
     isFriday17: dayOfWeek === 5 && hour >= 17 && hour < 18,
   };
 }
 
 export function getClock(state: GameState): SimClock {
-  return clockAt(state.sprint, state.sprintTick);
+  const clock = clockAt(state.sprint, state.sprintTick);
+  // Jour férié : chômé comme un dimanche (vie d'équipe seulement, absente des vieilles parties).
+  if (
+    state.teamLife &&
+    !clock.isWeekend &&
+    workingHolidayOn(calendarStartDays(state.seed) + clock.day) !== null
+  )
+    return { ...clock, isWeekend: true, holiday: true };
+  return clock;
 }
 
 /** Vrai au premier tick d'une heure donnée (ex. : `isAtHour(clock, 12)` à midi pile). */

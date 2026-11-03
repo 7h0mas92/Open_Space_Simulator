@@ -1,5 +1,7 @@
 import {
   ACHIEVEMENTS,
+  CAREER_LEGENDS,
+  type CareerLegendId,
   ANNEXES,
   OUTCOMES,
   type AchievementDifficulty,
@@ -108,6 +110,28 @@ export interface GameRecord {
   trace: GaugeTrace;
   /** Tâches dynamiques : urgences et tâches hebdo réussies ou ratées, objectifs de sprint. */
   flow: FlowRecord;
+  /** Mode Carrière : légende, jalons tenus et étoiles. */
+  career?: { legend: CareerLegendId; done: string[]; stars: number };
+  /** Vie de l'équipe : jours de congé et d'arrêt, burn-out, démissions (absent des vieux rapports). */
+  teamLife?: TeamLifeRecord;
+}
+
+export interface TeamLifeRecord {
+  leaveDays: number;
+  sickDays: number;
+  burnoutLeaves: number;
+  resignations: number;
+}
+
+/** Mode Carrière : réussite de chaque légende et de chacun de ses jalons. */
+export interface CareerSummary {
+  legend: CareerLegendId;
+  games: number;
+  bankruptcyRate: number;
+  /** Part des parties à 0, 1, 2 et 3 étoiles. */
+  stars: [number, number, number, number];
+  /** Part des parties qui tiennent chaque jalon, dans l'ordre de la légende. */
+  milestones: { id: string; rate: number }[];
 }
 
 export interface FlowRecord {
@@ -158,6 +182,23 @@ export function playBalanceGame(
     },
     achievements: [...state.achievements],
     trace: traceGauges(state),
+    ...(state.career
+      ? {
+          career: {
+            legend: state.career.legend,
+            done: Object.entries(state.career.milestones)
+              .filter(([, milestone]) => milestone.status === 'DONE')
+              .map(([id]) => id),
+            stars: state.result?.career?.stars ?? 0,
+          },
+        }
+      : {}),
+    teamLife: {
+      leaveDays: state.stats.leaveDays,
+      sickDays: state.stats.sickDays,
+      burnoutLeaves: state.stats.burnoutLeaves,
+      resignations: state.stats.resignations,
+    },
     flow: {
       urgentDone: state.stats.urgentDone,
       urgentMissed: state.stats.urgentMissed,
@@ -255,6 +296,27 @@ export interface BalanceReport {
   achievements: AchievementRate[];
   /** Tâches dynamiques par bot, et réussite des objectifs par type et difficulté. */
   flow: { bots: FlowSummary[]; objectives: ObjectiveRate[] };
+  /** Mode Carrière, légende par légende (vide si aucune partie Carrière n'a été jouée). */
+  career: CareerSummary[];
+  /** Vie de l'équipe par bot, en moyenne par partie (mode Normal). */
+  teamLife: TeamLifeSummary[];
+}
+
+export interface TeamLifeSummary extends TeamLifeRecord {
+  bot: BotName;
+}
+
+function summarizeTeamLife(bot: BotName, records: GameRecord[]): TeamLifeSummary {
+  const n = Math.max(1, records.length);
+  const mean = (pick: (life: TeamLifeRecord) => number) =>
+    records.reduce((total, record) => total + (record.teamLife ? pick(record.teamLife) : 0), 0) / n;
+  return {
+    bot,
+    leaveDays: mean((life) => life.leaveDays),
+    sickDays: mean((life) => life.sickDays),
+    burnoutLeaves: mean((life) => life.burnoutLeaves),
+    resignations: mean((life) => life.resignations),
+  };
 }
 
 export interface FlowSummary {
@@ -592,7 +654,39 @@ export function aggregate(allRecords: GameRecord[], cards: CardLibrary): Balance
       ),
       objectives: objectiveRates(records),
     },
+    career: careerSummaries(allRecords),
+    teamLife: botNames.map((bot) =>
+      summarizeTeamLife(
+        bot,
+        records.filter((r) => r.bot === bot && r.mode === 'NORMAL'),
+      ),
+    ),
   };
+}
+
+function careerSummaries(records: GameRecord[]): CareerSummary[] {
+  return CAREER_LEGENDS.flatMap((legend): CareerSummary[] => {
+    const games = records.filter((r) => r.career?.legend === legend.id);
+    if (games.length === 0) return [];
+    const share = (test: (r: GameRecord) => boolean) => games.filter(test).length / games.length;
+    return [
+      {
+        legend: legend.id,
+        games: games.length,
+        bankruptcyRate: share((r) => r.outcome === 'BANKRUPTCY'),
+        stars: [0, 1, 2, 3].map((stars) => share((r) => r.career?.stars === stars)) as [
+          number,
+          number,
+          number,
+          number,
+        ],
+        milestones: legend.milestones.map(({ id }) => ({
+          id,
+          rate: share((r) => r.career?.done.includes(id) ?? false),
+        })),
+      },
+    ];
+  });
 }
 
 const pct = (value: number) => `${(value * 100).toFixed(1)} %`;
@@ -641,6 +735,20 @@ export function renderReport(report: BalanceReport): string {
     lines.push(
       `| ${b.bot} | ${b.funding.rounds.toFixed(2)} | ${pct(b.funding.successRate)} | ${pct(b.funding.annexShare)} | ${b.funding.financings.toFixed(2)} |`,
     );
+  }
+  if (report.teamLife.length > 0) {
+    lines.push('', '## Vie de l’équipe', '');
+    lines.push(
+      'Moyennes par partie en mode Normal : congés pris (posés et ponts), jours d’arrêt maladie, arrêts pour burn-out et démissions.',
+      '',
+      '| Bot | Jours de congé | Jours d’arrêt | Burn-out | Démissions |',
+      '| --- | ---: | ---: | ---: | ---: |',
+    );
+    for (const life of report.teamLife) {
+      lines.push(
+        `| ${life.bot} | ${life.leaveDays.toFixed(1)} | ${life.sickDays.toFixed(1)} | ${life.burnoutLeaves.toFixed(2)} | ${life.resignations.toFixed(2)} |`,
+      );
+    }
   }
   if (report.flow.bots.length > 0) {
     lines.push('', '## Tâches dynamiques', '');
@@ -741,6 +849,21 @@ export function renderReport(report: BalanceReport): string {
           );
         }
       }
+    }
+  }
+  if (report.career.length > 0) {
+    lines.push('', '## Mode Carrière', '');
+    lines.push(
+      'Les bots ne suivent pas les jalons : ils jouent comme en Normal. Un jalon à 0 % est suspect, un jalon à 100 % trop facile.',
+      '',
+      '| Légende | Parties | Faillite | 0 ★ | 1 ★ | 2 ★ | 3 ★ | Jalons tenus |',
+      '| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
+    );
+    for (const c of report.career) {
+      const goals = c.milestones.map((m) => `${m.id} ${pct(m.rate)}`).join(' · ');
+      lines.push(
+        `| ${c.legend} | ${c.games} | ${pct(c.bankruptcyRate)} | ${c.stars.map(pct).join(' | ')} | ${goals} |`,
+      );
     }
   }
   lines.push('', '## Cartes les plus tirées', '');

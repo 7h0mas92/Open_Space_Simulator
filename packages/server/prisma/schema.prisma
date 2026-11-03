@@ -31,6 +31,7 @@ enum GameMode {
   ENDLESS
   DAILY
   STORY
+  CAREER
 }
 
 enum Phase {

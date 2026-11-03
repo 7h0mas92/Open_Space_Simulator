@@ -8,6 +8,7 @@ import {
   IdentitySchema,
   StatsSchema,
 } from './components.js';
+import { CareerResultSchema, CareerStateSchema } from './career.js';
 import { CommandLogSchema } from './commands.js';
 import { ComputerIdSchema } from './computers.js';
 import { FinancingStateSchema } from './funding.js';
@@ -16,7 +17,8 @@ import { MonitorSetupSchema } from './monitors.js';
 import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
-import { FibreSubscriptionSchema } from './serverRoom.js';
+import { FibreSubscriptionSchema, ServerHeatLevelSchema } from './serverRoom.js';
+import { LobbyStateSchema } from './lobby.js';
 import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
 import { defaultPricing, PricingStateSchema } from './pricing.js';
 import { SubscriptionsSchema } from './subscriptions.js';
@@ -25,6 +27,9 @@ import { VentureSchema } from './ventures.js';
 import { FloorFinishesSchema } from './floors.js';
 import { WallFinishesSchema } from './walls.js';
 import { AnnexDecorSchema } from './annexDecor.js';
+import { TeamLifeStateSchema } from './teamLife.js';
+import { emptyRetroState, RetroStateSchema } from './retro.js';
+import { emptyTeamBuildingState, TeamBuildingStateSchema } from './teamBuilding.js';
 import { StoryMissionIdSchema } from '../story/campaign.js';
 import { StoryRewardIdSchema } from '../story/rewards.js';
 
@@ -230,6 +235,10 @@ export const GameStatsSchema = z.object({
   maxUsers: z.number(),
   /** Journées de télétravail cumulées (hors Dev Fantôme). */
   remoteDays: z.number().int().default(0),
+  /** Jours de congé pris (congés posés et ponts), jours d'arrêt maladie, arrêts pour burn-out. */
+  leaveDays: z.number().int().default(0),
+  sickDays: z.number().int().default(0),
+  burnoutLeaves: z.number().int().default(0),
   /** Filiales créées, et dividendes et reventes encaissés. */
   venturesFounded: z.number().int().default(0),
   ventureCashIn: z.number().default(0),
@@ -240,6 +249,10 @@ export const GameStatsSchema = z.object({
   crisisMeetings: z.number().int().default(0),
   /** Tickets en partie recodés pour rien, faute de Daily (travail en double). */
   duplicateWork: z.number().int().default(0),
+  /** Arbre de compétences : nœuds appris, formations suivies, Crunchs déclenchés. */
+  skillsLearned: z.number().int().default(0),
+  trainings: z.number().int().default(0),
+  crunches: z.number().int().default(0),
   /** Tâches urgentes et hebdomadaires terminées à temps ou ratées, objectifs de sprint. */
   urgentDone: z.number().int().default(0),
   urgentMissed: z.number().int().default(0),
@@ -275,8 +288,24 @@ export const NOTIFICATION_KINDS = [
   /** Démission annoncée : le dev part quelques planifications plus tard. */
   'DEV_NOTICE',
   'DEV_LEVEL_UP',
+  /** Arbre de compétences : nœud appris, arbre réinitialisé, formation suivie, Crunch lancé. */
+  'SKILL_LEARNED',
+  'SKILLS_RESET',
+  'DEV_TRAINED',
+  'CRUNCH',
   'DEV_BIRTHDAY',
   'DEV_REMOTE',
+  /** Congés posés ou pont, arrêt maladie, arrêt pour burn-out, retour d'absence, jour férié. */
+  'DEV_ON_LEAVE',
+  'DEV_SICK',
+  'DEV_BURNOUT',
+  'DEV_BACK',
+  'PUBLIC_HOLIDAY',
+  /** Rétrospective tenue : action choisie par l'équipe ou imposée. */
+  'RETRO_HELD',
+  /** Team building réservé, puis terminé (avec ses effets). */
+  'TEAM_BUILDING_BOOKED',
+  'TEAM_BUILDING_DONE',
   'RUST_CONVERT',
   'FUNDS_RAISED',
   'PITCH_FAILED',
@@ -302,6 +331,21 @@ export const NOTIFICATION_KINDS = [
   'FIBRE_CANCELLED',
   /** L'opérateur coupe la ligne : la trésorerie ne couvrait plus la semaine. */
   'FIBRE_CUT',
+  /** Hall d'entrée aménagé, secrétaire embauchée ou partie. */
+  'LOBBY_BUILT',
+  'RECEPTIONIST_HIRED',
+  'RECEPTIONIST_LEFT',
+  /** Abonnement de sécurité souscrit, changé, résilié ou suspendu faute de paiement. */
+  'SECURITY_SUBSCRIBED',
+  'SECURITY_CANCELLED',
+  'SECURITY_CUT',
+  /** Trop de salariés au bureau pour l'offre internet : la ligne sature (ou ne sature plus). */
+  'INTERNET_SATURATED',
+  'INTERNET_OK',
+  /** Température d'une salle des serveurs (prévenu seulement avec une sonde de supervision). */
+  'SERVER_ROOM_WARM',
+  'SERVER_ROOM_OVERHEAT',
+  'SERVER_ROOM_COOL',
   /** Saleté au-delà du seuil d'alerte : l'équipe se plaint. */
   'OFFICE_DIRTY',
   /** Entreprise de nettoyage : appel réservé, ménage commencé ou terminé. */
@@ -322,6 +366,8 @@ export const NOTIFICATION_KINDS = [
   'OBJECTIVE_SET',
   'OBJECTIVE_DONE',
   'OBJECTIVE_FAILED',
+  'CAREER_MILESTONE',
+  'CAREER_MISSED',
   'SPRINT_LOST',
   'GAME_OVER',
   'ACHIEVEMENT_UNLOCKED',
@@ -351,6 +397,8 @@ export const GameResultSchema = z.object({
   ownership: z.number(),
   /** Phrase partageable : « Ma startup a été rachetée 400 M€ et 7 devs ont fait un burn-out ». */
   headline: LocalizedTextSchema,
+  /** Bilan du mode Carrière : jalons tenus et étoiles (absent des autres modes). */
+  career: CareerResultSchema.optional(),
   /** Mode Histoire : la mission est-elle réussie ? (absent hors mission) */
   mission: z
     .object({
@@ -428,16 +476,34 @@ export const GameStateSchema = z.object({
   /** Demandes d'augmentation (absentes des sauvegardes d'avant leur ajout). */
   raises: RaisesStateSchema.default(emptyRaisesState),
   /**
+   * Congés, ponts et arrêts maladie (null : vieilles sauvegardes et défi « 3 sprints », où un
+   * moral à 0 mène directement à la démission).
+   */
+  teamLife: TeamLifeStateSchema.nullable().default(null),
+  /** Rétrospective de sprint : proposée, et action en vigueur (absente des vieilles sauvegardes). */
+  retro: RetroStateSchema.default(emptyRetroState),
+  /** Team building réservé et sorties faites (absent des vieilles sauvegardes). */
+  teamBuilding: TeamBuildingStateSchema.default(emptyTeamBuildingState),
+  /**
    * Ancien champ de l'abonnement fibre, d'avant la rubrique Abonnements : repris dans
    * `subscriptions` au chargement (`migrateLegacyFibre`), toujours null ensuite.
    */
   fibre: FibreSubscriptionSchema.nullable().default(null),
+  /** Hall d'entrée au rez-de-chaussée (null : pas de hall, ou sauvegarde d'avant son ajout). */
+  lobby: LobbyStateSchema.nullable().default(null),
   /** Saleté du bureau et entreprise de nettoyage (bureau propre dans les vieilles sauvegardes). */
   cleaning: CleaningStateSchema.default(emptyCleaningState),
   /** Modèle économique et niveau de prix (freemium standard dans les vieilles sauvegardes). */
   pricing: PricingStateSchema.default(defaultPricing),
   /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */
   subscriptions: SubscriptionsSchema.default([]),
+  /** Mode Carrière : légende suivie et jalons (null dans les autres modes). */
+  career: CareerStateSchema.nullable().default(null),
+  /**
+   * Dernier niveau de température connu de chaque salle des serveurs, par identifiant de salle,
+   * pour prévenir quand il change (absent des vieilles sauvegardes).
+   */
+  serverHeat: z.record(z.string(), ServerHeatLevelSchema).default({}),
   /**
    * Titres des dernières tâches du backlog (en français), pour ne pas reproposer tout de suite
    * les mêmes idées. Absent des vieilles sauvegardes.

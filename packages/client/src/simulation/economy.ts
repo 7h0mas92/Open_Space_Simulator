@@ -6,9 +6,9 @@ import {
   type GameState,
 } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
+import { receptionistsMonthly } from './lobby';
 import { hostingSaving } from './serverRoom';
 import { subscriptionsMonthly } from './subscriptions';
-import { cleaningMonthly } from './cleaning';
 import { currentPricing } from './pricing';
 
 /** Revenu mensuel par utilisateur, selon le modèle économique et le niveau de prix. */
@@ -21,9 +21,9 @@ export function annualRevenue(state: GameState): number {
   return state.gauges.users * arpuMonthly(state) * 12;
 }
 
-/** Masse salariale mensuelle chargée. */
+/** Masse salariale mensuelle chargée (devs, et secrétaires de l'accueil). */
 export function monthlyPayroll(state: GameState): number {
-  let total = 0;
+  let total = receptionistsMonthly(state);
   for (const id of devIds(state)) total += state.components.employment[id]?.salary ?? 0;
   return total;
 }
@@ -122,11 +122,7 @@ export function portfolioValue(state: GameState): number {
 
 /** Nombre de mois de trésorerie restants au rythme actuel (Infinity si rentable). */
 export function runwayMonths(state: GameState): number {
-  const burn =
-    monthlyExpenses(state) +
-    subscriptionsMonthly(state) +
-    cleaningMonthly(state) -
-    monthlyRevenue(state);
+  const burn = monthlyExpenses(state) + subscriptionsMonthly(state) - monthlyRevenue(state);
   if (burn <= 0) return Number.POSITIVE_INFINITY;
   return state.gauges.treasury / burn;
 }

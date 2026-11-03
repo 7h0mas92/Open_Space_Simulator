@@ -64,6 +64,7 @@ import { lightingAt, type LightingState } from './lighting';
 import { accessoryMatrix, itemMatrix, OfficeView } from './office';
 import { OfficeLights } from './officeLights';
 import { pixelRatioFor, QUALITY_PRESETS, type QualityLevel } from './quality';
+import { LobbyRenderer } from './lobby';
 import { ProjectionView, unrolledPreview } from './projection';
 import { ScreenGlow, screenMountOf } from './screens';
 import { SkylineView } from './skyline';
@@ -153,6 +154,8 @@ export class GameRenderer {
   private readonly screens = new ScreenGlow();
   /** Toiles des écrans déroulants, faisceaux et objectifs des projecteurs allumés. */
   private readonly projection = new ProjectionView();
+  /** Hall d'entrée : portes à badge, secrétaires, agent de sécurité. */
+  private readonly lobby = new LobbyRenderer();
   /** La ville de New York autour de la tour, vue par les baies vitrées. */
   private readonly skyline = new SkylineView();
   /** Rôle de chaque dev : choisit le contenu de son écran. */
@@ -243,6 +246,7 @@ export class GameRenderer {
       this.roomLights.root,
       this.screens.root,
       this.projection.root,
+      this.lobby.root,
       this.pets.root,
       this.cleaning.root,
     );
@@ -286,7 +290,8 @@ export class GameRenderer {
       !this.view ||
       this.view.phase !== view.phase ||
       this.view.group.wings !== view.group.wings ||
-      this.view.funding.annexes !== view.funding.annexes;
+      this.view.funding.annexes !== view.funding.annexes ||
+      this.view.lobby.built !== view.lobby.built;
     this.view = view;
     this.layout = layoutOf(view);
     this.office.setLayout(this.layout);
@@ -303,6 +308,7 @@ export class GameRenderer {
     this.office.setFloorFinishes(view.floors.zones);
     void this.office.setItems(view.items);
     this.projection.sync(view.items, view.projections);
+    this.lobby.setLayout(this.layout);
     this.updateDecor(view);
     this.dailyBoard.setBoard(ticketBoard(view), english ? 'en' : 'fr');
     void this.roomLights.setLayout(
@@ -546,6 +552,7 @@ export class GameRenderer {
     this.skyline.dispose();
     this.screens.dispose();
     this.projection.dispose();
+    this.lobby.dispose();
     this.pets.dispose();
     this.cleaning.dispose();
     this.composer?.dispose();
@@ -617,7 +624,14 @@ export class GameRenderer {
     this.cleaning.update(delta * speed, this.reducedMotion);
 
     if (view) {
-      const minute = liveSprintMinutes(view.time, now) % 1440;
+      const live = liveSprintMinutes(view.time, now);
+      const minute = live % 1440;
+      this.lobby.sync({
+        lobby: view.lobby,
+        items: view.items,
+        minute,
+        weekday: Math.floor(live / 1440) % 7,
+      });
       const shownMinute = this.smoothMinute(minute, delta);
       const light = this.applyLighting(shownMinute);
       this.roomLights.update(light, this.pixelsPerUnit());
@@ -630,6 +644,7 @@ export class GameRenderer {
       );
     }
     this.projection.update(delta, !this.reducedMotion);
+    this.lobby.update([...this.current, ...this.currentCats], delta, !this.reducedMotion);
     this.dailyBoard.update(delta, !this.reducedMotion);
     this.options.onDeskActivity?.(this.deskActivity(speed > 0));
     this.smoke.update(delta);

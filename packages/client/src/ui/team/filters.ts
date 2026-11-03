@@ -16,7 +16,14 @@ export const TIRED_ENERGY = BALANCE.remote.fatigueEnergy;
 export const LOW_MORALE = BALANCE.remote.burnoutMoralRecovered;
 
 /** Situations à surveiller, cumulables. */
-export const TEAM_FLAGS = ['CONFLICT', 'TIRED', 'LOW_MORALE', 'REMOTE', 'OFFICE'] as const;
+export const TEAM_FLAGS = [
+  'CONFLICT',
+  'TIRED',
+  'LOW_MORALE',
+  'REMOTE',
+  'OFFICE',
+  'ABSENT',
+] as const;
 export type TeamFlag = (typeof TEAM_FLAGS)[number];
 
 export const TEAM_SORTS = [
@@ -69,9 +76,11 @@ function hasFlag(dev: DevView, flag: TeamFlag, team: readonly DevView[]): boolea
     case 'LOW_MORALE':
       return dev.morale < LOW_MORALE;
     case 'REMOTE':
-      return dev.remoteReason !== null;
+      return dev.remoteReason !== null && !dev.absence?.started;
     case 'OFFICE':
-      return dev.remoteReason === null;
+      return dev.remoteReason === null && !dev.absence?.started;
+    case 'ABSENT':
+      return dev.absence?.started === true;
   }
 }
 

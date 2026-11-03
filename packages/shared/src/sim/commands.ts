@@ -6,11 +6,14 @@ import { MonitorModelSchema, MonitorMountSchema, MonitorSizeSchema } from './mon
 import { FinancingKindSchema } from './funding.js';
 import { PetCoatSchema } from './pets.js';
 import { FloorMaterialIdSchema, FloorTintSchema, FloorZoneSchema } from './floors.js';
-import { CleaningPlanIdSchema } from './cleaning.js';
 import { PriceTierSchema, PricingModelSchema } from './pricing.js';
 import { FibrePlanIdSchema } from './serverRoom.js';
+import { LOBBY } from './lobby.js';
+import { SkillIdSchema, TrainingKindSchema } from './skills.js';
 import { SubscriptionServiceSchema } from './subscriptions.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
+import { RetroActionSchema } from './retro.js';
+import { OutingIdSchema } from './teamBuilding.js';
 
 /**
  * Commandes typées envoyées par l'interface à la simulation. C'est le SEUL moyen de
@@ -150,6 +153,23 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ANSWER_ACQUISITION'), accept: z.boolean() }),
   /** Réponse à la demande d'augmentation d'un dev (pendant la planification). */
   z.object({ type: z.literal('ANSWER_RAISE'), accept: z.boolean() }),
+  /** Pose des congés à un dev pour le sprint qui commence (semaine 0 ou 1, 1 à 5 jours). */
+  z.object({
+    type: z.literal('BOOK_LEAVE'),
+    devId: EntityIdSchema,
+    week: z.union([z.literal(0), z.literal(1)]),
+    days: z.number().int().min(1).max(5),
+  }),
+  /** Annule les congés prévus d'un dev (les jours reviennent dans sa réserve). */
+  z.object({ type: z.literal('CANCEL_LEAVE'), devId: EntityIdSchema }),
+  /** Refuse (ou accepte à nouveau) les ponts du sprint qui commence. */
+  z.object({ type: z.literal('REFUSE_BRIDGES'), refuse: z.boolean() }),
+  /** Rétrospective : action d'amélioration retenue pour le sprint (null : on passe). */
+  z.object({ type: z.literal('HOLD_RETRO'), action: RetroActionSchema.nullable() }),
+  /** Réserve une sortie d'équipe pour la fin du sprint qui commence. */
+  z.object({ type: z.literal('BOOK_TEAM_BUILDING'), outing: OutingIdSchema }),
+  /** Annule la sortie réservée (remboursée à moitié). */
+  z.object({ type: z.literal('CANCEL_TEAM_BUILDING') }),
   z.object({ type: z.literal('LAUNCH_IPO') }),
   /** Crée une filiale à partir d'un des projets proposés pendant la planification. */
   z.object({ type: z.literal('FOUND_VENTURE'), ideaId: z.string() }),
@@ -177,16 +197,27 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('CANCEL_FIBRE') }),
   /** Appelle l'entreprise de nettoyage : ce soir à 19h, ou en express tout de suite. */
   z.object({ type: z.literal('CALL_CLEANING'), express: z.boolean() }),
-  /** Souscrit à un abonnement de ménage, ou en change : la première semaine est payée. */
-  z.object({ type: z.literal('SUBSCRIBE_CLEANING'), plan: CleaningPlanIdSchema }),
-  /** Résilie l'abonnement de ménage (la semaine entamée n'est pas remboursée). */
-  z.object({ type: z.literal('CANCEL_CLEANING') }),
   /** Change le modèle économique et le niveau de prix (une fois par sprint). */
   z.object({ type: z.literal('SET_PRICING'), model: PricingModelSchema, tier: PriceTierSchema }),
   /** Souscrit à une offre, ou change d'offre pour ce service : la 1re période est payée. */
   z.object({ type: z.literal('SUBSCRIBE'), offer: z.string().max(64) }),
   /** Résilie l'abonnement d'un service (la période entamée n'est pas remboursée). */
   z.object({ type: z.literal('CANCEL_SUBSCRIPTION'), service: SubscriptionServiceSchema }),
+  /** Fait aménager le hall d'entrée au rez-de-chaussée (travaux payés tout de suite). */
+  z.object({ type: z.literal('BUILD_LOBBY') }),
+  /** Fixe le nombre de secrétaires à l'accueil (embauche ou départ). */
+  z.object({
+    type: z.literal('SET_RECEPTIONISTS'),
+    count: z.number().int().min(0).max(LOBBY.maxReceptionists),
+  }),
+  /** Arbre de compétences : le dev dépense un point dans ce nœud (voir `skills.ts`). */
+  z.object({ type: z.literal('LEARN_SKILL'), devId: EntityIdSchema, skill: SkillIdSchema }),
+  /** Rend tous les points du dev, contre un mois de son salaire. */
+  z.object({ type: z.literal('RESET_SKILLS'), devId: EntityIdSchema }),
+  /** Livre, formation ou conférence : de l'XP contre de l'argent (planification, 1 par sprint). */
+  z.object({ type: z.literal('TRAIN_DEV'), devId: EntityIdSchema, kind: TrainingKindSchema }),
+  /** Pouvoir « Crunch » : +50 % de vitesse pendant 24 h, une fois par sprint. */
+  z.object({ type: z.literal('USE_CRUNCH'), devId: EntityIdSchema }),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 export type CommandType = Command['type'];
@@ -219,6 +250,8 @@ export const COMMAND_ERRORS = [
   'NOT_AVAILABLE',
   'INVENTORY_FULL',
   'RAISE_PENDING',
+  'NOT_ENOUGH_LEAVE',
+  'LEAVE_SLOTS_FULL',
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 

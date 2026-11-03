@@ -33,6 +33,7 @@ export const ITEM_CATEGORIES = [
   'accessory',
   'devices',
   'servers',
+  'lobby',
 ] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
@@ -742,11 +743,21 @@ const LOOKS: Record<SimItemId, ItemLook> = {
   'gpu-server': gear('gpuServer', 1.9),
   'network-switch': gear('networkSwitch', 1.6),
   'fibre-router': gear('fibreRouter', 1.2),
+  'split-ac': gear('splitAc', 1.76),
   'precision-cooling': gear('precisionCooling', 1.95),
+  'inrow-cooling': gear('inrowCooling', 1.95),
+  'server-monitoring': gear('serverMonitoring', 1.43),
   'ups-unit': gear('upsUnit', 1.05),
   'backup-nas': gear('backupNas', 1.4),
   firewall: gear('firewallUnit', 1.2),
   'fire-suppression': gear('fireSuppression', 1.7),
+  // Hall d'entrée : le comptoir d'accueil, où se tiennent les secrétaires.
+  'reception-desk': {
+    category: 'lobby',
+    model: primitive('receptionDesk'),
+    height: 0.76,
+    paint: ['wood'],
+  },
   // Récompenses du mode Histoire (`render/storyRewards.ts`).
   'unicorn-statue': {
     category: 'decor',

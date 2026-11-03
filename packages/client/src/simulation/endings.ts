@@ -1,4 +1,5 @@
 import { BALANCE, type GameState, type LocalizedText, type Outcome } from '@oss/shared';
+import { careerEnd, careerHeadline } from './career';
 import { BUYERS } from './data/flavor';
 import { moneyText, notify, text, type SimContext } from './helpers';
 
@@ -110,13 +111,21 @@ export function endGame(
   state.events.pending = null;
   state.pitch = null;
   const finalValuation = outcome === 'BANKRUPTCY' ? 0 : Math.round(valuation);
+  const career = careerEnd(state, ctx, outcome, phaseReached);
+  const line = headline(state, outcome, finalValuation, buyer);
+  const careerLine = career ? careerHeadline(career) : null;
   state.result = {
     outcome,
     phaseReached,
     sprint: state.sprint,
     valuation: finalValuation,
     ownership: state.ownership,
-    headline: headlineOverride ?? headline(state, outcome, finalValuation, buyer),
+    headline: headlineOverride
+      ? headlineOverride
+      : careerLine
+        ? { fr: line.fr + careerLine.fr, en: line.en + careerLine.en }
+        : line,
+    ...(career ? { career } : {}),
   };
   notify(state, ctx, 'GAME_OVER', state.result.headline);
 }

@@ -1,5 +1,7 @@
-import { BALANCE, type GameState } from '@oss/shared';
+import { BALANCE, RETRO, SKILLS, type GameState } from '@oss/shared';
+import { retroActive } from '../retro';
 import { addGauge, addMoney, clamp, devIds, notify, text, type SimContext } from '../helpers';
+import { hasSkill } from '../skills';
 import type { SimClock } from '../time';
 
 /**
@@ -30,6 +32,8 @@ export function coffeeSystem(state: GameState, ctx: SimContext, clock: SimClock)
       consumption += BALANCE.coffee.consumptionPerWorkTick * addict;
     else if (kind === 'COFFEE') consumption += BALANCE.coffee.consumptionPerBreak * addict;
   }
+  // Rétro « café en libre-service » : chacun fait attention à la machine.
+  if (retroActive(state, 'COFFEE_BAR')) consumption *= RETRO.coffeeBarConsumption;
   addGauge(state, 'coffee', -consumption * BALANCE.coffee.stockScale[state.phase]);
   if (before > 0 && state.gauges.coffee <= 0) {
     notify(
@@ -47,6 +51,7 @@ export function coffeeSystem(state: GameState, ctx: SimContext, clock: SimClock)
 /** Système « énergie » : on se fatigue en travaillant, on récupère en pause et la nuit. */
 export function energySystem(state: GameState, ctx: SimContext): void {
   const { energy } = BALANCE;
+  const flexHours = retroActive(state, 'FLEX_HOURS');
   for (const id of devIds(state)) {
     const identity = state.components.identity[id];
     const stats = state.components.stats[id];
@@ -68,7 +73,11 @@ export function energySystem(state: GameState, ctx: SimContext): void {
         const workaholic = identity.trait === 'WORKAHOLIC' ? 1.2 : 1;
         // Pas de transports pour les télétravailleurs : on se fatigue moins.
         const home = id in state.components.remote ? 1 - BALANCE.remote.energySaving : 1;
-        delta = -energy.drainPerWorkTick * endurance * saving * workaholic * home;
+        // Nœud « Endurance » de l'arbre de compétences : -15 % de fatigue.
+        const stamina = hasSkill(state, id, 'stamina') ? SKILLS.staminaFatigue : 1;
+        delta = -energy.drainPerWorkTick * endurance * saving * workaholic * home * stamina;
+        // Rétro « horaires flexibles » : chacun travaille à son rythme.
+        if (flexHours) delta *= RETRO.flexHoursFatigue;
         break;
       }
       case 'SLEEPING':
