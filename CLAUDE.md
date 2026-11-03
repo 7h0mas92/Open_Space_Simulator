@@ -382,7 +382,7 @@ et du README.
 - La CI tourne sur toutes les branches et toutes les PR ; l'ÉTAT D'AVANCEMENT ci-dessous décrit
   `develop`, la date de la dernière mise en production est dans `CONTEXTE.md`.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 2 novembre 2026)
+# ÉTAT D'AVANCEMENT (mis à jour le 3 novembre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
@@ -921,6 +921,29 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   24 h/24 (16 500 €, Série A), payés chaque semaine. Rendu `render/lobby.ts` et
   `render/lobbyFurniture.ts` (formes `receptionDesk` et `badgeGates` des assets manquants).
   Commandes `BUILD_LOBBY` / `SET_RECEPTIONISTS`, état `lobby` (null par défaut), aucun tirage.
+
+- Panneau « 💶 Business » (`ui/business/Business.tsx`), trois leviers économiques :
+  - Modèle économique (`shared/sim/pricing.ts`, `client/src/simulation/pricing.ts`) : gratuit
+    avec pub, freemium, abonnement, achat unique, au prix bas, standard ou premium ; coefficients
+    de revenu par utilisateur, d'arrivées, de départs et de valeur pour les investisseurs
+    (`userValue`), achat unique encaissé à l'arrivée. Hausse de prix : 12 % d'utilisateurs perdus
+    par doublement (35 % au plus), -5 hype ; baisse +3 hype. Un changement par sprint (`COOLDOWN`).
+    Freemium standard = tous les coefficients à 1, parties qui n'y touchent pas inchangées.
+    Commande `SET_PRICING`, état `pricing` par défaut, aucun tirage.
+  - Clients B2B (`shared/sim/clients.ts`, `client/src/simulation/clients.ts`) : 3 offres par
+    planification sur `seed#clients#sprint`, 16 entreprises inventées, petit, moyen ou gros
+    contrat, besoin en points de features, d'infra ou de bugfix avant une échéance (1 à 4 contrats
+    en cours selon la phase). Prime à la signature, forfait mensuel, livraison à la démo (prime,
+    utilisateurs, hype), puis 6 sprints de maintenance à 25 % du forfait. SLA : pénalité à chaque
+    panne, départ après 3 ; échéance ratée ou rupture : pénalité et -6 hype. Commandes
+    `SIGN_CLIENT` / `DROP_CLIENT`, état `clients` par défaut ; sans contrat, partie inchangée.
+  - Support client (`shared/sim/support.ts`, `client/src/simulation/support.ts`) : tickets chaque
+    jour ouvré, 3 x √(utilisateurs / 1 000) x (1 + dette + instabilité) ; agents (3 500 € par mois,
+    30 tickets par jour, 1 à 25 selon la phase) et devs de garde (10 ou 25 % de leur temps).
+    Satisfaction de 0 à 100 selon l'attente : sous 60, jusqu'à +60 % de départs ; au-dessus de
+    80, +6 % de croissance et un peu de hype. Commande `SET_SUPPORT`, état `support` par défaut,
+    aucun tirage ; règle qui change toutes les parties (anciens replays de scores divergent).
+    Bot planner : `sensibleSupportAgents`.
 
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback
