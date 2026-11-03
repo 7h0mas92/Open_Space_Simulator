@@ -21,11 +21,14 @@ console.log(
   STORY_ACTS.map((a) => a.id.padEnd(9)).join(' '),
   'objectifs',
   'sprints',
+  'R&D (points, niveaux)',
 );
 for (const bot of BOT_NAMES) {
   let won = 0;
   let goals = 0;
   let sprints = 0;
+  let earned = 0;
+  let nodes = 0;
   const reached = STORY_ACTS.map(() => 0);
   const fails: Record<string, number> = {};
   for (let i = 0; i < N; i++) {
@@ -41,6 +44,8 @@ for (const bot of BOT_NAMES) {
         (fails[`${result?.act}:${result?.failure}`] ?? 0) + 1;
     goals += sim.state.story?.campaign?.done.length ?? 0;
     sprints += sim.state.sprint;
+    earned += sim.state.story?.campaign?.research?.earned ?? 0;
+    nodes += sim.state.story?.campaign?.research?.nodes.length ?? 0;
   }
   const pct = (n: number) => `${Math.round((n / N) * 100)}%`.padEnd(9);
   console.log(
@@ -48,7 +53,8 @@ for (const bot of BOT_NAMES) {
     pct(won),
     reached.map(pct).join(' '),
     (goals / N).toFixed(1).padEnd(9),
-    (sprints / N).toFixed(1),
+    (sprints / N).toFixed(1).padEnd(7),
+    `${(earned / N).toFixed(0)} pts, ${(nodes / N).toFixed(1)}/20`,
     JSON.stringify(fails),
   );
 }

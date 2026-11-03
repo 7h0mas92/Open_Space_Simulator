@@ -38,7 +38,7 @@ const lightMaterial = new THREE.MeshBasicMaterial({ vertexColors: true });
 lightMaterial.name = 'lights';
 
 /** Teinte une géométrie d'une couleur unie (attribut `color` par sommet). */
-function tint(geometry: THREE.BufferGeometry, color: number): void {
+export function tint(geometry: THREE.BufferGeometry, color: number): void {
   const rgb = new THREE.Color(color);
   const count = geometry.getAttribute('position').count;
   const colors = new Float32Array(count * 3);

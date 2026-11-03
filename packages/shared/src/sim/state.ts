@@ -393,6 +393,9 @@ export const NOTIFICATION_KINDS = [
   'CAREER_MISSED',
   'STORY_ACT',
   'STORY_GOAL',
+  /** Arbre R&D des objets (Histoire) : points d'innovation gagnés, niveau débloqué. */
+  'RESEARCH_POINTS',
+  'RESEARCH_DONE',
   'RIVAL_ACTION',
   'STORY_END',
   'SPRINT_LOST',

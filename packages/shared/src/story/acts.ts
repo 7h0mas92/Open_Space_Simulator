@@ -8,6 +8,7 @@ import {
   type StoryStat,
 } from './campaign.js';
 import { RivalStateSchema } from '../sim/rivals.js';
+import { ResearchStateSchema } from '../sim/research.js';
 
 /**
  * L'histoire « Ctrl+Alt+Fonder » : une seule longue partie du mode Histoire, en 5 actes, du
@@ -190,6 +191,11 @@ export const CampaignStateSchema = z.object({
   rivals: z.array(RivalStateSchema).default([]),
   /** Utilisateurs du joueur à chaque démo, pour comparer les courbes. */
   usersHistory: z.array(z.number()).default([]),
+  /**
+   * Arbre R&D des objets (`sim/research.ts`) : points d'innovation et niveaux pris. Absent des
+   * parties commencées avant l'arbre : leur catalogue reste complet.
+   */
+  research: ResearchStateSchema.optional(),
   /**
    * Saison libre : l'histoire s'est finie par l'entrée en Bourse et la partie continue sans
    * limite, la concurrence montant à partir de `fromSprint`. Absent pendant l'histoire.

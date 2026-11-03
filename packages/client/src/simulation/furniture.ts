@@ -36,6 +36,7 @@ import { serverGearEffects } from './serverRoom';
 import { subscriptionEffects } from './subscriptions';
 import { wallEffects } from './walls';
 import { colorUnlocked, hasUnlock } from './unlocks';
+import { researchUnlocked } from './research';
 import { absenceOn } from './teamLife';
 import { getClock } from './time';
 
@@ -180,6 +181,7 @@ function checkPurchase(state: GameState, item: FurnitureDefinition | undefined):
   if (!item) return { ok: false, error: 'NOT_FOUND' };
   if (phaseIndex(state.phase) < phaseIndex(item.minPhase)) return { ok: false, error: 'LOCKED' };
   if (!hasUnlock(state, item.unlock)) return { ok: false, error: 'LOCKED' };
+  if (!researchUnlocked(state, `item:${item.id}`)) return { ok: false, error: 'LOCKED' };
   if (countOf(state, item.id) >= item.maxCount) return { ok: false, error: 'NOT_ELIGIBLE' };
   if (state.gauges.treasury < item.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
   return { ok: true };
@@ -447,6 +449,7 @@ export function setComputer(
   const next = getComputer(computer);
   if (current.id === next.id) return { ok: true };
   if (phaseIndex(state.phase) < phaseIndex(next.minPhase)) return { ok: false, error: 'LOCKED' };
+  if (!researchUnlocked(state, `computer:${next.id}`)) return { ok: false, error: 'LOCKED' };
   const refund = current.price * RESALE_RATIO;
   if (state.gauges.treasury + refund < next.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
   addMoney(state, refund - next.price);
@@ -537,6 +540,9 @@ export function setMonitor(
   if (!placed || !item || !model) return { ok: false, error: 'NOT_FOUND' };
   if (item.monitor !== true) return { ok: false, error: 'INVALID_PLACEMENT' };
   if (phaseIndex(state.phase) < phaseIndex(model.minPhase)) return { ok: false, error: 'LOCKED' };
+  if (!researchUnlocked(state, `monitor:${model.id}`)) return { ok: false, error: 'LOCKED' };
+  if (choice.mount === 'arm' && !researchUnlocked(state, 'monitor:arm'))
+    return { ok: false, error: 'LOCKED' };
   if (sameMonitor(monitorOf(placed), choice)) return { ok: false, error: 'NOT_ELIGIBLE' };
   const price = monitorPrice(choice);
   const refund = (placed.monitor?.price ?? 0) * RESALE_RATIO;

@@ -20,6 +20,7 @@ import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
 import { endGame, endOfTime } from './endings';
 import { rivalsSprint } from './rivals';
+import { researchSprint } from './research';
 import { campaignDeadline, missionTimeUp } from './story';
 import { phaseIndex } from './furniture';
 import { closeSprintPerformance } from './performance';
@@ -191,6 +192,8 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   ventureSprint(state, ctx);
   // Mode Histoire, longue partie : les rivaux jouent leur sprint (graine à part).
   rivalsSprint(state, ctx);
+  // Arbre R&D : points d'innovation de la démo (après les rivaux, pour comparer les sprints).
+  researchSprint(state, ctx, shipped);
   state.valuation = computeValuation(state);
 
   state.history.sprints.push({

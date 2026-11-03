@@ -53,3 +53,35 @@ test('l’histoire en 5 actes commence au prologue, avec sa date limite', async 
   await expect(page.getByTestId('side-first-commit')).toContainText('Livrer 3 features');
   expect(errors).toEqual([]);
 });
+
+test('l’arbre R&D débloque le catalogue de l’histoire', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    localStorage.setItem('oss.language', 'fr');
+    localStorage.setItem('oss.settings', JSON.stringify({ tutorialDone: true }));
+  });
+  await page.goto('/');
+  await page.getByTestId('mode-STORY').click();
+  await page.getByTestId('campaign-start').click();
+  await page.getByTestId('story-scene-skip').click();
+  // Sur téléphone, le panneau de l'acte s'ouvre en plein écran : on le ferme d'abord.
+  await expect(page.getByTestId('campaign-panel')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('campaign-panel')).toBeHidden();
+  // Les règles du mode Histoire s'ouvrent dans le guide : sur tablette, il recouvre le panneau.
+  const guide = page.getByTestId('guide');
+  await expect(guide).toBeVisible();
+  await guide.locator('.guide-minimize').click();
+  await expect(guide).toBeHidden();
+
+  await page.locator('[data-tutorial="panel-research"]').click();
+  const panel = page.getByTestId('research-panel');
+  await expect(panel).toBeVisible();
+  await expect(page.getByTestId('research-points')).toContainText('4 points d’innovation');
+  await expect(page.getByTestId('research-node-comfort-2')).toContainText('Niveau précédent');
+  await page.getByTestId('research-take-comfort-1').click();
+  await expect(page.getByTestId('research-node-comfort-1')).toContainText('Débloqué');
+  await expect(page.getByTestId('research-points')).toContainText('0 points d’innovation');
+  expect(errors).toEqual([]);
+});

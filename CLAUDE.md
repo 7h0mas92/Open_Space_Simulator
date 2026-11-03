@@ -504,6 +504,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   question par manche, réponse hors sujet pénalisée, jauge d'intérêt et réactions. Business
   angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
   `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
+  Affichage fidèle : le panneau donne les chances estimées du prochain tour
+  (`estimatePitchChance`, calée sur des milliers de pitchs simulés, écart de moins de 5 points
+  par tranche de 10 %) et la force de chaque thème (`categoryStrengths`) ; pendant le pitch,
+  chaque argument montre sa force face à cet investisseur et à la question (▲ fort, ● moyen,
+  ▼ faible, `pitchRating`), la jauge dont il dépend (`argumentBasis`) et 🎲 s'il est aléatoire ;
+  la jauge s'appelle « Chance de signer » (c'est la vraie probabilité). Rendu seulement :
+  `pnpm balance` inchangé.
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
   jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places. Sol d'origine
   identique dans toutes les pièces (damier beige, `BASE_FLOOR_COLORS` dans `render/office.ts`) :
@@ -605,7 +612,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   espace ni accent) : tycoon au menu, tycoon 1 en planification et démo, les 4 Détente en playlist
   pendant le sprint, aria math en levée de fonds et à l'écran de fin (`audio/music.ts`,
   `musicMoodOf`, `ui/useMusic.ts`). Fondu de 1,5 s, reprise du morceau là où il était, lecture en
-  flux HTML5, démarrage au premier clic, volume « Musique » des options. Hors précache de la PWA
+  flux par une balise `<audio>` branchée sur un gain Web Audio (`audio/musicTrack.ts`, le volume
+  marche aussi sur iPhone et iPad, où Safari ignore celui de la balise), démarrage au premier clic,
+  volume « Musique » des options ; sous « Effets », une mention dit qu'aucun effet n'est encore là. Hors précache de la PWA
   (25 Mo) : hors ligne, pas de musique. Crédits : « compositions originales de l'équipe du projet ».
 - Canapé et bibliothèque détaillés (`render/furnitureDetail.ts`, formes `sofa` et `bookcase` des
   assets manquants) : canapé en tissu gris-bleu (pieds en bois, accoudoirs roulés, coussins
@@ -878,6 +887,28 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   (`--campaign-games 220`) : les bons bots finissent l'histoire dans 40 à 65 % des parties
   (organizer, rested, investor, coach), le hasard jamais ; l'acte qui bloque reste la guerre des
   prix (`docs/balance.md`).
+- Arbre R&D des objets (T4 ; `shared/sim/research.ts`, `client/src/simulation/research.ts`, panneau
+  « 🔬 R&D » `ui/story/ResearchPanel.tsx`, `view/research.ts`) : dans l'histoire en 5 actes, le
+  catalogue démarre réduit (`RESEARCH_FREE` : bureau, bureau IKEA, plantes, cafetière, mug, canard,
+  lampe, poubelle, tour et écran bureautiques, mur crème) et se débloque avec des points
+  d'innovation : +1 par feature livrée, +3 par objectif secondaire rempli, +2 quand le joueur gagne
+  plus d'utilisateurs que chaque rival sur un sprint (comptés à la démo, `researchSprint`), 4 au
+  départ. 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation ; coûts 4, 8,
+  14, 20) : chaque niveau demande le précédent et l'acte correspondant (niveau 1 au garage, 4 dès
+  « Le géant ») ; le verrou de phase reste. Chaque niveau débloque des clés `item:`, `computer:`,
+  `monitor:` (et `monitor:arm`), `wall:`, `floor:`, `meeting:` ; un test vérifie que tout le
+  catalogue est rattaché. Branche Prestige : les récompenses des objectifs (papiers peints, sols,
+  couleurs, objets, pas les bonus de départ) s'achètent dès l'objectif rempli dans la partie
+  (`prestigeEarned`, lu par `hasUnlock`). Verrou dans chaque achat (erreur `LOCKED`), blocage
+  `researchLocked` de `shopStatus`, raison « 🔬 R&D : Tech, niveau 3 » dans le catalogue, les murs,
+  les sols, les écrans, les ordinateurs et les salles de réunion. Commande `RESEARCH_NODE`, erreur
+  `NOT_ENOUGH_POINTS`, notifications `RESEARCH_POINTS` / `RESEARCH_DONE`, état
+  `campaign.research` optionnel (absent des histoires commencées avant : catalogue complet),
+  étape « L'arbre R&D » du tutoriel. Aucun tirage : missions courtes et autres modes inchangés.
+  Bot de recherche (`researchCommands`) ; `pnpm balance:campaign` affiche les points et niveaux
+  (réussite des bots inchangée à ±1 partie sur 20). Choix de Thomas (« le plus logique, tu es
+  libre ») : rattachement explicite objet par objet, Prestige par les objectifs ; coûts de 2, 4, 7,
+  10 doublés après calibrage. Hall d'entrée et offres internet (fichiers de Melvin) non verrouillés.
 - Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
   menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
   8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,
@@ -1016,6 +1047,18 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   toutes les parties (anciens replays de scores divergent). 192 titres de plus
   (`data/moreTasks.ts`, 439 au total), 5 urgences et 5 tâches de la semaine de plus, 150 titres
   récents gardés.
+- Voitures et décorations refaites (`render/cars.ts`, `render/decorModels.ts`,
+  `render/decorations.ts`) : 7 modèles de véhicules en formes Three.js dans les rues de la ville
+  (taxi 30 %, berline, citadine, SUV, camionnette, pick-up, bus 4 %), vitres, roues à jantes,
+  phares, feux, pare-chocs ; carrosserie teintée par instance et habillage peint par sommet, deux
+  InstancedMesh par modèle, modèle et couleur figés par le numéro (`carLook`, hachage, aucun
+  tirage). Décorations de saison : guirlandes à fil (ampoules à douille en 3 phases de
+  scintillement, ou fanions triangles, cœurs ou queues d'aronde) tendues en festons entre des
+  clous ; un ornement par emplacement, à mi-chemin entre deux appliques, hors fenêtres, cloisons
+  et meubles hauts (`decorWalls`) ; 24 ornements et 12 objets de bureau redessinés (couronne,
+  chaussette, sapin en pot, horloge de minuit, champagne, écu, bannière, vinyle, cassette, cube,
+  chauves-souris, araignée…). Fusion par matériau (`Pieces`, 4 maillages au plus par mur), deux
+  thèmes se partagent les murs (`shareWalls`). Rendu seulement.
 
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback

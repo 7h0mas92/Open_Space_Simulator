@@ -65,6 +65,8 @@ export const PANELS = [
   'mission',
   /** Mode Histoire, longue partie : parts de marché et startups rivales. */
   'market',
+  /** Mode Histoire, longue partie : arbre R&D des objets. */
+  'research',
   'dashboard',
   'slack',
   'saves',
@@ -196,6 +198,7 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   STORY_ACT: 'success',
   STORY_END: 'success',
   STORY_GOAL: 'info',
+  RESEARCH_DONE: 'success',
   RIVAL_ACTION: 'info',
   SPRINT_LOST: 'error',
   ACHIEVEMENT_UNLOCKED: 'success',

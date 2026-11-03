@@ -1,4 +1,4 @@
-import { Howl } from 'howler';
+import { MusicTrack as ElementTrack, type MusicHowl } from './musicTrack';
 import type { SprintStep } from '../view/types';
 
 /**
@@ -52,18 +52,12 @@ export function musicMoodOf(step: SprintStep | null): MusicMood {
 /** Durée du fondu enchaîné entre deux moments, en millisecondes. */
 export const MUSIC_FADE_MS = 1500;
 
-/** Le strict nécessaire de Howler, pour pouvoir le remplacer dans les tests. */
-export type MusicHowl = Pick<
-  Howl,
-  'play' | 'pause' | 'stop' | 'volume' | 'fade' | 'playing' | 'on' | 'once'
->;
+export type { MusicHowl };
+/** Fabrique d'un morceau, remplaçable dans les tests. */
 export type CreateHowl = (src: string) => MusicHowl;
 
-/**
- * Lecture en flux HTML5 : un morceau de 4 minutes décodé en mémoire pèserait près de 90 Mo,
- * le navigateur le lit au fil du téléchargement.
- */
-const createHowl: CreateHowl = (src) => new Howl({ src: [src], html5: true, preload: false });
+/** Lecture en flux, volume réglé par Web Audio (voir `musicTrack.ts`, valable aussi sur iPhone). */
+const createHowl: CreateHowl = (src) => new ElementTrack(src);
 
 export class MusicPlayer {
   private mood: MusicMood | null = null;
@@ -111,7 +105,7 @@ export class MusicPlayer {
       const created = this.create(`${MUSIC_BASE}/${MUSIC_TRACKS[track]}`);
       created.on('play', () => this.fadeIn(created));
       created.on('end', () => this.next(created));
-      // Le navigateur bloque le son avant le premier clic ou la première touche : Howler
+      // Le navigateur bloque le son avant le premier clic ou la première touche : le morceau
       // prévient quand il est débloqué, on relance alors le morceau s'il est toujours d'actualité.
       created.on('playerror', () =>
         created.once('unlock', () => {

@@ -10,6 +10,18 @@ import { ItemThumbnail, showCatalogTab } from './Catalog';
 import { ColorPicker } from './ColorPicker';
 import { monitorLabel } from './MonitorShop';
 import { ComputerPicker } from './ComputerPicker';
+import { researchLockedReason } from './storyLock';
+import { COMPUTERS, type ComputerId } from '@oss/shared';
+
+/** Arbre R&D : le niveau à prendre pour chaque ordinateur pas encore débloqué. */
+function computerResearch(t: TFunction, view: GameView): Partial<Record<ComputerId, string>> {
+  const locks: Partial<Record<ComputerId, string>> = {};
+  for (const computer of COMPUTERS) {
+    const reason = researchLockedReason(t, view, `computer:${computer.id}`);
+    if (reason) locks[computer.id] = reason;
+  }
+  return locks;
+}
 
 /**
  * Barre contextuelle au-dessus de la barre d'actions (ou du catalogue en construction) :
@@ -142,6 +154,7 @@ export function SelectionBar({ view }: { view: GameView }) {
           <ComputerPicker
             value={item.computer}
             phase={view.phase}
+            research={computerResearch(t, view)}
             treasury={view.gauges.treasury}
             onChange={(computer) =>
               void dispatch({ type: 'setComputer', itemId: item.id, computer })
