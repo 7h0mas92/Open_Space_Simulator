@@ -1,6 +1,9 @@
 import {
   ANNEXES,
   FINANCING,
+  argumentBasis,
+  isRandomArgument,
+  pitchRating,
   FUNDING_TIERS,
   GameStateSchema,
   PITCH_ARGUMENTS,
@@ -11,7 +14,15 @@ import { describe, expect, it } from 'vitest';
 import { applyCommand } from '../../src/simulation/commands';
 import { monthlyExpenses, repayLoan } from '../../src/simulation/economy';
 import { financingOffers, takeFinancing } from '../../src/simulation/financing';
-import { answerDelta, pitchArgument, startPitch } from '../../src/simulation/fundraising';
+import {
+  answerDelta,
+  categoryStrengths,
+  estimatePitchChance,
+  expectedAnswer,
+  pitchArgument,
+  startPitch,
+} from '../../src/simulation/fundraising';
+import { Rng } from '../../src/simulation/rng';
 import { canPlace } from '../../src/simulation/furniture';
 import { teamMax, teamMoral } from '../../src/simulation/helpers';
 import { getFurniture } from '@oss/shared';
@@ -130,6 +141,73 @@ describe('Tours de table de plus en plus durs', () => {
     expect(first!.delta > 0).toBe(!first!.bluffCaught);
     // Même graine, même sprint : même verdict, quoi que tire le générateur principal.
     expect(second!.bluffCaught).toBe(first!.bluffCaught);
+  });
+});
+
+/** Joue un pitch en prenant à chaque manche l'argument le plus fort parmi ceux proposés. */
+function playBestPitch(base: GameState, seed: string): boolean {
+  const state = structuredClone(base);
+  state.seed = seed;
+  const ctx = makeContext(state, { rng: Rng.fromSeed(seed) });
+  startPitch(state, ctx);
+  while (state.pitch && !state.pitch.result) {
+    const pitch = state.pitch;
+    const best = [...pitch.options].sort(
+      (a, b) => expectedAnswer(state, pitch, b) - expectedAnswer(state, pitch, a),
+    )[0]!;
+    pitchArgument(state, ctx, best);
+  }
+  return state.pitch?.result?.success ?? false;
+}
+
+describe('Ce que le panneau affiche correspond au pitch', () => {
+  it('estime la chance sans tirage, entre 0 et 1', () => {
+    const state = seriesState(2);
+    const before = JSON.stringify(state);
+    const chance = estimatePitchChance(state);
+    expect(chance).toBeGreaterThan(0);
+    expect(chance).toBeLessThan(1);
+    expect(estimatePitchChance(state)).toBe(chance);
+    expect(JSON.stringify(state)).toBe(before);
+  });
+
+  it('une startup en meilleure forme a plus de chances, un tour plus dur en a moins', () => {
+    const state = seriesState(2);
+    const weak = structuredClone(state);
+    weak.gauges.hype = 25;
+    weak.gauges.debt = 85;
+    expect(estimatePitchChance(weak)).toBeLessThan(estimatePitchChance(state));
+    const harder = structuredClone(state);
+    harder.fundingRounds = 5;
+    expect(estimatePitchChance(harder)).toBeLessThan(estimatePitchChance(state));
+  });
+
+  it('la chance estimée colle à la réussite réelle d’un joueur qui choisit bien', () => {
+    for (const [rounds, hype, debt] of [
+      [0, 45, 30],
+      [2, 70, 20],
+      [4, 55, 50],
+    ] as const) {
+      const state = seriesState(rounds);
+      state.gauges.hype = hype;
+      state.gauges.debt = debt;
+      const games = 400;
+      let wins = 0;
+      for (let i = 0; i < games; i++) if (playBestPitch(state, `calibre-${rounds}-${i}`)) wins++;
+      expect(Math.abs(wins / games - estimatePitchChance(state))).toBeLessThan(0.12);
+    }
+  });
+
+  it('note chaque thème et chaque argument, et dit sur quoi il s’appuie', () => {
+    const state = seriesState(2);
+    state.gauges.debt = 95;
+    expect(pitchRating(categoryStrengths(state).TECH)).toBe('weak');
+    state.gauges.debt = 0;
+    expect(pitchRating(categoryStrengths(state).TECH)).toBe('strong');
+    expect(argumentBasis(getPitchArgument('uptime')!)).toBe('stability');
+    expect(argumentBasis(getPitchArgument('users-curve')!)).toBe('users');
+    expect(isRandomArgument(getPitchArgument('live-demo')!)).toBe(true);
+    expect(isRandomArgument(getPitchArgument('clean-code')!)).toBe(false);
   });
 });
 

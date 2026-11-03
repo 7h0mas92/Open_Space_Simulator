@@ -3574,6 +3574,34 @@ legend {
   gap: 8px;
 }
 
+.funding-chance {
+  margin: 0;
+}
+
+.funding-strengths {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+/* Force d'un argument : la couleur double le pictogramme (▲ ● ▼), jamais seule. */
+.pitch-rating {
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.pitch-rating.rating-strong {
+  border-color: #7ddc98;
+  color: #7ddc98;
+}
+
+.pitch-rating.rating-weak {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
 .financing-offers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
