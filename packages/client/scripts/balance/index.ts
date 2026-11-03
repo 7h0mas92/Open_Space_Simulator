@@ -5,7 +5,7 @@
  *
  * Options : --games 10000 (mode Normal, réparti entre les bots), --mode-games 700 (par autre
  * mode : Facile, Hardcore, Stagiaires Only, 3 sprints), --career-games 140 (par légende du mode
- * Carrière), --threads 4, --out reports/balance.md
+ * Carrière), --campaign-games 220 (histoire en actes, réparties entre les bots), --threads 4, --out reports/balance.md
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
@@ -22,6 +22,7 @@ const { values } = parseArgs({
     games: { type: 'string', default: '10000' },
     'mode-games': { type: 'string', default: '700' },
     'career-games': { type: 'string', default: '140' },
+    'campaign-games': { type: 'string', default: '220' },
     threads: { type: 'string', default: String(availableParallelism()) },
     out: { type: 'string', default: 'reports/balance.md' },
   },
@@ -41,6 +42,8 @@ for (const mode of OTHER_MODES)
 // Mode Carrière : la légende est écrite dans la graine, chaque légende a son lot de parties.
 for (const legend of CAREER_LEGENDS)
   addGames('CAREER', Number(values['career-games']), careerSeed(legend.id, 'balance'));
+// Histoire en actes (« Ctrl+Alt+Fonder ») : bot conteur, une longue partie de 60 sprints.
+addGames('STORY', Number(values['campaign-games']), 'balance-campaign');
 const total = jobs.length;
 const threads = Math.max(1, Math.min(Number(values.threads), total));
 

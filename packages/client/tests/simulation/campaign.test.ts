@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { STORY_ACTS, STORY_TOTAL_SPRINTS, type GameState } from '@oss/shared';
+import {
+  STORY_ACTS,
+  STORY_MISSION_IDS,
+  STORY_SIDE_BONUS,
+  STORY_TOTAL_SPRINTS,
+  type GameState,
+} from '@oss/shared';
 import { defaultCardLibrary } from '../../src/events/defaultCards';
+import { storyteller } from '../../src/simulation/analysis';
 import { createBot, playWithBot } from '../../src/simulation/bots';
 import { endGame } from '../../src/simulation/endings';
 import { replay } from '../../src/simulation/replay';
@@ -82,6 +89,28 @@ describe('Histoire en actes : objectifs', () => {
     expect(outbox.some((n) => n.kind === 'STORY_GOAL')).toBe(true);
     // Une seule fois.
     expect(check(state).filter((n) => n.kind === 'STORY_GOAL')).toHaveLength(0);
+  });
+
+  it('un objectif secondaire rempli donne son bonus d’histoire, sans tirage', () => {
+    const { state } = campaign();
+    state.stats.featuresShipped = 3;
+    const treasury = state.gauges.treasury;
+    const rng = [...state.rng];
+    const outbox = check(state);
+    expect(state.gauges.treasury).toBe(treasury + (STORY_SIDE_BONUS['first-commit'].treasury ?? 0));
+    expect(state.rng).toEqual(rng);
+    expect(outbox.filter((n) => n.kind === 'STORY_GOAL')).toHaveLength(2);
+  });
+
+  it('chaque objectif secondaire a un bonus en français et en anglais', () => {
+    for (const id of STORY_MISSION_IDS) {
+      const bonus = STORY_SIDE_BONUS[id];
+      expect(bonus.text.fr.length).toBeGreaterThan(10);
+      expect(bonus.text.en.length).toBeGreaterThan(10);
+      expect(
+        (bonus.treasury ?? 0) + (bonus.hype ?? 0) + (bonus.users ?? 0) - (bonus.rivals ?? 0),
+      ).toBeGreaterThan(0);
+    }
   });
 
   it('une contrainte enfreinte rate l’objectif secondaire', () => {
@@ -202,10 +231,26 @@ describe('Histoire en actes : déterminisme', () => {
     expect(again.state.story?.campaign?.act).toBeGreaterThanOrEqual(1);
   });
 
+  it('le bot conteur refuse les rachats avant « Le géant »', () => {
+    const simulation = campaign('conteur');
+    const accept = {
+      name: 'vendeur',
+      decide: () => [{ type: 'ANSWER_ACQUISITION' as const, accept: true }],
+    };
+    const bot = storyteller(accept);
+    expect(bot.decide(simulation.state, cards)).toEqual([
+      { type: 'ANSWER_ACQUISITION', accept: false },
+    ]);
+    atAct(simulation, 3);
+    expect(bot.decide(simulation.state, cards)).toEqual([
+      { type: 'ANSWER_ACQUISITION', accept: true },
+    ]);
+  });
+
   it('la vue donne l’acte, sa date limite et ses objectifs secondaires', () => {
     const { state } = campaign();
     const view = toGameView(state, VIEW_CONTEXT).campaign;
-    expect(view).toMatchObject({ act: 'prologue', actIndex: 0, deadline: 12 });
+    expect(view).toMatchObject({ act: 'prologue', actIndex: 0, deadline: 8 });
     expect(view?.side.map((side) => side.id)).toEqual([
       'first-commit',
       'coffee-first',

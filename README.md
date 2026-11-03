@@ -685,7 +685,9 @@ sequenceDiagram
   Scènes dialoguées à chaque acte, 10 cartes écrites pour l'histoire (`shared/story/cards.ts`,
   imposées à un sprint fixé, sans tirage), SMS de Mamie Josette et articles d'Inès Kader dans le
   Slack, deux fins écrites (rachat par Gigacorp, ou entrée en Bourse puis Saison libre sans limite,
-  avec une nouvelle startup rivale tous les 10 sprints).
+  avec une nouvelle startup rivale tous les 10 sprints). Chaque objectif secondaire rempli donne
+  un bonus d'histoire (argent, hype, utilisateurs). Équilibrage mesuré par un bot « conteur » dans
+  `pnpm balance` (section « Histoire en actes » de `docs/balance.md`).
   **Arbre R&D des objets** (`packages/shared/src/sim/research.ts`, panneau « 🔬 R&D ») : dans
   l'histoire, le catalogue de construction démarre réduit et se débloque avec des points
   d'innovation (features livrées, objectifs remplis, sprints gagnés face aux rivaux). 5 branches

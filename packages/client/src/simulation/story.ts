@@ -2,6 +2,7 @@ import {
   ENDLESS,
   emptyResearch,
   STORY_ACTS,
+  STORY_SIDE_BONUS,
   STORY_STATS,
   getStoryAct,
   getStoryMission,
@@ -17,9 +18,18 @@ import {
 import { generateDev, hireDev } from './devs';
 import { endGame } from './endings';
 import { phaseIndex } from './furniture';
-import { notify, teamMoral, teamSize, text, type SimContext } from './helpers';
+import {
+  addGauge,
+  addMoney,
+  addUsers,
+  notify,
+  teamMoral,
+  teamSize,
+  text,
+  type SimContext,
+} from './helpers';
 import { missingPetNeeds } from './pets';
-import { marketShare, rivalUsers, startingRivals } from './rivals';
+import { changeRivalUsers, marketShare, rivalUsers, startingRivals } from './rivals';
 import { serverRoomStatuses } from './serverRoom';
 import { hasUnlock } from './unlocks';
 
@@ -331,8 +341,19 @@ function checkSideGoals(state: GameState, ctx: SimContext, campaign: CampaignSta
         'STORY_GOAL',
         text(['Objectif « {fr} » rempli !', 'Goal “{en}” completed!'], params),
       );
+      applySideBonus(state, ctx, side.mission.id);
     }
   }
+}
+
+/** Coup de pouce de l'histoire pour un objectif secondaire rempli (sans tirage). */
+function applySideBonus(state: GameState, ctx: SimContext, id: StoryMissionId): void {
+  const bonus = STORY_SIDE_BONUS[id];
+  if (bonus.treasury) addMoney(state, bonus.treasury);
+  if (bonus.hype) addGauge(state, 'hype', bonus.hype);
+  if (bonus.users) addUsers(state, (state.gauges.users * bonus.users) / 100);
+  if (bonus.rivals) changeRivalUsers(state, bonus.rivals);
+  notify(state, ctx, 'STORY_GOAL', bonus.text);
 }
 
 /** Passe à l'acte suivant : les objectifs secondaires pas remplis sont ratés. */

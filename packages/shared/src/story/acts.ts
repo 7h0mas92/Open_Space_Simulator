@@ -90,7 +90,7 @@ export const STORY_ACTS: readonly StoryAct[] = [
     ),
     phase: 'GARAGE',
     goals: [{ kind: 'phase', atLeast: 'SEED' }],
-    deadline: 12,
+    deadline: 8,
     side: ['first-commit', 'coffee-first', 'leave-garage'],
   },
   {
@@ -107,7 +107,7 @@ export const STORY_ACTS: readonly StoryAct[] = [
       { kind: 'phase', atLeast: 'SERIES_A' },
       { kind: 'rivalUsers', rival: 'synergix' },
     ],
-    deadline: 26,
+    deadline: 18,
     side: ['useful-meeting', 'clean-series-a'],
   },
   {
@@ -121,7 +121,7 @@ export const STORY_ACTS: readonly StoryAct[] = [
     ),
     phase: 'SERIES_A',
     goals: [{ kind: 'phase', atLeast: 'UNICORN' }],
-    deadline: 44,
+    deadline: 48,
     side: ['server-room', 'office-cats', 'debt-free-unicorn'],
   },
   {
@@ -138,7 +138,7 @@ export const STORY_ACTS: readonly StoryAct[] = [
       { kind: 'valuation', min: 1_500_000_000 },
       { kind: 'marketShare', min: 0.3 },
     ],
-    deadline: 52,
+    deadline: 56,
     side: ['firefighters'],
   },
   {
@@ -228,3 +228,108 @@ export const CampaignResultSchema = z.object({
   freeSeasonSprints: z.number().int().nonnegative().optional(),
 });
 export type CampaignResult = z.infer<typeof CampaignResultSchema>;
+
+/** Coup de pouce d'un objectif secondaire rempli dans la longue partie (sans tirage). */
+export interface StorySideBonus {
+  /** Qui l'annonce dans la notification. */
+  readonly from: 'ines' | 'josette' | 'hugo';
+  readonly treasury?: number;
+  readonly hype?: number;
+  /** Utilisateurs en plus, en % des utilisateurs actuels. */
+  readonly users?: number;
+  /** Utilisateurs des rivaux, en %. */
+  readonly rivals?: number;
+  readonly text: LocalizedText;
+}
+
+/**
+ * Bonus de chaque objectif secondaire de l'histoire en actes, en plus de la récompense de la
+ * mission : ils aident à tenir les dates limites suivantes.
+ */
+export const STORY_SIDE_BONUS: Readonly<Record<StoryMissionId, StorySideBonus>> = {
+  'first-commit': {
+    from: 'josette',
+    treasury: 50_000,
+    text: t(
+      'Mamie Josette a vendu ses confitures au marché : +50 000 €.',
+      'Granny Josette sold her jam at the market: +€50,000.',
+    ),
+  },
+  'coffee-first': {
+    from: 'hugo',
+    hype: 4,
+    text: t(
+      'Hugo poste une photo du garage et de la cafetière : +4 de hype.',
+      'Hugo posts a photo of the garage and the coffee maker: +4 hype.',
+    ),
+  },
+  'leave-garage': {
+    from: 'josette',
+    treasury: 150_000,
+    text: t(
+      'Les amies du club de bridge de Mamie Josette investissent : +150 000 €.',
+      'Granny Josette’s bridge club friends invest: +€150,000.',
+    ),
+  },
+  'useful-meeting': {
+    from: 'ines',
+    hype: 5,
+    users: 3,
+    text: t(
+      'Inès raconte « la startup où les réunions servent à quelque chose » : +5 de hype, +3 % d’utilisateurs.',
+      'Inès writes about “the startup where meetings are useful”: +5 hype, +3% users.',
+    ),
+  },
+  'clean-series-a': {
+    from: 'ines',
+    users: 5,
+    rivals: -3,
+    text: t(
+      'TechMatin compare ton code à celui de Synergix : +5 % d’utilisateurs, -3 % pour les rivaux.',
+      'TechMorning compares your code to Synergix’s: +5% users, -3% for the rivals.',
+    ),
+  },
+  'server-room': {
+    from: 'hugo',
+    users: 5,
+    text: t(
+      'Plus une seule panne pendant les soldes : +5 % d’utilisateurs.',
+      'Not a single outage during the sales: +5% users.',
+    ),
+  },
+  'office-cats': {
+    from: 'ines',
+    hype: 6,
+    text: t(
+      'Les chats du bureau font la une de TechMatin : +6 de hype.',
+      'The office cats make the TechMorning front page: +6 hype.',
+    ),
+  },
+  'debt-free-unicorn': {
+    from: 'ines',
+    hype: 6,
+    users: 5,
+    rivals: -5,
+    text: t(
+      'Inès : « La licorne sans dette, Pivotly peut aller se rhabiller » : +6 de hype, +5 % d’utilisateurs, -5 % pour les rivaux.',
+      'Inès: “The debt-free unicorn leaves Pivotly in the dust”: +6 hype, +5% users, -5% for the rivals.',
+    ),
+  },
+  firefighters: {
+    from: 'ines',
+    users: 8,
+    rivals: -5,
+    text: t(
+      'Pendant la panne de Gigacorp Teams+, tu tiens bon : +8 % d’utilisateurs, -5 % pour les rivaux.',
+      'During the Gigacorp Teams+ outage, you hold firm: +8% users, -5% for the rivals.',
+    ),
+  },
+  'opening-bell': {
+    from: 'josette',
+    hype: 8,
+    text: t(
+      'Mamie Josette parle de toi à tout le quartier : +8 de hype.',
+      'Granny Josette tells the whole neighborhood about you: +8 hype.',
+    ),
+  },
+};

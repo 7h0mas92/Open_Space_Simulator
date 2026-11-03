@@ -179,7 +179,7 @@ export const RIVAL_RULES = {
   /** Valorisation par utilisateur (avant la hype). */
   valuationPerUser: 450,
   /** Départs quotidiens d'utilisateurs du joueur par point de part de marché des rivaux. */
-  dailyChurnPerRivalShare: 0.0012,
+  dailyChurnPerRivalShare: 0.0006,
   /** Effets des actions. */
   effects: {
     copyHype: -4,

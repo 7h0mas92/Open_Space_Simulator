@@ -10,26 +10,10 @@ import {
   playWithBot,
   Simulation,
 } from '../src/simulation';
-import { actProgress } from '../src/simulation/story';
-import type { Bot } from '../src/simulation/bots';
+import { storyteller } from '../src/simulation/analysis';
 
 const cards = defaultCardLibrary();
 const N = Number(process.argv[2] ?? 20);
-
-/** Un conteur ne vend pas sa startup avant l'acte « Le géant ». */
-function storyteller(bot: Bot): Bot {
-  return {
-    name: bot.name,
-    decide(state, library) {
-      const ready = (actProgress(state as never)?.campaign.act ?? 0) >= 3;
-      return bot
-        .decide(state, library)
-        .map((c) =>
-          !ready && c.type === 'ANSWER_ACQUISITION' && c.accept ? { ...c, accept: false } : c,
-        );
-    },
-  };
-}
 
 console.log(
   'bot'.padEnd(10),

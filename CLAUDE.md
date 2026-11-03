@@ -825,8 +825,8 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
 - Histoire en 5 actes, socle (T2, PR 1 sur 4 ; `shared/story/acts.ts`, `client/src/simulation/story.ts`,
   `ui/story/CampaignPanel.tsx`) : « Ctrl+Alt+Fonder », une seule longue partie de 60 sprints
   (`STORY_TOTAL_SPRINTS`), lancée par `mission: 'campaign'` (`StoryStart`). 5 actes : Le garage
-  (Seed avant le sprint 12), La course (Série A avant le 26), La guerre des prix (Licorne avant le
-  44), Le géant (1,5 Md€ avant le 52), La cloche (Bourse ou rachat). Objectif principal rempli :
+  (Seed avant le sprint 8), La course (Série A avant le 18), La guerre des prix (Licorne avant le
+  48), Le géant (1,5 Md€ avant le 56), La cloche (Bourse ou rachat). Objectif principal rempli :
   acte suivant aussitôt (notification `STORY_ACT`, panneau ouvert) ; date limite dépassée à la
   démo, histoire arrêtée (`result.campaign`, échec `TIME`, `BANKRUPTCY` ou `SOLD` si vendue avant
   « Le géant »). Les 10 missions sont les objectifs secondaires des actes, avec leurs contraintes et
@@ -837,7 +837,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Histoire ou l'écran de fin. Écran Histoire en 2 onglets : « Histoire » (synopsis, frise et cartes
   des actes) et « Missions » (les 10 missions courtes, gardées jouables : choix de Thomas). Champ
   `story.campaign` optionnel (`missionId` devient optionnel), aucun tirage : les autres modes ne
-  changent pas. Calibrage : `pnpm balance:campaign`. À venir : équilibrage (PR 4).
+  changent pas. Calibrage : `pnpm balance:campaign`.
 - Rivaux de l'histoire en actes (T2, PR 2 sur 4 ; `shared/sim/rivals.ts`,
   `client/src/simulation/rivals.ts`, panneau « 📈 Marché » `ui/story/MarketPanel.tsx`) : 3 startups
   inventées simulées à chaque démo de la longue partie, sur la graine à part `seed#rival#sprint`.
@@ -868,6 +868,16 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Hyperlane, Blitzly), commande `END_STORY` pour finir sur l'entrée en Bourse
   (`result.campaign.freeSeasonSprints`). Écran de fin : scène de la fin, bilan face aux rivaux.
   Aucun tirage sur le RNG de la partie ; hors de l'histoire en actes, rien ne change.
+- Équilibrage de l'histoire en actes (T2, PR 4 sur 4) : dates limites 8, 18, 48, 56 et 60 (début
+  plus serré, plus de temps pour la Licorne et le Géant), départs d'utilisateurs dus aux rivaux
+  divisés par deux (`RIVAL_RULES.dailyChurnPerRivalShare` 0,0006). Bonus d'histoire pour chaque
+  objectif secondaire rempli (`STORY_SIDE_BONUS` dans `shared/story/acts.ts` : argent de Mamie
+  Josette, hype et utilisateurs grâce aux articles d'Inès, rivaux affaiblis), annoncé par une
+  notification `STORY_GOAL`, sans tirage. Bot conteur (`storyteller` dans `simulation/analysis.ts` :
+  refuse les rachats avant « Le géant ») et section « Histoire en actes » de `pnpm balance`
+  (`--campaign-games 220`) : les bons bots finissent l'histoire dans 40 à 65 % des parties
+  (organizer, rested, investor, coach), le hasard jamais ; l'acte qui bloque reste la guerre des
+  prix (`docs/balance.md`).
 - Arbre R&D des objets (T4 ; `shared/sim/research.ts`, `client/src/simulation/research.ts`, panneau
   « 🔬 R&D » `ui/story/ResearchPanel.tsx`, `view/research.ts`) : dans l'histoire en 5 actes, le
   catalogue démarre réduit (`RESEARCH_FREE` : bureau, bureau IKEA, plantes, cafetière, mug, canard,
