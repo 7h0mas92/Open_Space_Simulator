@@ -1030,6 +1030,19 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
     aucun tirage ; règle qui change toutes les parties (anciens replays de scores divergent).
     Bot planner : `sensibleSupportAgents`.
 
+- Voitures et décorations refaites (`render/cars.ts`, `render/decorModels.ts`,
+  `render/decorations.ts`) : 7 modèles de véhicules en formes Three.js dans les rues de la ville
+  (taxi 30 %, berline, citadine, SUV, camionnette, pick-up, bus 4 %), vitres, roues à jantes,
+  phares, feux, pare-chocs ; carrosserie teintée par instance et habillage peint par sommet, deux
+  InstancedMesh par modèle, modèle et couleur figés par le numéro (`carLook`, hachage, aucun
+  tirage). Décorations de saison : guirlandes à fil (ampoules à douille en 3 phases de
+  scintillement, ou fanions triangles, cœurs ou queues d'aronde) tendues en festons entre des
+  clous ; un ornement par emplacement, à mi-chemin entre deux appliques, hors fenêtres, cloisons
+  et meubles hauts (`decorWalls`) ; 24 ornements et 12 objets de bureau redessinés (couronne,
+  chaussette, sapin en pot, horloge de minuit, champagne, écu, bannière, vinyle, cassette, cube,
+  chauves-souris, araignée…). Fusion par matériau (`Pieces`, 4 maillages au plus par mur), deux
+  thèmes se partagent les murs (`shareWalls`). Rendu seulement.
+
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback
   `https://open-space-simulator.vercel.app/api/auth/github/callback`) et mettre ses clés sur

@@ -1,8 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : arbre R&D des
-> objets (T4) fusionné dans `develop` (PR #160). Avant : levées de fonds lisibles (#161),
-> histoire en 5 actes (T2) fusionnée dans `develop` (#157, puis équilibrage #159) ;
+> **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : voitures (7 modèles)
+> et décorations de saison refaites, fusionnées dans `develop` (PR #162). Avant : arbre R&D des
+> objets (T4, #160), levées de fonds lisibles (#161), histoire en 5 actes (#157, #159) ;
 > plus tôt, modèle économique (#151), clients B2B (#153) et support client
 > (#154) de Melvin, panneau « 💶 Business ».
 
@@ -74,6 +74,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné dans `develop` le 2 novembre (PR #148)  |
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                 |
 | **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                 |
+| Voitures (7 modèles) et décorations de saison       | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (PR #162) |
 | Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | #157 et #159 fusionnées le 3 novembre            |
 | Levées de fonds cohérentes avec l'affichage         | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (#161)    |
 | Arbre R&D des objets (T4)                           | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (PR #160) |
@@ -303,6 +304,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                  | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | -------- | --------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 03/11    | Thomas + Claude | voitures et déco    | Rendu seulement, aucun tirage ni champ d'état. Voitures de la ville : `render/cars.ts` (7 modèles, `CAR_MIX`, `carLook`), 2 InstancedMesh par modèle dans `skyline.ts` (maillages `skyline-cars-<modèle>`). Décorations : `ThemeModels.wall` prend maintenant les murs (`DecorWall[]` de `decorWalls(layout, items)`) au lieu de `(largeur, profondeur)` ; ornements entre les appliques, hors fenêtres, cloisons et meubles de plus de 1,3 m. Nouveau thème de saison ou nouvel ornement : passer par `Kit` dans `decorModels.ts`. `tint` exporté de `pieces.ts`.                       |
 | 03/11    | Thomas + Claude | levées de fonds     | Le calcul du pitch ne change pas (`pnpm balance` identique) ; ce qui change, c'est l'affichage : chances estimées et force des thèmes dans « Lever des fonds » (`estimatePitchChance`, `categoryStrengths` dans `simulation/fundraising.ts`), force et jauge de chaque argument pendant le pitch (`pitchRating`, `argumentBasis`, `isRandomArgument` dans `shared/sim/pitch.ts`), jauge renommée « Chance de signer ». Si on retouche `FUNDING_TIERS` ou les forces d'arguments, le test de calibrage de `funding.test.ts` dira si l'estimation reste juste.                             |
 | 03/11    | Thomas + Claude | T2, PR 4 sur 4      | Équilibrage de l'histoire : dates limites 8 / 18 / 48 / 56 / 60, churn des rivaux divisé par deux, `STORY_SIDE_BONUS` (bonus par objectif secondaire, choix de Thomas), bot conteur et section « Histoire en actes » de `pnpm balance` (`--campaign-games`). Bons bots 40 à 65 % de réussite ; la guerre des prix reste l'acte qui bloque. Les anciennes histoires en cours gardent leur avancement mais suivent les nouvelles dates.                                                                                                                                                    |
 | 03/11    | Thomas + Claude | T4                  | Arbre R&D des objets dans l'histoire en actes (`shared/sim/research.ts`, panneau 🔬 R&D) : catalogue réduit au départ, 5 branches x 4 niveaux payés en points d'innovation, Prestige par les objectifs. État `campaign.research` optionnel, commande `RESEARCH_NODE`, aucun tirage. **Pour Melvin** : un nouvel objet du catalogue doit être rattaché à un niveau de `RESEARCH_TREE` ou à `RESEARCH_FREE` (test `research.test.ts`) ; le hall et les offres internet ne sont pas verrouillés par l'arbre.                                                                                |
