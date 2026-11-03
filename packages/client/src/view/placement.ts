@@ -23,6 +23,7 @@ import {
   type PartitionSegment,
 } from './partitions';
 import type { GameView, ItemHost, PlacedItemView, Rotation } from './types';
+import { researchNeed } from './research';
 
 export type PlacementError =
   | 'unknownItem'
@@ -346,7 +347,7 @@ export function nearestValidCell(
 
 /** Pourquoi un objet ne peut pas être acheté (ou `null` s'il est disponible). */
 /** `storyLocked` : récompense du mode Histoire pas débloquée (ou pas utilisable dans ce mode). */
-export type ShopBlock = 'locked' | 'storyLocked' | 'soldOut' | 'tooExpensive';
+export type ShopBlock = 'locked' | 'storyLocked' | 'researchLocked' | 'soldOut' | 'tooExpensive';
 
 export interface ShopStatus {
   readonly owned: number;
@@ -362,12 +363,14 @@ export function shopStatus(item: CatalogItem, view: GameView): ShopStatus {
   const block: ShopBlock | null =
     item.unlock !== null && !view.unlocks.includes(item.unlock)
       ? 'storyLocked'
-      : PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
-        ? 'locked'
-        : owned >= item.maxCount
-          ? 'soldOut'
-          : view.gauges.treasury < item.price
-            ? 'tooExpensive'
-            : null;
+      : researchNeed(view, `item:${item.kind}`)
+        ? 'researchLocked'
+        : PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
+          ? 'locked'
+          : owned >= item.maxCount
+            ? 'soldOut'
+            : view.gauges.treasury < item.price
+              ? 'tooExpensive'
+              : null;
   return { owned, block };
 }

@@ -1,5 +1,10 @@
 import {
   FURNITURE_CATALOG,
+  RESEARCH,
+  RESEARCH_LEVELS,
+  getResearchNode,
+  researchBlock,
+  type ResearchBranch,
   ROLE_PROFILES,
   TEAM_LIFE,
   OUTINGS,
@@ -257,6 +262,9 @@ class PlannerBot implements Bot {
         });
     }
 
+    // 3 bis. Arbre R&D (Histoire en actes) : avant d'acheter, débloquer ce qu'on veut acheter.
+    commands.push(...researchCommands(state));
+
     // 4. Mobilier utile, et un abonnement de ménage à la mesure de l'équipe.
     if (style.buysFurniture) {
       commands.push(...this.furniture(state));
@@ -470,6 +478,36 @@ export function preferredBranches(role: DevRole): SkillBranch[] {
     default:
       return ['TECH', 'HUMAN', 'SPEED'];
   }
+}
+
+/** Ordre de recherche des bots : niveau par niveau, l'utile (café, écrans, réunions) d'abord. */
+export const BOT_RESEARCH_ORDER: readonly ResearchBranch[] = [
+  'kitchen',
+  'tech',
+  'organisation',
+  'comfort',
+  'ambiance',
+];
+
+/**
+ * Arbre R&D d'un bot (longue partie du mode Histoire) : il prend tous les niveaux payables, le
+ * niveau 1 de chaque branche avant le niveau 2, et ainsi de suite.
+ */
+export function researchCommands(state: Readonly<GameState>): Command[] {
+  const campaign = state.story?.campaign;
+  const research = campaign?.research;
+  if (!campaign || !research) return [];
+  const commands: Command[] = [];
+  const simulated = { ...research, nodes: [...research.nodes] };
+  for (const level of RESEARCH_LEVELS)
+    for (const branch of BOT_RESEARCH_ORDER) {
+      const node = getResearchNode(`${branch}-${level}`);
+      if (!node || researchBlock(simulated, campaign.act, node) !== null) continue;
+      simulated.points -= RESEARCH.cost[node.level];
+      simulated.nodes.push(node.id);
+      commands.push({ type: 'RESEARCH_NODE', nodeId: node.id });
+    }
+  return commands;
 }
 
 /**

@@ -2,6 +2,7 @@ import { DAILY_SYNC, MEETINGS } from '@oss/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameView, MeetingFormatView } from '../../view/types';
+import { researchLockedReason } from '../build/storyLock';
 import { formatGauge, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { TICKET_APP } from '../../view/ticketBoard';
@@ -135,6 +136,7 @@ export function MeetingRoom({ view }: { view: GameView }) {
                   current={format.id === room.format}
                   refund={room.format ? room.refund : 0}
                   disabled={replay}
+                  research={researchLockedReason(t, view, `meeting:${format.id}`)}
                 />
               </li>
             ))}
@@ -150,11 +152,14 @@ function FormatCard({
   current,
   refund,
   disabled,
+  research,
 }: {
   format: MeetingFormatView;
   current: boolean;
   refund: number;
   disabled: boolean;
+  /** Arbre R&D (Histoire) : le niveau à prendre pour cette formule, ou null. */
+  research: string | null;
 }) {
   const { t, i18n } = useTranslation();
   const money = useMoney();
@@ -200,7 +205,9 @@ function FormatCard({
           </button>
           {blocker && blocker !== 'NOT_ELIGIBLE' && (
             <p className="hint">
-              {t(`meetings.blockers.${blocker}`, { phase: t(`phases.${format.minPhase}`) })}
+              {blocker === 'LOCKED' && research
+                ? research
+                : t(`meetings.blockers.${blocker}`, { phase: t(`phases.${format.minPhase}`) })}
             </p>
           )}
         </>
