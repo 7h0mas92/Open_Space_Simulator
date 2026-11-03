@@ -51,10 +51,12 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   tickets: '📽️',
   pets: '🐈',
   servers: '🗄️',
+  lobby: '🛎️',
   cleaning: '🧹',
   business: '💶',
   subscriptions: '🧾',
   funding: '💼',
+  career: '🧭',
   mission: '🎯',
   build: '🛠️',
   dashboard: '📈',
@@ -195,11 +197,22 @@ export function Gauges({ view }: { view: GameView }) {
 /** Date du jour simulé, périodes à thème en cours (🎃, 🎄…) et anniversaires (🎂). */
 function CalendarLine({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
-  const { date, seasons, birthdays } = view.calendar;
+  const { date, seasons, birthdays, holiday } = view.calendar;
   const names = view.devs.filter((dev) => birthdays.includes(dev.id)).map((dev) => dev.name);
   return (
     <p className="clock-line clock-calendar">
       <span>{formatGameDate(date, i18n.language)}</span>
+      {holiday && (
+        <span
+          className="clock-season"
+          title={t('leave.holiday', { name: t(`leave.holidays.${holiday}`) })}
+        >
+          <span aria-hidden="true">🏖️</span>
+          <span className="visually-hidden">
+            {t('leave.holiday', { name: t(`leave.holidays.${holiday}`) })}
+          </span>
+        </span>
+      )}
       {seasons.map((theme) => {
         const label = localized(SEASONS[theme].name, i18n.language);
         return (
@@ -209,6 +222,17 @@ function CalendarLine({ view }: { view: GameView }) {
           </span>
         );
       })}
+      {view.retroAction && (
+        <span
+          className="clock-season"
+          title={t('retro.active', { action: t(`retro.actions.${view.retroAction}.name`) })}
+        >
+          <span aria-hidden="true">🔁</span>
+          <span className="visually-hidden">
+            {t('retro.active', { action: t(`retro.actions.${view.retroAction}.name`) })}
+          </span>
+        </span>
+      )}
       {names.length > 0 && (
         <span className="clock-season" title={t('time.birthday', { names: names.join(', ') })}>
           <span aria-hidden="true">🎂</span>
@@ -267,9 +291,27 @@ export function SystemButtons({ view }: { view: GameView }) {
   const story = useGame((s) => s.view?.mode === 'STORY');
   const system = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
   const panels: readonly PanelId[] = story ? ['mission', ...system] : system;
+  const career = view.career;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>
       <CleaningButton view={view} />
+      {career && (
+        // Mode Carrière : les jalons de la légende, à portée de clic.
+        <button
+          type="button"
+          className="system-button career-button"
+          aria-pressed={panel === 'career'}
+          aria-label={t('career.hudButton', { done: career.done, total: career.total })}
+          title={t('career.hudButton', { done: career.done, total: career.total })}
+          data-tutorial="panel-career"
+          onClick={() => openPanel(panel === 'career' ? null : 'career')}
+        >
+          <span aria-hidden="true">{PANEL_ICONS.career}</span>
+          <span className="career-button-count" aria-hidden="true">
+            {career.done}/{career.total}
+          </span>
+        </button>
+      )}
       {panels.map((id) => (
         <button
           key={id}

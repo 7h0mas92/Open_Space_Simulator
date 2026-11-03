@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DevSkillsSchema } from './skills.js';
 import { LocalizedTextSchema } from '../i18n.js';
 import { BirthdaySchema } from './calendar.js';
 import { ComputerIdSchema } from './computers.js';
@@ -367,6 +368,8 @@ export const ComponentStoresSchema = z.object({
   rustConverted: z.record(z.string(), TagSchema),
   /** Productivité par sprint (absente des sauvegardes d'avant les fiches de performance). */
   performance: z.record(z.string(), PerformanceSchema).default({}),
+  /** Arbre de compétences (absent des sauvegardes d'avant l'arbre, voir `skills.ts`). */
+  skills: z.record(z.string(), DevSkillsSchema).default({}),
 });
 export type ComponentStores = z.infer<typeof ComponentStoresSchema>;
 export type ComponentName = keyof ComponentStores;

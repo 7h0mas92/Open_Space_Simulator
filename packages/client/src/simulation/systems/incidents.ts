@@ -1,5 +1,6 @@
 import {
   BALANCE,
+  SKILLS,
   difficultyOf,
   type EntityId,
   type GameState,
@@ -10,6 +11,7 @@ import { addGauge, addUsers, devsWithRole, notify, text, type SimContext } from 
 import { holdCrisisMeeting } from '../meetings';
 import { clientsOutage } from '../clients';
 import { recordIncident } from '../performance';
+import { hasSkill } from '../skills';
 import { urgentProdFix } from '../taskFlow';
 import type { SimClock } from '../time';
 
@@ -51,7 +53,11 @@ export function incidentSystem(state: GameState, ctx: SimContext, clock: SimCloc
   if (clock.hour === 12) {
     for (const internId of devsWithRole(state, 'INTERN')) {
       if (state.components.activity[internId]?.kind === 'GONE') continue;
-      if (!rng.chance(BALANCE.roles.internBreakProdDaily)) continue;
+      // « Ne touche plus à main » : même tirage, probabilité plus faible.
+      const odds = hasSkill(state, internId, 'hands-off-main')
+        ? SKILLS.handsOffMainOdds
+        : BALANCE.roles.internBreakProdDaily;
+      if (!rng.chance(odds)) continue;
       const name = state.components.identity[internId]?.name ?? '?';
       prodDown(
         state,

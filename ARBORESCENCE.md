@@ -125,30 +125,36 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 
 ### `src/sim/` : règles et catalogues de la simulation
 
-| Fichier         | Rôle                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------ |
-| `balance.ts`    | Toutes les constantes d'équilibrage (`BALANCE`) : temps, salaires, jauges, pauses, raises… |
-| `state.ts`      | Schéma Zod de l'état de partie complet (`GameState`), étapes du sprint.                    |
-| `components.ts` | Composants de l'ECS (identité, stats, moral, tâches…), métiers (`ROLE_TRADE`).             |
-| `commands.ts`   | Commandes typées envoyées à la simulation : le seul moyen de modifier une partie.          |
-| `cards.ts`      | Format des cartes d'événements (conditions, choix, effets).                                |
-| `calendar.ts`   | Calendrier : date réelle de chaque jour simulé, 12 saisons à thème.                        |
-| `furniture.ts`  | Catalogue du mode construction : prix, emprise, effets, phase de déblocage.                |
-| `annexDecor.ts` | Décor offert avec chaque annexe (arcade, jardin, auditorium).                              |
-| `computers.ts`  | Ordinateurs des postes (tour sobre, tours gaming, MacBook) et leurs effets.                |
-| `monitors.ts`   | Écrans des postes : 5 modèles, 3 tailles, pied ou bras articulé.                           |
-| `floors.ts`     | Sols : matières, teintes, prix et effets par pièce.                                        |
-| `walls.ts`      | Peintures et papiers peints, zones de mur.                                                 |
-| `projection.ts` | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                |
-| `serverRoom.ts` | Salle des serveurs, équipements et offres fibre.                                           |
-| `meetings.ts`   | Formules de salle de réunion, réunion du matin, réunion de crise.                          |
-| `pets.ts`       | Chats du bureau : équipement requis, prix, effets.                                         |
-| `teamRoles.ts`  | Équipe web : devs front, back, fullstack, tech lead, DevOps, QA, encadrement.              |
-| `taskFlow.ts`   | Tâches dynamiques : backlog, urgences, tâches de la semaine, objectif de sprint.           |
-| `raises.ts`     | Demandes d'augmentation : fréquence, montants, conséquences.                               |
-| `pitch.ts`      | Mini-jeu de levée de fonds : questions, arguments, intérêt de l'investisseur.              |
-| `funding.ts`    | Autres financements : business angels, prêt, financement participatif, subvention.         |
-| `ventures.ts`   | Filiales : projets, parts, dividendes, revente.                                            |
+| Fichier           | Rôle                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| `balance.ts`      | Toutes les constantes d'équilibrage (`BALANCE`) : temps, salaires, jauges, pauses, raises… |
+| `state.ts`        | Schéma Zod de l'état de partie complet (`GameState`), étapes du sprint.                    |
+| `components.ts`   | Composants de l'ECS (identité, stats, moral, tâches…), métiers (`ROLE_TRADE`).             |
+| `commands.ts`     | Commandes typées envoyées à la simulation : le seul moyen de modifier une partie.          |
+| `cards.ts`        | Format des cartes d'événements (conditions, choix, effets).                                |
+| `calendar.ts`     | Calendrier : date réelle de chaque jour simulé, 12 saisons à thème.                        |
+| `furniture.ts`    | Catalogue du mode construction : prix, emprise, effets, phase de déblocage.                |
+| `annexDecor.ts`   | Décor offert avec chaque annexe (arcade, jardin, auditorium).                              |
+| `computers.ts`    | Ordinateurs des postes (tour sobre, tours gaming, MacBook) et leurs effets.                |
+| `monitors.ts`     | Écrans des postes : 5 modèles, 3 tailles, pied ou bras articulé.                           |
+| `floors.ts`       | Sols : matières, teintes, prix et effets par pièce.                                        |
+| `walls.ts`        | Peintures et papiers peints, zones de mur.                                                 |
+| `projection.ts`   | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                |
+| `serverRoom.ts`   | Salle des serveurs, équipements, température et offres internet.                           |
+| `cleaning.ts`     | Saleté du bureau, entreprise de nettoyage, tarifs et offres de ménage.                     |
+| `lobby.ts`        | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                     |
+| `meetings.ts`     | Formules de salle de réunion, réunion du matin, réunion de crise.                          |
+| `pets.ts`         | Chats du bureau : équipement requis, prix, effets.                                         |
+| `teamRoles.ts`    | Équipe web : devs front, back, fullstack, tech lead, DevOps, QA, encadrement.              |
+| `taskFlow.ts`     | Tâches dynamiques : backlog, urgences, tâches de la semaine, objectif de sprint.           |
+| `raises.ts`       | Demandes d'augmentation : fréquence, montants, conséquences.                               |
+| `pitch.ts`        | Mini-jeu de levée de fonds : questions, arguments, intérêt de l'investisseur.              |
+| `funding.ts`      | Autres financements : business angels, prêt, financement participatif, subvention.         |
+| `ventures.ts`     | Filiales : projets, parts, dividendes, revente.                                            |
+| `teamLife.ts`     | Congés payés, jours fériés français, ponts, arrêts maladie et burn-out.                    |
+| `retro.ts`        | Rétrospective : les 10 actions, leurs effets, le vote.                                     |
+| `teamBuilding.ts` | Team building : les 5 sorties, prix, horaires et effets.                                   |
+| `career.ts`       | Mode Carrière : les 8 légendes, leur départ, leurs jalons, la légende lue dans la graine.  |
 
 ### `src/meta/` : méta-jeu et contrats de l'API
 
@@ -257,6 +263,9 @@ graine + mêmes commandes = même partie.
 | `fundraising.ts`  | Tour de table : palier, intérêt de l'investisseur, force des arguments.                 |
 | `financing.ts`    | Business angels, prêt, financement participatif, subvention.                            |
 | `ventures.ts`     | Filiales : création, dividendes, revente (graine à part).                               |
+| `teamLife.ts`     | Congés, jours fériés, ponts, arrêts maladie et burn-out (graine à part).                |
+| `retro.ts`        | Rétrospective : problèmes du sprint, votes des devs (graine à part), action active.     |
+| `teamBuilding.ts` | Team building : réservation, absence de l'équipe, effets (graine à part).               |
 | `raises.ts`       | Demandes d'augmentation (graine à part).                                                |
 | `leadership.ts`   | Effets de l'encadrement et de l'équipe qualité (tech lead, DevOps, QA, managers).       |
 | `meetings.ts`     | Salle de réunion, réunion du matin et réunion de crise.                                 |
@@ -266,11 +275,14 @@ graine + mêmes commandes = même partie.
 | `floors.ts`       | Pose des sols et effets par pièce.                                                      |
 | `walls.ts`        | Pose des peintures et papiers peints et effets par mur.                                 |
 | `projection.ts`   | Interrupteur des projecteurs et effets des projections.                                 |
-| `serverRoom.ts`   | Effets des salles de serveurs, abonnement et facturation de la fibre.                   |
+| `serverRoom.ts`   | Effets des salles de serveurs selon leur température, alertes de la sonde.              |
+| `cleaning.ts`     | Saleté qui monte, malus de travail, appels et passages de l'équipe de ménage.           |
+| `lobby.ts`        | Aménagement du hall, secrétaires de l'accueil et leurs effets.                          |
 | `pets.ts`         | Adoption des chats, départ, effets sur l'équipe.                                        |
 | `achievements.ts` | Succès vérifiés à partir de l'état.                                                     |
 | `endings.ts`      | Fins de partie et phrase partageable de l'écran de fin.                                 |
 | `story.ts`        | Mode Histoire : départ de la mission, suivi des objectifs et contraintes, fin.          |
+| `career.ts`       | Mode Carrière : départ de la légende, jalons vérifiés à chaque démo, étoiles à la fin.  |
 | `unlocks.ts`      | Récompenses du mode Histoire utilisables dans la partie (`state.unlocks`).              |
 | `bots.ts`         | Stratégies automatiques de `pnpm balance` (random, shipper, balanced, investor…).       |
 | `analysis.ts`     | Joue des parties avec les bots et agrège les résultats (rapport d'équilibrage).         |
@@ -394,6 +406,9 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `projectionModels.ts` | Modèles fixes du projecteur et du caisson de l'écran.                     |
 | `meetingRoom.ts`      | Salle de réunion aménagée selon la formule choisie.                       |
 | `serverRoom.ts`       | Local serveur, salle vitrée et leurs équipements.                         |
+| `cleaning.ts`         | Déchets au sol et les 3 agents de nettoyage qui les ramassent.            |
+| `lobby.ts`            | Portes à badge, secrétaires, agent de sécurité et caméra du hall.         |
+| `lobbyFurniture.ts`   | Comptoir d'accueil.                                                       |
 | `annexDecor.ts`       | Décor des annexes (arcade, jardin, auditorium).                           |
 | `characters.ts`       | Personnages dans la scène, animés par les clips Kenney.                   |
 | `officeCharacters.ts` | Look de chaque personnage selon le profil du dev.                         |
@@ -451,6 +466,8 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `kanban/Objective.tsx`            | Objectif de sprint affiché en haut du Kanban.                           |
 | `kanban/useDragAndDrop.ts`        | Glisser-déposer souris et tactile du Kanban.                            |
 | `team/Team.tsx`                   | Liste de l'équipe et fiche détaillée d'un dev.                          |
+| `team/Leave.tsx`                  | Congés d'un dev, avis de pont, libellés des absences.                   |
+| `team/TeamBuilding.tsx`           | Bloc « Team building » du panneau Équipe.                               |
 | `team/TeamFilterBar.tsx`          | Tri et filtres de l'équipe.                                             |
 | `team/filters.ts`                 | Logique des filtres et du tri (fonctions pures).                        |
 | `team/Hiring.tsx`                 | Recrutement : candidats, offre, risque de refus.                        |
@@ -471,8 +488,13 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `story/MissionPanel.tsx`          | Panneau « Mission » en jeu : briefing, objectifs en direct, récompense. |
 | `story/MissionGoals.tsx`          | Liste des objectifs et contraintes avec leur avancement.                |
 | `story/goals.ts`                  | Phrase de chaque objectif (« Livrer 3 features »).                      |
+| `career/CareerPage.tsx`           | Page « Carrière » du menu : choix de la légende et de la difficulté.    |
+| `career/CareerPanel.tsx`          | Panneau des jalons en jeu (bouton 🧭) et bilan de fin.                  |
+| `career/records.ts`               | Meilleur résultat par légende sur l'appareil, étoiles en texte.         |
 | `meetings/MeetingRoom.tsx`        | Panneau « Réunion » : choix de la formule.                              |
 | `servers/ServerRoom.tsx`          | Panneau « Serveurs » : état des salles, offres fibre.                   |
+| `cleaning/Cleaning.tsx`           | Panneau « Ménage » : saleté, appel de l'équipe, abonnement.             |
+| `lobby/Lobby.tsx`                 | Panneau « Hall d'entrée » : travaux, secrétaires, sécurité.             |
 | `pets/Pets.tsx`                   | Panneau « Chats » : adoption et liste des chats.                        |
 | `funding/Funding.tsx`             | Panneau « Lever des fonds » : pitch et autres financements.             |
 | `group/Group.tsx`                 | Panneau « Investir » : filiales.                                        |
@@ -541,12 +563,12 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 
 ### `prisma/`
 
-| Fichier                                 | Rôle                                                                                                                                                |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `schema.prisma`                         | Modèle de données : User, Save, EventCard, Score, Achievement…                                                                                      |
-| `seed.ts`                               | Données initiales : cartes, succès, compte admin de développement.                                                                                  |
-| `migrations/<date>_<nom>/migration.sql` | Une migration SQL par évolution du schéma (init, meta, easy_mode, character_packs, decor_themes, story_mode). Générées par Prisma, ne pas modifier. |
-| `migrations/migration_lock.toml`        | Fournisseur de base verrouillé (PostgreSQL).                                                                                                        |
+| Fichier                                 | Rôle                                                                                                                                                                                               |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema.prisma`                         | Modèle de données : User, Save, EventCard, Score, Achievement…                                                                                                                                     |
+| `seed.ts`                               | Données initiales : cartes, succès, compte admin de développement.                                                                                                                                 |
+| `migrations/<date>_<nom>/migration.sql` | Une migration SQL par évolution du schéma (init, meta, easy_mode, character_packs, decor_themes, story_mode, endless_mode, career_mode, row_level_security). Générées par Prisma, ne pas modifier. |
+| `migrations/migration_lock.toml`        | Fournisseur de base verrouillé (PostgreSQL).                                                                                                                                                       |
 
 ### `src/`
 
@@ -556,7 +578,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `app.ts`                          | Construit l'application Fastify : plugins et routes.                        |
 | `config/env.ts`                   | Lecture et validation Zod des variables d'environnement.                    |
 | `lib/errors.ts`                   | Erreur métier transformée en `{ error: { code, message } }`.                |
-| `lib/prisma.ts`                   | Création du client Prisma.                                                  |
+| `lib/prisma.ts`                   | Création du client Prisma (SSL compatible Supabase).                        |
 | `lib/schemas.ts`                  | Réponses d'erreur communes pour la doc OpenAPI.                             |
 | `plugins/auth.ts`                 | Vérification du JWT, rôles USER et ADMIN.                                   |
 | `plugins/errors.ts`               | Gestionnaire d'erreurs global au format homogène.                           |
@@ -592,18 +614,20 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 
 ### `tests/`
 
-| Fichier            | Rôle                                                            |
-| ------------------ | --------------------------------------------------------------- |
-| `global-setup.ts`  | Applique les migrations sur la base de test avant la suite.     |
-| `test-database.ts` | Base dédiée aux tests, vidée avant chaque test.                 |
-| `helpers.ts`       | Construit une application de test.                              |
-| `game-fixtures.ts` | Joue une partie complète avec un bot, comme dans le navigateur. |
-| `app.test.ts`      | Santé, format d'erreur, sécurité, OpenAPI.                      |
-| `auth.test.ts`     | Inscription, connexion, refresh, déconnexion, rôles.            |
-| `github.test.ts`   | Connexion GitHub OAuth (appels simulés).                        |
-| `meta.test.ts`     | Sauvegardes, scores, anti-triche, Daily, succès, admin.         |
-| `slack-ai.test.ts` | Slack IA : quota, cache, repli en cas d'erreur.                 |
-| `story.test.ts`    | Mode Histoire : mission rejouée, progression, récompenses.      |
+| Fichier              | Rôle                                                            |
+| -------------------- | --------------------------------------------------------------- |
+| `global-setup.ts`    | Applique les migrations sur la base de test avant la suite.     |
+| `test-database.ts`   | Base dédiée aux tests, vidée avant chaque test.                 |
+| `helpers.ts`         | Construit une application de test.                              |
+| `game-fixtures.ts`   | Joue une partie complète avec un bot, comme dans le navigateur. |
+| `app.test.ts`        | Santé, format d'erreur, sécurité, OpenAPI.                      |
+| `auth.test.ts`       | Inscription, connexion, refresh, déconnexion, rôles.            |
+| `github.test.ts`     | Connexion GitHub OAuth (appels simulés).                        |
+| `meta.test.ts`       | Sauvegardes, scores, anti-triche, Daily, succès, admin.         |
+| `slack-ai.test.ts`   | Slack IA : quota, cache, repli en cas d'erreur.                 |
+| `story.test.ts`      | Mode Histoire : mission rejouée, progression, récompenses.      |
+| `rls.test.ts`        | Chaque table a la sécurité au niveau des lignes (RLS) activée.  |
+| `prisma-url.test.ts` | Mode SSL de l'URL de la base (`withLibpqSslMode`).              |
 
 ---
 

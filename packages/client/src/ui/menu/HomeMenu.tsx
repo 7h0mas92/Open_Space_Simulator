@@ -14,11 +14,20 @@ import { useLatestSave } from './useLatestSave';
 
 /** Pages du menu ouvertes depuis l'accueil. */
 export type MenuPage =
-  'story' | 'load' | 'leaderboard' | 'achievements' | 'profile' | 'settings' | 'admin' | 'credits';
+  | 'story'
+  | 'load'
+  | 'leaderboard'
+  | 'achievements'
+  | 'profile'
+  | 'settings'
+  | 'admin'
+  | 'credits'
+  | 'career';
 
 /**
- * Écran d'accueil : titre et bouton Jouer / Continuer, choix du mode en cartes,
- * navigation vers les pages du méta-jeu, compte et langue en haut.
+ * Écran d'accueil : titre et bouton Jouer (ou Continuer et Nouvelle partie quand une partie
+ * est en cours), choix du mode en cartes, navigation vers les pages du méta-jeu, compte et
+ * langue en haut.
  */
 export function HomeMenu({
   onOpen,
@@ -41,7 +50,9 @@ export function HomeMenu({
   const ticker = t('menu.ticker', { returnObjects: true }) as unknown as string[];
   const tickerLine = ticker[Math.floor(tickerIndex * ticker.length)] ?? '';
 
-  const play = (mode: GameMode) => void startGame({ mode });
+  // Le mode Carrière commence par le choix d'une légende.
+  const play = (mode: GameMode) =>
+    mode === 'CAREER' ? onOpen('career') : void startGame({ mode });
   // Premier lancement : le mode Facile et son tutoriel complet. Ensuite, le mode Normal.
   const suggested: GameMode = tutorialDone ? 'NORMAL' : 'EASY';
 
@@ -114,6 +125,22 @@ export function HomeMenu({
                   <span className="cta-text">
                     <strong>{t('menu.play')}</strong>
                     <small>{t('menu.playHint', { mode: t(`modes.${suggested}.name`) })}</small>
+                  </span>
+                </button>
+              )}
+              {/* Une partie en cours ne doit pas cacher le lancement d'une nouvelle. */}
+              {latest && (
+                <button
+                  type="button"
+                  className="cta cta-secondary"
+                  disabled={loading}
+                  onClick={() => play(suggested)}
+                  data-testid="new-game"
+                >
+                  <span aria-hidden="true">＋</span>
+                  <span className="cta-text">
+                    <strong>{t('menu.newGame')}</strong>
+                    <small>{t('menu.newGameHint', { mode: t(`modes.${suggested}.name`) })}</small>
                   </span>
                 </button>
               )}

@@ -10,6 +10,8 @@ import {
   dailySeed,
   isoDate,
   utcDate,
+  careerSeed,
+  type CareerLegendId,
   type StoryMissionId,
   type StoryRewardId,
   type EventCard,
@@ -53,11 +55,13 @@ export const PANELS = [
   'tickets',
   'pets',
   'servers',
+  'lobby',
   'cleaning',
   /** Modèle économique du produit. */
   'business',
   'subscriptions',
   'funding',
+  'career',
   'mission',
   'dashboard',
   'slack',
@@ -149,6 +153,17 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   FIBRE_SUBSCRIBED: 'success',
   FIBRE_CANCELLED: 'info',
   FIBRE_CUT: 'error',
+  LOBBY_BUILT: 'success',
+  RECEPTIONIST_HIRED: 'success',
+  RECEPTIONIST_LEFT: 'info',
+  SECURITY_SUBSCRIBED: 'success',
+  SECURITY_CANCELLED: 'info',
+  SECURITY_CUT: 'error',
+  INTERNET_SATURATED: 'error',
+  INTERNET_OK: 'success',
+  SERVER_ROOM_WARM: 'info',
+  SERVER_ROOM_OVERHEAT: 'error',
+  SERVER_ROOM_COOL: 'success',
   OFFICE_DIRTY: 'error',
   CLEANING_BOOKED: 'success',
   CLEANING_STARTED: 'info',
@@ -170,6 +185,8 @@ const TOAST_KINDS: Partial<Record<NotificationKind, Toast['tone']>> = {
   OBJECTIVE_SET: 'info',
   OBJECTIVE_DONE: 'success',
   OBJECTIVE_FAILED: 'info',
+  CAREER_MILESTONE: 'success',
+  CAREER_MISSED: 'error',
   SPRINT_LOST: 'error',
   ACHIEVEMENT_UNLOCKED: 'success',
 };
@@ -180,6 +197,8 @@ export type NotificationListener = (notifications: readonly GameNotification[]) 
 export interface StartOptions {
   seed?: string;
   mode?: GameMode;
+  /** Mode Carrière : la légende à suivre (écrite dans la graine). */
+  legend?: CareerLegendId;
   /** Mode Histoire : la mission à jouer. */
   mission?: StoryMissionId;
   /** Source déjà prête (tests). */
@@ -304,7 +323,13 @@ async function createSource(options: StartOptions): Promise<GameSource> {
     );
   }
   const mode = options.mode ?? 'NORMAL';
-  const seed = options.seed ?? (mode === 'DAILY' ? await todaySeed() : randomSeed());
+  const seed =
+    options.seed ??
+    (mode === 'DAILY'
+      ? await todaySeed()
+      : mode === 'CAREER'
+        ? careerSeed(options.legend ?? 'pepin', randomSeed())
+        : randomSeed());
   const set = await cardsModule.currentCards();
   // Récompenses du mode Histoire : seulement dans les modes qui les acceptent.
   const unlocks = UNLOCK_MODES.includes(mode) ? await storyProgress.unlocks().catch(() => []) : [];

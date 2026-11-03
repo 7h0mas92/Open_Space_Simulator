@@ -9,6 +9,10 @@
  * l'interface envoie des `GameCommand` pour demander un changement.
  */
 import type {
+  AbsenceKind,
+  OutingId,
+  RetroAction,
+  PublicHoliday,
   MissionGoal,
   StoryMissionId,
   StoryRewardId,
@@ -17,8 +21,8 @@ import type {
   FloorMaterialId,
   FloorZone,
   ComputerId,
+  ServerHeatLevel,
   CleanerTool,
-  CleaningPlanId,
   PriceTier,
   PricingModel,
   ClientNeed,
@@ -39,6 +43,7 @@ import type {
   FurnitureColor,
   GameMode,
   GameResult,
+  CareerLegendId,
   LocalizedText,
   MeetingFormatId,
   MonitorChoice,
@@ -56,6 +61,9 @@ import type {
   TaskKind,
   TaskStack,
   TaskTrade,
+  SkillBranch,
+  SkillId,
+  TrainingKind,
 } from '@oss/shared';
 
 /**
@@ -175,6 +183,49 @@ export interface CareerView {
   readonly currentTask: LocalizedText | null;
 }
 
+/** Un nœud de l'arbre de compétences, tel que la fiche l'affiche. */
+export interface SkillNodeView {
+  readonly id: SkillId;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly effect: LocalizedText;
+  /** Appris, accessible maintenant (un point et le nœud précédent), ou verrouillé. */
+  readonly status: 'LEARNED' | 'AVAILABLE' | 'LOCKED';
+  /** Nœud de métier (propre au profil du dev). */
+  readonly roleNode: boolean;
+  /** Pouvoir à déclencher (le Crunch). */
+  readonly active: boolean;
+}
+
+export interface SkillBranchView {
+  readonly branch: SkillBranch;
+  readonly nodes: readonly SkillNodeView[];
+}
+
+/** Formation proposée dans la fiche (planification seulement). */
+export interface TrainingView {
+  readonly kind: TrainingKind;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly effect: LocalizedText;
+  readonly price: number;
+}
+
+/** Arbre de compétences d'un dev (null : candidat, encadrement ou mode Daily). */
+export interface DevSkillsView {
+  readonly earned: number;
+  readonly spent: number;
+  readonly available: number;
+  readonly branches: readonly SkillBranchView[];
+  /** Formation déjà suivie ce sprint. */
+  readonly trainedThisSprint: boolean;
+  readonly trainings: readonly TrainingView[];
+  /** Prix d'une réinitialisation (un mois de salaire). */
+  readonly resetCost: number;
+  /** Crunch : appris, déclenchable maintenant, en cours. */
+  readonly crunch: { readonly learned: boolean; readonly ready: boolean; readonly active: boolean };
+}
+
 export interface DevView {
   readonly id: string;
   readonly name: string;
@@ -215,6 +266,67 @@ export interface DevView {
   readonly career: CareerView | null;
   /** A démissionné après un refus d'augmentation : sprint de son départ, sinon null. */
   readonly leavingAtSprint: number | null;
+  /** Congé, pont ou arrêt maladie en cours ou prévu (null : aucun, ou candidat). */
+  readonly absence: AbsenceView | null;
+  /** Jours de congé en réserve (null : pas de congés, comme le Dev Fantôme ou l'IA Agent). */
+  readonly leave: number | null;
+  /** Arbre de compétences (null : candidat, encadrement ou mode Daily). */
+  readonly skills: DevSkillsView | null;
+}
+
+/** Absence d'un dev : congé posé, pont, petit arrêt maladie ou burn-out. */
+export interface AbsenceView {
+  readonly kind: AbsenceKind;
+  /** Jours ouvrés d'absence. */
+  readonly days: number;
+  /** Vrai si l'absence a commencé (le dev n'est pas au bureau aujourd'hui). */
+  readonly started: boolean;
+  /** Semaine du sprint où commence un congé prévu (0 ou 1), sinon null. */
+  readonly week: 0 | 1 | null;
+  /** Date réelle du retour au bureau. */
+  readonly returnDate: CalendarDate;
+}
+
+/** Rétrospective proposée en début de planification. */
+export interface RetroView {
+  /** Actions proposées, avec les devs qui ont voté pour chacune. */
+  readonly options: readonly { readonly action: RetroAction; readonly voters: readonly string[] }[];
+  /** Action qui a le plus de voix. */
+  readonly winner: RetroAction | null;
+}
+
+/** Une sortie d'équipe proposée en planification. */
+export interface OutingView {
+  readonly id: OutingId;
+  readonly icon: string;
+  readonly phase: Phase;
+  /** Prix pour l'équipe actuelle. */
+  readonly price: number;
+  /** Ce qui empêche de la réserver (null : possible). */
+  readonly blocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'COOLDOWN' | null;
+  /** Déjà faite au sprint précédent : moral divisé par deux. */
+  readonly repeat: boolean;
+  readonly moral: number;
+  /** Temps de travail perdu, en heures (0 pour l'afterwork). */
+  readonly hoursLost: number;
+}
+
+export interface TeamBuildingView {
+  /** Sortie réservée pour ce sprint, et son prix. */
+  readonly booked: { readonly outing: OutingId; readonly cost: number } | null;
+  readonly outings: readonly OutingView[];
+  /** Sorties faites depuis le début de la partie. */
+  readonly count: number;
+}
+
+/** Congés et ponts du sprint (null : vieilles sauvegardes et défi « 3 sprints »). */
+export interface TeamLifeView {
+  /** Devs en congé en même temps au plus, par semaine. */
+  readonly slots: number;
+  /** Le sprint qui commence (ou en cours) a un jour de pont. */
+  readonly bridge: boolean;
+  /** Le joueur a refusé les ponts de ce sprint. */
+  readonly bridgesRefused: boolean;
 }
 
 export const TASK_TYPES = ['FEATURE', 'REFACTOR', 'BUGFIX', 'INFRA'] as const;
@@ -258,6 +370,34 @@ export interface ObjectiveView {
   /** Vrai si la cible est atteinte à cet instant (pour « aucune panne » : pas encore de panne). */
   readonly reached: boolean;
   readonly reward: SprintObjective['reward'];
+}
+
+/** Un jalon de la légende suivie en mode Carrière. */
+export interface CareerMilestoneView {
+  readonly id: string;
+  /** Intitulé (« Avoir 100 k utilisateurs avant la fin du sprint 20 »). */
+  readonly label: LocalizedText;
+  readonly status: 'PENDING' | 'DONE' | 'FAILED';
+  /** Sprint où il a été tenu ou manqué. */
+  readonly sprint: number | null;
+  /** Dernier sprint pour le tenir, `null` s'il se juge à la fin de la partie. */
+  readonly bySprint: number | null;
+  /** Progression vers la cible (0 à 1), `null` si elle ne se mesure pas (issue, phase). */
+  readonly progress: number | null;
+}
+
+/** Mode Carrière : la légende suivie et ses jalons. */
+export interface LegendRunView {
+  readonly legend: CareerLegendId;
+  readonly icon: string;
+  readonly name: LocalizedText;
+  readonly year: number;
+  readonly difficulty: 1 | 2 | 3;
+  readonly story: LocalizedText;
+  readonly twist: LocalizedText;
+  readonly milestones: readonly CareerMilestoneView[];
+  readonly done: number;
+  readonly total: number;
 }
 
 /** Effets de l'encadrement (directeur, managers, scrum master, tech lead, testeurs, DevOps). */
@@ -608,10 +748,19 @@ export interface PetsView {
 export interface ServerRoomView {
   readonly id: string;
   readonly kind: string;
-  /** Serveur, réseau et climatisation installés : son matériel donne ses effets. */
+  /** Serveur, réseau et climatisation installés, sans surchauffe : son matériel donne ses effets. */
   readonly running: boolean;
   /** Ce qu'il faut encore y installer pour qu'elle tourne. */
   readonly missing: readonly ServerRoomNeed[];
+  /** Chaleur dégagée par le matériel et froid des climatisations, en kW. */
+  readonly heat: number;
+  readonly cooling: number;
+  /** Température en °C (affichée seulement avec une sonde de supervision). */
+  readonly temperature: number;
+  readonly level: ServerHeatLevel;
+  readonly monitored: boolean;
+  /** Part des effets donnée par son matériel (1, 0,5 ou 0,75 si elle chauffe, 0 à l'arrêt). */
+  readonly efficiency: number;
   /** Équipements installés, sur le nombre d'emplacements. */
   readonly gear: number;
   readonly slots: number;
@@ -625,6 +774,8 @@ export interface ServersView {
   readonly hostingSavingMax: number;
   /** Une box fibre est posée dans une salle des serveurs. */
   readonly hasBox: boolean;
+  /** L'été réchauffe les salles. */
+  readonly summer: boolean;
 }
 
 /**
@@ -645,6 +796,11 @@ export interface SubscriptionOfferView {
   readonly price: number;
   readonly periodDays: number;
   readonly minPhase: Phase;
+  /** Frais de mise en service (0 si aucun) et total payé à la souscription. */
+  readonly setupFee: number;
+  readonly firstPayment: number;
+  /** Salariés que l'offre supporte (null : pas de limite). */
+  readonly maxUsers: number | null;
   readonly requires: SubscriptionRequirement | null;
   readonly blocker: SubscriptionBlocker;
 }
@@ -661,6 +817,8 @@ export interface CurrentSubscriptionView {
   readonly totalPaid: number;
   /** Coût ramené à 30 jours de jeu. */
   readonly monthly: number;
+  /** Productivité perdue parce que l'offre sature (0 si elle tient la charge). */
+  readonly penalty: number;
 }
 
 /** Un service (internet, ménage…), son abonnement en cours et ses offres. */
@@ -674,24 +832,31 @@ export interface SubscriptionServiceView {
 /** Rubrique « Abonnements ». */
 export interface SubscriptionsView {
   readonly services: readonly SubscriptionServiceView[];
+  /** Salariés qui utilisent les services (toute l'équipe, télétravail compris). */
+  readonly users: number;
   /** Nombre d'abonnements en cours. */
   readonly count: number;
   /** Total des abonnements ramené à 30 jours de jeu. */
   readonly monthlyTotal: number;
 }
 
-/** Une formule d'abonnement de ménage, son prix pour le bureau actuel et ce qui bloque. */
-export interface CleaningPlanView {
-  readonly id: CleaningPlanId;
-  readonly name: LocalizedText;
-  readonly description: LocalizedText;
-  /** Jours de passage, de 1 (lundi) à 5 (vendredi). */
-  readonly days: readonly number[];
-  readonly weeklyPrice: number;
-  /** Remise par rapport au prix d'un passage (0.25 = -25 %). */
-  readonly discount: number;
-  /** `CURRENT` : c'est la formule en cours. */
-  readonly blocker: 'NOT_ENOUGH_MONEY' | 'CURRENT' | 'WRONG_STAGE' | null;
+/** Hall d'entrée du rez-de-chaussée, ses secrétaires et l'agent de sécurité. */
+export interface LobbyView {
+  /** Le hall est aménagé. */
+  readonly built: boolean;
+  /** Prix des travaux et phase à partir de laquelle on peut les lancer. */
+  readonly price: number;
+  readonly minPhase: Phase;
+  /** Pourquoi on ne peut pas aménager le hall maintenant (`null` si c'est possible ou fait). */
+  readonly buildBlocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'WRONG_STAGE' | null;
+  readonly receptionists: number;
+  readonly maxReceptionists: number;
+  readonly receptionistMonthly: number;
+  /**
+   * Agent de sécurité de l'abonnement en cours (service `security`, actif seulement avec le
+   * hall) : aucun, en journée, ou jour et nuit. `null` sans abonnement de sécurité actif.
+   */
+  readonly guard: 'none' | 'day' | 'always' | null;
 }
 
 /** Saleté du bureau et entreprise de nettoyage. */
@@ -708,14 +873,6 @@ export interface CleaningView {
   readonly visit: { readonly express: boolean; readonly progress: number } | null;
   /** Appel réservé : dans combien d'heures de jeu l'équipe arrive. */
   readonly booking: { readonly express: boolean; readonly inHours: number } | null;
-  readonly plan: {
-    readonly plan: CleaningPlanId;
-    readonly weeklyPrice: number;
-    /** Jours de jeu avant le prochain prélèvement. */
-    readonly nextBillDays: number;
-    readonly totalPaid: number;
-  } | null;
-  readonly plans: readonly CleaningPlanView[];
   /** Prix d'un passage (base des tarifs), d'un appel pour ce soir et d'un appel express. */
   readonly visitPrice: number;
   readonly callPrice: number;
@@ -883,6 +1040,8 @@ export interface CalendarView {
   readonly seasons: readonly DecorTheme[];
   /** Devs dont on fête l'anniversaire aujourd'hui (table de fête au bureau). */
   readonly birthdays: readonly string[];
+  /** Jour férié chômé aujourd'hui, ou null. */
+  readonly holiday: PublicHoliday | null;
 }
 
 export interface GameView {
@@ -898,6 +1057,14 @@ export interface GameView {
   /** Historique des jauges, un point par jour simulé. */
   readonly history: readonly Gauges[];
   readonly devs: readonly DevView[];
+  /** Team building : sortie réservée et sorties proposées. */
+  readonly teamBuilding: TeamBuildingView;
+  /** Rétrospective en attente de décision (null : aucune). */
+  readonly retro: RetroView | null;
+  /** Action de la dernière rétro en vigueur ce sprint (null : aucune). */
+  readonly retroAction: RetroAction | null;
+  /** Congés, ponts et arrêts maladie (null : vieilles sauvegardes, défi « 3 sprints »). */
+  readonly teamLife: TeamLifeView | null;
   /** Ce que l'encadrement apporte à l'équipe, et les postes ouverts au recrutement. */
   readonly leadership: LeadershipView;
   readonly tasks: readonly TaskView[];
@@ -924,6 +1091,8 @@ export interface GameView {
   readonly lastReport: SprintReport | null;
   /** Objectif du sprint en cours (certains sprints seulement), sinon null. */
   readonly objective: ObjectiveView | null;
+  /** Mode Carrière : légende et jalons (null dans les autres modes). */
+  readonly career: LegendRunView | null;
   readonly pitch: PitchView | null;
   /** Peut-on lancer une levée de fonds maintenant ? Sinon, la raison. */
   readonly pitchBlocker: 'WRONG_STAGE' | 'NO_HYPE' | 'COOLDOWN' | null;
@@ -940,14 +1109,16 @@ export interface GameView {
   readonly pets: PetsView;
   /** Peintures et papiers peints des murs. */
   readonly walls: WallsView;
-  /** Salles des serveurs. */
   /** Saleté du bureau et entreprise de nettoyage. */
   readonly cleaning: CleaningView;
   /** Modèle économique du produit. */
   readonly pricing: PricingView;
   /** Clients B2B. */
   readonly clients: ClientsView;
+  /** Salles des serveurs. */
   readonly servers: ServersView;
+  /** Hall d'entrée, accueil et sécurité. */
+  readonly lobby: LobbyView;
   /** Abonnements (internet…). */
   readonly subscriptions: SubscriptionsView;
   /** Sols des pièces. */
@@ -1042,6 +1213,17 @@ export type GameCommand =
   | { readonly type: 'endDemo' }
   | { readonly type: 'answerAcquisition'; readonly accept: boolean }
   | { readonly type: 'answerRaise'; readonly accept: boolean }
+  | {
+      readonly type: 'bookLeave';
+      readonly devId: string;
+      readonly week: 0 | 1;
+      readonly days: number;
+    }
+  | { readonly type: 'cancelLeave'; readonly devId: string }
+  | { readonly type: 'refuseBridges'; readonly refuse: boolean }
+  | { readonly type: 'holdRetro'; readonly action: RetroAction | null }
+  | { readonly type: 'bookTeamBuilding'; readonly outing: OutingId }
+  | { readonly type: 'cancelTeamBuilding' }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }
@@ -1054,10 +1236,15 @@ export type GameCommand =
   /** Souscrit à une offre (ou change d'offre pour son service). */
   | { readonly type: 'subscribe'; readonly offer: string }
   | { readonly type: 'cancelSubscription'; readonly service: SubscriptionService }
+  /** Aménage le hall d'entrée, règle l'accueil. */
+  | { readonly type: 'buildLobby' }
+  | { readonly type: 'setReceptionists'; readonly count: number }
   /** Appelle l'entreprise de nettoyage (ce soir, ou en express). */
   | { readonly type: 'callCleaning'; readonly express: boolean }
-  | { readonly type: 'subscribeCleaning'; readonly plan: CleaningPlanId }
-  | { readonly type: 'cancelCleaning' }
+  | { readonly type: 'learnSkill'; readonly devId: string; readonly skill: SkillId }
+  | { readonly type: 'resetSkills'; readonly devId: string }
+  | { readonly type: 'trainDev'; readonly devId: string; readonly kind: TrainingKind }
+  | { readonly type: 'useCrunch'; readonly devId: string }
   /** Change le modèle économique et le niveau de prix (une fois par sprint). */
   | { readonly type: 'setPricing'; readonly model: PricingModel; readonly tier: PriceTier }
   /** Signe l'offre d'un client B2B, ou rompt un contrat. */
