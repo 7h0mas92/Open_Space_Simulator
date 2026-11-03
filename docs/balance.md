@@ -170,6 +170,24 @@ Part des jours passés au plancher (≤ 2) ou au plafond (≥ 98). Une jauge col
 | HARDCORE | organizer |     100 |    8.0 % |  0.0 % |   4.0 % |       60.4 M€ |
 | HARDCORE | financier |     100 |    7.0 % |  2.0 % |   2.0 % |       17.0 M€ |
 
+## Histoire en actes
+
+Rapport de `pnpm balance --games 0 --mode-games 0 --career-games 0 --campaign-games 220` (PR 4 de T2). Bot conteur : chaque bot joue comme en Normal, mais refuse les rachats avant « Le géant ». « Acte » = part des parties qui atteignent cet acte ; échec noté « acte:raison ».
+
+| Bot         | Parties | Réussite | prologue |    race | price-war |  giant |   bell | Objectifs secondaires | Sprints | Échec principal |
+| ----------- | ------: | -------: | -------: | ------: | --------: | -----: | -----: | --------------------: | ------: | --------------- |
+| random      |      20 |    0.0 % |  100.0 % |  40.0 % |     5.0 % |  0.0 % |  0.0 % |                   2.0 |    13.6 | prologue:TIME   |
+| shipper     |      20 |   10.0 % |  100.0 % | 100.0 % |    90.0 % | 10.0 % | 10.0 % |                   2.4 |    45.7 | price-war:TIME  |
+| balanced    |      20 |   25.0 % |  100.0 % | 100.0 % |   100.0 % | 25.0 % | 25.0 % |                   3.4 |    49.0 | price-war:TIME  |
+| cautious    |      20 |    0.0 % |  100.0 % | 100.0 % |    15.0 % |  0.0 % |  0.0 % |                   1.4 |    22.5 | race:TIME       |
+| investor    |      20 |   50.0 % |  100.0 % | 100.0 % |   100.0 % | 50.0 % | 30.0 % |                   3.6 |    51.1 | price-war:TIME  |
+| organizer   |      20 |   65.0 % |  100.0 % | 100.0 % |   100.0 % | 65.0 % | 50.0 % |                   4.8 |    51.7 | price-war:TIME  |
+| financier   |      20 |   20.0 % |  100.0 % | 100.0 % |   100.0 % | 20.0 % | 20.0 % |                   3.6 |    48.8 | price-war:TIME  |
+| rested      |      20 |   60.0 % |  100.0 % | 100.0 % |   100.0 % | 60.0 % | 60.0 % |                   4.0 |    50.5 | price-war:TIME  |
+| retro       |      20 |   35.0 % |  100.0 % |  95.0 % |    95.0 % | 35.0 % | 35.0 % |                   3.1 |    46.8 | price-war:TIME  |
+| teambuilder |      20 |    5.0 % |  100.0 % | 100.0 % |   100.0 % |  5.0 % |  5.0 % |                   2.9 |    48.4 | price-war:TIME  |
+| coach       |      20 |   40.0 % |  100.0 % | 100.0 % |   100.0 % | 40.0 % | 35.0 % |                   3.5 |    49.0 | price-war:TIME  |
+
 ## Cartes les plus tirées
 
 - `friday-prod-down` : 40715

@@ -68,8 +68,8 @@ export const STORY_SCENES: Readonly<Record<StorySceneId, readonly SceneLine[]>> 
     ),
     line(
       'you',
-      'Un garage, un ami et un premier commit. Objectif : la Seed, avant le sprint 12.',
-      'A garage, a friend and a first commit. Goal: the Seed round, before sprint 12.',
+      'Un garage, un ami et un premier commit. Objectif : la Seed, avant le sprint 8.',
+      'A garage, a friend and a first commit. Goal: the Seed round, before sprint 8.',
     ),
   ],
   race: [
@@ -90,8 +90,8 @@ export const STORY_SCENES: Readonly<Record<StorySceneId, readonly SceneLine[]>> 
     ),
     line(
       'you',
-      'Alors on le dépasse. Plus d’utilisateurs que Synergix, et la Série A avant le sprint 26.',
-      'Then we overtake him. More users than Synergix, and the Series A before sprint 26.',
+      'Alors on le dépasse. Plus d’utilisateurs que Synergix, et la Série A avant le sprint 18.',
+      'Then we overtake him. More users than Synergix, and the Series A before sprint 18.',
     ),
   ],
   'price-war': [
@@ -112,8 +112,8 @@ export const STORY_SCENES: Readonly<Record<StorySceneId, readonly SceneLine[]>> 
     ),
     line(
       'you',
-      'On ne joue pas aux prix. On tient la prod, on tient l’équipe, et on devient licorne avant le sprint 44.',
-      'We don’t play the price game. We keep prod up, keep the team together and become a unicorn before sprint 44.',
+      'On ne joue pas aux prix. On tient la prod, on tient l’équipe, et on devient licorne avant le sprint 48.',
+      'We don’t play the price game. We keep prod up, keep the team together and become a unicorn before sprint 48.',
     ),
   ],
   giant: [
@@ -134,8 +134,8 @@ export const STORY_SCENES: Readonly<Record<StorySceneId, readonly SceneLine[]>> 
     ),
     line(
       'you',
-      'Il faut valoir 1,5 milliard et garder 30 % du marché avant le sprint 52. Le géant n’est pas invincible.',
-      'We need to be worth 1.5 billion and keep 30% of the market before sprint 52. The giant isn’t invincible.',
+      'Il faut valoir 1,5 milliard et garder 30 % du marché avant le sprint 56. Le géant n’est pas invincible.',
+      'We need to be worth 1.5 billion and keep 30% of the market before sprint 56. The giant isn’t invincible.',
     ),
   ],
   bell: [
