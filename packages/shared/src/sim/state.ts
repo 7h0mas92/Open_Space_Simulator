@@ -20,6 +20,7 @@ import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { FibreSubscriptionSchema, ServerHeatLevelSchema } from './serverRoom.js';
 import { LobbyStateSchema } from './lobby.js';
 import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
+import { defaultPricing, PricingStateSchema } from './pricing.js';
 import { SubscriptionsSchema } from './subscriptions.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
 import { VentureSchema } from './ventures.js';
@@ -355,6 +356,8 @@ export const NOTIFICATION_KINDS = [
   'CLEANING_SUBSCRIBED',
   'CLEANING_CANCELLED',
   'CLEANING_CUT',
+  /** Modèle économique ou niveau de prix changé. */
+  'PRICING_CHANGED',
   'URGENT_TASK',
   'URGENT_DONE',
   'URGENT_MISSED',
@@ -490,6 +493,8 @@ export const GameStateSchema = z.object({
   lobby: LobbyStateSchema.nullable().default(null),
   /** Saleté du bureau et entreprise de nettoyage (bureau propre dans les vieilles sauvegardes). */
   cleaning: CleaningStateSchema.default(emptyCleaningState),
+  /** Modèle économique et niveau de prix (freemium standard dans les vieilles sauvegardes). */
+  pricing: PricingStateSchema.default(defaultPricing),
   /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */
   subscriptions: SubscriptionsSchema.default([]),
   /** Mode Carrière : légende suivie et jalons (null dans les autres modes). */

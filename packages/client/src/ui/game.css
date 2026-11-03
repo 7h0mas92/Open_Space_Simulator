@@ -4748,3 +4748,171 @@ button.skill-node.available {
   min-height: 44px;
   font-size: 1.2rem;
 }
+
+/* Panneau « Business » : modèle économique du produit. */
+.business-panel,
+.pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.business-panel p,
+.pricing p {
+  margin: 0;
+}
+
+.pricing-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #7fd18b;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.pricing fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pricing legend {
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.pricing-models {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 8px;
+}
+
+.pricing-model {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: var(--touch);
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--text);
+  text-align: left;
+}
+
+.pricing-model.selected,
+.pricing-tier-row button.selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.pricing-badge {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #7fd18b;
+  color: var(--accent-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pricing-tier-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.pricing-tier-row button {
+  min-height: var(--touch);
+  text-transform: capitalize;
+}
+
+.pricing-preview {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.pricing-preview dl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 6px;
+}
+
+.pricing-preview dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pricing-preview dt {
+  color: var(--text-muted);
+}
+
+.pricing-preview dd {
+  margin: 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pricing-preview dd.good {
+  color: #7fd18b;
+}
+
+.pricing-preview dd.bad,
+.pricing-warning {
+  color: var(--danger);
+}
+
+/*
+ * Téléphone en portrait : les boutons système (ménage, business, abonnements, sauvegardes,
+ * classement, options) ne tiennent plus à côté de l'horloge, ils passent sur leur propre ligne.
+ */
+@media (max-width: 599px) and (min-height: 501px) {
+  .hud-top {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'gauges gauges'
+      'company clock'
+      'system system';
+  }
+
+  .hud-system {
+    justify-content: space-between;
+  }
+}
+
+/* Téléphone en paysage : on serre les boutons système pour laisser la place aux jauges. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hud-system {
+    gap: 0;
+  }
+
+  .hud-top .gauge .tooltip-trigger {
+    gap: 3px 2px;
+    padding: 4px 3px;
+  }
+}
+
+/*
+ * Entre 1024 et 1279 px, six boutons système et le nom de la phase ne laissent plus de place
+ * aux valeurs des jauges : la phase et l'autonomie restent dans l'infobulle de l'icône.
+ */
+@media (min-width: 1024px) and (max-width: 1279px) and (min-height: 501px) {
+  .company-text,
+  .company-facts {
+    display: none;
+  }
+
+  .hud-company {
+    padding-right: 8px;
+  }
+}

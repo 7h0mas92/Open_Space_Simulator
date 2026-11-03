@@ -473,6 +473,19 @@ test('un panneau se ferme avec Échap et rend le focus', async ({ page, isMobile
   await expect(button).toBeFocused();
 });
 
+test('le panneau Business change le modèle économique', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: 'Business', exact: true }).click();
+  await expect(page.getByTestId('pricing-current')).toContainText('Freemium');
+  await page.getByTestId('pricing-model-SUBSCRIPTION').click();
+  await expect(page.getByTestId('pricing-preview')).toBeVisible();
+  await page.getByTestId('pricing-apply').click();
+  await expect(page.getByTestId('pricing-current')).toContainText('Abonnement');
+  // Un seul changement par sprint.
+  await page.getByTestId('pricing-model-FREE_ADS').click();
+  await expect(page.getByTestId('pricing-apply')).toBeDisabled();
+});
+
 test('mode Carrière : choisir une légende, suivre ses jalons depuis le HUD', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('oss.language', 'fr');
