@@ -20,6 +20,7 @@ import type { GameView, PlacedItemView } from '../../view/types';
 import { formatMoney, localized } from '../game/format';
 import { useGame } from '../store/game';
 import { useThumbnail } from './thumbnails';
+import { researchLockedReason } from './storyLock';
 
 /** Écran choisi en dernier : on le retrouve en revenant sur l'onglet. */
 let lastChoice: MonitorChoice = { model: 'gaming', size: 'medium', mount: 'stand' };
@@ -89,7 +90,11 @@ export function MonitorShop({ view }: { view: GameView }) {
   const money = (value: number) => formatMoney(value, language);
   const model = getMonitor(choice.model) ?? MONITORS[0];
   if (!model) return null;
-  const locked = phaseIndex(view.phase) < phaseIndex(model.minPhase);
+  // Arbre R&D (Histoire) : le modèle choisi, et le bras articulé s'il est demandé.
+  const researchLock =
+    researchLockedReason(t, view, `monitor:${model.id}`) ??
+    (choice.mount === 'arm' ? researchLockedReason(t, view, 'monitor:arm') : null);
+  const locked = phaseIndex(view.phase) < phaseIndex(model.minPhase) || researchLock !== null;
   const price = monitorPrice(choice);
 
   const stations = view.items.filter(
@@ -134,6 +139,9 @@ export function MonitorShop({ view }: { view: GameView }) {
             data-testid={`monitor-mount-${mount}`}
           >
             {t(`monitors.mounts.${mount}`)}
+            {mount === 'arm' && researchLockedReason(t, view, 'monitor:arm') && (
+              <span aria-hidden="true"> 🔬</span>
+            )}
             {mount === 'arm' && (
               <span className="catalog-card-price">
                 {' '}
@@ -143,6 +151,11 @@ export function MonitorShop({ view }: { view: GameView }) {
           </button>
         ))}
       </div>
+      {researchLock && (
+        <p className="wall-zones-title catalog-card-text locked" data-testid="monitor-research">
+          {researchLock}
+        </p>
+      )}
       <div className="wall-zones" role="group" aria-label={t('monitors.where')}>
         {desk && (
           <button
@@ -180,6 +193,7 @@ export function MonitorShop({ view }: { view: GameView }) {
               choice={{ ...choice, model: m.id }}
               pressed={m.id === choice.model}
               locked={phaseIndex(view.phase) < phaseIndex(m.minPhase)}
+              research={researchLockedReason(t, view, `monitor:${m.id}`)}
               onPick={() => choose({ model: m.id })}
             />
           </li>
@@ -194,12 +208,15 @@ function MonitorCard({
   choice,
   pressed,
   locked,
+  research,
   onPick,
 }: {
   model: MonitorDefinition;
   choice: MonitorChoice;
   pressed: boolean;
   locked: boolean;
+  /** Arbre R&D : le niveau à prendre, ou null. */
+  research: string | null;
   onPick: () => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -220,10 +237,12 @@ function MonitorCard({
         </span>
         <span className="catalog-card-owned">{monitorInches(choice)}″</span>
       </span>
-      <span className={locked ? 'catalog-card-text locked' : 'catalog-card-text'}>
-        {locked
-          ? t('build.locked', { phase: t(`phases.${model.minPhase}`) })
-          : `${effectSummary(choice, t, language)} · ${localized(model.description, language)}`}
+      <span className={locked || research ? 'catalog-card-text locked' : 'catalog-card-text'}>
+        {research
+          ? research
+          : locked
+            ? t('build.locked', { phase: t(`phases.${model.minPhase}`) })
+            : `${effectSummary(choice, t, language)} · ${localized(model.description, language)}`}
       </span>
     </button>
   );

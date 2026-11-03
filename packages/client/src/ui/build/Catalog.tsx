@@ -16,7 +16,7 @@ import { useThumbnail } from './thumbnails';
 import { MonitorShop } from './MonitorShop';
 import { FloorShop } from './FloorShop';
 import { WallFinishes } from './WallFinishes';
-import { storyLockedReason } from './storyLock';
+import { researchLockedReason, storyLockedReason } from './storyLock';
 
 /** Icône de chaque rayon (et de ses objets tant que leur vignette 3D n'est pas prête). */
 export const CATEGORY_ICONS: Record<ItemCategory, string> = {
@@ -356,14 +356,16 @@ function CatalogCard({
   const { owned, block } = shopStatus(item, view);
   const reason =
     block === 'storyLocked'
-      ? storyLockedReason(t, view.mode)
-      : block === 'locked'
-        ? t('build.locked', { phase: t(`phases.${item.minPhase}`) })
-        : block === 'soldOut'
-          ? t('build.soldOut', { max: item.maxCount })
-          : block === 'tooExpensive'
-            ? t('build.tooExpensive')
-            : null;
+      ? storyLockedReason(t, view)
+      : block === 'researchLocked'
+        ? researchLockedReason(t, view, `item:${item.kind}`)
+        : block === 'locked'
+          ? t('build.locked', { phase: t(`phases.${item.minPhase}`) })
+          : block === 'soldOut'
+            ? t('build.soldOut', { max: item.maxCount })
+            : block === 'tooExpensive'
+              ? t('build.tooExpensive')
+              : null;
   return (
     <button
       type="button"

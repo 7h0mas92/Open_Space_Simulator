@@ -125,6 +125,7 @@ export const LESSONS: readonly Lesson[] = [
       { id: 'careerTips', modes: ['CAREER'] },
       { id: 'story', modes: ['STORY'] },
       { id: 'storyTips', modes: ['STORY'] },
+      { id: 'storyResearch', modes: ['STORY'] },
     ],
   },
   {

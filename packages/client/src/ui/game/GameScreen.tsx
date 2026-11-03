@@ -29,6 +29,7 @@ import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
 import { CampaignPanel } from '../story/CampaignPanel';
+import { ResearchPanel } from '../story/ResearchPanel';
 import { MarketPanel } from '../story/MarketPanel';
 import { MissionPanel } from '../story/MissionPanel';
 import {
@@ -83,6 +84,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return view.campaign ? (
         <MarketPanel market={view.campaign.market} users={view.gauges.users} />
       ) : null;
+    case 'research':
+      return view.research ? <ResearchPanel research={view.research} /> : null;
     case 'mission':
       return view.campaign ? (
         <CampaignPanel campaign={view.campaign} sprint={view.time.sprint} />

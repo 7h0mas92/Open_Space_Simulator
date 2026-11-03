@@ -348,7 +348,12 @@ flowchart LR
   bluffs démasqués plus souvent, des arguments qui demandent de vrais chiffres, de gros fonds
   (souverain, crossover) et, dès la Série B, un investisseur qui peut quitter la salle. À chaque
   manche il pose une question (traction, technique, équipe, vision, buzzword) : une réponse hors
-  sujet fait baisser son intérêt, affiché avec ses réactions. Quatre autres financements, sans
+  sujet fait baisser son intérêt, affiché avec ses réactions. Avant d'entrer, le panneau donne
+  les chances estimées et la force de chaque thème d'argument d'après l'état de la startup ;
+  pendant le pitch, chaque argument proposé indique sa force (fort, moyen, faible), la jauge sur
+  laquelle il s'appuie et s'il se joue aux dés, et la jauge « Chance de signer » est la vraie
+  probabilité que l'investisseur signe (`estimatePitchChance`, `categoryStrengths`,
+  `pitchRating`). Quatre autres financements, sans
   hasard : business angels (6 % du capital), prêt bancaire (remboursé sur 12 mois), financement
   participatif (+hype, +dette) et subvention à l'innovation (-moral). Questions et bluffs sont
   tirés sur une graine à part (graine + pitch + sprint) (`shared/sim/pitch.ts`,
@@ -691,6 +696,13 @@ sequenceDiagram
   avec une nouvelle startup rivale tous les 10 sprints). Chaque objectif secondaire rempli donne
   un bonus d'histoire (argent, hype, utilisateurs). Équilibrage mesuré par un bot « conteur » dans
   `pnpm balance` (section « Histoire en actes » de `docs/balance.md`).
+  **Arbre R&D des objets** (`packages/shared/src/sim/research.ts`, panneau « 🔬 R&D ») : dans
+  l'histoire, le catalogue de construction démarre réduit et se débloque avec des points
+  d'innovation (features livrées, objectifs remplis, sprints gagnés face aux rivaux). 5 branches
+  de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation), chaque niveau demandant le
+  précédent et son acte, plus une branche Prestige : les récompenses des objectifs, achetables dès
+  l'objectif rempli. Le verrou passe par la simulation (commande `RESEARCH_NODE`, achats refusés
+  avec `LOCKED`), aucun tirage : les missions courtes et les autres modes gardent tout le catalogue.
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le
