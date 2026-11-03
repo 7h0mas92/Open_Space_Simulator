@@ -14,6 +14,7 @@ import {
 } from '@oss/shared';
 import { addMoney } from './helpers';
 import { hasUnlock } from './unlocks';
+import { researchUnlocked } from './research';
 
 /*
  * Peintures et papiers peints des murs (catalogue dans `shared/sim/walls.ts`). Une commande
@@ -30,6 +31,7 @@ export function wallOffice(state: GameState): WallOffice {
     phase: state.phase,
     wings: state.ventures.length,
     annexes: annexCount(state.fundingRounds),
+    ...(state.lobby ? { lobby: true } : {}),
   };
 }
 
@@ -48,6 +50,7 @@ export function wallFinishBlocker(
   if (state.stage === 'PITCH') return 'WRONG_STAGE';
   if (phaseIndex(state.phase) < phaseIndex(finish.minPhase)) return 'LOCKED';
   if (!hasUnlock(state, finish.unlock)) return 'LOCKED';
+  if (!researchUnlocked(state, `wall:${finish.id}`)) return 'LOCKED';
   if (state.walls[zone] === finish.id) return 'NOT_ELIGIBLE';
   if (state.gauges.treasury < finish.price) return 'NOT_ENOUGH_MONEY';
   return null;

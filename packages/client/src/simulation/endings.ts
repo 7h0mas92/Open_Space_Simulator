@@ -10,7 +10,20 @@ function headline(
   amount: number,
   buyer: LocalizedText | null,
 ): LocalizedText {
-  const main = mainHeadline(state, outcome, amount, buyer);
+  const base = mainHeadline(state, outcome, amount, buyer);
+  const main =
+    state.mode === 'ENDLESS'
+      ? concat(
+          base,
+          text(
+            [
+              ' Mode illimité : {sprint} sprints tenus.',
+              ' Endless mode: {sprint} sprints survived.',
+            ],
+            { sprint: state.sprint },
+          ),
+        )
+      : base;
   const founded = state.ventures.length;
   if (founded === 0) return main;
   const suffix =
@@ -25,7 +38,11 @@ function headline(
             count: founded,
           },
         );
-  return { fr: main.fr + suffix.fr, en: main.en + suffix.en };
+  return concat(main, suffix);
+}
+
+function concat(a: LocalizedText, b: LocalizedText): LocalizedText {
+  return { fr: a.fr + b.fr, en: a.en + b.en };
 }
 
 function mainHeadline(

@@ -288,6 +288,8 @@ export const MISSING_ASSETS = [
   { id: 'catTreeMedium', replacement: 'primitive' },
   { id: 'catTreeLarge', replacement: 'primitive' },
   { id: 'officeCats', replacement: 'character' },
+  { id: 'cleaningCrew', replacement: 'character' },
+  { id: 'officeLitter', replacement: 'character' },
   { id: 'windowSmall', replacement: 'primitive' },
   { id: 'windowMedium', replacement: 'primitive' },
   { id: 'windowLarge', replacement: 'primitive' },
@@ -324,7 +326,10 @@ export const MISSING_ASSETS = [
   { id: 'gpuServer', replacement: 'primitive' },
   { id: 'networkSwitch', replacement: 'primitive' },
   { id: 'fibreRouter', replacement: 'primitive' },
+  { id: 'splitAc', replacement: 'primitive' },
   { id: 'precisionCooling', replacement: 'primitive' },
+  { id: 'inrowCooling', replacement: 'primitive' },
+  { id: 'serverMonitoring', replacement: 'primitive' },
   { id: 'upsUnit', replacement: 'primitive' },
   { id: 'backupNas', replacement: 'primitive' },
   { id: 'firewallUnit', replacement: 'primitive' },
@@ -341,6 +346,10 @@ export const MISSING_ASSETS = [
   { id: 'smallStage', replacement: 'primitive' },
   { id: 'lectern', replacement: 'primitive' },
   { id: 'auditoriumScreen', replacement: 'primitive' },
+  // Hall d'entrée : comptoir d'accueil (`render/lobbyFurniture.ts`), portes à badge, personnel
+  // et caméra (`render/lobby.ts`).
+  { id: 'receptionDesk', replacement: 'primitive' },
+  { id: 'badgeGates', replacement: 'decor' },
   { id: 'uiPack', replacement: 'css' },
   { id: 'soundPacks', replacement: 'none' },
 ] as const;

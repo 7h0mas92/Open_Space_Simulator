@@ -1,13 +1,23 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import {
   STORY_MISSION_IDS,
+  companyName,
   getStoryMission,
   getStoryReward,
+  isEndless,
   type SprintObjective,
+  STORY_ACT_IDS,
+  getStoryAct,
+  type CampaignResult,
+  RETRO,
+  type RetroAction,
 } from '@oss/shared';
 import { MissionGoals } from '../story/MissionGoals';
+import { useActLabel } from '../story/CampaignPanel';
+import { resumeAct } from '../store/lifecycle';
 import { useTranslation } from 'react-i18next';
 import type {
+  RetroView,
   DevView,
   EventView,
   GameView,
@@ -22,6 +32,8 @@ import { GAUGE_ICONS } from './Hud';
 import { moodEmoji, StatBars } from '../team/StatBars';
 import { CareerMilestones } from '../career/CareerPanel';
 import { starsText } from '../career/records';
+import { MarketShares } from '../story/MarketPanel';
+import { SceneTranscript } from '../story/StoryScene';
 
 /**
  * Écrans qui interrompent la partie : carte d'événement, levée de fonds, démo de fin de
@@ -44,18 +56,23 @@ export function StageScreens({ view }: { view: GameView }) {
       const dev = request && view.devs.find((candidate) => candidate.id === request.devId);
       return request && dev ? <RaiseScreen request={request} dev={dev} /> : null;
     }
+    case 'retro':
+      return view.retro && <RetroScreen retro={view.retro} devs={view.devs} />;
     default:
       return null;
   }
 }
 
 /** Écran d'étape affiché pour cet instantané, ou `null` quand la partie est jouable. */
-export function stageScreen(view: GameView): 'end' | 'pitch' | 'demo' | 'event' | 'raise' | null {
+export function stageScreen(
+  view: GameView,
+): 'end' | 'pitch' | 'demo' | 'event' | 'raise' | 'retro' | null {
   if (view.step === 'ENDED') return 'end';
   if (view.step === 'PITCH' && view.pitch) return 'pitch';
   if (view.step === 'DEMO') return 'demo';
   if (view.event) return 'event';
   if (view.step === 'PLANNING' && view.raiseRequest) return 'raise';
+  if (view.step === 'PLANNING' && view.retro) return 'retro';
   return null;
 }
 
@@ -289,6 +306,83 @@ function RaiseScreen({ request, dev }: { request: RaiseRequestView; dev: DevView
   );
 }
 
+/**
+ * Rétrospective : 3 actions d'amélioration, les votes de l'équipe, et le choix du joueur
+ * (suivre le vote, imposer une autre action, ou passer).
+ */
+function RetroScreen({ retro, devs }: { retro: RetroView; devs: readonly DevView[] }) {
+  const { t } = useTranslation();
+  const dispatch = useGame((s) => s.dispatch);
+  const title = t('retro.title');
+  const hold = (action: RetroAction | null) => void dispatch({ type: 'holdRetro', action });
+  const names = (ids: readonly string[]) =>
+    ids.map((id) => devs.find((dev) => dev.id === id)?.name ?? '?').join(', ');
+
+  // Touches 1 à 3 : choisir une action ; 0 : passer.
+  useEffect(() => {
+    const onKey = (keyEvent: KeyboardEvent) => {
+      const index = Number(keyEvent.key);
+      if (!Number.isInteger(index) || index > retro.options.length) return;
+      keyEvent.preventDefault();
+      void dispatch({
+        type: 'holdRetro',
+        action: index === 0 ? null : (retro.options[index - 1]?.action ?? null),
+      });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dispatch, retro]);
+
+  return (
+    <Dialog title={title} className="retro-screen">
+      <p className="eyebrow">
+        <span aria-hidden="true">🔁 </span>
+        {t('retro.kicker')}
+      </p>
+      <h2>{title}</h2>
+      <p>{t('retro.intro', { follow: RETRO.followMoral, impose: RETRO.imposeMoral })}</p>
+      <ul className="choices">
+        {retro.options.map(({ action, voters }, index) => (
+          <li key={action}>
+            <button
+              type="button"
+              className={`choice ${action === retro.winner ? 'is-winner' : ''}`}
+              aria-keyshortcuts={String(index + 1)}
+              onClick={() => hold(action)}
+            >
+              <span className="choice-key" aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className="choice-body">
+                <strong>
+                  {t(`retro.actions.${action}.name`)}
+                  {action === retro.winner && (
+                    <span className="retro-winner"> · {t('retro.teamChoice')}</span>
+                  )}
+                </strong>
+                <span className="retro-problem">{t(`retro.actions.${action}.problem`)}</span>
+                <ul className="effects">
+                  <li className="up">{t(`retro.actions.${action}.effect`)}</li>
+                </ul>
+                <span className="retro-votes">
+                  {voters.length > 0
+                    ? t('retro.votes', { count: voters.length, names: names(voters) })
+                    : t('retro.noVote')}
+                </span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div className="stage-actions">
+        <button type="button" aria-keyshortcuts="0" onClick={() => hold(null)}>
+          {t('retro.skip')}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
 /** Pastilles de difficulté d'un tour de table (●●●○○○). */
 export function DifficultyDots({ tier, tiers }: { tier: number; tiers: number }) {
   const { t } = useTranslation();
@@ -304,6 +398,9 @@ export function DifficultyDots({ tier, tiers }: { tier: number; tiers: number })
     </span>
   );
 }
+
+/** Pictogramme de la force d'un argument (fort, moyen, faible). */
+export const RATING_ICONS = { strong: '▲', fair: '●', weak: '▼' } as const;
 
 const REACTION_ICONS = { good: '👍', neutral: '😐', bad: '👎' } as const;
 
@@ -389,6 +486,19 @@ function PitchScreen({ pitch }: { pitch: PitchView }) {
                       <span className={`tag category-${option.category}`}>
                         {t(`pitch.categories.${option.category}`)}
                       </span>
+                      <span
+                        className={`tag pitch-rating rating-${option.rating}`}
+                        title={t('pitch.ratingTitle', {
+                          rating: t(`pitch.ratings.${option.rating}`),
+                          basis: t(`pitch.basis.${option.basis}`),
+                        })}
+                      >
+                        {RATING_ICONS[option.rating]} {t(`pitch.ratings.${option.rating}`)} ·{' '}
+                        {t(`pitch.basis.${option.basis}`)}
+                      </span>
+                      {option.random && !option.bluff && (
+                        <span className="tag">🎲 {t('pitch.random')}</span>
+                      )}
                       {option.bluff && (
                         <span className="tag tag-warning">⚠ {t('pitch.bluffTag')}</span>
                       )}
@@ -568,6 +678,10 @@ function EndScreen({ view }: { view: GameView }) {
   if (!result) return null;
   const headline = localized(result.headline, i18n.language);
   const valuation = formatGauge('treasury', result.valuation, i18n.language);
+  const endless = isEndless(view.mode);
+  const company = companyName(view.seed);
+  const sprints = endless ? String(result.sprint) : `${result.sprint}/${view.time.totalSprints}`;
+  const sprintsLabel = endless ? t('end.sprintsEndless') : t('end.sprints');
 
   async function share() {
     if (!result) return;
@@ -579,11 +693,17 @@ function EndScreen({ view }: { view: GameView }) {
         lines: [
           result.mission
             ? t(result.mission.success ? 'story.end.success' : 'story.end.failure')
-            : `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
+            : result.campaign
+              ? t(
+                  result.campaign.success
+                    ? `story.campaign.endings.${result.campaign.ending ?? 'IPO'}.title`
+                    : 'story.campaign.end.failure',
+                )
+              : `${t(`end.outcomes.${result.outcome}`)} · ${valuation}`,
           ...(view.career && result.career
             ? [`${localized(view.career.name, i18n.language)} · ${starsText(result.career.stars)}`]
             : []),
-          `${t(`modes.${view.mode}.name`)} · ${t('end.sprints')} ${result.sprint}/${view.time.totalSprints}`,
+          `${company} · ${t(`modes.${view.mode}.name`)} · ${sprintsLabel} ${sprints}`,
           t('end.shareAchievements', { count: view.achievements.length }),
         ],
         footer: window.location.host,
@@ -596,6 +716,8 @@ function EndScreen({ view }: { view: GameView }) {
   }
 
   if (result.mission) return <MissionEnd view={view} onShare={() => void share()} />;
+  if (result.campaign)
+    return <CampaignEnd view={view} result={result.campaign} onShare={() => void share()} />;
 
   return (
     <Dialog title={t(`end.outcomes.${result.outcome}`)} className="end-screen">
@@ -605,14 +727,14 @@ function EndScreen({ view }: { view: GameView }) {
       <h2>{t(`end.outcomes.${result.outcome}`)}</h2>
       <p className="headline">{headline}</p>
       <dl className="demo-stats">
+        <dt>{t('leaderboard.company')}</dt>
+        <dd>{company}</dd>
         <dt>{t('demo.valuation')}</dt>
         <dd>{valuation}</dd>
         <dt>{t('end.ownership')}</dt>
         <dd>{Math.round(result.ownership * 100)} %</dd>
-        <dt>{t('end.sprints')}</dt>
-        <dd>
-          {result.sprint}/{view.time.totalSprints}
-        </dd>
+        <dt>{sprintsLabel}</dt>
+        <dd>{sprints}</dd>
         <dt>{t('achievements.title')}</dt>
         <dd>{view.achievements.length}</dd>
       </dl>
@@ -642,6 +764,96 @@ function EndScreen({ view }: { view: GameView }) {
             onClick={() => void start({ mode: view.mode, legend: view.career?.legend })}
           >
             {t('end.again')}
+          </button>
+        )}
+        <button type="button" onClick={quit}>
+          {t('end.menu')}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
+/**
+ * Fin de la longue partie du mode Histoire : une des deux fins écrites, ou l'histoire arrêtée
+ * (date limite dépassée, faillite, startup vendue trop tôt), avec la reprise de l'acte.
+ */
+function CampaignEnd({
+  view,
+  result,
+  onShare,
+}: {
+  view: GameView;
+  result: CampaignResult;
+  onShare: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const start = useGame((s) => s.start);
+  const quit = useGame((s) => s.quit);
+  const notify = useGame((s) => s.notify);
+  const replayOf = useGame((s) => s.replayOf);
+  const label = useActLabel();
+  const actIndex = STORY_ACT_IDS.indexOf(result.act);
+  const act = getStoryAct(actIndex);
+  const done = view.campaign?.done ?? [];
+  const title = result.success
+    ? t(`story.campaign.endings.${result.ending ?? 'IPO'}.title`)
+    : t('story.campaign.end.failure');
+  async function retry() {
+    if (!(await resumeAct(actIndex))) notify('story.campaign.noCheckpoint', 'error');
+  }
+  return (
+    <Dialog title={title} className="end-screen mission-end campaign-end">
+      <p className="eyebrow">
+        {act.icon} {label(actIndex)} · {localized(act.title, i18n.language)}
+      </p>
+      <h2 data-testid="campaign-outcome">{title}</h2>
+      <p className="headline">{localized(view.result?.headline ?? act.title, i18n.language)}</p>
+      {result.success && result.ending && (
+        <p>{t(`story.campaign.endings.${result.ending}.text`)}</p>
+      )}
+      {result.freeSeasonSprints !== undefined && (
+        <p className="mission-reward" data-testid="campaign-free-season-end">
+          {t('story.campaign.end.freeSeason', { count: result.freeSeasonSprints })}
+        </p>
+      )}
+      {result.success && result.ending && (
+        <details className="campaign-end-scene">
+          <summary>{t('story.campaign.end.replayScene')}</summary>
+          <SceneTranscript scene={result.ending === 'IPO' ? 'ending-ipo' : 'ending-acquisition'} />
+        </details>
+      )}
+      {view.campaign && view.campaign.market.rivals.length > 0 && (
+        <section className="campaign-end-market" aria-label={t('story.campaign.end.rivals')}>
+          <h3>{t('story.campaign.end.rivals')}</h3>
+          <MarketShares market={view.campaign.market} />
+        </section>
+      )}
+      {result.failure && (
+        <p className="down">{t(`story.campaign.end.failures.${result.failure}`)}</p>
+      )}
+      <p className="mission-reward" data-testid="campaign-goals-done">
+        {t('story.campaign.end.goals', { count: done.length, total: STORY_MISSION_IDS.length })}
+      </p>
+      <div className="stage-actions">
+        {!replayOf && !result.success && (
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void retry()}
+            data-testid="campaign-retry"
+          >
+            ↻ {t('story.campaign.end.retry', { act: label(actIndex) })}
+          </button>
+        )}
+        {!replayOf && (
+          <button type="button" onClick={() => void start({ mode: 'STORY', mission: 'campaign' })}>
+            ▶ {t('story.campaign.end.restart')}
+          </button>
+        )}
+        {!replayOf && (
+          <button type="button" onClick={onShare}>
+            📤 {t('end.share')}
           </button>
         )}
         <button type="button" onClick={quit}>

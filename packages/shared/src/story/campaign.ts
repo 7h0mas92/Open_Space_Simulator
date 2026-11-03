@@ -3,6 +3,7 @@ import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
 import type { DevRole } from '../sim/components.js';
 import type { GaugeName, GameStats } from '../sim/state.js';
+import type { RivalId } from '../sim/rivals.js';
 import type { StoryRewardId } from './rewards.js';
 
 /**
@@ -62,7 +63,11 @@ export type MissionGoal =
   /** Au moins ce nombre de chats heureux (équipement complet). */
   | { readonly kind: 'pets'; readonly min: number }
   /** Au moins ce nombre de sprints terminés depuis le début de la mission. */
-  | { readonly kind: 'sprints'; readonly min: number };
+  | { readonly kind: 'sprints'; readonly min: number }
+  /** Histoire en actes : au moins autant d'utilisateurs que ce rival (ou le rival disparu). */
+  | { readonly kind: 'rivalUsers'; readonly rival: RivalId }
+  /** Histoire en actes : part du marché (joueur et rivaux en jeu) d'au moins cette valeur (0 à 1). */
+  | { readonly kind: 'marketShare'; readonly min: number };
 
 export type MissionGoalKind = MissionGoal['kind'];
 

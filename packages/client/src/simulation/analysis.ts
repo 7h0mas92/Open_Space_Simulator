@@ -6,6 +6,8 @@ import {
   OUTCOMES,
   type AchievementDifficulty,
   PHASES,
+  STORY_ACTS,
+  STORY_CAMPAIGN,
   type EventCard,
   type GameMode,
   type GameState,
@@ -17,10 +19,11 @@ import {
   type Phase,
 } from '@oss/shared';
 import type { CardLibrary } from '../events/library';
-import { BOT_NAMES, createBot, playWithBot, scoreEffects, type BotName } from './bots';
+import { BOT_NAMES, createBot, playWithBot, scoreEffects, type Bot, type BotName } from './bots';
 import { portfolioValue } from './economy';
 import { createEmptyState } from './state';
 import { Simulation } from './simulation';
+import { actProgress } from './story';
 
 /**
  * Analyse d'équilibrage : on joue des parties complètes avec des bots, puis on agrège.
@@ -112,6 +115,17 @@ export interface GameRecord {
   flow: FlowRecord;
   /** Mode Carrière : légende, jalons tenus et étoiles. */
   career?: { legend: CareerLegendId; done: string[]; stars: number };
+  /** Histoire en actes : acte atteint, réussite, échec, objectifs secondaires remplis. */
+  campaign?: { act: number; success: boolean; failure: string | null; goals: number };
+  /** Vie de l'équipe : jours de congé et d'arrêt, burn-out, démissions (absent des vieux rapports). */
+  teamLife?: TeamLifeRecord;
+}
+
+export interface TeamLifeRecord {
+  leaveDays: number;
+  sickDays: number;
+  burnoutLeaves: number;
+  resignations: number;
 }
 
 /** Mode Carrière : réussite de chaque légende et de chacun de ses jalons. */
@@ -125,6 +139,20 @@ export interface CareerSummary {
   milestones: { id: string; rate: number }[];
 }
 
+/** Histoire en actes, par bot (bot conteur : il ne vend pas avant « Le géant »). */
+export interface CampaignSummary {
+  bot: BotName;
+  games: number;
+  successRate: number;
+  /** Part des parties qui atteignent chaque acte, dans l'ordre de l'histoire. */
+  reached: number[];
+  /** Objectifs secondaires remplis par partie. */
+  goals: number;
+  /** Échec le plus fréquent (« acte:raison »), null si aucune partie ratée. */
+  mainFailure: string | null;
+  sprints: number;
+}
+
 export interface FlowRecord {
   urgentDone: number;
   urgentMissed: number;
@@ -134,14 +162,38 @@ export interface FlowRecord {
   objectives: [ObjectiveKind, ObjectiveDifficulty, boolean][];
 }
 
+/**
+ * Bot conteur de l'histoire en actes : il joue comme le bot donné, mais refuse les offres de
+ * rachat avant l'acte « Le géant » (une vente plus tôt arrête l'histoire).
+ */
+export function storyteller(bot: Bot): Bot {
+  const giant = STORY_ACTS.findIndex((act) => act.id === 'giant');
+  return {
+    name: bot.name,
+    decide(state, library) {
+      const act = actProgress(state as GameState)?.campaign.act ?? 0;
+      return bot
+        .decide(state, library)
+        .map((c) =>
+          act < giant && c.type === 'ANSWER_ACQUISITION' && c.accept ? { ...c, accept: false } : c,
+        );
+    },
+  };
+}
+
 export function playBalanceGame(
   seed: string,
   bot: BotName,
   cards: CardLibrary,
   mode: GameMode = 'NORMAL',
 ): GameRecord {
-  const simulation = Simulation.create({ seed, mode }, cards);
-  playWithBot(simulation, createBot(bot, seed), cards);
+  const story = mode === 'STORY';
+  const simulation = Simulation.create(
+    story ? { seed, mode, mission: STORY_CAMPAIGN } : { seed, mode },
+    cards,
+  );
+  const player = createBot(bot, seed);
+  playWithBot(simulation, story ? storyteller(player) : player, cards);
   const { state } = simulation;
   const result = state.result ?? {
     outcome: 'ZOMBIE' as const,
@@ -184,6 +236,24 @@ export function playBalanceGame(
           },
         }
       : {}),
+    ...(state.story?.campaign
+      ? {
+          campaign: {
+            act: state.story.campaign.act,
+            success: state.result?.campaign?.success ?? false,
+            failure: state.result?.campaign
+              ? `${state.result.campaign.act}:${state.result.campaign.failure}`
+              : null,
+            goals: state.story.campaign.done.length,
+          },
+        }
+      : {}),
+    teamLife: {
+      leaveDays: state.stats.leaveDays,
+      sickDays: state.stats.sickDays,
+      burnoutLeaves: state.stats.burnoutLeaves,
+      resignations: state.stats.resignations,
+    },
     flow: {
       urgentDone: state.stats.urgentDone,
       urgentMissed: state.stats.urgentMissed,
@@ -252,6 +322,17 @@ export interface ModeSummary extends GaugeSummary {
   mode: GameMode;
   bankruptcyRate: number;
   medianValuation: number;
+  /** Mêmes mesures stratégie par stratégie : vérifie l'écart de difficulté entre les modes. */
+  bots: ModeBotSummary[];
+}
+
+export interface ModeBotSummary {
+  bot: BotName;
+  games: number;
+  bankruptcyRate: number;
+  zombieRate: number;
+  unicornRate: number;
+  medianValuation: number;
 }
 
 export interface BalanceReport {
@@ -272,6 +353,27 @@ export interface BalanceReport {
   flow: { bots: FlowSummary[]; objectives: ObjectiveRate[] };
   /** Mode Carrière, légende par légende (vide si aucune partie Carrière n'a été jouée). */
   career: CareerSummary[];
+  /** Histoire en actes, bot par bot (vide si aucune histoire n'a été jouée). */
+  campaign: CampaignSummary[];
+  /** Vie de l'équipe par bot, en moyenne par partie (mode Normal). */
+  teamLife: TeamLifeSummary[];
+}
+
+export interface TeamLifeSummary extends TeamLifeRecord {
+  bot: BotName;
+}
+
+function summarizeTeamLife(bot: BotName, records: GameRecord[]): TeamLifeSummary {
+  const n = Math.max(1, records.length);
+  const mean = (pick: (life: TeamLifeRecord) => number) =>
+    records.reduce((total, record) => total + (record.teamLife ? pick(record.teamLife) : 0), 0) / n;
+  return {
+    bot,
+    leaveDays: mean((life) => life.leaveDays),
+    sickDays: mean((life) => life.sickDays),
+    burnoutLeaves: mean((life) => life.burnoutLeaves),
+    resignations: mean((life) => life.resignations),
+  };
 }
 
 export interface FlowSummary {
@@ -498,6 +600,22 @@ export function aggregate(allRecords: GameRecord[], cards: CardLibrary): Balance
       bankruptcyRate:
         games.filter((r) => r.outcome === 'BANKRUPTCY').length / Math.max(1, games.length),
       medianValuation: median(games.map((r) => r.valuation)),
+      bots: BOT_NAMES.flatMap((bot): ModeBotSummary[] => {
+        const own = games.filter((r) => r.bot === bot);
+        const n = own.length;
+        if (n === 0) return [];
+        const share = (test: (r: GameRecord) => boolean) => own.filter(test).length / n;
+        return [
+          {
+            bot,
+            games: n,
+            bankruptcyRate: share((r) => r.outcome === 'BANKRUPTCY'),
+            zombieRate: share((r) => r.outcome === 'ZOMBIE'),
+            unicornRate: share((r) => r.phaseReached === 'UNICORN'),
+            medianValuation: median(own.map((r) => r.valuation)),
+          },
+        ];
+      }),
     };
   });
 
@@ -594,7 +712,38 @@ export function aggregate(allRecords: GameRecord[], cards: CardLibrary): Balance
       objectives: objectiveRates(records),
     },
     career: careerSummaries(allRecords),
+    campaign: campaignSummaries(allRecords),
+    teamLife: botNames.map((bot) =>
+      summarizeTeamLife(
+        bot,
+        records.filter((r) => r.bot === bot && r.mode === 'NORMAL'),
+      ),
+    ),
   };
+}
+
+function campaignSummaries(records: GameRecord[]): CampaignSummary[] {
+  return BOT_NAMES.flatMap((bot): CampaignSummary[] => {
+    const games = records.filter((r) => r.bot === bot && r.campaign);
+    if (games.length === 0) return [];
+    const share = (test: (r: GameRecord) => boolean) => games.filter(test).length / games.length;
+    const failures = new Map<string, number>();
+    for (const r of games)
+      if (!r.campaign?.success && r.campaign?.failure)
+        failures.set(r.campaign.failure, (failures.get(r.campaign.failure) ?? 0) + 1);
+    const mainFailure = [...failures].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    return [
+      {
+        bot,
+        games: games.length,
+        successRate: share((r) => r.campaign?.success ?? false),
+        reached: STORY_ACTS.map((_, act) => share((r) => (r.campaign?.act ?? 0) >= act)),
+        goals: games.reduce((total, r) => total + (r.campaign?.goals ?? 0), 0) / games.length,
+        mainFailure,
+        sprints: games.reduce((total, r) => total + r.sprint, 0) / games.length,
+      },
+    ];
+  });
 }
 
 function careerSummaries(records: GameRecord[]): CareerSummary[] {
@@ -668,6 +817,20 @@ export function renderReport(report: BalanceReport): string {
     lines.push(
       `| ${b.bot} | ${b.funding.rounds.toFixed(2)} | ${pct(b.funding.successRate)} | ${pct(b.funding.annexShare)} | ${b.funding.financings.toFixed(2)} |`,
     );
+  }
+  if (report.teamLife.length > 0) {
+    lines.push('', '## Vie de l’équipe', '');
+    lines.push(
+      'Moyennes par partie en mode Normal : congés pris (posés et ponts), jours d’arrêt maladie, arrêts pour burn-out et démissions.',
+      '',
+      '| Bot | Jours de congé | Jours d’arrêt | Burn-out | Démissions |',
+      '| --- | ---: | ---: | ---: | ---: |',
+    );
+    for (const life of report.teamLife) {
+      lines.push(
+        `| ${life.bot} | ${life.leaveDays.toFixed(1)} | ${life.sickDays.toFixed(1)} | ${life.burnoutLeaves.toFixed(2)} | ${life.resignations.toFixed(2)} |`,
+      );
+    }
   }
   if (report.flow.bots.length > 0) {
     lines.push('', '## Tâches dynamiques', '');
@@ -749,6 +912,26 @@ export function renderReport(report: BalanceReport): string {
         `| ${m.mode} | ${m.games} | ${pct(m.bankruptcyRate)} | ${money(m.medianValuation)} | ${cell(mid?.treasury, 1)} | ${cell(mid?.hype)} | ${cell(mid?.coffee)} | ${cell(end?.hype)} |`,
       );
     }
+    // Facile, Normal et Hardcore côte à côte, stratégie par stratégie (profils de
+    // `difficultyOf`) : le Facile pardonne sans être gagné d'avance, le Hardcore punit
+    // l'attentisme sans être impossible.
+    const ladder = (['EASY', 'NORMAL', 'HARDCORE'] as const).flatMap(
+      (mode) => report.modes.find((m) => m.mode === mode) ?? [],
+    );
+    if (ladder.length > 1) {
+      lines.push('', '## Difficulté par mode et par stratégie', '');
+      lines.push(
+        '| Mode | Bot | Parties | Faillite | Zombie | Licorne | Valo. médiane |',
+        '| --- | --- | ---: | ---: | ---: | ---: | ---: |',
+      );
+      for (const m of ladder) {
+        for (const b of m.bots) {
+          lines.push(
+            `| ${m.mode} | ${b.bot} | ${b.games} | ${pct(b.bankruptcyRate)} | ${pct(b.zombieRate)} | ${pct(b.unicornRate)} | ${money(b.medianValuation)} |`,
+          );
+        }
+      }
+    }
   }
   if (report.career.length > 0) {
     lines.push('', '## Mode Carrière', '');
@@ -764,6 +947,19 @@ export function renderReport(report: BalanceReport): string {
         `| ${c.legend} | ${c.games} | ${pct(c.bankruptcyRate)} | ${c.stars.map(pct).join(' | ')} | ${goals} |`,
       );
     }
+  }
+  if (report.campaign.length > 0) {
+    lines.push('', '## Histoire en actes', '');
+    lines.push(
+      'Bot conteur : chaque bot joue comme en Normal, mais refuse les rachats avant « Le géant ». « Acte » = part des parties qui atteignent cet acte ; échec noté « acte:raison ».',
+      '',
+      `| Bot | Parties | Réussite | ${STORY_ACTS.map((a) => a.id).join(' | ')} | Objectifs secondaires | Sprints | Échec principal |`,
+      `| --- | ---: | ---: | ${STORY_ACTS.map(() => '---:').join(' | ')} | ---: | ---: | --- |`,
+    );
+    for (const c of report.campaign)
+      lines.push(
+        `| ${c.bot} | ${c.games} | ${pct(c.successRate)} | ${c.reached.map(pct).join(' | ')} | ${c.goals.toFixed(1)} | ${c.sprints.toFixed(1)} | ${c.mainFailure ?? '-'} |`,
+      );
   }
   lines.push('', '## Cartes les plus tirées', '');
   for (const [cardId, count] of report.draws.slice(0, 15)) lines.push(`- \`${cardId}\` : ${count}`);

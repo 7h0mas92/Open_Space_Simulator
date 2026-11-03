@@ -6,6 +6,7 @@ import { SelectionBar } from '../build/SelectionBar';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Kanban } from '../kanban/Kanban';
 import { Credits } from '../settings/Credits';
+import { Leaderboard } from '../meta/Leaderboard';
 import { SaveSlots } from '../menu/SaveSlots';
 import { SlackPanel } from '../slack/SlackPanel';
 import { SlackDock } from '../slack/SlackDock';
@@ -14,12 +15,22 @@ import { useGame, type PanelId, type Toast } from '../store/game';
 import { useSettings } from '../store/settings';
 import { Funding } from '../funding/Funding';
 import { Group } from '../group/Group';
+import { DailyMoment } from '../meetings/DailyMoment';
+import { StoryScene, useStoryScene, useStoryScenes } from '../story/StoryScene';
 import { MeetingRoom } from '../meetings/MeetingRoom';
+import { TicketApp } from '../meetings/TicketApp';
 import { Pets } from '../pets/Pets';
+import { Lobby } from '../lobby/Lobby';
 import { ServerRoom } from '../servers/ServerRoom';
+import { Cleaning } from '../cleaning/Cleaning';
+import { Business } from '../business/Business';
+import { SubscriptionsPanel } from '../subscriptions/Subscriptions';
 import { Hiring } from '../team/Hiring';
 import { Team } from '../team/Team';
 import { Guide } from '../tutorial/Guide';
+import { CampaignPanel } from '../story/CampaignPanel';
+import { ResearchPanel } from '../story/ResearchPanel';
+import { MarketPanel } from '../story/MarketPanel';
 import { MissionPanel } from '../story/MissionPanel';
 import {
   ActionBar,
@@ -37,6 +48,7 @@ import { StageScreens, stageScreen } from './StageScreens';
 import { localized } from './format';
 import { useGameFeeds } from './useGameFeeds';
 import type { GameView } from '../../view/types';
+import { gridStep } from '../../view/placement';
 
 function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
   switch (panel) {
@@ -50,22 +62,44 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Group view={view} />;
     case 'meetings':
       return <MeetingRoom view={view} />;
+    case 'tickets':
+      return <TicketApp view={view} />;
     case 'pets':
       return <Pets view={view} />;
     case 'servers':
       return <ServerRoom view={view} />;
+    case 'lobby':
+      return <Lobby view={view} />;
+    case 'cleaning':
+      return <Cleaning view={view} />;
+    case 'business':
+      return <Business view={view} />;
+    case 'subscriptions':
+      return <SubscriptionsPanel view={view} />;
     case 'funding':
       return <Funding view={view} />;
     case 'career':
       return <CareerPanel view={view} />;
+    case 'market':
+      return view.campaign ? (
+        <MarketPanel market={view.campaign.market} users={view.gauges.users} />
+      ) : null;
+    case 'research':
+      return view.research ? <ResearchPanel research={view.research} /> : null;
     case 'mission':
-      return <MissionPanel view={view} />;
+      return view.campaign ? (
+        <CampaignPanel campaign={view.campaign} sprint={view.time.sprint} />
+      ) : (
+        <MissionPanel view={view} />
+      );
     case 'dashboard':
       return <Dashboard view={view} />;
     case 'slack':
       return <SlackPanel />;
     case 'saves':
       return <SaveSlots mode="save" />;
+    case 'leaderboard':
+      return <Leaderboard inGame />;
     case 'settings':
       return <SettingsPanel />;
     case 'credits':
@@ -85,7 +119,7 @@ const ARROWS: Record<string, readonly [number, number]> = {
 
 /**
  * Raccourcis clavier globaux : Échap, espace (pause), B (construction) et, objet en main,
- * R (tourner), flèches (déplacer l'aperçu), Entrée (poser).
+ * R (tourner), flèches (déplacer l'aperçu d'une demi-case), Entrée (poser).
  */
 function useShortcuts() {
   useEffect(() => {
@@ -105,8 +139,10 @@ function useShortcuts() {
         game.rotateBuild();
       } else if (game.build?.kind && arrow && game.build.cell) {
         event.preventDefault();
+        // Une demi-case par appui pour les objets qui s'y posent, une case sinon.
         const { cell } = game.build;
-        game.setBuildCell({ x: cell.x + arrow[0], z: cell.z + arrow[1] });
+        const step = gridStep(game.build.kind);
+        game.setBuildCell({ x: cell.x + arrow[0] * step, z: cell.z + arrow[1] * step });
       } else if (game.build?.kind && event.key === 'Enter' && target?.tagName !== 'BUTTON') {
         event.preventDefault();
         void game.placeAt();
@@ -132,13 +168,18 @@ function useShortcuts() {
 
 /** Mode Histoire : le briefing de la mission s'ouvre au lancement (pas à la reprise). */
 function useMissionBriefing() {
-  const opening = useGame((s) => s.view?.mode === 'STORY' && s.view.tick === 0 && !s.replayOf);
+  // La longue partie ouvre ses objectifs après la scène de l'acte (`useStoryScenes`).
+  const opening = useGame(
+    (s) => s.view?.mode === 'STORY' && !s.view.campaign && s.view.tick === 0 && !s.replayOf,
+  );
   const seed = useGame((s) => s.view?.seed);
   useEffect(() => {
     if (opening) useGame.getState().openPanel('mission');
     // Une seule fois par mission lancée.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seed]);
+  // Longue partie : scènes de l'histoire, puis objectifs de l'acte.
+  useStoryScenes();
 }
 
 export function GameScreen() {
@@ -151,6 +192,7 @@ export function GameScreen() {
   const showFps = useSettings((s) => s.showFps);
   const replayOf = useGame((s) => s.replayOf);
   const building = useGame((s) => s.build !== null);
+  const inScene = useStoryScene((s) => s.scene !== null);
   useShortcuts();
   useGameFeeds();
   useMissionBriefing();
@@ -172,6 +214,8 @@ export function GameScreen() {
     >
       <Scene />
       <Alerts view={view} />
+      {!building && <DailyMoment view={view} />}
+      <StoryScene />
       <h1 className="visually-hidden">{t('app.title')}</h1>
       {building ? (
         // Construction : le HUD habituel s'efface pour laisser la scène au joueur.
@@ -217,7 +261,8 @@ export function GameScreen() {
       )}
       {panel !== 'slack' && !building && <SlackDock />}
       {/* Le tutoriel s'adapte au mode de jeu (voir tutorial/lessons.ts). */}
-      {!replayOf && <Guide view={view} />}
+      {/* Le guide attend la fin d'une scène de l'histoire. */}
+      {!replayOf && !inScene && <Guide view={view} />}
       <StageScreens view={view} />
       {panel && (
         <Sheet

@@ -1,4 +1,8 @@
 import {
+  STORY_ACTS,
+  STORY_SYNOPSIS,
+  STORY_TITLE,
+  STORY_TOTAL_SPRINTS,
   STORY_CHAPTERS,
   STORY_MISSIONS,
   STORY_REWARDS,
@@ -12,7 +16,10 @@ import {
   type StoryMission,
   type StoryMissionId,
 } from '@oss/shared';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { storyCheckpoints, type ActCheckpoint } from '../../save/story';
+import { resumeAct } from '../store/lifecycle';
+import { ActTimeline, useActLabel } from './CampaignPanel';
 import { useTranslation } from 'react-i18next';
 import { localized } from '../game/format';
 import { useGame } from '../store/game';
@@ -127,7 +134,94 @@ function Rewards({ completed }: { completed: readonly StoryMissionId[] }) {
 }
 
 /**
- * Écran du mode Histoire : la campagne en 4 chapitres et 10 missions, la progression, le titre
+ * La longue partie « Ctrl+Alt+Fonder » : le synopsis, les 5 actes, et les boutons pour la
+ * commencer ou reprendre un acte depuis son point de sauvegarde (gardé sur l'appareil).
+ */
+function CampaignSection({ completed }: { completed: readonly StoryMissionId[] }) {
+  const { t, i18n } = useTranslation();
+  const start = useGame((s) => s.start);
+  const loading = useGame((s) => s.loading);
+  const label = useActLabel();
+  const [checkpoints, setCheckpoints] = useState<readonly ActCheckpoint[]>([]);
+  useEffect(() => {
+    let alive = true;
+    void storyCheckpoints
+      .list()
+      .then((saved) => alive && setCheckpoints(saved?.acts ?? []))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const reached = checkpoints.at(-1)?.act ?? -1;
+  return (
+    <section className="story-campaign" aria-labelledby="story-campaign-title">
+      <p className="eyebrow">{t('story.campaign.eyebrow')}</p>
+      <h2 id="story-campaign-title">{localized(STORY_TITLE, i18n.language)}</h2>
+      <p>{localized(STORY_SYNOPSIS, i18n.language)}</p>
+      <p className="hint">
+        {t('story.campaign.meta', {
+          sprints: STORY_TOTAL_SPRINTS,
+          done: completed.length,
+          total: STORY_MISSIONS.length,
+        })}
+      </p>
+      <ActTimeline current={reached} />
+      <ol className="act-list">
+        {STORY_ACTS.map((act, index) => {
+          const checkpoint = checkpoints.find((c) => c.act === index);
+          return (
+            <li key={act.id} className="act-card" data-testid={`act-${act.id}`}>
+              <p className="eyebrow">
+                {label(index)} · {t(`phases.${act.phase}`)}
+              </p>
+              <h3>
+                <span aria-hidden="true">{act.icon} </span>
+                {localized(act.title, i18n.language)}
+              </h3>
+              <p>{localized(act.intro, i18n.language)}</p>
+              <p className="mission-meta">
+                <span>
+                  ⏱️{' '}
+                  {act.goals.length > 0
+                    ? t('story.campaign.deadlineShort', { sprint: act.deadline })
+                    : t('story.campaign.exitShort')}
+                </span>
+                <span>🎯 {t('story.campaign.sideCount', { count: act.side.length })}</span>
+              </p>
+              {checkpoint && (
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void resumeAct(index)}
+                  data-testid={`resume-${act.id}`}
+                >
+                  ↻ {t('story.campaign.resume', { act: label(index) })}
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+      <button
+        type="button"
+        className="primary cta"
+        disabled={loading}
+        onClick={() => void start({ mode: 'STORY', mission: 'campaign' })}
+        data-testid="campaign-start"
+      >
+        ▶ {t(reached >= 0 ? 'story.campaign.restart' : 'story.campaign.start')}
+      </button>
+      {reached >= 0 && <p className="hint">{t('story.campaign.continueHint')}</p>}
+    </section>
+  );
+}
+
+type StoryTab = 'campaign' | 'missions';
+
+/**
+ * Écran du mode Histoire : la longue partie en 5 actes (onglet « Histoire ») et la campagne
+ * courte en 4 chapitres et 10 missions, la progression, le titre
  * de fondateur et les récompenses. La progression vient de l'appareil, puis du compte.
  */
 export function StoryPage() {
@@ -148,66 +242,96 @@ export function StoryPage() {
   const start = useGame((s) => s.start);
   const loading = useGame((s) => s.loading);
   const nextMission = next ? getStoryMission(next.id) : undefined;
+  const [tab, setTab] = useState<StoryTab>('campaign');
 
   return (
     <div className="story-page" data-testid="story-page">
-      <section className="story-intro">
-        <p>{t('story.intro')}</p>
-        <div className="achievement-progress">
-          <p>
-            {label}
-            {title && (
-              <>
-                {' · '}
-                <strong data-testid="founder-title">{localized(title, i18n.language)}</strong>
-              </>
-            )}
-          </p>
-          <progress value={completed.length} max={STORY_MISSIONS.length} aria-label={label} />
-        </div>
-        <p className="hint">{t(online ? 'story.savedAccount' : 'story.savedDevice')}</p>
-        {loaded && nextMission && (
+      <div className="tabs story-tabs" role="tablist" aria-label={t('story.tabs.label')}>
+        {(['campaign', 'missions'] as const).map((id) => (
           <button
+            key={id}
             type="button"
-            className="primary cta"
-            disabled={loading}
-            onClick={() => void start({ mode: 'STORY', mission: nextMission.id })}
+            role="tab"
+            id={`story-tab-${id}`}
+            aria-selected={tab === id}
+            aria-controls={`story-panel-${id}`}
+            className={tab === id ? 'active' : undefined}
+            onClick={() => setTab(id)}
+            data-testid={`story-tab-${id}`}
           >
-            ▶ {t('story.continue', { mission: localized(nextMission.title, i18n.language) })}
+            {t(`story.tabs.${id}`)}
           </button>
-        )}
-        {loaded && !nextMission && <p className="up">{t('story.allDone')}</p>}
-      </section>
-
-      {STORY_CHAPTERS.map((chapter) => (
-        <section
-          key={chapter.id}
-          className={`story-chapter ${chapterComplete(chapter.id, completed) ? 'complete' : ''}`}
-          aria-labelledby={`chapter-${chapter.id}`}
-        >
-          <header>
-            <p className="eyebrow">{t('story.chapterNumber', { number: chapter.number })}</p>
-            <h2 id={`chapter-${chapter.id}`}>
-              <span aria-hidden="true">{chapter.icon} </span>
-              {localized(chapter.title, i18n.language)}
-            </h2>
-            <p>{localized(chapter.intro, i18n.language)}</p>
-            {chapterComplete(chapter.id, completed) && (
-              <p className="up">
-                🏅{' '}
-                {t('story.chapterDone', { title: localized(chapter.founderTitle, i18n.language) })}
+        ))}
+      </div>
+      {tab === 'campaign' && (
+        <div role="tabpanel" id="story-panel-campaign" aria-labelledby="story-tab-campaign">
+          <CampaignSection completed={completed} />
+          <Rewards completed={completed} />
+        </div>
+      )}
+      {tab === 'missions' && (
+        <div role="tabpanel" id="story-panel-missions" aria-labelledby="story-tab-missions">
+          <section className="story-intro">
+            <p>{t('story.intro')}</p>
+            <div className="achievement-progress">
+              <p>
+                {label}
+                {title && (
+                  <>
+                    {' · '}
+                    <strong data-testid="founder-title">{localized(title, i18n.language)}</strong>
+                  </>
+                )}
               </p>
+              <progress value={completed.length} max={STORY_MISSIONS.length} aria-label={label} />
+            </div>
+            <p className="hint">{t(online ? 'story.savedAccount' : 'story.savedDevice')}</p>
+            {loaded && nextMission && (
+              <button
+                type="button"
+                className="primary cta"
+                disabled={loading}
+                onClick={() => void start({ mode: 'STORY', mission: nextMission.id })}
+              >
+                ▶ {t('story.continue', { mission: localized(nextMission.title, i18n.language) })}
+              </button>
             )}
-          </header>
-          <ul className="mission-list">
-            {chapterMissions(chapter.id).map((mission) => (
-              <MissionCard key={mission.id} mission={mission} completed={completed} />
-            ))}
-          </ul>
-        </section>
-      ))}
+            {loaded && !nextMission && <p className="up">{t('story.allDone')}</p>}
+          </section>
 
-      <Rewards completed={completed} />
+          {STORY_CHAPTERS.map((chapter) => (
+            <section
+              key={chapter.id}
+              className={`story-chapter ${chapterComplete(chapter.id, completed) ? 'complete' : ''}`}
+              aria-labelledby={`chapter-${chapter.id}`}
+            >
+              <header>
+                <p className="eyebrow">{t('story.chapterNumber', { number: chapter.number })}</p>
+                <h2 id={`chapter-${chapter.id}`}>
+                  <span aria-hidden="true">{chapter.icon} </span>
+                  {localized(chapter.title, i18n.language)}
+                </h2>
+                <p>{localized(chapter.intro, i18n.language)}</p>
+                {chapterComplete(chapter.id, completed) && (
+                  <p className="up">
+                    🏅{' '}
+                    {t('story.chapterDone', {
+                      title: localized(chapter.founderTitle, i18n.language),
+                    })}
+                  </p>
+                )}
+              </header>
+              <ul className="mission-list">
+                {chapterMissions(chapter.id).map((mission) => (
+                  <MissionCard key={mission.id} mission={mission} completed={completed} />
+                ))}
+              </ul>
+            </section>
+          ))}
+
+          <Rewards completed={completed} />
+        </div>
+      )}
     </div>
   );
 }

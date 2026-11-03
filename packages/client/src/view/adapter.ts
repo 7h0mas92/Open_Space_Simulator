@@ -10,11 +10,32 @@
 import {
   ANNEXES,
   BALANCE,
+  CLIENT_COMPANIES,
+  SUPPORT,
+  SUPPORT_MAX_AGENTS,
+  supportChurnFactor,
+  supportGrowthFactor,
+  CLIENT_SLOTS,
+  CLIENTS,
+  contractMonthly,
+  type ClientOffer,
+  difficultyOf,
+  oneTimePrice,
+  PRICE_TIERS,
+  PRICING_MODELS,
+  pricingChangeHype,
+  pricingChangeLoss,
+  pricingFactors,
+  userValue,
+  type PriceTier,
+  type PricingModel,
   DEFAULT_COMPUTER,
   hasComputer,
+  DAILY_SYNC,
   MEETING_FORMATS,
   PETS,
   FUNDING_TIERS,
+  PITCH_CATEGORIES,
   PITCH_QUESTIONS,
   ROLE_PROFILES,
   ROLE_STACK,
@@ -25,6 +46,9 @@ import {
   fundingTier,
   fundingTierIndex,
   TIME,
+  OUTINGS,
+  OUTING_DEFINITIONS,
+  TEAM_BUILDING,
   VENTURES,
   birthdayFromKey,
   civilFromDays,
@@ -32,7 +56,10 @@ import {
   getInvestor,
   getVentureIdea,
   seasonsAt,
+  argumentBasis,
   getPitchArgument,
+  isRandomArgument,
+  pitchRating,
   taskTrade,
   type Command,
   type EventCard,
@@ -50,27 +77,66 @@ import {
   WALL_FINISHES,
   floorZones,
   wallZones,
-  FIBRE_PLANS,
+  LOBBY,
+  SECURITY_PLANS,
+  CLEANING,
+  CLEANING_CREW,
+  cleaningCallPrice,
+  dirtProductivity,
   HOSTING_SAVING_MAX,
-  getFibrePlan,
+  saturationPenalty,
+  firstPayment,
+  SUBSCRIPTION_SERVICES,
+  SUBSCRIPTION_SERVICE_INFO,
   hasFibreBox,
+  monthlyPrice,
+  offersOf,
+  type SubscriptionOffer,
   careerLegend,
   careerMilestoneLabel,
+  SKILL_BRANCHES,
+  TRAININGS,
+  branchNodes,
+  isRoleSkill,
+  skillsEnabled,
+  getRival,
+  type CampaignState,
+  PRESTIGE_REWARDS,
+  RESEARCH,
+  RESEARCH_TREE,
+  STORY_MISSIONS,
+  researchBlock,
 } from '@oss/shared';
 import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
-import { completedSprints, missionProgress } from '../simulation/story';
+import { marketShare } from '../simulation/rivals';
+import { actProgress, completedSprints, missionProgress } from '../simulation/story';
 import { hasUnlock } from '../simulation/unlocks';
+import { researchOf, researchStage } from '../simulation/research';
+import {
+  hasSkill,
+  hasSkillTree,
+  isCrunching,
+  resetCost,
+  skillBlocker,
+  skillPoints,
+} from '../simulation/skills';
 import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
 import { financingOffers } from '../simulation/financing';
-import { currentTier } from '../simulation/fundraising';
+import {
+  categoryStrengths,
+  currentTier,
+  estimatePitchChance,
+  expectedAnswer,
+  pitchBar,
+} from '../simulation/fundraising';
 import { softSigmoid } from '../simulation/math';
 import { countDesks, monitorOf, RESALE_RATIO } from '../simulation/furniture';
 import { activeProjections } from '../simulation/projection';
 import { leadershipEffects, teamShape } from '../simulation/leadership';
-import { devIds, teamMax } from '../simulation/helpers';
+import { clamp, devIds, teamMax } from '../simulation/helpers';
 import {
   expectedProductivity,
   expectedQuality,
@@ -80,6 +146,7 @@ import {
   qualityOf,
 } from '../simulation/performance';
 import { objectiveReached, objectiveValue, sprintTime } from '../simulation/taskFlow';
+import { sprintForecast } from '../simulation/sprintLoad';
 import { tasksInColumn } from '../simulation/tasks';
 import { birthdayOf, birthdayPartyIds, calendarDay } from '../simulation/systems/calendar';
 import { clockAt, getClock } from '../simulation/time';
@@ -98,20 +165,48 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
+import { holidayOf, leaveSlots, sprintHasBridge } from '../simulation/teamLife';
+import { activeRetro, retroWinner } from '../simulation/retro';
+import { outingBlocker, outingPrice } from '../simulation/teamBuilding';
+import { visitPrice } from '../simulation/cleaning';
 import {
-  fibreConnected,
+  activeOffer,
+  offerLoad,
+  offerPrice,
+  requirementMet,
+  serviceUsers,
+  subscriptionOf,
+  subscriptionsMonthly,
+} from '../simulation/subscriptions';
+import {
   hostingSaving,
+  isSummer,
   serverRoomItems,
   serverRoomStatuses,
 } from '../simulation/serverRoom';
+import { clientsMonthly, freeClientSlots } from '../simulation/clients';
+import { supportCapacity, supportMonthly, ticketsToday } from '../simulation/support';
 import type {
+  AbsenceView,
+  TeamBuildingView,
+  RetroView,
   StoryView,
+  CampaignView,
+  ResearchView,
+  MarketView,
+  ClientDealView,
+  ClientsView,
+  SupportView,
+  PricingChoiceView,
+  PricingView,
   CandidateView,
   DevActivity,
   DevView,
+  DevSkillsView,
   PerformanceView,
   PitchAnswerView,
   PitchArgumentView,
+  PitchOptionView,
   PitchView,
   SprintPerformanceView,
   EventView,
@@ -120,8 +215,14 @@ import type {
   GroupView,
   GameView,
   MeetingRoomView,
+  DailyView,
   PetsView,
   ServersView,
+  LobbyView,
+  CleaningView,
+  SubscriptionOfferView,
+  SubscriptionServiceView,
+  SubscriptionsView,
   WallsView,
   FloorsView,
   GaugeName,
@@ -240,6 +341,47 @@ export function performanceView(
   };
 }
 
+/** Arbre de compétences d'un dev, prêt à afficher (null : pas d'arbre pour lui ici). */
+function devSkillsView(state: GameState, id: string): DevSkillsView | null {
+  const role = state.components.identity[id]?.role;
+  if (!role || !skillsEnabled(state.mode) || !hasSkillTree(state, id)) return null;
+  const points = skillPoints(state, id);
+  const skills = state.components.skills[id];
+  const crunchLearned = hasSkill(state, id, 'crunch');
+  return {
+    ...points,
+    branches: SKILL_BRANCHES.map((branch) => ({
+      branch,
+      nodes: branchNodes(branch, role).map((node) => {
+        const blocker = skillBlocker(state, id, node.id);
+        return {
+          id: node.id,
+          icon: node.icon,
+          name: node.name,
+          effect: node.effect,
+          status: blocker === 'LEARNED' ? 'LEARNED' : blocker === null ? 'AVAILABLE' : 'LOCKED',
+          roleNode: isRoleSkill(node.id),
+          active: node.active === true,
+        };
+      }),
+    })),
+    trainedThisSprint: skills?.trainedSprint === state.sprint,
+    trainings: TRAININGS.map(({ kind, icon, name, effect, price }) => ({
+      kind,
+      icon,
+      name,
+      effect,
+      price,
+    })),
+    resetCost: resetCost(state, id),
+    crunch: {
+      learned: crunchLearned,
+      ready: crunchLearned && state.stage === 'EXECUTION' && skills?.crunchSprint !== state.sprint,
+      active: isCrunching(state, id),
+    },
+  };
+}
+
 function devView(state: GameState, id: string): DevView | null {
   const c = state.components;
   const identity = c.identity[id];
@@ -289,6 +431,68 @@ function devView(state: GameState, id: string): DevView | null {
         }
       : null,
     leavingAtSprint: leavingAtSprint(state, id),
+    absence: absenceView(state, id),
+    leave:
+      state.teamLife && identity.role !== 'GHOST' && identity.role !== 'AI_AGENT'
+        ? (state.teamLife.leave[id] ?? 0)
+        : null,
+    skills: devSkillsView(state, id),
+  };
+}
+
+function teamBuildingView(state: GameState): TeamBuildingView {
+  const booked = state.teamBuilding.booked;
+  const last = state.teamBuilding.last;
+  return {
+    booked:
+      booked && booked.sprint === state.sprint
+        ? { outing: booked.outing, cost: booked.cost }
+        : null,
+    outings: OUTINGS.map((id) => {
+      const outing = OUTING_DEFINITIONS[id];
+      const days = outing.endDay - outing.startDay;
+      return {
+        id,
+        icon: outing.icon,
+        phase: outing.phase,
+        price: outingPrice(state, outing),
+        blocker: outingBlocker(state, outing),
+        repeat: last?.outing === id && last.sprint === state.sprint - 1,
+        moral: outing.moral,
+        hoursLost: Math.max(0, TEAM_BUILDING.endHour - outing.startHour) + days * 9,
+      };
+    }),
+    count: state.teamBuilding.count,
+  };
+}
+
+function retroView(state: GameState): RetroView | null {
+  const pending = state.retro.pending;
+  if (!pending || pending.sprint !== state.sprint || state.stage !== 'PLANNING') return null;
+  return {
+    options: pending.options.map((action) => ({
+      action,
+      voters: Object.entries(pending.votes)
+        .filter(([id, vote]) => vote === action && state.components.identity[id])
+        .map(([id]) => id),
+    })),
+    winner: retroWinner(pending.options, pending.votes),
+  };
+}
+
+function absenceView(state: GameState, id: string): AbsenceView | null {
+  const absence = state.teamLife?.absences[id];
+  if (!absence) return null;
+  const today = getClock(state).day;
+  const sprintStart = (state.sprint - 1) * TIME.daysPerSprint;
+  const offset = absence.from - sprintStart;
+  return {
+    kind: absence.kind,
+    days: absence.days,
+    // En planification, un congé qui commence lundi n'a pas encore commencé (il s'annule).
+    started: absence.from <= today && !(state.stage === 'PLANNING' && offset === 0),
+    week: absence.kind === 'LEAVE' && offset >= 0 ? (offset >= 7 ? 1 : 0) : null,
+    returnDate: civilFromDays(calendarDay(state, absence.until)),
   };
 }
 
@@ -457,6 +661,9 @@ function candidateViews(state: GameState): CandidateView[] {
         performance: performanceView(candidate.identity, candidate.stats, 1),
         career: null,
         leavingAtSprint: null,
+        absence: null,
+        leave: null,
+        skills: null,
       },
     }));
 }
@@ -473,8 +680,8 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
  * seulement (identifiant `annex:<clé>`, jamais celui d'une entité).
  */
 function annexDecorViews(state: GameState, furniture: readonly PlacedItemView[]): PlacedItemView[] {
-  const { phase, annexes, wings } = wallOffice(state);
-  const layout = officeLayout(phase, wings, annexes, state.seed);
+  const { phase, annexes, wings, lobby } = wallOffice(state);
+  const layout = officeLayout(phase, wings, annexes, lobby === true);
   const view = (fixture: Fixture): PlacedItemView => {
     const moved = state.annexDecor[fixture.key];
     return {
@@ -593,6 +800,19 @@ function pitchArgumentView(id: string): PitchArgumentView | null {
     : null;
 }
 
+/** Argument proposé, avec sa force attendue face à la question posée. */
+function pitchOptionView(state: GameState, pitch: PitchState, id: string): PitchOptionView | null {
+  const view = pitchArgumentView(id);
+  const argument = getPitchArgument(id);
+  if (!view || !argument) return null;
+  return {
+    ...view,
+    rating: pitchRating(expectedAnswer(state, pitch, id)),
+    basis: argumentBasis(argument),
+    random: isRandomArgument(argument),
+  };
+}
+
 /** Réaction de l'investisseur à une réponse, d'après son effet sur l'intérêt. */
 function reaction(delta: number): PitchAnswerView['reaction'] {
   return delta >= 0.5 ? 'good' : delta <= -0.3 ? 'bad' : 'neutral';
@@ -612,7 +832,7 @@ function pitchView(state: GameState, pitch: PitchState): PitchView {
     round: pitch.round,
     rounds: pitch.manches,
     question: question ? { text: question.text, category: question.category } : null,
-    options: pitch.options.flatMap((id) => pitchArgumentView(id) ?? []),
+    options: pitch.options.flatMap((id) => pitchOptionView(state, pitch, id) ?? []),
     chosen: pitch.chosen.flatMap((id, index) => {
       const argument = pitchArgumentView(id);
       const entry = pitch.log[index];
@@ -626,7 +846,7 @@ function pitchView(state: GameState, pitch: PitchState): PitchView {
         },
       ];
     }),
-    interest: Math.round(softSigmoid(pitch.interest - tier.bar) * 100) / 100,
+    interest: Math.round(softSigmoid(pitch.interest - pitchBar(state, tier)) * 100) / 100,
     walkedOut: pitch.walkedOut,
     result: pitch.result,
   };
@@ -636,12 +856,18 @@ function pitchView(state: GameState, pitch: PitchState): PitchView {
 function fundingView(state: GameState): FundingView {
   const next = fundingTier(state.fundingRounds);
   const loan = state.financing.loan;
+  const strengths = categoryStrengths(state);
   return {
     nextRound: {
       name: next.name,
       tier: fundingTierIndex(state.fundingRounds),
       manches: next.manches,
       options: next.options,
+      chance: Math.round(estimatePitchChance(state) * 100) / 100,
+      strengths: PITCH_CATEGORIES.map((category) => ({
+        category,
+        rating: pitchRating(strengths[category]),
+      })),
     },
     tiers: FUNDING_TIERS.length,
     nextPitchSprint:
@@ -712,6 +938,22 @@ function groupView(state: GameState): GroupView {
 /** Nombre de réunions récentes affichées dans le panneau de la salle. */
 const RECENT_MEETINGS = 4;
 
+function dailyView(state: GameState): DailyView | null {
+  const sync = state.morningSync;
+  if (!sync) return null;
+  const today = sync.day === getClock(state).day;
+  return {
+    tick: sync.tick,
+    today,
+    // Le snapshot qui suit le tick du Daily : l'équipe est en salle, l'appli est projetée.
+    live: state.stage === 'EXECUTION' && sync.tick === state.tick - 1,
+    useful: sync.useful,
+    focus: sync.useful && today ? Math.round(DAILY_SYNC.focusBonus * 100) : 0,
+    attendees: [...sync.attendees],
+    entries: sync.entries.map((entry) => ({ ...entry })),
+  };
+}
+
 function meetingRoomView(state: GameState): MeetingRoomView {
   const recent = state.notifications
     .filter(
@@ -748,6 +990,8 @@ function meetingRoomView(state: GameState): MeetingRoomView {
     useful: state.stats.meetingsUseful,
     useless: state.stats.meetingsUseless,
     crisis: state.stats.crisisMeetings,
+    daily: dailyView(state),
+    duplicates: state.stats.duplicateWork,
     recent,
   };
 }
@@ -764,50 +1008,272 @@ function petsView(state: GameState): PetsView {
 }
 
 function serversView(state: GameState): ServersView {
-  const hasBox = hasFibreBox(serverRoomItems(state));
-  const phase = PHASES.indexOf(state.phase);
-  const fibre = state.fibre;
   return {
     rooms: serverRoomStatuses(state).map((room) => ({
       id: room.id,
       kind: room.itemId,
       running: room.running,
       missing: [...room.missing],
+      heat: room.heat,
+      cooling: room.cooling,
+      temperature: room.temperature,
+      level: room.level,
+      monitored: room.monitored,
+      efficiency: room.efficiency,
       gear: room.gear.length,
       slots: getFurniture(room.itemId)?.surfaceSlots ?? 0,
     })),
     hostingSaving: hostingSaving(state),
     hostingSavingMax: HOSTING_SAVING_MAX,
-    hasBox,
-    fibre: fibre
+    summer: isSummer(state),
+    hasBox: hasFibreBox(serverRoomItems(state)),
+  };
+}
+
+function subscriptionOfferView(
+  state: GameState,
+  offer: SubscriptionOffer,
+  currentId: string | undefined,
+): SubscriptionOfferView {
+  const price = offerPrice(state, offer);
+  return {
+    id: offer.id,
+    service: offer.service,
+    name: offer.name,
+    description: offer.description,
+    detail: offer.detail ?? null,
+    price,
+    periodDays: offer.periodDays,
+    minPhase: offer.minPhase,
+    setupFee: offer.setupFee ?? 0,
+    firstPayment: firstPayment(offer, price),
+    maxUsers: offer.maxUsers ?? null,
+    requires: offer.requires ?? null,
+    blocker:
+      currentId === offer.id
+        ? 'CURRENT'
+        : PHASES.indexOf(offer.minPhase) > PHASES.indexOf(state.phase)
+          ? 'LOCKED'
+          : state.stage === 'PITCH'
+            ? 'WRONG_STAGE'
+            : !requirementMet(state, offer)
+              ? 'REQUIREMENT'
+              : state.gauges.treasury < firstPayment(offer, price)
+                ? 'NOT_ENOUGH_MONEY'
+                : null,
+  };
+}
+
+function subscriptionsView(state: GameState): SubscriptionsView {
+  const services = SUBSCRIPTION_SERVICES.map((service): SubscriptionServiceView => {
+    const current = subscriptionOf(state, service);
+    const currentId = current?.offer.id;
+    return {
+      id: service,
+      icon: SUBSCRIPTION_SERVICE_INFO[service].icon,
+      current: current
+        ? {
+            offer: subscriptionOfferView(state, current.offer, currentId),
+            active: requirementMet(state, current.offer),
+            nextBillDays: Math.max(
+              0,
+              (current.subscription.paidUntil - state.tick) / TIME.ticksPerDay,
+            ),
+            since: current.subscription.since,
+            totalPaid: current.subscription.totalPaid,
+            monthly: monthlyPrice(current.offer, offerPrice(state, current.offer)),
+            penalty: saturationPenalty(offerLoad(state, current.offer)),
+          }
+        : null,
+      offers: offersOf(service).map((offer) => subscriptionOfferView(state, offer, currentId)),
+    };
+  });
+  return {
+    services,
+    users: serviceUsers(state),
+    count: services.filter((service) => service.current !== null).length,
+    monthlyTotal: subscriptionsMonthly(state),
+  };
+}
+
+function pricingChoiceView(
+  state: GameState,
+  model: PricingModel,
+  tier: PriceTier,
+): PricingChoiceView {
+  const factors = pricingFactors(model, tier);
+  const revenue = difficultyOf(state.mode).revenue;
+  const arpu = BALANCE.economy.arpuMonthly * factors.arpu * revenue;
+  const usersLost = state.gauges.users * pricingChangeLoss(state.pricing, model, tier);
+  return {
+    model,
+    tier,
+    arpu,
+    oneTime: oneTimePrice(model, tier) * revenue,
+    acquisition: factors.acquisition,
+    churn: factors.churn,
+    userValue: userValue(model, tier),
+    usersLost,
+    hype: pricingChangeHype(state.pricing, model, tier),
+    monthlyRevenue: (state.gauges.users - usersLost) * arpu,
+  };
+}
+
+function clientDealView(deal: ClientOffer): ClientDealView {
+  const company = CLIENT_COMPANIES[deal.company];
+  return {
+    id: deal.id,
+    company: company?.name ?? '?',
+    icon: company?.icon ?? '🏢',
+    sector: company?.sector ?? { fr: '', en: '' },
+    size: deal.size,
+    need: deal.need,
+    points: deal.points,
+    sprints: deal.sprints,
+    monthlyFee: deal.monthlyFee,
+    users: deal.users,
+    signingBonus: deal.monthlyFee * CLIENTS.signingMonths,
+    deliveryBonus: deal.monthlyFee * CLIENTS.deliveryMonths,
+    penalty: deal.monthlyFee * CLIENTS.penaltyMonths,
+    slaPenalty: deal.monthlyFee * CLIENTS.slaPenaltyMonths,
+  };
+}
+
+function clientsView(state: GameState): ClientsView {
+  const clients = state.clients;
+  const free = freeClientSlots(state);
+  const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
+  return {
+    offers: clients.offers.map((offer) => ({
+      ...clientDealView(offer),
+      blocker: wrongStage ? 'WRONG_STAGE' : free === 0 ? 'NO_SLOT' : null,
+    })),
+    contracts: clients.contracts.map((contract) => ({
+      ...clientDealView(contract),
+      status: contract.status,
+      progress: contract.progress,
+      sprintsLeft:
+        contract.status === 'ACTIVE' ? Math.max(0, contract.dueSprint - state.sprint + 1) : 0,
+      maintenanceLeft:
+        contract.deliveredSprint === null
+          ? 0
+          : Math.max(0, CLIENTS.maintenanceSprints - (state.sprint - contract.deliveredSprint)),
+      breaches: contract.breaches,
+      maxBreaches: CLIENTS.maxBreaches,
+      monthly: contractMonthly(contract),
+    })),
+    slots: CLIENT_SLOTS[state.phase],
+    freeSlots: free,
+    monthlyTotal: clientsMonthly(state),
+    signed: clients.signed,
+    delivered: clients.delivered,
+    lost: clients.lost,
+    earned: clients.earned,
+  };
+}
+
+function supportView(state: GameState): SupportView {
+  const support = state.support;
+  return {
+    satisfaction: support.satisfaction,
+    churnThreshold: SUPPORT.churnThreshold,
+    happyThreshold: SUPPORT.happyThreshold,
+    backlog: support.backlog,
+    ticketsPerDay: ticketsToday(state),
+    capacity: supportCapacity(state),
+    agents: support.agents,
+    maxAgents: SUPPORT_MAX_AGENTS[state.phase],
+    agentSalary: SUPPORT.agentSalary,
+    agentCapacity: SUPPORT.agentCapacity,
+    monthly: supportMonthly(state),
+    duty: support.duty,
+    dutyShare: SUPPORT.dutyShare,
+    churnFactor: supportChurnFactor(support.satisfaction),
+    growthFactor: supportGrowthFactor(support.satisfaction),
+    solved: support.solved,
+    blocker: state.stage === 'PITCH' || state.stage === 'ENDED' ? 'WRONG_STAGE' : null,
+  };
+}
+
+function pricingView(state: GameState): PricingView {
+  const { model, tier, changedSprint, changes } = state.pricing;
+  return {
+    current: pricingChoiceView(state, model, tier),
+    choices: PRICING_MODELS.flatMap((m) => PRICE_TIERS.map((t) => pricingChoiceView(state, m, t))),
+    changes,
+    blocker:
+      state.stage === 'PITCH' || state.stage === 'ENDED'
+        ? 'WRONG_STAGE'
+        : changedSprint === state.sprint
+          ? 'COOLDOWN'
+          : null,
+  };
+}
+
+function lobbyView(state: GameState): LobbyView {
+  const phase = PHASES.indexOf(state.phase);
+  const built = state.lobby !== null;
+  const security = activeOffer(state, 'security');
+  return {
+    built,
+    price: LOBBY.price,
+    minPhase: LOBBY.minPhase,
+    buildBlocker: built
+      ? null
+      : PHASES.indexOf(LOBBY.minPhase) > phase
+        ? 'LOCKED'
+        : state.stage === 'PITCH'
+          ? 'WRONG_STAGE'
+          : state.gauges.treasury < LOBBY.price
+            ? 'NOT_ENOUGH_MONEY'
+            : null,
+    receptionists: state.lobby?.receptionists ?? 0,
+    maxReceptionists: LOBBY.maxReceptionists,
+    receptionistMonthly: LOBBY.receptionistMonthly,
+    guard: security
+      ? (SECURITY_PLANS.find((plan) => plan.id === security.id)?.guard ?? null)
+      : null,
+  };
+}
+
+function cleaningView(state: GameState): CleaningView {
+  const cleaning = state.cleaning;
+  const visitCost = visitPrice(state);
+  const callPrice = cleaningCallPrice(visitCost, false);
+  const expressPrice = cleaningCallPrice(visitCost, true);
+  const busy = cleaning.booking !== null || cleaning.visit !== null;
+  const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
+  const visit = cleaning.visit;
+  return {
+    dirt: cleaning.dirt,
+    alert: CLEANING.dirtyAlert,
+    productivity: dirtProductivity(cleaning.dirt),
+    daysSinceClean: cleaning.daysSinceClean,
+    visit: visit
       ? {
-          plan: fibre.plan,
-          connected: fibreConnected(state),
-          nextBillDays: Math.max(0, (fibre.paidUntil - state.tick) / TIME.ticksPerDay),
-          weeklyPrice: getFibrePlan(fibre.plan).weeklyPrice,
-          totalPaid: fibre.totalPaid,
+          express: visit.express,
+          progress: clamp((state.tick - visit.start) / Math.max(1, visit.end - visit.start), 0, 1),
         }
       : null,
-    plans: FIBRE_PLANS.map((plan) => ({
-      id: plan.id,
-      name: plan.name,
-      description: plan.description,
-      speed: plan.speed,
-      weeklyPrice: plan.weeklyPrice,
-      minPhase: plan.minPhase,
-      blocker:
-        fibre?.plan === plan.id
-          ? 'CURRENT'
-          : PHASES.indexOf(plan.minPhase) > phase
-            ? 'LOCKED'
-            : state.stage === 'PITCH'
-              ? 'WRONG_STAGE'
-              : !hasBox
-                ? 'NO_BOX'
-                : state.gauges.treasury < plan.weeklyPrice
-                  ? 'NOT_ENOUGH_MONEY'
-                  : null,
-    })),
+    booking: cleaning.booking
+      ? {
+          express: cleaning.booking.express,
+          inHours: Math.max(0, (cleaning.booking.start - state.tick) / TIME.ticksPerHour),
+        }
+      : null,
+    visitPrice: visitCost,
+    callPrice,
+    expressPrice,
+    callBlocker: busy
+      ? 'BUSY'
+      : wrongStage
+        ? 'WRONG_STAGE'
+        : state.gauges.treasury < callPrice
+          ? 'NOT_ENOUGH_MONEY'
+          : null,
+    crew: CLEANING_CREW.map((member) => ({ ...member })),
+    visits: cleaning.visits,
+    spent: cleaning.spent,
   };
 }
 
@@ -855,6 +1321,93 @@ function storyView(state: GameState): StoryView | null {
   };
 }
 
+function marketView(state: GameState, campaign: CampaignState): MarketView {
+  const total =
+    state.gauges.users +
+    campaign.rivals.reduce((sum, rival) => sum + (rival.alive ? rival.users : 0), 0);
+  return {
+    share: marketShare(state),
+    usersHistory: [...campaign.usersHistory],
+    rivals: campaign.rivals.map((rival) => {
+      const profile = getRival(rival.id);
+      return {
+        id: rival.id,
+        name: profile.name,
+        icon: profile.icon,
+        color: profile.color,
+        tagline: profile.tagline,
+        users: Math.round(rival.users),
+        valuation: Math.round(rival.valuation),
+        share: rival.alive && total > 0 ? rival.users / total : 0,
+        alive: rival.alive,
+        boughtBy: rival.boughtBy,
+        lastAction: rival.lastAction,
+        lastActionSprint: rival.lastActionSprint,
+        history: [...rival.history],
+      };
+    }),
+  };
+}
+
+/** Arbre R&D des objets : niveaux, points et récompenses de Prestige (null sans arbre). */
+function researchView(state: GameState): ResearchView | null {
+  const research = researchOf(state);
+  if (!research) return null;
+  const { stage, gate } = researchStage(state);
+  const campaign = gate === 'act';
+  return {
+    points: research.points,
+    earned: research.earned,
+    gate,
+    nodes: RESEARCH_TREE.map((node) => ({
+      id: node.id,
+      branch: node.branch,
+      level: node.level,
+      name: node.name,
+      cost: RESEARCH.cost[node.level],
+      act: RESEARCH.act[node.level],
+      status: researchBlock(research, stage, node, gate) ?? 'available',
+      keys: node.keys,
+    })),
+    prestige: STORY_MISSIONS.flatMap((mission) =>
+      campaign && PRESTIGE_REWARDS.includes(mission.reward)
+        ? [
+            {
+              reward: mission.reward,
+              mission: mission.id,
+              missionTitle: mission.title,
+              unlocked: hasUnlock(state, mission.reward),
+            },
+          ]
+        : [],
+    ),
+  };
+}
+
+function campaignView(state: GameState): CampaignView | null {
+  const progress = actProgress(state);
+  if (!progress) return null;
+  return {
+    act: progress.act.id,
+    actIndex: progress.campaign.act,
+    deadline: progress.act.deadline,
+    goals: progress.goals,
+    side: progress.side.map((side) => ({
+      id: side.mission.id,
+      status: side.status,
+      goals: side.goals,
+      constraints: side.constraints,
+    })),
+    done: [...progress.campaign.done],
+    sprintsDone: completedSprints(state),
+    market: marketView(state, progress.campaign),
+    freeSeason: progress.campaign.freeSeason !== undefined,
+    freeSeasonSprints: progress.campaign.freeSeason
+      ? Math.max(0, state.sprint - progress.campaign.freeSeason.fromSprint)
+      : 0,
+  };
+}
+
 export function toGameView(state: GameState, context: ViewContext): GameView {
   const clock = getClock(state);
   const today = calendarDay(state, clock.day);
@@ -882,6 +1435,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       date: civilFromDays(today),
       seasons: seasonsAt(today),
       birthdays: birthdayPartyIds(state, clock.day),
+      holiday: holidayOf(state, clock.day),
     },
     phase: state.phase,
     step: state.stage,
@@ -897,6 +1451,16 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     devs: devIds(state)
       .map((id) => devView(state, id))
       .filter((dev): dev is DevView => dev !== null),
+    teamBuilding: teamBuildingView(state),
+    retro: retroView(state),
+    retroAction: activeRetro(state),
+    teamLife: state.teamLife
+      ? {
+          slots: leaveSlots(state),
+          bridge: sprintHasBridge(state),
+          bridgesRefused: state.teamLife.bridgesRefusedSprint === state.sprint,
+        }
+      : null,
     leadership: leadershipView(state),
     tasks: taskViews(state),
     candidates: candidateViews(state),
@@ -915,6 +1479,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     event: eventView(state, context),
     lastReport: state.history.sprints.at(-1) ?? null,
     objective: objectiveView(state),
+    sprintLoad: sprintForecast(state, getClock(state)),
     career: legendRunView(state),
     pitch: pitch ? pitchView(state, pitch) : null,
     pitchBlocker: pitchBlocker(state),
@@ -926,6 +1491,12 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    lobby: lobbyView(state),
+    cleaning: cleaningView(state),
+    pricing: pricingView(state),
+    clients: clientsView(state),
+    support: supportView(state),
+    subscriptions: subscriptionsView(state),
     floors: floorsView(state),
     canIpo:
       (state.stage === 'PLANNING' || state.stage === 'DEMO') &&
@@ -933,7 +1504,13 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       state.gauges.stability >= BALANCE.phases.ipoMinStability,
     result: state.result,
     story: storyView(state),
-    unlocks: [...state.unlocks],
+    campaign: campaignView(state),
+    research: researchView(state),
+    // Branche Prestige de l'arbre R&D : les récompenses gagnées pendant l'histoire s'y ajoutent.
+    unlocks: [
+      ...state.unlocks,
+      ...PRESTIGE_REWARDS.filter((id) => !state.unlocks.includes(id) && hasUnlock(state, id)),
+    ],
     achievements: [...state.achievements],
     replay: context.replay ?? null,
     running: context.running,
@@ -1088,8 +1665,29 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'ANSWER_ACQUISITION', accept: command.accept };
     case 'answerRaise':
       return { type: 'ANSWER_RAISE', accept: command.accept };
+    case 'bookLeave':
+      return {
+        type: 'BOOK_LEAVE',
+        devId: command.devId,
+        week: command.week,
+        days: Math.min(5, Math.max(1, Math.round(command.days))),
+      };
+    case 'cancelLeave':
+      return { type: 'CANCEL_LEAVE', devId: command.devId };
+    case 'refuseBridges':
+      return { type: 'REFUSE_BRIDGES', refuse: command.refuse };
+    case 'holdRetro':
+      return { type: 'HOLD_RETRO', action: command.action };
+    case 'bookTeamBuilding':
+      return { type: 'BOOK_TEAM_BUILDING', outing: command.outing };
+    case 'cancelTeamBuilding':
+      return { type: 'CANCEL_TEAM_BUILDING' };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
+    case 'endStory':
+      return { type: 'END_STORY' };
+    case 'research':
+      return { type: 'RESEARCH_NODE', nodeId: command.nodeId };
     case 'foundVenture':
       return { type: 'FOUND_VENTURE', ideaId: command.ideaId };
     case 'sellVenture':
@@ -1111,9 +1709,31 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'ADOPT_PET', coat: command.coat };
     case 'rehomePet':
       return { type: 'REHOME_PET', petId: command.petId };
-    case 'subscribeFibre':
-      return { type: 'SUBSCRIBE_FIBRE', plan: command.plan };
-    case 'cancelFibre':
-      return { type: 'CANCEL_FIBRE' };
+    case 'subscribe':
+      return { type: 'SUBSCRIBE', offer: command.offer };
+    case 'cancelSubscription':
+      return { type: 'CANCEL_SUBSCRIPTION', service: command.service };
+    case 'buildLobby':
+      return { type: 'BUILD_LOBBY' };
+    case 'setReceptionists':
+      return { type: 'SET_RECEPTIONISTS', count: command.count };
+    case 'callCleaning':
+      return { type: 'CALL_CLEANING', express: command.express };
+    case 'learnSkill':
+      return { type: 'LEARN_SKILL', devId: command.devId, skill: command.skill };
+    case 'resetSkills':
+      return { type: 'RESET_SKILLS', devId: command.devId };
+    case 'trainDev':
+      return { type: 'TRAIN_DEV', devId: command.devId, kind: command.kind };
+    case 'useCrunch':
+      return { type: 'USE_CRUNCH', devId: command.devId };
+    case 'setPricing':
+      return { type: 'SET_PRICING', model: command.model, tier: command.tier };
+    case 'signClient':
+      return { type: 'SIGN_CLIENT', offerId: command.offerId };
+    case 'dropClient':
+      return { type: 'DROP_CLIENT', contractId: command.contractId };
+    case 'setSupport':
+      return { type: 'SET_SUPPORT', agents: command.agents, duty: command.duty };
   }
 }

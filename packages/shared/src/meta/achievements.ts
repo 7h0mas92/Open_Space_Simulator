@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { LocalizedTextSchema, type LocalizedText } from '../i18n.js';
 import type { DevRole } from '../sim/components.js';
+import { ENDLESS } from '../sim/endless.js';
 import type { FurnitureId } from '../sim/furniture.js';
 import type { GameState } from '../sim/state.js';
 
@@ -35,6 +36,14 @@ const t = (fr: string, en: string): LocalizedText => ({ fr, en });
 /** La partie est-elle terminée sans faillite ? */
 const survived = (state: GameState) =>
   state.result !== null && state.result.outcome !== 'BANKRUPTCY';
+
+/** Sprints menés jusqu'au bout en mode illimité (0 dans les autres modes). */
+const endlessSprintsDone = (state: GameState) =>
+  state.mode !== 'ENDLESS'
+    ? 0
+    : state.stage === 'ENDED' || state.stage === 'DEMO'
+      ? state.sprint
+      : state.sprint - 1;
 
 /** Nombre de devs d'un profil donné dans l'équipe actuelle. */
 const countRole = (state: GameState, role: DevRole) =>
@@ -354,6 +363,40 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     title: t('Rituel du matin', 'Morning Ritual'),
     description: t('Terminer une partie Daily.', 'Finish a Daily game.'),
     check: (state) => state.mode === 'DAILY' && state.result !== null,
+  },
+  // ── Mode illimité : tenir le plus longtemps possible ────────────────────
+  {
+    id: 'endless-two-years',
+    difficulty: 'MEDIUM',
+    icon: '♾️',
+    title: t('Toujours debout', 'Still Standing'),
+    description: t(
+      'Tenir 2 ans (52 sprints) en mode illimité.',
+      'Last 2 years (52 sprints) in Endless mode.',
+    ),
+    check: (state) => endlessSprintsDone(state) >= ENDLESS.achievementSprints.twoYears,
+  },
+  {
+    id: 'endless-three-years',
+    difficulty: 'HARD',
+    icon: '🏔️',
+    title: t('Marathonien', 'Marathon Runner'),
+    description: t(
+      'Tenir 3 ans (78 sprints) en mode illimité.',
+      'Last 3 years (78 sprints) in Endless mode.',
+    ),
+    check: (state) => endlessSprintsDone(state) >= ENDLESS.achievementSprints.threeYears,
+  },
+  {
+    id: 'endless-five-years',
+    difficulty: 'LEGENDARY',
+    icon: '🗿',
+    title: t('Increvable', 'Unkillable'),
+    description: t(
+      'Tenir 5 ans (130 sprints) en mode illimité.',
+      'Last 5 years (130 sprints) in Endless mode.',
+    ),
+    check: (state) => endlessSprintsDone(state) >= ENDLESS.achievementSprints.fiveYears,
   },
   {
     id: 'career-first-star',
@@ -676,6 +719,56 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
       const team = Object.values(state.components.identity);
       return team.length >= 3 && team.every((identity) => identity.role === 'GHOST');
     },
+  },
+  // ── Vie de l'équipe ───────────────────────────────────────────────────────
+  {
+    id: 'right-to-disconnect',
+    icon: '🏖️',
+    difficulty: 'MEDIUM',
+    title: t('Droit à la déconnexion', 'Right to Disconnect'),
+    description: t(
+      'Finir une partie sans faillite ni burn-out, avec au moins 40 jours de congé pris.',
+      'Finish a game without bankruptcy or burnout, with at least 40 days of leave taken.',
+    ),
+    check: (state) =>
+      survived(state) && state.stats.leaveDays >= 40 && state.stats.burnoutLeaves === 0,
+  },
+  {
+    id: 'patient-zero',
+    icon: '🤧',
+    difficulty: 'MEDIUM',
+    secret: true,
+    title: t('Patient zéro', 'Patient Zero'),
+    description: t(
+      'Avoir trois devs en arrêt maladie en même temps.',
+      'Have three devs on sick leave at the same time.',
+    ),
+    check: (state) =>
+      Object.values(state.teamLife?.absences ?? {}).filter((absence) => absence.kind === 'SICK')
+        .length >= 3,
+  },
+  {
+    id: 'team-spirit',
+    icon: '🎉',
+    difficulty: 'MEDIUM',
+    title: t('Esprit d’équipe', 'Team Spirit'),
+    description: t(
+      'Faire 5 sorties d’équipe dans une partie.',
+      'Go on 5 team outings in one game.',
+    ),
+    check: (state) => state.teamBuilding.count >= 5,
+  },
+  {
+    id: 'what-happens-in-lisbon',
+    icon: '✈️',
+    difficulty: 'HARD',
+    secret: true,
+    title: t('Ce qui se passe à Lisbonne…', 'What Happens in Lisbon…'),
+    description: t(
+      'Emmener toute l’équipe en off-site à Lisbonne.',
+      'Take the whole team on an off-site in Lisbon.',
+    ),
+    check: (state) => state.teamBuilding.last?.outing === 'offsite',
   },
   // ── Filiales ──────────────────────────────────────────────────────────────
   {

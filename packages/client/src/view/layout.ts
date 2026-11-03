@@ -1,7 +1,8 @@
 /**
  * Plan du bureau pour chaque phase : taille de la grille, salles et cloisons.
  * Le bureau s'agrandit à chaque levée de fonds (Garage → Seed → Série A → Licorne), puis
- * d'une annexe à chaque tour suivant (Série B, C, D) et d'une aile par filiale.
+ * d'une annexe à chaque tour suivant (Série B, C, D) et d'une aile par filiale. Le hall d'entrée
+ * du rez-de-chaussée, une fois aménagé, passe devant tout le reste.
  *
  * Les cloisons occupent des cases entières (plus simple pour le pathfinding) ; les portes sont
  * des trous dans ces cloisons. Les murs extérieurs sont dessinés autour de la grille.
@@ -10,15 +11,18 @@ import {
   ANNEXES,
   ANNEX_DECOR,
   ANNEX_KINDS,
+  LOBBY,
+  LOBBY_DECOR,
   annexDecorKey,
+  lobbyDecorKey,
   VENTURES,
-  hashString,
   officeDepthWithAnnexes,
   officeWidthWithWings,
   type FurnitureId,
   type Phase,
 } from '@oss/shared';
 import { catalogItem, footprint } from './catalog';
+import { partitionShapes, segmentCrosses } from './partitions';
 
 export interface Cell {
   readonly x: number;
@@ -33,21 +37,9 @@ export const ROOM_KINDS = [
   'canteen',
   'incubator',
   ...ANNEX_KINDS,
+  'lobby',
 ] as const;
 export type RoomKind = (typeof ROOM_KINDS)[number];
-
-/** Nombre de décors de sol (`FLOOR_STYLES` dans render/office.ts) par type de pièce. */
-export const ROOM_STYLES: Record<RoomKind, number> = {
-  open: 4,
-  meeting: 3,
-  kitchen: 3,
-  lounge: 3,
-  canteen: 3,
-  incubator: 3,
-  arcade: 1,
-  garden: 1,
-  auditorium: 1,
-};
 
 export interface Room {
   readonly kind: RoomKind;
@@ -55,11 +47,6 @@ export interface Room {
   readonly z: number;
   readonly width: number;
   readonly depth: number;
-  /**
-   * Décor de la pièce (sol), tiré de la graine de la partie : d'une partie à l'autre, la
-   * cuisine peut être en damier ou en terre cuite. 0 = décor d'origine.
-   */
-  readonly style?: number;
 }
 
 /**
@@ -88,6 +75,16 @@ export interface OfficeLayout {
   readonly fixtures?: readonly Fixture[];
   /** Case d'entrée : les personnages y apparaissent et y disparaissent. */
   readonly entrance: Cell;
+  /** Hall d'entrée, s'il est aménagé : la rangée de sa cloison et ses deux portes à badge. */
+  readonly lobby?: LobbyPlan;
+}
+
+/** Le hall d'entrée sur le plan. */
+export interface LobbyPlan {
+  /** Rangée de la cloison qui sépare le hall du bureau ; le hall est juste devant. */
+  readonly wall: number;
+  /** Les deux portes à badge, percées côte à côte dans cette cloison. */
+  readonly gates: readonly Cell[];
 }
 
 /** Cloison horizontale (le long de x) avec des portes aux abscisses données. */
@@ -173,10 +170,44 @@ function annexDoors(width: number, blocked: (cell: Cell) => boolean, z: number):
   return [2, width - 4].map((x) => (blocked({ x, z: z - 1 }) ? Math.min(width - 2, x + 1) : x));
 }
 
-/** Petit hachage stable (graine + pièce) pour choisir un décor sans toucher au hasard du jeu. */
-function roomStyle(seed: string, kind: RoomKind, index: number): number {
-  if (!seed) return 0;
-  return hashString(`${seed}#room#${kind}#${index}`) % ROOM_STYLES[kind];
+/**
+ * Hall d'entrée : une pièce sur toute la largeur, devant le reste du bureau. Sa cloison est
+ * percée de deux portes à badge côte à côte, au milieu (décalées si une cloison de l'autre côté
+ * les bouche). On y entre par le mur de gauche, au fond du hall. Il est livré avec son décor :
+ * le comptoir d'accueil à droite des portes, une banquette près de l'entrée, deux plantes qui
+ * encadrent les portes.
+ */
+function addLobby(
+  width: number,
+  wall: number,
+  rooms: Room[],
+  partitions: Cell[],
+  fixtures: Fixture[],
+): LobbyPlan {
+  const blocked = (cell: Cell) => partitions.some((p) => p.x === cell.x && p.z === cell.z);
+  let gate = Math.max(1, Math.floor(width / 2) - 1);
+  while (
+    gate < width - 3 &&
+    (blocked({ x: gate, z: wall - 1 }) || blocked({ x: gate + 1, z: wall - 1 }))
+  )
+    gate++;
+  const gates = [
+    { x: gate, z: wall },
+    { x: gate + 1, z: wall },
+  ];
+  partitions.push(...wallX(wall, 0, width - 1, [gate, gate + 1]));
+  rooms.push({ kind: 'lobby', x: 0, z: wall + 1, width, depth: LOBBY.depth - 1 });
+  const spots: readonly Cell[] = [
+    { x: Math.min(width - 3, gate + 3), z: wall + 2 }, // comptoir (3 cases)
+    { x: 2, z: wall + 1 }, // banquette
+    { x: gate - 1, z: wall + 1 }, // plantes de part et d'autre des portes
+    { x: gate + 2, z: wall + 1 },
+  ];
+  LOBBY_DECOR.forEach((kind, index) => {
+    const spot = spots[index];
+    if (spot && spot.x >= 1) fixtures.push({ key: lobbyDecorKey(index), kind, ...spot });
+  });
+  return { wall, gates };
 }
 
 /**
@@ -185,9 +216,9 @@ function roomStyle(seed: string, kind: RoomKind, index: number): number {
  * table à partir de la Série B ajoute une annexe à l'avant, sur toute la largeur : salle
  * d'arcade, puis jardin intérieur, puis auditorium, chacune avec son décor fixe.
  *
- * `seed` (facultatif) varie le décor de sol de chaque pièce d'une partie à l'autre.
+ * `lobby` ajoute le hall d'entrée devant le tout (voir `addLobby`).
  */
-export function officeLayout(phase: Phase, wings = 0, annexes = 0, seed = ''): OfficeLayout {
+export function officeLayout(phase: Phase, wings = 0, annexes = 0, lobby = false): OfficeLayout {
   const base = LAYOUTS[phase];
   const count = Math.max(0, Math.min(wings, VENTURES.maxFounded));
   const annexCount = Math.max(0, Math.min(annexes, ANNEXES.max));
@@ -229,15 +260,21 @@ export function officeLayout(phase: Phase, wings = 0, annexes = 0, seed = ''): O
         fixtures.push({ key: annexDecorKey(i, index), kind: fixture, x: slot, z: wall + 1 });
     });
   }
-  if (count === 0 && annexCount === 0 && !seed) return base;
+  const withLobby = lobby && phase !== 'GARAGE';
+  if (count === 0 && annexCount === 0 && !withLobby) return base;
+  const depth = officeDepthWithAnnexes(base.depth, annexCount);
+  const lobbyPlan = withLobby ? addLobby(width, depth, rooms, partitions, fixtures) : undefined;
+  const fullDepth = depth + (lobbyPlan ? LOBBY.depth : 0);
   return {
     ...base,
     width,
-    depth: officeDepthWithAnnexes(base.depth, annexCount),
+    depth: fullDepth,
     maxTeam: base.maxTeam + count * VENTURES.teamPerWing + annexCount * ANNEXES.teamPerAnnex,
-    rooms: rooms.map((room, index) => ({ ...room, style: roomStyle(seed, room.kind, index) })),
+    rooms,
     partitions,
     fixtures,
+    // On entre par le hall : au fond, contre le mur de gauche.
+    ...(lobbyPlan ? { lobby: lobbyPlan, entrance: { x: 0, z: fullDepth - 1 } } : {}),
   };
 }
 
@@ -265,15 +302,28 @@ interface FloorItem {
   readonly host?: unknown;
 }
 
-/** Cases occupées au sol par le mobilier du joueur (ni accessoires, ni fenêtres, ni plafond). */
+/** Mobilier du joueur posé au sol (ni accessoires, ni fenêtres, ni plafond). */
+function floorItems(items: readonly FloorItem[]): FloorItem[] {
+  return items.filter((item) => {
+    const def = catalogItem(item.kind);
+    return def && !item.host && !def.accessory && !def.wall && !def.ceiling;
+  });
+}
+
+/** Emprise d'un objet en coordonnées de la scène (il peut être décalé d'une demi-case). */
+function boundsOf(item: FloorItem) {
+  const def = catalogItem(item.kind);
+  const [w, d] = def ? footprint(def, item.rotation) : [1, 1];
+  return { minX: item.x - 0.5, maxX: item.x - 0.5 + w, minZ: item.z - 0.5, maxZ: item.z - 0.5 + d };
+}
+
+/** Cases occupées au sol par le mobilier du joueur, même en partie (demi-case comprise). */
 function floorCells(items: readonly FloorItem[]): Set<string> {
   const cells = new Set<string>();
-  for (const item of items) {
-    const def = catalogItem(item.kind);
-    if (!def || item.host || def.accessory || def.wall || def.ceiling) continue;
-    const [w, d] = footprint(def, item.rotation);
-    for (let dx = 0; dx < w; dx++)
-      for (let dz = 0; dz < d; dz++) cells.add(`${item.x + dx},${item.z + dz}`);
+  for (const item of floorItems(items)) {
+    const bounds = boundsOf(item);
+    for (let x = Math.floor(item.x); x - 0.5 < bounds.maxX; x++)
+      for (let z = Math.floor(item.z); z - 0.5 < bounds.maxZ; z++) cells.add(`${x},${z}`);
   }
   return cells;
 }
@@ -281,14 +331,37 @@ function floorCells(items: readonly FloorItem[]): Set<string> {
 /**
  * Les cloisons du plan cèdent la place au mobilier déjà posé. Le plan change sous les meubles
  * quand le bureau grandit : une nouvelle phase déplace les cloisons. Un meuble ne doit jamais se
- * retrouver dans un mur : une cloison du plan sur une case meublée s'efface (le meuble est dans
- * l'embrasure). Fonction pure ; sans conflit, le plan est rendu tel quel.
+ * retrouver dans un mur : une cloison du plan qui traverse un meuble s'efface (le meuble est dans
+ * l'embrasure). Un meuble posé sur la demi-case à côté du trait du mur ne le gêne pas, un mur fin
+ * posé sur la case la remplace. Fonction pure ; sans conflit, le plan est rendu tel quel.
  */
 export function yieldToItems(layout: OfficeLayout, items: readonly FloorItem[]): OfficeLayout {
-  const taken = floorCells(items);
-  const free = (cell: Cell) => !taken.has(`${cell.x},${cell.z}`);
-  if (layout.partitions.every(free)) return layout;
-  return { ...layout, partitions: layout.partitions.filter(free) };
+  const placed = floorItems(items);
+  if (placed.length === 0) return layout;
+  const walls = new Set(
+    placed.filter((item) => catalogItem(item.kind)?.partition).map((item) => `${item.x},${item.z}`),
+  );
+  const furniture = placed.filter((item) => !catalogItem(item.kind)?.partition).map(boundsOf);
+  const planned = layout.partitions.map((cell) => ({
+    ...cell,
+    kind: 'solid' as const,
+    axis: null,
+    color: 'natural' as const,
+  }));
+  const blocked = new Set<string>();
+  for (const shape of partitionShapes(planned, layout)) {
+    const id = `${shape.cell.x},${shape.cell.z}`;
+    if (
+      walls.has(id) ||
+      shape.segments.some((segment) => furniture.some((bounds) => segmentCrosses(bounds, segment)))
+    )
+      blocked.add(id);
+  }
+  if (blocked.size === 0) return layout;
+  return {
+    ...layout,
+    partitions: layout.partitions.filter((cell) => !blocked.has(`${cell.x},${cell.z}`)),
+  };
 }
 
 /**
@@ -342,16 +415,21 @@ export function settleFixtures(
 }
 
 /**
- * Plan du bureau d'un instantané : phase, ailes des filiales, annexes et décor des pièces,
+ * Plan du bureau d'un instantané : phase, ailes des filiales, annexes, hall et décor des pièces,
  * dont les cloisons cèdent la place au mobilier déjà posé (voir `yieldToItems`).
  */
 export function layoutOf(view: {
   readonly phase: Phase;
-  readonly seed: string;
   readonly group: { readonly wings: number };
   readonly funding: { readonly annexes: number };
+  readonly lobby?: { readonly built: boolean };
   readonly items?: readonly FloorItem[];
 }): OfficeLayout {
-  const layout = officeLayout(view.phase, view.group.wings, view.funding.annexes, view.seed);
+  const layout = officeLayout(
+    view.phase,
+    view.group.wings,
+    view.funding.annexes,
+    view.lobby?.built === true,
+  );
   return view.items ? yieldToItems(layout, view.items) : layout;
 }

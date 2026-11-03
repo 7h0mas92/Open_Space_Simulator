@@ -117,12 +117,15 @@ export const LESSONS: readonly Lesson[] = [
       { id: 'internsTips', modes: ['INTERNS_ONLY'] },
       { id: 'ship', modes: ['SHIP_IN_3'] },
       { id: 'shipTips', modes: ['SHIP_IN_3'] },
+      { id: 'endless', modes: ['ENDLESS'] },
+      { id: 'endlessTips', modes: ['ENDLESS'] },
       { id: 'daily', modes: ['DAILY'] },
       { id: 'dailyTips', modes: ['DAILY'] },
       { id: 'career', modes: ['CAREER'], target: 'panel-career' },
       { id: 'careerTips', modes: ['CAREER'] },
       { id: 'story', modes: ['STORY'] },
       { id: 'storyTips', modes: ['STORY'] },
+      { id: 'storyResearch', modes: ['STORY'] },
     ],
   },
   {
@@ -208,6 +211,8 @@ export const LESSONS: readonly Lesson[] = [
       },
       { id: 'manage' },
       { id: 'items' },
+      // L'histoire en actes a sa propre étape (`storyResearch`) ; les missions courtes n'ont pas d'arbre.
+      { id: 'research', modes: ALL_BUT('STORY'), target: 'panel-research' },
     ],
   },
   {

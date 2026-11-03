@@ -39,7 +39,10 @@ export type SlackTrigger = NotificationKind | AmbientTrigger;
 /** Qui écrit le message : un dev de l'équipe (éventuellement d'un profil donné) ou un bot. */
 export type SlackAuthor =
   | { readonly kind: 'dev'; readonly role?: DevRole }
-  | { readonly kind: 'bot'; readonly bot: 'oncall' | 'github' | 'hr' | 'investors' | 'coffee' };
+  | {
+      readonly kind: 'bot';
+      readonly bot: 'oncall' | 'github' | 'hr' | 'investors' | 'coffee' | 'josette' | 'ines';
+    };
 
 export interface SlackTemplate {
   readonly trigger: SlackTrigger;
@@ -1043,6 +1046,153 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     ),
   },
 
+  // ─── Congés, arrêts maladie, jours fériés ─────────────────────────────────
+  {
+    trigger: 'DEV_ON_LEAVE',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🏖️ {event} Son message d’absence renvoie vers « quelqu’un d’autre ».',
+      '🏖️ {event} Their out-of-office points to "someone else".',
+    ),
+  },
+  {
+    trigger: 'DEV_ON_LEAVE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Qui a le mot de passe de son poste ? Je demande pour la prod.',
+      '{event} Who has their laptop password? Asking for prod.',
+    ),
+  },
+  {
+    trigger: 'DEV_ON_LEAVE',
+    channel: 'random',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} Je décale ses 6 réunions à son retour, ça lui fera plaisir.',
+      '{event} I’ll move their 6 meetings to when they’re back, they’ll love it.',
+    ),
+  },
+  {
+    trigger: 'DEV_SICK',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🤒 {event} Merci d’envoyer l’arrêt de travail, pas une photo du thermomètre.',
+      '🤒 {event} Please send the doctor’s note, not a photo of the thermometer.',
+    ),
+  },
+  {
+    trigger: 'DEV_SICK',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Il·elle a toussé sur le clavier partagé vendredi. Je dis ça, je dis rien.',
+      '{event} They coughed on the shared keyboard on Friday. Just saying.',
+    ),
+  },
+  {
+    trigger: 'DEV_BURNOUT',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🔥 {event} On réfléchit à un atelier « bien-être » d’une heure, après 19h.',
+      '🔥 {event} We’re considering a one-hour "wellbeing" workshop, after 7pm.',
+    ),
+  },
+  {
+    trigger: 'DEV_BURNOUT',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} On aurait peut-être dû écouter quand il·elle parlait de dormir sous son bureau.',
+      '{event} Maybe we should have listened when they talked about sleeping under their desk.',
+    ),
+  },
+  {
+    trigger: 'DEV_BACK',
+    channel: 'general',
+    author: dev(),
+    text: t(
+      '{event} 437 messages non lus. Bon retour !',
+      '{event} 437 unread messages. Welcome back!',
+    ),
+  },
+  {
+    trigger: 'PUBLIC_HOLIDAY',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('{event} Astreinte : moi. Comme d’habitude.', '{event} On call: me. As usual.'),
+  },
+  {
+    trigger: 'PUBLIC_HOLIDAY',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Quelqu’un a vu passer un déploiement ce matin ? Non ? Tant mieux.',
+      '{event} Anyone see a deploy go out this morning? No? Good.',
+    ),
+  },
+
+  // ─── RETRO_HELD ───────────────────────────────────────────────────────────
+  {
+    trigger: 'RETRO_HELD',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} J’ai pris une photo du tableau de post-it, je la range avec les 14 autres.',
+      '{event} I took a photo of the sticky-note board, filing it with the other 14.',
+    ),
+  },
+  {
+    trigger: 'RETRO_HELD',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Qui a écrit « moins de rétros » sur un post-it ? Courageux.',
+      '{event} Who wrote "fewer retros" on a sticky note? Brave.',
+    ),
+  },
+
+  // ─── TEAM_BUILDING ────────────────────────────────────────────────────────
+  {
+    trigger: 'TEAM_BUILDING_BOOKED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '{event} Présence obligatoire. Fun obligatoire aussi.',
+      '{event} Attendance is mandatory. So is fun.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_BOOKED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Est-ce que ça compte comme du temps de travail ? Je demande pour ma motivation.',
+      '{event} Does it count as working time? Asking for my motivation.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_DONE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} Photos dans #random, vidéos nulle part.',
+      '{event} Photos in #random, videos nowhere.',
+    ),
+  },
+  {
+    trigger: 'TEAM_BUILDING_DONE',
+    channel: 'general',
+    author: dev('PRODUCT_OWNER'),
+    text: t(
+      '{event} J’ai déjà prévu le debrief du team building. Lundi, 2h.',
+      '{event} I’ve already booked the team building debrief. Monday, 2 hours.',
+    ),
+  },
+
   // ─── DEV_BIRTHDAY ─────────────────────────────────────────────────────────
   {
     trigger: 'DEV_BIRTHDAY',
@@ -1143,6 +1293,35 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     text: t(
       'J’ai généré 400 décorations. 3 sont réelles. Les autres sont dans le cloud.',
       'I generated 400 decorations. 3 are real. The rest are in the cloud.',
+    ),
+  },
+
+  // ─── Arbre de compétences ─────────────────────────────────────────────────
+  {
+    trigger: 'SKILL_LEARNED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      '{event} J’ai regardé un tuto de 12 minutes en x2, je suis senior maintenant.',
+      '{event} I watched a 12-minute tutorial at 2x speed, I’m a senior now.',
+    ),
+  },
+  {
+    trigger: 'DEV_TRAINED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '📚 {event} Merci de ne pas revenir avec l’envie de tout migrer.',
+      '📚 {event} Please don’t come back wanting to migrate everything.',
+    ),
+  },
+  {
+    trigger: 'CRUNCH',
+    channel: 'general',
+    author: dev(),
+    text: t(
+      'Quelqu’un a commandé 14 pizzas ? Ah, c’est le crunch. Bon courage.',
+      'Did someone order 14 pizzas? Oh, it’s the crunch. Good luck.',
     ),
   },
 
@@ -3035,6 +3214,216 @@ export const SLACK_TEMPLATES: readonly SlackTemplate[] = [
     text: t(
       'Plus d’internet. On fait quoi, on lit la doc hors ligne ? Il y a une doc hors ligne ?',
       'No more internet. What now, read the docs offline? Are there offline docs?',
+    ),
+  },
+  // ─── INTERNET_SATURATED / SERVER_ROOM_WARM / SERVER_ROOM_OVERHEAT ─────────
+  {
+    trigger: 'INTERNET_SATURATED',
+    channel: 'general',
+    author: dev(),
+    text: t(
+      'Quelqu’un regarde Netflix ? Mon git pull est à 12 Ko/s. 😤',
+      'Is someone watching Netflix? My git pull is at 12 KB/s. 😤',
+    ),
+  },
+  {
+    trigger: 'INTERNET_SATURATED',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('🐌 {event}', '🐌 {event}'),
+  },
+  {
+    trigger: 'SERVER_ROOM_WARM',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t('🌡️ {event}', '🌡️ {event}'),
+  },
+  {
+    trigger: 'SERVER_ROOM_OVERHEAT',
+    channel: 'incidents',
+    author: bot('oncall'),
+    text: t(
+      '🔥 {event} Quelqu’un peut ouvrir la porte et mettre un ventilo ?',
+      '🔥 {event} Can someone open the door and bring a fan?',
+    ),
+  },
+  {
+    trigger: 'SERVER_ROOM_OVERHEAT',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'On pourrait faire cuire des œufs sur la baie 3. Je dis ça, je dis rien.',
+      'You could fry eggs on rack 3. Just saying.',
+    ),
+  },
+  // ─── OFFICE_DIRTY / CLEANING_* ───────────────────────────────────────────
+  {
+    trigger: 'OFFICE_DIRTY',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🧹 {event} Rappel : la boîte de pizza sous le bureau 4 n’est pas un élément de décoration.',
+      '🧹 {event} Reminder: the pizza box under desk 4 is not a decoration.',
+    ),
+  },
+  {
+    trigger: 'OFFICE_DIRTY',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'J’ai trouvé un gobelet de café qui date du sprint précédent. Il a développé une conscience.',
+      'I found a coffee cup from last sprint. It has developed consciousness.',
+    ),
+  },
+  {
+    trigger: 'OFFICE_DIRTY',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Quelqu’un peut ramasser les emballages de barres de céréales ? Je glisse dessus à chaque pause.',
+      'Can someone pick up the granola bar wrappers? I slip on them every break.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_BOOKED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t('📞 {event}', '📞 {event}'),
+  },
+  {
+    trigger: 'CLEANING_STARTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Jean-Marc vient d’aspirer mon câble USB-C. Je ne lui en veux pas, il était par terre depuis mars.',
+      'Jean-Marc just vacuumed up my USB-C cable. No hard feelings, it’d been on the floor since March.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_STARTED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Lucía a lavé le sol autour de mon bureau. Interdiction de marcher, je code en lévitation.',
+      'Lucía mopped around my desk. No walking allowed, I’m coding in levitation.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_DONE',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '✨ {event} Merci de garder le bureau dans cet état au moins jusqu’à 9h05.',
+      '✨ {event} Please keep the office like this at least until 9:05 am.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_DONE',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'On voit enfin la couleur de la moquette. Elle était bleue, en fait.',
+      'You can finally see the carpet color. It was blue all along.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_SUBSCRIBED',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🧽 {event} Fatou demande juste qu’on arrête de cacher les tasses dans les tiroirs.',
+      '🧽 {event} Fatou just asks that we stop hiding mugs in drawers.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_CANCELLED',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Plus de ménage ? Je propose un roulement : le dernier à merger sur main sort les poubelles.',
+      'No more cleaning? I suggest a rota: whoever last merged to main takes out the trash.',
+    ),
+  },
+  {
+    trigger: 'CLEANING_CUT',
+    channel: 'general',
+    author: bot('hr'),
+    text: t(
+      '🗑️ {event} Les sacs-poubelle sont dans le placard. Bon courage à tous.',
+      '🗑️ {event} Trash bags are in the cupboard. Good luck, everyone.',
+    ),
+  },
+  // ─── Histoire en actes : SMS de Mamie Josette, articles d'Inès Kader ──────
+  {
+    trigger: 'STORY_ACT',
+    channel: 'general',
+    author: bot('josette'),
+    text: t(
+      '📱 SMS de Mamie Josette : « {event} ! J’ai tout raconté au club de bridge. Mange un peu. »',
+      '📱 Text from Granny Josette: “{event}! I told the whole bridge club. Eat something.”',
+    ),
+  },
+  {
+    trigger: 'STORY_ACT',
+    channel: 'general',
+    author: bot('ines'),
+    text: t(
+      '📰 TechMatin, par Inès Kader : « {event}. Le garage d’en face ne fait plus rire personne. »',
+      '📰 TechMorning, by Inès Kader: “{event}. The garage across the street isn’t a joke anymore.”',
+    ),
+  },
+  {
+    trigger: 'STORY_GOAL',
+    channel: 'random',
+    author: bot('josette'),
+    text: t(
+      '📱 SMS de Mamie Josette : « {event} Je ne comprends pas tout mais je suis fière. 😘 »',
+      '📱 Text from Granny Josette: “{event} I don’t understand all of it but I’m proud. 😘”',
+    ),
+  },
+  {
+    trigger: 'STORY_END',
+    channel: 'general',
+    author: bot('ines'),
+    text: t(
+      '📰 Une de TechMatin : « Du garage à la Bourse : l’idée volée qui valait des milliards. »',
+      '📰 TechMorning front page: “From garage to stock exchange: the stolen idea worth billions.”',
+    ),
+  },
+  {
+    trigger: 'STORY_END',
+    channel: 'random',
+    author: bot('josette'),
+    text: t(
+      '📱 SMS de Mamie Josette : « J’ai acheté UNE action. Elle est sur le frigo. »',
+      '📱 Text from Granny Josette: “I bought ONE share. It’s on the fridge.”',
+    ),
+  },
+  {
+    trigger: 'RIVAL_ACTION',
+    channel: 'general',
+    author: bot('ines'),
+    text: t(
+      '📰 TechMatin, par Inès Kader : « {event} » Commentaire : la guerre est déclarée.',
+      '📰 TechMorning, by Inès Kader: “{event}” Comment: it’s war.',
+    ),
+  },
+  {
+    trigger: 'RIVAL_ACTION',
+    channel: 'random',
+    author: dev(),
+    text: t(
+      'Vous avez vu ? {event} On répond quand ?',
+      'Did you see? {event} When do we hit back?',
+    ),
+  },
+  {
+    trigger: 'RIVAL_ACTION',
+    channel: 'random',
+    author: bot('josette'),
+    text: t(
+      '📱 SMS de Mamie Josette : « J’ai lu ça dans le journal. Tu veux que j’appelle sa mère ? »',
+      '📱 Text from Granny Josette: “I read that in the paper. Want me to call his mother?”',
     ),
   },
 ];

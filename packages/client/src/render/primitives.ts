@@ -66,6 +66,7 @@ import {
 import { qwertyKeyboard } from './keyboard';
 import { partitionPiece } from './partitions';
 import { ANNEX_DECOR_PRIMITIVES } from './annexDecor';
+import { receptionDesk } from './lobbyFurniture';
 import { liquidTower, neonTower, plainTower, proLaptop, titanTower } from './computers';
 import {
   projectionScreenLarge,
@@ -81,11 +82,14 @@ import {
   fireSuppression,
   firewallUnit,
   gpuServer,
+  inrowCooling,
   networkSwitch,
   precisionCooling,
   rackServer,
   serverCloset,
+  serverMonitoring,
   serverRoom,
+  splitAc,
   upsUnit,
 } from './serverRoom';
 import {
@@ -511,7 +515,10 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   gpuServer,
   networkSwitch,
   fibreRouter,
+  splitAc,
   precisionCooling,
+  inrowCooling,
+  serverMonitoring,
   upsUnit,
   backupNas,
   firewallUnit,
@@ -519,8 +526,12 @@ const BUILDERS: Record<MissingAssetId, (() => THREE.Group) | null> = {
   unicornStatue,
   ipoBell,
   ...ANNEX_DECOR_PRIMITIVES,
+  receptionDesk,
+  badgeGates: null,
   officeCharacters: null,
   officeCats: null,
+  cleaningCrew: null,
+  officeLitter: null,
   seasonalDecor: null,
   meetingRoomProps: null,
   deskMonitors: null,

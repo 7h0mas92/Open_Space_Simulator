@@ -1,8 +1,9 @@
-import { BALANCE, type EventCard, type GameState } from '@oss/shared';
+import { BALANCE, difficultyOf, type EventCard, type GameState } from '@oss/shared';
 import { notify, type SimContext } from '../simulation/helpers';
 import type { SimClock } from '../simulation/time';
 import { inCooldown, isEligible } from './conditions';
 import { resolveEvent } from './resolve';
+import { storyCardSystem } from './storyCards';
 
 /** Chance par heure ouvrée qu'une carte remise en file (« On en reparle ») revienne. */
 const QUEUED_CHANCE_PER_HOUR = 0.25;
@@ -37,7 +38,8 @@ export function drawCard(state: GameState, ctx: SimContext, clock: SimClock): bo
       return true;
     }
   }
-  if (!ctx.rng.chance(BALANCE.events.drawChancePerWorkHour)) return false;
+  if (!ctx.rng.chance(BALANCE.events.drawChancePerWorkHour * difficultyOf(state.mode).eventChance))
+    return false;
   const eligible = ctx.cards.cards.filter((card) => isEligible(state, card, clock));
   // Pendant une période (Halloween, Noël…), ses cartes passent souvent devant les autres :
   // la période ne dure qu'une semaine.
@@ -70,8 +72,10 @@ export function eventSystem(state: GameState, ctx: SimContext, clock: SimClock):
   }
   const workHour =
     !clock.isWeekend && Number.isInteger(clock.hour) && clock.hour >= 9 && clock.hour < 19;
-  const maxPerSprint =
-    state.mode === 'EASY' ? BALANCE.easy.maxEventsPerSprint : BALANCE.events.maxPerSprint;
-  if (!workHour || state.events.drawnThisSprint >= maxPerSprint) return;
+  if (!workHour) return;
+  // Histoire en actes : les cartes de l'acte passent avant le tirage habituel.
+  if (storyCardSystem(state, ctx, clock)) return;
+  const maxPerSprint = difficultyOf(state.mode).eventsPerSprint;
+  if (state.events.drawnThisSprint >= maxPerSprint) return;
   drawCard(state, ctx, clock);
 }

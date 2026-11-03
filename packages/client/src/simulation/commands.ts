@@ -24,12 +24,23 @@ import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
-import { cancelFibre, subscribeFibre } from './serverRoom';
+import { buildLobby, setReceptionists } from './lobby';
+import { bookLeave, cancelLeave, refuseBridges } from './teamLife';
+import { holdRetro } from './retro';
+import { bookTeamBuilding, cancelTeamBuilding } from './teamBuilding';
+import { callCleaning } from './cleaning';
+import { setPricing } from './pricing';
+import { dropClient, signClient } from './clients';
+import { setSupport } from './support';
+import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
 import { coverFloor } from './floors';
 import { coverWall } from './walls';
+import { learnSkill, resetSkills, trainDev, startCrunch } from './skills';
+import { endStory, startFreeSeason } from './story';
+import { researchNode } from './research';
 
 const fail = (error: Extract<CommandResult, { ok: false }>['error']): CommandResult => ({
   ok: false,
@@ -169,13 +180,31 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
     }
     case 'ANSWER_RAISE':
       return answerRaise(state, ctx, command.accept);
+    case 'BOOK_LEAVE':
+      return bookLeave(state, command.devId, command.week, command.days);
+    case 'CANCEL_LEAVE':
+      return cancelLeave(state, command.devId);
+    case 'REFUSE_BRIDGES':
+      return refuseBridges(state, command.refuse);
+    case 'HOLD_RETRO':
+      return holdRetro(state, ctx, command.action);
+    case 'BOOK_TEAM_BUILDING':
+      return bookTeamBuilding(state, ctx, command.outing);
+    case 'CANCEL_TEAM_BUILDING':
+      return cancelTeamBuilding(state);
     case 'LAUNCH_IPO':
       if (state.stage !== 'PLANNING' && state.stage !== 'DEMO') return fail('WRONG_STAGE');
       if (state.phase !== 'UNICORN' || state.gauges.stability < BALANCE.phases.ipoMinStability) {
         return fail('NOT_ELIGIBLE');
       }
+      // Histoire en actes : l'entrée en Bourse écrit la fin, et la partie continue en Saison libre.
+      if (startFreeSeason(state, ctx, state.valuation * 1.2)) return { ok: true };
       endGame(state, ctx, 'IPO', state.valuation * 1.2);
       return { ok: true };
+    case 'END_STORY':
+      return endStory(state, ctx);
+    case 'RESEARCH_NODE':
+      return researchNode(state, ctx, command.nodeId);
     case 'FOUND_VENTURE':
       return foundVenture(state, ctx, command.ideaId);
     case 'SELL_VENTURE':
@@ -189,8 +218,34 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
     case 'REHOME_PET':
       return rehomePet(state, ctx, command.petId);
     case 'SUBSCRIBE_FIBRE':
-      return subscribeFibre(state, ctx, command.plan);
+      return subscribe(state, ctx, command.plan);
     case 'CANCEL_FIBRE':
-      return cancelFibre(state, ctx);
+      return cancelSubscription(state, ctx, 'internet');
+    case 'SUBSCRIBE':
+      return subscribe(state, ctx, command.offer);
+    case 'CANCEL_SUBSCRIPTION':
+      return cancelSubscription(state, ctx, command.service);
+    case 'BUILD_LOBBY':
+      return buildLobby(state, ctx);
+    case 'SET_RECEPTIONISTS':
+      return setReceptionists(state, ctx, command.count);
+    case 'CALL_CLEANING':
+      return callCleaning(state, ctx, command.express);
+    case 'LEARN_SKILL':
+      return learnSkill(state, ctx, command.devId, command.skill);
+    case 'RESET_SKILLS':
+      return resetSkills(state, ctx, command.devId);
+    case 'TRAIN_DEV':
+      return trainDev(state, ctx, command.devId, command.kind);
+    case 'USE_CRUNCH':
+      return startCrunch(state, ctx, command.devId);
+    case 'SET_PRICING':
+      return setPricing(state, ctx, command.model, command.tier);
+    case 'SIGN_CLIENT':
+      return signClient(state, ctx, command.offerId);
+    case 'DROP_CLIENT':
+      return dropClient(state, ctx, command.contractId);
+    case 'SET_SUPPORT':
+      return setSupport(state, ctx, command.agents, command.duty);
   }
 }

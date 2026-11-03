@@ -19,6 +19,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { OfficeLayout } from '../view/layout';
+import { buildCarModels, carLook, type CarModel } from './cars';
 import { litShare, type BuildingUse } from './cityLights';
 import type { LightingState } from './lighting';
 import { pseudoRandom, radialGlowTexture } from './pixels';
@@ -146,6 +147,42 @@ function distanceToRect(
   const dx = Math.max(rect.x0 - x, 0, x - rect.x1);
   const dz = Math.max(rect.z0 - z, 0, z - rect.z1);
   return Math.hypot(dx, dz);
+}
+
+/** Toit d'une tour rivale du mode Histoire et hauteur maximale de son enseigne. */
+export interface RivalSpot extends Point3 {
+  /** Haut de l'enseigne : sous la ligne `maxTop`, elle ne masque jamais le bureau. */
+  readonly limit: number;
+}
+
+/**
+ * Mode Histoire : les toits des tours rivales (Synergix, Pivotly, Gigacorp), choisis parmi les
+ * plus hautes tours sur les côtés de l'écran (derrière un mur du fond et devant l'autre), à 14
+ * à 32 cases et à au moins 8 cases les unes des autres. L'enseigne reste sous la ligne `maxTop` :
+ * elle ne masque jamais le bureau. Les plus proches d'abord.
+ */
+export function rivalTowerSpots(plan: SkylinePlan, layout: OfficeLayout, count = 3): RivalSpot[] {
+  const cx = (layout.width - 1) / 2;
+  const cz = (layout.depth - 1) / 2;
+  const candidates = plan.towers
+    .slice(1)
+    .filter((box) => box.roof !== undefined)
+    .map((box) => ({ box, distance: Math.hypot(box.x - cx, box.z - cz) }))
+    .filter(
+      ({ box, distance }) =>
+        // Sur les côtés de l'écran : derrière un mur du fond, devant l'autre.
+        box.x < cx - 4 !== box.z < cz - 4 && distance >= 14 && distance <= 32,
+    )
+    .sort((a, b) => b.box.top - a.box.top);
+  const spots: { spot: RivalSpot; distance: number }[] = [];
+  for (const { box, distance } of candidates) {
+    if (spots.length >= count) break;
+    if (spots.some(({ spot }) => Math.hypot(spot.x - box.x, spot.z - box.z) < 8)) continue;
+    const limit = Math.min(maxTop(distance - Math.max(box.width, box.depth) / 2), 4);
+    if (limit <= box.top + 2) continue;
+    spots.push({ spot: { x: box.x, y: box.top, z: box.z, limit }, distance });
+  }
+  return spots.sort((a, b) => a.distance - b.distance).map(({ spot }) => spot);
 }
 
 /**
@@ -725,8 +762,6 @@ function glowPoints(points: readonly Point3[], mat: THREE.PointsMaterial, name: 
 /** Voitures selon la qualité : la circulation coûte peu, mais chaque voiture a ses phares. */
 const CAR_COUNT: Readonly<Record<QualityLevel, number>> = { low: 90, medium: 160, high: 220 };
 const MAX_CARS = 220;
-/** Taxis jaunes pour près de la moitié, puis noir, blanc, gris, bleu nuit, rouge. */
-const CAR_COLORS = [0xf2c230, 0xf2c230, 0xf2c230, 0x1f2328, 0xe8e8e4, 0x9aa1a8, 0x23324f, 0x9b2d2a];
 /** Deux avions qui croisent au loin, feux de navigation allumés. */
 const PLANES = [
   { distance: 78, angle: 0.6, altitude: 24, period: 46 },
@@ -757,18 +792,30 @@ export class SkylineView {
     flatShading: true,
   });
   private readonly treeMaterial = new THREE.MeshLambertMaterial({ flatShading: true });
+  /** Carrosseries (teintées voiture par voiture) et le reste (vitres, pneus, feux). */
   private readonly carMaterial = new THREE.MeshLambertMaterial({ flatShading: true });
+  private readonly carTrimMaterial = new THREE.MeshLambertMaterial({
+    vertexColors: true,
+    flatShading: true,
+  });
+  /** Les sept modèles de voitures (`cars.ts`), construits une fois pour toutes. */
+  private readonly carModels: readonly CarModel[] = buildCarModels();
+  /** Modèle et rang dans son modèle de chaque voiture, figés par son numéro. */
+  private readonly carSlots = Array.from({ length: MAX_CARS }, (_, index) => carLook(index));
   private readonly lampMaterial: THREE.PointsMaterial;
   private readonly beaconMaterial: THREE.PointsMaterial;
   /** Phares, feux arrière et feux des avions : des points colorés un par un. */
   private readonly signalMaterial: THREE.PointsMaterial;
-  private cars: THREE.InstancedMesh | null = null;
+  /** Par modèle : carrosseries et habillage, deux InstancedMesh aux mêmes matrices. */
+  private cars: { paint: THREE.InstancedMesh; trim: THREE.InstancedMesh }[] = [];
   private carLights: THREE.Points | null = null;
   private planes: THREE.Points | null = null;
   private lanes: readonly Lane[] = [];
   private carCount = CAR_COUNT.medium;
   private clock = 0;
   private key = '';
+  /** Toits où s'affichent les enseignes des rivaux du mode Histoire (`rivalTowerSpots`). */
+  rivalSpots: readonly RivalSpot[] = [];
 
   constructor() {
     const points = (color: number, vertexColors = false) =>
@@ -793,7 +840,7 @@ export class SkylineView {
   setQuality(level: QualityLevel): void {
     this.uniforms.detail.value = level === 'low' ? 0 : 1;
     this.carCount = CAR_COUNT[level];
-    if (this.cars) this.cars.count = this.carCount;
+    this.applyCarCount();
     this.carLights?.geometry.setDrawRange(0, this.carCount * 2);
   }
 
@@ -804,6 +851,7 @@ export class SkylineView {
     this.key = key;
     this.clear();
     const plan = planSkyline(layout);
+    this.rivalSpots = rivalTowerSpots(plan, layout);
     const cx = (layout.width - 1) / 2;
     const cz = (layout.depth - 1) / 2;
     this.uniforms.center.value.set(cx, cz);
@@ -854,19 +902,22 @@ export class SkylineView {
       new THREE.IcosahedronGeometry(0.75, 0).scale(1, 0.9, 1).translate(0, 1.35, 0),
       new THREE.CylinderGeometry(0.1, 0.12, 0.8, 5).translate(0, 0.4, 0),
     ]);
-    // Voiture : caisse et habitacle.
-    const car = merged([
-      new THREE.BoxGeometry(0.95, 0.3, 0.44).translate(0, 0.3, 0),
-      new THREE.BoxGeometry(0.5, 0.22, 0.4).translate(-0.05, 0.56, 0),
-    ]);
     this.lanes = plan.lanes;
-    this.cars = new THREE.InstancedMesh(car, this.carMaterial, MAX_CARS);
-    const color = new THREE.Color();
-    for (let index = 0; index < MAX_CARS; index++)
-      this.cars.setColorAt(index, color.setHex(CAR_COLORS[(index * 7) % CAR_COLORS.length] ?? 0));
-    this.cars.count = this.carCount;
-    this.cars.name = 'skyline-cars';
-    this.cars.frustumCulled = false;
+    this.cars = this.carModels.map((model, index) => {
+      const owned = this.carSlots.filter((slot) => slot.model === index);
+      const capacity = Math.max(1, owned.length);
+      const paint = new THREE.InstancedMesh(model.paint, this.carMaterial, capacity);
+      const trim = new THREE.InstancedMesh(model.trim, this.carTrimMaterial, capacity);
+      const color = new THREE.Color();
+      owned.forEach((slot, rank) => paint.setColorAt(rank, color.setHex(slot.color)));
+      for (const mesh of [paint, trim]) {
+        mesh.name = `skyline-cars-${model.id}`;
+        mesh.frustumCulled = false;
+        mesh.userData.sharedGeometry = true;
+      }
+      return { paint, trim };
+    });
+    this.applyCarCount();
     this.carLights = this.signalPoints(MAX_CARS * 2, (index) =>
       index % 2 === 0 ? [1, 0.95, 0.8] : [1, 0.12, 0.08],
     );
@@ -886,7 +937,7 @@ export class SkylineView {
       crownMesh,
       instancedAt(tank, this.tankMaterial, plan.tanks, 'skyline-tanks'),
       instancedAt(tree, this.treeMaterial, plan.trees, 'skyline-trees'),
-      this.cars,
+      ...this.cars.flatMap((meshes) => [meshes.paint, meshes.trim]),
       this.carLights,
       this.planes,
       glowPoints(plan.streetLamps, this.lampMaterial, 'skyline-lamps'),
@@ -952,11 +1003,30 @@ export class SkylineView {
       this.tankMaterial,
       this.treeMaterial,
       this.carMaterial,
+      this.carTrimMaterial,
       this.lampMaterial,
       this.beaconMaterial,
       this.signalMaterial,
     ])
       mat.dispose();
+    for (const model of this.carModels) {
+      model.paint.dispose();
+      model.trim.dispose();
+    }
+  }
+
+  /**
+   * Voitures affichées selon la qualité : les `carCount` premières. Chaque modèle montre celles
+   * de ses voitures qui en font partie (rangées dans l'ordre des numéros).
+   */
+  private applyCarCount(): void {
+    this.cars.forEach((meshes, model) => {
+      let count = 0;
+      for (let index = 0; index < this.carCount; index++)
+        if (this.carSlots[index]?.model === model) count++;
+      meshes.paint.count = count;
+      meshes.trim.count = count;
+    });
   }
 
   private signalPoints(count: number, colorOf: (index: number) => number[]): THREE.Points {
@@ -980,13 +1050,19 @@ export class SkylineView {
    * loin du bureau, sous la ligne `maxTop` : ils ne passent jamais devant la salle.
    */
   private placeTraffic(): void {
-    const cars = this.cars;
     const lights = this.carLights?.geometry.getAttribute('position');
-    if (!cars || !lights || this.lanes.length === 0) return;
+    if (this.cars.length === 0 || !lights || this.lanes.length === 0) return;
     const matrix = new THREE.Matrix4();
+    const ranks = this.carModels.map(() => 0);
     for (let index = 0; index < MAX_CARS; index++) {
       const lane = this.lanes[(index * 37) % this.lanes.length];
-      if (!lane) continue;
+      const slot = this.carSlots[index];
+      if (!lane || !slot) continue;
+      const rank = ranks[slot.model] ?? 0;
+      ranks[slot.model] = rank + 1;
+      const model = this.carModels[slot.model];
+      const meshes = this.cars[slot.model];
+      if (!model || !meshes) continue;
       const offset = ((index * 0.618034) % 1) * lane.length;
       const travelled = ((offset + this.clock * lane.speed) % lane.length) - lane.length / 2;
       const along = travelled * lane.direction;
@@ -1001,13 +1077,20 @@ export class SkylineView {
           : lane.direction > 0
             ? -Math.PI / 2
             : Math.PI / 2;
-      cars.setMatrixAt(index, matrix.makeRotationY(angle).setPosition(x, STREET_LEVEL, z));
-      const dx = lane.axis === 'x' ? 0.5 * lane.direction : 0;
-      const dz = lane.axis === 'z' ? 0.5 * lane.direction : 0;
-      lights.setXYZ(index * 2, x + dx, STREET_LEVEL + 0.32, z + dz);
-      lights.setXYZ(index * 2 + 1, x - dx, STREET_LEVEL + 0.32, z - dz);
+      matrix.makeRotationY(angle).setPosition(x, STREET_LEVEL, z);
+      meshes.paint.setMatrixAt(rank, matrix);
+      meshes.trim.setMatrixAt(rank, matrix);
+      const half = model.length / 2;
+      const dx = lane.axis === 'x' ? half * lane.direction : 0;
+      const dz = lane.axis === 'z' ? half * lane.direction : 0;
+      const y = STREET_LEVEL + model.lightHeight;
+      lights.setXYZ(index * 2, x + dx, y, z + dz);
+      lights.setXYZ(index * 2 + 1, x - dx, y, z - dz);
     }
-    cars.instanceMatrix.needsUpdate = true;
+    for (const meshes of this.cars) {
+      meshes.paint.instanceMatrix.needsUpdate = true;
+      meshes.trim.instanceMatrix.needsUpdate = true;
+    }
     lights.needsUpdate = true;
 
     const planes = this.planes?.geometry.getAttribute('position');
@@ -1037,9 +1120,11 @@ export class SkylineView {
     for (const child of [...this.root.children]) {
       this.root.remove(child);
       if (child instanceof THREE.InstancedMesh) child.dispose();
+      // Les modèles de voitures sont gardés d'une ville à l'autre (libérés par `dispose`).
+      if (child.userData.sharedGeometry) continue;
       if (child instanceof THREE.Mesh || child instanceof THREE.Points) child.geometry.dispose();
     }
-    this.cars = null;
+    this.cars = [];
     this.carLights = null;
     this.planes = null;
   }

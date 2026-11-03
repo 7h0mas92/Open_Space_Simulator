@@ -87,6 +87,11 @@ export const CardEffectsSchema = z.strictObject({
   unlockAchievement: z.string().optional(),
   /** Variation de la valorisation de la dernière filiale active, en pourcentage. */
   ventureValue: z.number().min(-100).optional(),
+  /**
+   * Utilisateurs de chaque startup rivale encore en jeu, en pourcentage (histoire en actes
+   * seulement : sans rival, sans effet). Positif : les rivaux en gagnent.
+   */
+  rivals: z.number().min(-100).optional(),
 });
 export type CardEffects = z.infer<typeof CardEffectsSchema>;
 

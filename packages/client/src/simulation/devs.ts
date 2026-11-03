@@ -262,6 +262,14 @@ export function removeDev(state: GameState, devId: EntityId): void {
   // Sa demande d'augmentation et son préavis disparaissent avec lui.
   if (state.raises.pending?.devId === devId) state.raises.pending = null;
   state.raises.departures = state.raises.departures.filter((leave) => leave.devId !== devId);
+  // Ses congés, ses absences et son passé de burn-out aussi.
+  const life = state.teamLife;
+  if (life) {
+    Reflect.deleteProperty(life.leave, devId);
+    Reflect.deleteProperty(life.claims, devId);
+    Reflect.deleteProperty(life.absences, devId);
+    Reflect.deleteProperty(life.lastBurnout, devId);
+  }
   for (const otherId of devIds(state)) {
     const relations = state.components.relations[otherId];
     if (relations) Reflect.deleteProperty(relations, devId);

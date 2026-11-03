@@ -367,13 +367,28 @@ journal des passations. À la fin de chaque travail (fil de discussion ou PR), m
 (date, dernier commit, travaux en cours, une ligne dans le journal), en plus de cette section
 et du README.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 13 octobre 2026)
+# BRANCHES : DEVELOP PUIS MAIN (depuis le 17 octobre 2026)
+- `main` est la version publiée : GitHub Pages (et Render) ne déploient que `main`. On n'y pousse
+  jamais directement et on n'y ouvre pas de PR de fonctionnalité.
+- `develop` reçoit tout le travail en test. Chaque demande = une branche partie de `develop`
+  (`feat/…`, `fix/…`, `docs/…` ou `claude/…`) = une PR **vers `develop`**, CI verte, fusionnée en
+  squash après la validation de Melvin (ou de Thomas). Une idée abandonnée se retire de `develop`
+  (revert) sans toucher à `main`.
+- Mise en production : quand Thomas **et** Melvin ont testé `develop`, une PR `develop` → `main`
+  intitulée « release: … », fusionnée en **merge commit** (pas de squash, sinon les deux branches
+  divergent et la PR suivante rejoue tout l'historique).
+- Correctif urgent en production : branche depuis `main`, PR vers `main`, puis fusionner `main`
+  dans `develop` aussitôt.
+- La CI tourne sur toutes les branches et toutes les PR ; l'ÉTAT D'AVANCEMENT ci-dessous décrit
+  `develop`, la date de la dernière mise en production est dans `CONTEXTE.md`.
+
+# ÉTAT D'AVANCEMENT (mis à jour le 3 novembre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
 - Mode construction refondu : catalogue en bas, aperçu sur la grille, bouton « Poser » au
   tactile, rendu 3D distinct pour chacun des 22 objets.
-- 67 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
+- 70 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
 - Menu principal refondu ; sans serveur, la fenêtre Connexion explique que les comptes sont
   indisponibles et le jeu reste jouable en invité.
 - Interface de jeu refondue : en haut ce qu'on lit (jauges, trésorerie en mois, horloge), en
@@ -404,8 +419,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   la semaine réelle (date dans la graine), 12 périodes d'environ une semaine (Nouvel An,
   Saint-Valentin, Pâques, Espace, Moyen Âge, Super-héros, Années 80, Été, Pirates, Halloween,
   Cyberpunk, Noël) avec 24 cartes de saison prioritaires. Décorations par thème en Three.js
-  (`render/decorations.ts`, `view/decor.ts`), réglées dans l'onglet « Décorations » du
-  back-office : désactivé, en saison (défaut) ou toujours ; table `DecorTheme`.
+  (`render/decorations.ts`, `view/decor.ts`) aux murs et sur les bureaux, plus aucune au sol
+  (objets fantômes ni déplaçables ni rangeables, retirés le 17 octobre 2026), réglées dans
+  l'onglet « Décorations » du back-office : désactivé, en saison (défaut) ou toujours ; table
+  `DecorTheme`.
 - Anniversaires des devs (date tirée de la graine, sans toucher au RNG) : table de fête
   décorative (gâteau, cadeaux, ballons), +moral, confettis, Slack ; le week-end, fête le lundi.
 - Performance des devs (`client/src/simulation/performance.ts`, composant ECS `performance`) :
@@ -450,15 +467,54 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salaire relevé, +20 moral, 2 compétences +1. Refusé : 50 % de démission (départ 2 planifications
   plus tard, badge dans l'équipe), sinon -15 moral et 2 compétences -1. Commande `ANSWER_RAISE`,
   hasard sur une graine à part, état `raises` par défaut pour les anciennes sauvegardes.
+- Congés, jours fériés et arrêts maladie (`shared/sim/teamLife.ts`, `client/src/simulation/teamLife.ts`,
+  bloc « Congés » de la fiche d'un dev, `ui/team/Leave.tsx`) : 11 jours fériés français (Pâques
+  calculé), personne au bureau ce jour-là. 1 jour de congé par sprint dès le 2e (10 au plus), posé
+  en planification sur la 1re ou la 2e semaine (1 à 5 jours, 1 dev absent pour 4 en même temps) :
+  +4 moral par jour au retour (20 au plus). Réserve pleine : -1 moral par jour, et après 2 sprints
+  le dev pose 5 jours tout seul. Ponts de mai (vendredi après un jeudi férié, lundi avant un mardi
+  férié) : faits par défaut, refusés en un clic (-5 moral pour tous). Arrêt maladie de 1 à 3 jours
+  (0,5 % par jour, double l'hiver, moins avec l'endurance). Moral à 0 : arrêt de 10 jours ouvrés
+  pour burn-out au lieu de la démission, retour à 40 de moral ; rechute dans les 10 sprints :
+  démission. Un absent n'a ni tâche ni bureau, filtre 🏖️ de l'équipe. Commandes `BOOK_LEAVE`,
+  `CANCEL_LEAVE`, `REFUSE_BRIDGES`, état `teamLife` (null pour les anciennes sauvegardes et le défi
+  3 sprints = comportement d'avant), hasard sur `seed#leave#jour`. 2 succès, bot « rested ».
+- Rétrospective de sprint (`shared/sim/retro.ts`, `client/src/simulation/retro.ts`, fenêtre
+  « Rétrospective » en planification dès le 2e sprint) : 3 actions proposées selon les problèmes du
+  sprint écoulé (dette, pannes, urgences ratées, café, fatigue, conflits, réunions…) parmi 10 (plus
+  de tests, revue de code, café en libre-service, médiation, astreinte, horaires souples, petits
+  tickets, mercredi sans réunion, kudos, continuer comme ça). Chaque dev vote selon son profil et
+  son caractère (`seed#retro#sprint`). Suivre le vote : +3 moral pour tous ; imposer autre chose :
+  -3 pour ceux qui ont voté autrement ; passer la rétro ne coûte rien. L'action dure un sprint
+  (🔁 dans le HUD). Commande `HOLD_RETRO`, état `retro` (vide par défaut), bot « retro ».
+- Team building (`shared/sim/teamBuilding.ts`, `client/src/simulation/teamBuilding.ts`, bloc
+  « 🎉 Team building » du panneau Équipe, `ui/team/TeamBuilding.tsx`) : une sortie par sprint,
+  réservée et payée en planification (prix par participant, sans Dev Fantôme ni IA Agent), en fin
+  de 2e semaine. Afterwork (40 €, jeudi 18h, aucune heure perdue, -15 énergie), escape game (90 €,
+  vendredi 14h, +25 d'affinité pour les paires en conflit, 15 % de chance que ça empire), laser
+  game (70 €, Seed, gros egos perdants qui boudent), séminaire au vert (600 €, Série A, journée,
+  +énergie, +hype), off-site à Lisbonne (2 500 €, Licorne, 2 jours, +hype, -dette). Effets à 18h le
+  dernier jour (moral selon le caractère, affinités) ; même sortie deux sprints de suite : moitié
+  moins de moral ; annulation remboursée à 50 %. Hasard sur `seed#teambuilding#sprint`. Commandes
+  `BOOK_TEAM_BUILDING` / `CANCEL_TEAM_BUILDING`, état `teamBuilding` (vide par défaut), 2 succès,
+  bot « teambuilder ».
 - Levées de fonds (`shared/sim/pitch.ts`, `shared/sim/funding.ts`, panneau « Lever des fonds ») :
   6 tours de plus en plus durs (Seed à pré-IPO : 3 à 5 questions, 3 à 4 réponses, barre plus
   haute, bluffs démasqués plus souvent, gros fonds, départ de l'investisseur dès la Série B) ;
   question par manche, réponse hors sujet pénalisée, jauge d'intérêt et réactions. Business
   angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
   `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
+  Affichage fidèle : le panneau donne les chances estimées du prochain tour
+  (`estimatePitchChance`, calée sur des milliers de pitchs simulés, écart de moins de 5 points
+  par tranche de 10 %) et la force de chaque thème (`categoryStrengths`) ; pendant le pitch,
+  chaque argument montre sa force face à cet investisseur et à la question (▲ fort, ● moyen,
+  ▼ faible, `pitchRating`), la jauge dont il dépend (`argumentBasis`) et 🎲 s'il est aléatoire ;
+  la jauge s'appelle « Chance de signer » (c'est la vraie probabilité). Rendu seulement :
+  `pnpm balance` inchangé.
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
-  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places ; sols des pièces
-  variés selon la graine (`view/layout.ts`, `FLOOR_STYLES`).
+  jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places. Sol d'origine
+  identique dans toutes les pièces (damier beige, `BASE_FLOOR_COLORS` dans `render/office.ts`) :
+  ajouter ou agrandir une pièce ne change pas sa couleur, seul le rayon « Sols » la change.
 - Vue sur New York (`render/skyline.ts`) : le bureau est au dernier étage d'une tour, dans une ville low-poly façon
   Manhattan en formes Three.js (tours à gradins, réservoirs d'eau, parc, fleuve, taxis), sans
   bâtiment réel. Graine fixe, sans le RNG du jeu ; aucun toit proche ne cache la salle
@@ -556,7 +612,9 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   espace ni accent) : tycoon au menu, tycoon 1 en planification et démo, les 4 Détente en playlist
   pendant le sprint, aria math en levée de fonds et à l'écran de fin (`audio/music.ts`,
   `musicMoodOf`, `ui/useMusic.ts`). Fondu de 1,5 s, reprise du morceau là où il était, lecture en
-  flux HTML5, démarrage au premier clic, volume « Musique » des options. Hors précache de la PWA
+  flux par une balise `<audio>` branchée sur un gain Web Audio (`audio/musicTrack.ts`, le volume
+  marche aussi sur iPhone et iPad, où Safari ignore celui de la balise), démarrage au premier clic,
+  volume « Musique » des options ; sous « Effets », une mention dit qu'aucun effet n'est encore là. Hors précache de la PWA
   (25 Mo) : hors ligne, pas de musique. Crédits : « compositions originales de l'équipe du projet ».
 - Canapé et bibliothèque détaillés (`render/furnitureDetail.ts`, formes `sofa` et `bookcase` des
   assets manquants) : canapé en tissu gris-bleu (pieds en bois, accoudoirs roulés, coussins
@@ -648,9 +706,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   posé sur un meuble, bouton « ⏻ Allumer / Éteindre ») et 3 écrans de projection posés au sol
   (petit 2 cases 450 €, moyen 3 cases 1 100 € en Seed, grand 4 cases 2 400 € en Série A). Allumé et
   tourné vers un écran (cône de 50°, 1,5 à 10 cases, devant la toile), il déroule la toile, puis
-  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule. Un écran
-  par projecteur, le plus proche, projecteurs servis dans l'ordre d'achat (`projectionPairs`, même
-  calcul pour la simulation et le rendu). Effets seulement pendant la projection : écran +qualité,
+  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule ; la toile
+  reste toute blanche, sans cadre noir (`FABRIC_WHITE`). Un écran par projecteur, le plus proche,
+  projecteurs servis dans l'ordre d'achat (`projectionPairs`, même calcul pour la simulation et le
+  rendu). Effets seulement pendant la projection : écran +qualité,
   +hype (+moral moyen et grand), projecteur +moral et -0,4 % de productivité. Commande
   `SWITCH_PROJECTOR`, champ `on` optionnel (absent = éteint), `GameView.projections`, rendu animé
   dans `render/projection.ts` (sans animation si « réduire les animations »). Aucun tirage.
@@ -703,7 +762,7 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   annexes) ou « Toutes les pièces », sans remboursement de l'ancien sol ; +moral par pièce, et
   +qualité ou +hype selon la matière. Motifs dessinés sur canvas (`view/floors.ts`), une dalle
   texturée par pièce qui rejoint la voisine sous la cloison (`render/floorFinishes.ts`). Commande
-  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine tiré de la graine), aucun tirage.
+  `COVER_FLOOR`, état `floors` (vide par défaut = sol d'origine, le même partout), aucun tirage.
 
 - Le plan cède la place aux meubles posés : quand le bureau grandit (nouvelle phase, aile de
   filiale), une cloison du plan qui tomberait sur un meuble s'efface (`yieldToItems` dans
@@ -730,6 +789,32 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Commandes `SUBSCRIBE_FIBRE` / `CANCEL_FIBRE`, état `fibre` (null par défaut), `fibreSystem` en
   dernier système, rendu `render/serverRoom.ts` (12 formes des assets manquants). Aucun tirage.
 
+- Difficulté des modes (`shared/sim/difficulty.ts`, `difficultyOf(mode)`) : un profil de
+  multiplicateurs par mode remplace `BALANCE.easy`. Facile : 2,2 M€ au départ, effets négatifs des
+  cartes -15 %, autant de cartes qu'en Normal. Hardcore : 1,5 M€, dépenses +15 %, revenus -15 %,
+  4 cartes au plus par sprint (tirage x1,5), effets négatifs +30 %, pannes +50 %, barre des
+  investisseurs +0,3 (`pitchBar` dans `simulation/fundraising.ts`). Normal, Daily, Stagiaires Only
+  et 3 sprints au profil neutre : mêmes parties qu'avant. Rapport `pnpm balance` : section
+  « Difficulté par mode et par stratégie », 700 parties par autre mode. Faillite Hardcore 32 %
+  (bons bots 7 à 20 %, licorne 2 à 4 %) ; Facile proche du Normal, un peu plus indulgent. Les
+  replays des anciens scores Facile et Hardcore ne rejouent plus à l'identique.
+
+- Mode illimité (`ENDLESS`, `shared/sim/endless.ts`) : pas de fin au 39e sprint, la partie dure tant
+  que la trésorerie tient (IPO et rachat toujours possibles). Après 18 mois, la concurrence monte à
+  chaque sprint : frais fixes x(1 + 4 % p + 0,4 % p²) (`fixedCosts` dans `economy.ts`), churn
+  +0,004 % par jour et par sprint, levées divisées par (1 + 5 % p) (`maxRaise`), message
+  `COMPETITION_RISES` tous les 13 sprints. 18 premiers mois identiques au Normal (même graine), aucun
+  tirage en plus. `totalSprints` = 9999 (`ENDLESS.sprintCap`), HUD « Sprint n » sans total, phrase de
+  fin avec les sprints tenus, 3 succès (2, 3, 5 ans), 2 étapes du tutoriel. Bots : ils ne vendent pas
+  en illimité et tiennent de 76 à 300 sprints. Serveur : valeur `ENDLESS` de l'enum (migration
+  `20261017150000_endless_mode`), classement par sprints tenus puis valorisation.
+- Classement des meilleures entreprises (`ui/meta/Leaderboard.tsx`) au menu et en jeu (🏆 dans les
+  boutons système, panneau `leaderboard`, sans replay en jeu) : « En ligne » ou « Sur cet appareil »
+  (`save/localScores.ts`, 50 parties gardées par mode, invité et sans serveur ; ouvert par défaut
+  quand le serveur ne répond pas). Nom d'entreprise tiré de la graine (`companyName` dans
+  `shared/meta/company.ts`, hachage, sans tirage), champ `company` du `ScoreDto`, aussi sur l'écran
+  de fin et l'image partagée. Ordre commun `compareGames` (`shared/meta/leaderboard.ts`) ; le global
+  exclut Facile et Illimité (`GLOBAL_EXCLUDED_MODES`).
 - Mode Histoire (`shared/story/`, `client/src/simulation/story.ts`, `ui/story/`, carte « Histoire »
   du menu) : 4 chapitres (Garage, Seed, Série A, Licorne) et 10 missions débloquées l'une après
   l'autre, chacune avec point de départ (phase, caisse, jauges, équipe), objectifs, contraintes et
@@ -746,6 +831,95 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `StoryMission`) ; `POST /api/scores` vérifie et rejoue les récompenses (`Score.unlocks`,
   `UNLOCK_NOT_EARNED`). Champs `story` (null) et `unlocks` ([]) par défaut, aucun tirage de plus.
   Calibrage par les bots : `pnpm balance:story` (chapitre 1 facile, chapitres 3 et 4 difficiles).
+- Histoire en 5 actes, socle (T2, PR 1 sur 4 ; `shared/story/acts.ts`, `client/src/simulation/story.ts`,
+  `ui/story/CampaignPanel.tsx`) : « Ctrl+Alt+Fonder », une seule longue partie de 60 sprints
+  (`STORY_TOTAL_SPRINTS`), lancée par `mission: 'campaign'` (`StoryStart`). 5 actes : Le garage
+  (Seed avant le sprint 8), La course (Série A avant le 18), La guerre des prix (Licorne avant le
+  48), Le géant (1,5 Md€ avant le 56), La cloche (Bourse ou rachat). Objectif principal rempli :
+  acte suivant aussitôt (notification `STORY_ACT`, panneau ouvert) ; date limite dépassée à la
+  démo, histoire arrêtée (`result.campaign`, échec `TIME`, `BANKRUPTCY` ou `SOLD` si vendue avant
+  « Le géant »). Les 10 missions sont les objectifs secondaires des actes, avec leurs contraintes et
+  leurs récompenses ; statistiques comptées depuis le début de l'acte (`statsAtAct`), notification
+  `STORY_GOAL`. Chaque objectif rempli part à `POST /api/story/complete` avec `campaign: true` : le
+  serveur rejoue l'histoire jusqu'à la dernière commande (`verifyCampaignGoal`). Point de
+  sauvegarde par acte sur l'appareil (`storyCheckpoints`, `resumeAct`), repris depuis l'écran
+  Histoire ou l'écran de fin. Écran Histoire en 2 onglets : « Histoire » (synopsis, frise et cartes
+  des actes) et « Missions » (les 10 missions courtes, gardées jouables : choix de Thomas). Champ
+  `story.campaign` optionnel (`missionId` devient optionnel), aucun tirage : les autres modes ne
+  changent pas. Calibrage : `pnpm balance:campaign`.
+- Rivaux de l'histoire en actes (T2, PR 2 sur 4 ; `shared/sim/rivals.ts`,
+  `client/src/simulation/rivals.ts`, panneau « 📈 Marché » `ui/story/MarketPanel.tsx`) : 3 startups
+  inventées simulées à chaque démo de la longue partie, sur la graine à part `seed#rival#sprint`.
+  Synergix (Bastien Lemaître) dès le prologue, accélère quand le joueur le dépasse (copie, débauche,
+  procès) ; Pivotly à la guerre des prix (pivote tous les 2 sprints, casse les prix) ; Gigacorp au
+  « Géant », rachète Synergix (clone, pubs, débauche). Croissance logistique, faillite d'un rival
+  qui chute sous 50 000 utilisateurs et 30 % de son record. Part de marché : la part des rivaux
+  ajoute des départs quotidiens d'utilisateurs (`rivalExtraChurn`). Objectifs `rivalUsers` (La
+  course : dépasser Synergix) et `marketShare` (Le géant : 30 % du marché). Panneau Marché : courbes
+  des utilisateurs, parts, dernière action ; notifications `RIVAL_ACTION`. Enseignes lumineuses des
+  rivaux sur des toits de la ville (`render/rivalTowers.ts`, `rivalTowerSpots` dans `skyline.ts`),
+  plus larges avec la part de marché, éclairées la nuit, éteintes à la faillite. État
+  `campaign.rivals` et `campaign.usersHistory` (vides par défaut). Hors de l'histoire en actes,
+  rien ne change.
+- Histoire écrite, fins et Saison libre (T2, PR 3 sur 4 ; `shared/story/scenes.ts`,
+  `shared/story/cards.ts`, `ui/story/StoryScene.tsx`, `events/storyCards.ts`) : scènes dialoguées
+  (Bastien Lemaître, Mamie Josette, Inès Kader de TechMatin, Hugo l'ami dev, Gigacorp) au lancement,
+  au début de chaque acte et à l'entrée en Bourse ; temps arrêté pendant la scène, « Suivant »,
+  « Passer », guide masqué, puis objectifs de l'acte. 10 cartes d'histoire hors base et hors tirage
+  (poids 0), deux par acte, imposées le mardi 10h d'un sprint fixé de l'acte
+  (`STORY_CARD_SCHEDULE`, sans tirage) ; `CardLibrary` les retrouve toujours par identifiant. Effet
+  de carte `rivals` (utilisateurs des rivaux en %, optionnel). Slack : SMS de Mamie Josette et
+  articles d'Inès Kader sur `STORY_ACT`, `STORY_GOAL`, `STORY_END` et `RIVAL_ACTION`. Deux fins
+  écrites : rachat par Gigacorp (fin de partie) ou entrée en Bourse à partir du « Géant », qui
+  ouvre la Saison libre (`campaign.freeSeason`, notification `STORY_END`) : plus de date limite,
+  pression du mode illimité à partir du sprint de l'entrée en Bourse (`freeSeasonStart`, 3e
+  argument des fonctions de `endless.ts`), une nouvelle startup tous les 10 sprints (Quantik,
+  Hyperlane, Blitzly), commande `END_STORY` pour finir sur l'entrée en Bourse
+  (`result.campaign.freeSeasonSprints`). Écran de fin : scène de la fin, bilan face aux rivaux.
+  Aucun tirage sur le RNG de la partie ; hors de l'histoire en actes, rien ne change.
+- Équilibrage de l'histoire en actes (T2, PR 4 sur 4) : dates limites 8, 18, 48, 56 et 60 (début
+  plus serré, plus de temps pour la Licorne et le Géant), départs d'utilisateurs dus aux rivaux
+  divisés par deux (`RIVAL_RULES.dailyChurnPerRivalShare` 0,0006). Bonus d'histoire pour chaque
+  objectif secondaire rempli (`STORY_SIDE_BONUS` dans `shared/story/acts.ts` : argent de Mamie
+  Josette, hype et utilisateurs grâce aux articles d'Inès, rivaux affaiblis), annoncé par une
+  notification `STORY_GOAL`, sans tirage. Bot conteur (`storyteller` dans `simulation/analysis.ts` :
+  refuse les rachats avant « Le géant ») et section « Histoire en actes » de `pnpm balance`
+  (`--campaign-games 220`) : les bons bots finissent l'histoire dans 40 à 65 % des parties
+  (organizer, rested, investor, coach), le hasard jamais ; l'acte qui bloque reste la guerre des
+  prix (`docs/balance.md`).
+- Arbre R&D des objets (T4 ; `shared/sim/research.ts`, `client/src/simulation/research.ts`, panneau
+  « 🔬 R&D » `ui/story/ResearchPanel.tsx`, `view/research.ts`) : dans l'histoire en 5 actes, le
+  catalogue démarre réduit (`RESEARCH_FREE` : bureau, bureau IKEA, plantes, cafetière, mug, canard,
+  lampe, poubelle, tour et écran bureautiques, mur crème) et se débloque avec des points
+  d'innovation : +1 par feature livrée, +3 par objectif secondaire rempli, +2 quand le joueur gagne
+  plus d'utilisateurs que chaque rival sur un sprint (comptés à la démo, `researchSprint`), 4 au
+  départ. 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation ; coûts 4, 8,
+  14, 20) : chaque niveau demande le précédent et l'acte correspondant (niveau 1 au garage, 4 dès
+  « Le géant ») ; le verrou de phase reste. Chaque niveau débloque des clés `item:`, `computer:`,
+  `monitor:` (et `monitor:arm`), `wall:`, `floor:`, `meeting:` ; un test vérifie que tout le
+  catalogue est rattaché. Branche Prestige : les récompenses des objectifs (papiers peints, sols,
+  couleurs, objets, pas les bonus de départ) s'achètent dès l'objectif rempli dans la partie
+  (`prestigeEarned`, lu par `hasUnlock`). Verrou dans chaque achat (erreur `LOCKED`), blocage
+  `researchLocked` de `shopStatus`, raison « 🔬 R&D : Tech, niveau 3 » dans le catalogue, les murs,
+  les sols, les écrans, les ordinateurs et les salles de réunion. Commande `RESEARCH_NODE`, erreur
+  `NOT_ENOUGH_POINTS`, notifications `RESEARCH_POINTS` / `RESEARCH_DONE`, état
+  `campaign.research` optionnel (absent des histoires commencées avant : catalogue complet),
+  étape « L'arbre R&D » du tutoriel. Aucun tirage : missions courtes et autres modes inchangés.
+  Bot de recherche (`researchCommands`) ; `pnpm balance:campaign` affiche les points et niveaux
+  (réussite des bots inchangée à ±1 partie sur 20). Choix de Thomas (« le plus logique, tu es
+  libre ») : rattachement explicite objet par objet, Prestige par les objectifs ; coûts de 2, 4, 7,
+  10 doublés après calibrage. Hall d'entrée et offres internet (fichiers de Melvin) non verrouillés.
+- Arbre R&D dans tous les modes (demande de Thomas, « r&d dans tous les modes ») : Normal, Facile,
+  Hardcore, Daily, Stagiaires Only, 3 sprints, Illimité et Carrière ont le même arbre, dans
+  `state.research` (null dans les missions courtes et les vieilles sauvegardes : tout le
+  catalogue). Les niveaux s'ouvrent avec la phase (niveau 2 en Seed, 3 en Série A, 4 en Licorne ;
+  `researchStage`, statut `phase`) ; points : +1 par feature livrée, +3 par levée de fonds réussie
+  (`RESEARCH.perRound`, compteur `roundsCounted`), +2 par objectif de sprint atteint
+  (`perObjective`), 4 au départ. Pas de Prestige hors histoire. Bouton 🔬 dans les boutons système,
+  étape « L'arbre R&D » du chapitre Construction du tutoriel, phase affichée avant la R&D dans les
+  raisons de verrou. Vinyle et moquette passent au niveau 1 d'Ambiance. Aucun tirage ; règle qui
+  change toutes les parties (anciens replays de scores divergent). Tests d'objets : `openCatalogue`
+  dans `tests/simulation/fixtures.ts`.
 - Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
   menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
   8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,
@@ -769,6 +943,133 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   (5432, IPv4) + `?sslmode=require` ; `createPrismaClient` ajoute `uselibpqcompat=true` pour que
   `pg` accepte le certificat de Supabase (`withLibpqSslMode`, `src/lib/prisma.ts`). `render.yaml`
   ne crée plus de base Render. En local, docker compose ne change pas.
+
+- Daily et appli de tickets « Kanbanana » (`shared/sim/meetings.ts` : `DAILY_SYNC`,
+  `MorningSyncSchema` ; `client/src/simulation/meetings.ts`, `view/ticketBoard.ts`,
+  `render/dailyBoard.ts`, `ui/meetings/TicketApp.tsx`, `ui/meetings/DailyMoment.tsx`) : le Daily
+  de 9h fait le point sur les tickets, chaque participant note l'avancement du sien (hier,
+  aujourd'hui). Daily utile : +5 % de productivité aux participants jusqu'au soir. Sans Daily ce
+  matin-là, ou pour les absents, dès la Seed : travail en double à 10h, une partie d'un ticket
+  est à refaire (graine à part `seed#duplicate#tick`, stat `duplicateWork`, notification
+  `DUPLICATE_WORK`). Dans la salle, écran déroulant et projecteur de plafond affichent Kanbanana
+  (nom et logo inventés) : colonnes, clés OSS-42, type, points, avatars, point de chacun ; panneau
+  « 📽️ » en grand, lecture seule. Le temps s'arrête 6 s au début du Daily (option « Pause pendant
+  le Daily », active par défaut, jamais en Hardcore ni en replay). État `morningSync` (null par
+  défaut). `pnpm balance` : aménager la salle rapporte plus (bot organizer 352 → 434 M€ médians).
+- Placement à la demi-case (`GridPositionSchema` dans `shared/sim/components.ts`, `view/partitions.ts`) :
+  tous les objets se posent et se déplacent d'une demi-case (souris, doigt, flèches du clavier) ;
+  la demi-case libre de part et d'autre d'un mur fin (cloison du plan ou mur posé) se meuble tant
+  que l'objet ne traverse pas le trait du mur, et un objet de 3 cases se centre dans une pièce de 4.
+  Murs fins et fenêtres restent sur des cases entières. La grille de navigation bloque chaque case
+  chevauchée ; chaise et dev assis au point exact devant un bureau décalé (`accessPoint`). Positions
+  entières toujours valides : anciennes sauvegardes, replays, Daily et scores inchangés, aucun tirage.
+
+- Internet et clim de la salle des serveurs (`shared/sim/serverRoom.ts`, `shared/sim/subscriptions.ts`,
+  `client/src/simulation/serverRoom.ts`), remplace les 3 offres fibre ci-dessus : 6 offres du
+  service `internet` des abonnements (`FIBRE_PLANS` : box 4G 39 €/mois 3 salariés, box 5G 59 € 6,
+  Fibre Pro 49 € 10, Fibre Pro+ 119 € 25 en Seed, fibre dédiée 1 Gb/s 890 € 60 en Série A, 10 Gb/s
+  2 600 € 200 en Licorne), prix mensuels HT prélevés chaque semaine (`weeklyPrice`), mise en
+  service payée à la souscription (`setupFee`, `firstPayment`), box fibre exigée seulement pour la
+  fibre dédiée. Salariés connectés = toute l'équipe (`serviceUsers`) ; au-delà de `maxUsers`,
+  réseau saturé : plus d'effet et jusqu'à -12 % de productivité (`saturationPenalty`), alertes
+  `INTERNET_SATURATED` / `INTERNET_OK`, champ `saturated` optionnel. Chaleur et froid en kW (`heat`,
+  `cooling` du catalogue) : climatiseur mural 5 kW (Seed), clim de précision 15 kW, clim en rangée
+  35 kW (Série A), sonde de supervision (Seed). Température 18 + 10 x chaleur / froid (+3 °C de
+  juin à août) : au-delà de 27 °C la moitié des effets (75 % avec sonde), au-delà de 32 °C plus
+  rien et -stabilité ; la sonde affiche la température et prévient quand le niveau change
+  (`serverHeatSystem`, état `serverHeat` vide par défaut). Aucun tirage.
+
+- Arbre de compétences des devs (`shared/sim/skills.ts`, `client/src/simulation/skills.ts`, onglet
+  « Compétences » de la fiche, `ui/team/SkillTree.tsx`) : 1 point par niveau, 3 branches de 5 nœuds
+  qui demandent chacun le précédent (Technique : code propre -10 % de dette, débogueur, architecte,
+  revue de code -5 % de dette des features de l'équipe, gardien de la prod x2 sur « Réparer la
+  prod » ; Vitesse : raccourcis +5 %, concentration, deep work le matin, fin de sprint, Crunch
+  +50 % pendant 24 h et -10 moral une fois par sprint ; Humain : endurance -15 % de fatigue,
+  diplomate, mentor +20 % d'XP aux collègues, bonne humeur, leader : plus de démission à moral 0).
+  Un nœud de métier par profil qui code (demande le 3e nœud de sa branche) ; l'encadrement n'a pas
+  d'arbre. Formations en planification (livre 500 €, formation 2 000 €, conférence 5 000 €, une
+  par dev et par sprint, niveaux gagnés sans tirer de statistique), réinitialisation pour un mois
+  de salaire. Ouvert partout sauf en Daily (`skillsEnabled`). Commandes `LEARN_SKILL`,
+  `RESET_SKILLS`, `TRAIN_DEV`, `USE_CRUNCH`, composant ECS `skills` (vide par défaut), stats
+  `skillsLearned`, `trainings`, `crunches`. Aucun tirage : sans compétence, chaque multiplicateur
+  vaut 1 (48 parties de 4 modes comparées à `develop`, état identique) ; une compétence qui change
+  une probabilité garde le même tirage. Bot « coach » dans `pnpm balance`.
+
+- Saleté et ménage (`shared/sim/cleaning.ts`, `client/src/simulation/cleaning.ts`, bouton 🧹 en
+  haut, panneau « Ménage », `ui/cleaning/Cleaning.tsx`) : chaque jour de semaine, l'équipe présente
+  salit le bureau (0 à 100 %, de plus en plus vite sans ménage, chats compris) ; un dev sur place
+  perd jusqu'à 40 % de travail (-20 % à 50 %, `dirtProductivity`), pas les télétravailleurs, le Dev
+  Fantôme ni l'IA Agent ; alerte à 50 %. Entreprise de nettoyage Nickel Chrome (Fatou, Jean-Marc,
+  Lucía) : appel le soir à 19h ou en express (`CALL_CLEANING`, payé à la réservation), ou
+  abonnement « Ménage » du modèle commun (service `cleaning`, 3 offres de 1 à 5 soirs par semaine).
+  Prix selon la phase et les ailes ou annexes (`PRICE_RULES` dans `simulation/subscriptions.ts`).
+  Déchets en InstancedMesh placés par hachage de la graine et 3 agents animés en A*
+  (`render/cleaning.ts`, formes des assets manquants). État `cleaning` par défaut, aucun tirage ;
+  règle qui change toutes les parties (anciens replays de scores divergent).
+
+- Hall d'entrée (`shared/sim/lobby.ts`, `client/src/simulation/lobby.ts`, rayon « 🛎️ Accueil » du
+  mode construction, panneau « Hall d'entrée », `ui/lobby/Lobby.tsx`) : dès la Seed, 18 000 €
+  pour un hall au rez-de-chaussée devant toutes les pièces (pièce `lobby`, `LobbyPlan` dans
+  `view/layout.ts`), cloison percée de deux portes à badge (portillons qui s'ouvrent au passage),
+  entrée du bureau par le hall ; comptoir d'accueil, banquette et deux plantes offerts et
+  déplaçables (clés `L-0` à `L-3`), comptoir aussi en vente (2 500 €). Jusqu'à 2 secrétaires
+  (3 100 € par mois, +1 % de productivité, +moral, +hype), au comptoir en semaine de 8h à 19h.
+  Sécurité en abonnement du modèle commun (service `security`, installation `lobby`) :
+  télésurveillance (95 €/mois), agent en journée (5 600 €, visible de 8h à 20h), gardiennage
+  24 h/24 (16 500 €, Série A), payés chaque semaine. Rendu `render/lobby.ts` et
+  `render/lobbyFurniture.ts` (formes `receptionDesk` et `badgeGates` des assets manquants).
+  Commandes `BUILD_LOBBY` / `SET_RECEPTIONISTS`, état `lobby` (null par défaut), aucun tirage.
+
+- Panneau « 💶 Business » (`ui/business/Business.tsx`), trois leviers économiques :
+  - Modèle économique (`shared/sim/pricing.ts`, `client/src/simulation/pricing.ts`) : gratuit
+    avec pub, freemium, abonnement, achat unique, au prix bas, standard ou premium ; coefficients
+    de revenu par utilisateur, d'arrivées, de départs et de valeur pour les investisseurs
+    (`userValue`), achat unique encaissé à l'arrivée. Hausse de prix : 12 % d'utilisateurs perdus
+    par doublement (35 % au plus), -5 hype ; baisse +3 hype. Un changement par sprint (`COOLDOWN`).
+    Freemium standard = tous les coefficients à 1, parties qui n'y touchent pas inchangées.
+    Commande `SET_PRICING`, état `pricing` par défaut, aucun tirage.
+  - Clients B2B (`shared/sim/clients.ts`, `client/src/simulation/clients.ts`) : 3 offres par
+    planification sur `seed#clients#sprint`, 16 entreprises inventées, petit, moyen ou gros
+    contrat, besoin en points de features, d'infra ou de bugfix avant une échéance (1 à 4 contrats
+    en cours selon la phase). Prime à la signature, forfait mensuel, livraison à la démo (prime,
+    utilisateurs, hype), puis 6 sprints de maintenance à 25 % du forfait. SLA : pénalité à chaque
+    panne, départ après 3 ; échéance ratée ou rupture : pénalité et -6 hype. Commandes
+    `SIGN_CLIENT` / `DROP_CLIENT`, état `clients` par défaut ; sans contrat, partie inchangée.
+  - Support client (`shared/sim/support.ts`, `client/src/simulation/support.ts`) : tickets chaque
+    jour ouvré, 3 x √(utilisateurs / 1 000) x (1 + dette + instabilité) ; agents (3 500 € par mois,
+    30 tickets par jour, 1 à 25 selon la phase) et devs de garde (10 ou 25 % de leur temps).
+    Satisfaction de 0 à 100 selon l'attente : sous 60, jusqu'à +60 % de départs ; au-dessus de
+    80, +6 % de croissance et un peu de hype. Commande `SET_SUPPORT`, état `support` par défaut,
+    aucun tirage ; règle qui change toutes les parties (anciens replays de scores divergent).
+    Bot planner : `sensibleSupportAgents`.
+
+
+- **Charge du sprint selon l'équipe** (`client/src/simulation/sprintLoad.ts`) : 3 idées par
+  personne qui prend des tâches et par sprint (`TASK_FLOW.ideasPerDev`, l'encadrement ne compte
+  pas), backlog jusqu'à 4 par dev. Chaque matin de semaine à 9h, le rythme de chaque métier depuis
+  le début du sprint (`tracker.workByTrade`) est comparé au travail restant : s'il manque de quoi
+  tenir jusqu'à la démo, des tâches passent du backlog au « À faire », sinon de nouvelles idées
+  sont créées (`TODO_TOPPED_UP`) ; à 14h, un dev qui attend sans tâche en reçoit une. Au 6e jour
+  ouvré, une équipe nettement en retard est prévenue (`SPRINT_BEHIND`), rien n'est retiré. Ligne
+  au-dessus du Kanban : équipe, tâches finissables d'ici la démo, tâches prévues. Les devs ne
+  chôment plus (avant : environ 60 % du temps sans tâche), donc tâches du backlog plus longues
+  (`BALANCE.work.unitsPerPoint` 5 → 14, urgences et hebdo à 5) et chaque point livré pèse moins
+  (`BALANCE.work.pointEffect` 0,13). Nouvelles idées sur `seed#tasks#topup#…` ; règle qui change
+  toutes les parties (anciens replays de scores divergent). 192 titres de plus
+  (`data/moreTasks.ts`, 439 au total), 5 urgences et 5 tâches de la semaine de plus, 150 titres
+  récents gardés.
+- Voitures et décorations refaites (`render/cars.ts`, `render/decorModels.ts`,
+  `render/decorations.ts`) : 7 modèles de véhicules en formes Three.js dans les rues de la ville
+  (taxi 30 %, berline, citadine, SUV, camionnette, pick-up, bus 4 %), vitres, roues à jantes,
+  phares, feux, pare-chocs ; carrosserie teintée par instance et habillage peint par sommet, deux
+  InstancedMesh par modèle, modèle et couleur figés par le numéro (`carLook`, hachage, aucun
+  tirage). Décorations de saison : guirlandes à fil (ampoules à douille en 3 phases de
+  scintillement, ou fanions triangles, cœurs ou queues d'aronde) tendues en festons entre des
+  clous ; un ornement par emplacement, à mi-chemin entre deux appliques, hors fenêtres, cloisons
+  et meubles hauts (`decorWalls`) ; 24 ornements et 12 objets de bureau redessinés (couronne,
+  chaussette, sapin en pot, horloge de minuit, champagne, écu, bannière, vinyle, cassette, cube,
+  chauves-souris, araignée…). Fusion par matériau (`Pieces`, 4 maillages au plus par mur), deux
+  thèmes se partagent les murs (`shareWalls`). Rendu seulement.
 
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback

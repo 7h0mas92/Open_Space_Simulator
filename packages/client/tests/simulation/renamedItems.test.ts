@@ -1,10 +1,10 @@
-import { getFurniture, SaveDataSchema, type LoggedCommand } from '@oss/shared';
+import { getFurniture, SaveDataSchema } from '@oss/shared';
 import { describe, expect, it } from 'vitest';
 import { CardLibrary } from '../../src/events/library';
 import { computeOfficeEffects } from '../../src/simulation/furniture';
 import { replay } from '../../src/simulation/replay';
 import { Simulation } from '../../src/simulation/simulation';
-import { newSimulation } from './fixtures';
+import { newSimulation, openCatalogue } from './fixtures';
 
 /** Premier bureau de la partie : il porte les accessoires. */
 function firstDesk(simulation: Simulation): string {
@@ -64,13 +64,15 @@ describe('Casques antibruit devenus écouteurs sans fil', () => {
     expect(simulation.dispatch(oldCommand).result).toEqual({ ok: true });
     // Le journal garde le nouvel identifiant.
     expect(simulation.commands.at(-1)?.command).toMatchObject({ itemId: 'desk-earbuds' });
-    const oldLog: LoggedCommand[] = [{ tick: simulation.state.tick, command: oldCommand }];
+    // Rejeu sans arbre R&D, comme la partie de test (`newSimulation` ouvre tout le catalogue).
     const replayed = replay({
       seed: 'old-replay',
       mode: 'NORMAL',
-      commands: oldLog,
+      commands: [],
       cards: new CardLibrary([]),
     });
+    openCatalogue(replayed.state);
+    replayed.dispatch(oldCommand);
     expect(shielded(replayed)).toBe(1);
     expect(replayed.state).toEqual(simulation.state);
   });

@@ -1,9 +1,35 @@
-import { getStoryMission, type GameState, type MissionGoal, type StoryMission } from '@oss/shared';
+import {
+  ENDLESS,
+  emptyResearch,
+  STORY_ACTS,
+  STORY_SIDE_BONUS,
+  STORY_STATS,
+  getStoryAct,
+  getStoryMission,
+  type CampaignResult,
+  type CampaignState,
+  type CommandResult,
+  type GameState,
+  type MissionGoal,
+  type StoryAct,
+  type StoryMission,
+  type StoryMissionId,
+} from '@oss/shared';
 import { generateDev, hireDev } from './devs';
 import { endGame } from './endings';
 import { phaseIndex } from './furniture';
-import { teamMoral, teamSize, text, type SimContext } from './helpers';
+import {
+  addGauge,
+  addMoney,
+  addUsers,
+  notify,
+  teamMoral,
+  teamSize,
+  text,
+  type SimContext,
+} from './helpers';
 import { missingPetNeeds } from './pets';
+import { changeRivalUsers, marketShare, rivalUsers, startingRivals } from './rivals';
 import { serverRoomStatuses } from './serverRoom';
 import { hasUnlock } from './unlocks';
 
@@ -17,9 +43,10 @@ import { hasUnlock } from './unlocks';
  * modes (`state.unlocks`) : bonus de départ et contenus en vente.
  */
 
-/** La mission jouée, ou `undefined` hors mode Histoire. */
+/** La mission courte jouée, ou `undefined` hors mode Histoire et dans la longue partie. */
 export function currentMission(state: GameState): StoryMission | undefined {
-  return state.story ? getStoryMission(state.story.missionId) : undefined;
+  const id = state.story?.missionId;
+  return id ? getStoryMission(id) : undefined;
 }
 
 /** Bonus de départ des récompenses (appliqué à la création d'une partie hors mission). */
@@ -94,7 +121,8 @@ export function goalProgress(state: GameState, goal: MissionGoal): GoalProgress 
       return check(value, inRange(value, goal.min, goal.max));
     }
     case 'stat': {
-      const value = state.stats[goal.stat];
+      // Longue partie : les statistiques repartent de zéro à chaque acte.
+      const value = state.stats[goal.stat] - (state.story?.campaign?.statsAtAct[goal.stat] ?? 0);
       return check(value, inRange(value, goal.min, goal.max));
     }
     case 'team': {
@@ -119,6 +147,14 @@ export function goalProgress(state: GameState, goal: MissionGoal): GoalProgress 
     }
     case 'sprints': {
       const value = completedSprints(state);
+      return check(value, value >= goal.min);
+    }
+    case 'rivalUsers': {
+      const value = state.gauges.users;
+      return check(value, value >= rivalUsers(state, goal.rival));
+    }
+    case 'marketShare': {
+      const value = marketShare(state);
       return check(value, value >= goal.min);
     }
   }
@@ -171,6 +207,10 @@ function endMission(
  * les objectifs remplis en même temps, gagnée. La faillite est notée à la fin de la partie.
  */
 export function checkMission(state: GameState, ctx: SimContext): void {
+  if (state.story?.campaign) {
+    checkCampaign(state, ctx, state.story.campaign);
+    return;
+  }
   const progress = missionProgress(state);
   if (!progress) return;
   if (state.result) {
@@ -193,8 +233,267 @@ export function checkMission(state: GameState, ctx: SimContext): void {
 
 /** Fin du temps imparti : les objectifs sont vérifiés une dernière fois après la démo. */
 export function missionTimeUp(state: GameState, ctx: SimContext): void {
+  if (state.story?.campaign) return;
   const progress = missionProgress(state);
   if (!progress) return;
   const won = progress.goals.every((g) => g.met) && progress.constraints.every((c) => c.met);
   endMission(state, ctx, progress.mission, won ? null : 'TIME');
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * Longue partie en actes (« Ctrl+Alt+Fonder », `shared/story/acts.ts`)
+ * ------------------------------------------------------------------------------------------- */
+
+/** Statistiques d'un acte au moment où il commence. */
+function statsSnapshot(state: GameState): CampaignState['statsAtAct'] {
+  const snapshot: Partial<CampaignState['statsAtAct']> = {};
+  for (const stat of STORY_STATS) snapshot[stat] = state.stats[stat];
+  return snapshot as CampaignState['statsAtAct'];
+}
+
+/** Avancement d'une nouvelle histoire : prologue, rien de fait. */
+export function emptyCampaign(): CampaignState {
+  const zero: Partial<CampaignState['statsAtAct']> = {};
+  for (const stat of STORY_STATS) zero[stat] = 0;
+  return {
+    act: 0,
+    done: [],
+    missed: [],
+    statsAtAct: zero as CampaignState['statsAtAct'],
+    rivals: startingRivals(),
+    usersHistory: [],
+    research: emptyResearch(),
+  };
+}
+
+/** L'acte en cours, ou `undefined` hors de la longue partie. */
+export function currentAct(state: GameState): StoryAct | undefined {
+  const campaign = state.story?.campaign;
+  return campaign ? getStoryAct(campaign.act) : undefined;
+}
+
+/** Où en est un objectif secondaire de l'acte. */
+export type SideStatus = 'done' | 'missed' | 'active';
+
+export interface SideProgress {
+  readonly mission: StoryMission;
+  readonly status: SideStatus;
+  readonly goals: GoalProgress[];
+  readonly constraints: GoalProgress[];
+}
+
+export interface ActProgress {
+  readonly act: StoryAct;
+  readonly campaign: CampaignState;
+  /** Objectif principal (vide au dernier acte : il se termine par une sortie). */
+  readonly goals: GoalProgress[];
+  readonly side: SideProgress[];
+}
+
+function sideStatus(campaign: CampaignState, id: StoryMissionId): SideStatus {
+  return campaign.done.includes(id) ? 'done' : campaign.missed.includes(id) ? 'missed' : 'active';
+}
+
+/** Avancement de l'acte en cours : objectif principal et objectifs secondaires. */
+export function actProgress(state: GameState): ActProgress | null {
+  const campaign = state.story?.campaign;
+  if (!campaign) return null;
+  const act = getStoryAct(campaign.act);
+  return {
+    act,
+    campaign,
+    goals: act.goals.map((goal) => goalProgress(state, goal)),
+    side: act.side.flatMap((id) => {
+      const mission = getStoryMission(id);
+      if (!mission) return [];
+      return [
+        {
+          mission,
+          status: sideStatus(campaign, id),
+          goals: mission.goals.map((goal) => goalProgress(state, goal)),
+          constraints: mission.constraints.map((goal) => goalProgress(state, goal)),
+        },
+      ];
+    }),
+  };
+}
+
+/** Objectifs secondaires de l'acte : remplis (récompense) ou ratés (contrainte enfreinte). */
+function checkSideGoals(state: GameState, ctx: SimContext, campaign: CampaignState): void {
+  const progress = actProgress(state);
+  if (!progress) return;
+  for (const side of progress.side) {
+    if (side.status !== 'active') continue;
+    const params = { fr: side.mission.title.fr, en: side.mission.title.en };
+    if (side.constraints.some((c) => !c.met)) {
+      campaign.missed.push(side.mission.id);
+      notify(
+        state,
+        ctx,
+        'STORY_GOAL',
+        text(['Objectif « {fr} » raté.', 'Goal “{en}” failed.'], params),
+      );
+    } else if (side.goals.every((g) => g.met)) {
+      campaign.done.push(side.mission.id);
+      notify(
+        state,
+        ctx,
+        'STORY_GOAL',
+        text(['Objectif « {fr} » rempli !', 'Goal “{en}” completed!'], params),
+      );
+      applySideBonus(state, ctx, side.mission.id);
+    }
+  }
+}
+
+/** Coup de pouce de l'histoire pour un objectif secondaire rempli (sans tirage). */
+function applySideBonus(state: GameState, ctx: SimContext, id: StoryMissionId): void {
+  const bonus = STORY_SIDE_BONUS[id];
+  if (bonus.treasury) addMoney(state, bonus.treasury);
+  if (bonus.hype) addGauge(state, 'hype', bonus.hype);
+  if (bonus.users) addUsers(state, (state.gauges.users * bonus.users) / 100);
+  if (bonus.rivals) changeRivalUsers(state, bonus.rivals);
+  notify(state, ctx, 'STORY_GOAL', bonus.text);
+}
+
+/** Passe à l'acte suivant : les objectifs secondaires pas remplis sont ratés. */
+function nextAct(state: GameState, ctx: SimContext, campaign: CampaignState): void {
+  const story = state.story;
+  if (!story) return;
+  for (const id of getStoryAct(campaign.act).side)
+    if (!campaign.done.includes(id) && !campaign.missed.includes(id)) campaign.missed.push(id);
+  campaign.act += 1;
+  campaign.statsAtAct = statsSnapshot(state);
+  // Les sprints de l'acte comptent à partir du prochain qui commence.
+  story.startSprint = state.stage === 'PLANNING' ? state.sprint : state.sprint + 1;
+  const act = getStoryAct(campaign.act);
+  notify(
+    state,
+    ctx,
+    'STORY_ACT',
+    text(['Acte {number} : {fr}', 'Act {number}: {en}'], {
+      number: ROMAN[act.number] ?? String(act.number),
+      fr: act.title.fr,
+      en: act.title.en,
+    }),
+  );
+}
+
+/** À partir de cet acte (« Le géant »), une sortie termine l'histoire avec succès. */
+const GIANT_ACT = STORY_ACTS.findIndex((act) => act.id === 'giant');
+
+/** Numéros des actes en chiffres romains (le prologue n'en a pas). */
+export const ROMAN = ['', 'I', 'II', 'III', 'IV'] as const;
+
+/** Arrête l'histoire (la partie se termine comme un « zombie », sauf fin écrite). */
+function endCampaign(
+  state: GameState,
+  ctx: SimContext,
+  failure: Exclude<CampaignResult['failure'], null>,
+): void {
+  const act = currentAct(state);
+  if (!act) return;
+  const params = { fr: act.title.fr, en: act.title.en, sprint: state.sprint };
+  endGame(
+    state,
+    ctx,
+    'ZOMBIE',
+    state.valuation,
+    null,
+    text(
+      [
+        'Histoire arrêtée au sprint {sprint}, pendant l’acte « {fr} ».',
+        'Story stopped in sprint {sprint}, during the act “{en}”.',
+      ],
+      params,
+    ),
+  );
+  if (state.result) state.result.campaign = { act: act.id, success: false, failure, ending: null };
+}
+
+/**
+ * Vérifie la longue partie après chaque pas et chaque commande : objectifs secondaires, puis
+ * objectif principal (acte suivant). À la fin de la partie, l'issue de la startup dit si
+ * l'histoire est réussie : une sortie (Bourse ou rachat) à partir de l'acte « Le géant ».
+ */
+function checkCampaign(state: GameState, ctx: SimContext, campaign: CampaignState): void {
+  if (state.result) {
+    if (state.result.campaign) return;
+    const free = campaign.freeSeason;
+    if (free) {
+      // Saison libre : l'histoire est déjà réussie (entrée en Bourse), quelle que soit la suite.
+      state.result.campaign = {
+        act: getStoryAct(campaign.act).id,
+        success: true,
+        failure: null,
+        ending: 'IPO',
+        freeSeasonSprints: Math.max(0, state.sprint - free.fromSprint),
+      };
+      return;
+    }
+    const act = getStoryAct(campaign.act);
+    const { outcome } = state.result;
+    const ending = outcome === 'IPO' || outcome === 'ACQUISITION' ? outcome : null;
+    const success = ending !== null && campaign.act >= GIANT_ACT;
+    if (success) checkSideGoals(state, ctx, campaign);
+    state.result.campaign = {
+      act: act.id,
+      success,
+      failure: success ? null : outcome === 'BANKRUPTCY' ? 'BANKRUPTCY' : ending ? 'SOLD' : 'TIME',
+      ending: success ? ending : null,
+    };
+    return;
+  }
+  checkSideGoals(state, ctx, campaign);
+  const act = getStoryAct(campaign.act);
+  if (act.goals.length > 0 && act.goals.every((goal) => goalProgress(state, goal).met))
+    nextAct(state, ctx, campaign);
+}
+
+/**
+ * Date limite de l'acte, vérifiée à la fin de la démo : objectif principal pas rempli, l'histoire
+ * s'arrête. Renvoie vrai si la partie est finie. Le dernier acte n'a pas d'autre limite que la
+ * fin de la partie (sortie automatique, comme au bout des 18 mois d'une partie normale).
+ */
+export function campaignDeadline(state: GameState, ctx: SimContext): boolean {
+  const act = currentAct(state);
+  if (!act || act.goals.length === 0 || state.sprint < act.deadline) return false;
+  endCampaign(state, ctx, 'TIME');
+  return true;
+}
+
+/**
+ * Entrée en Bourse pendant l'histoire, à partir de « Le géant » : la fin écrite est atteinte,
+ * les objectifs secondaires sont vérifiés une dernière fois, puis la partie continue en Saison
+ * libre (plus de date limite, concurrence qui monte, nouvelles startups). Renvoie faux hors de
+ * l'histoire ou trop tôt : l'entrée en Bourse termine alors la partie comme d'habitude.
+ */
+export function startFreeSeason(state: GameState, ctx: SimContext, valuation: number): boolean {
+  const campaign = state.story?.campaign;
+  if (!campaign || campaign.freeSeason || campaign.act < GIANT_ACT) return false;
+  checkSideGoals(state, ctx, campaign);
+  for (const id of getStoryAct(campaign.act).side)
+    if (!campaign.done.includes(id) && !campaign.missed.includes(id)) campaign.missed.push(id);
+  state.valuation = Math.round(valuation);
+  campaign.freeSeason = { fromSprint: state.sprint, valuation: state.valuation };
+  state.totalSprints = ENDLESS.sprintCap;
+  notify(
+    state,
+    ctx,
+    'STORY_END',
+    text([
+      'Entrée en Bourse ! L’histoire est finie, la Saison libre commence.',
+      'IPO! The story is over, the Free season begins.',
+    ]),
+  );
+  return true;
+}
+
+/** Saison libre : le joueur termine la partie sur la fin « entrée en Bourse ». */
+export function endStory(state: GameState, ctx: SimContext): CommandResult {
+  const free = state.story?.campaign?.freeSeason;
+  if (!free) return { ok: false, error: 'NOT_ELIGIBLE' };
+  if (state.stage === 'ENDED') return { ok: false, error: 'WRONG_STAGE' };
+  endGame(state, ctx, 'IPO', state.valuation);
+  return { ok: true };
 }

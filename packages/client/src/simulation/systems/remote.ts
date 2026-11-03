@@ -1,5 +1,6 @@
 import { BALANCE, type EntityId, type GameState, type RemoteReason } from '@oss/shared';
 import { addDevLog, devIds, notify, text, type SimContext } from '../helpers';
+import { isAbsent } from '../teamLife';
 import type { SimClock } from '../time';
 
 /** Message affiché (journal du dev, Slack) quand il passe en télétravail, selon la raison. */
@@ -95,6 +96,11 @@ export function remoteSystem(state: GameState, ctx: SimContext, clock: SimClock)
   const decisions = new Map<EntityId, RemoteReason | null>();
   const needDesk: EntityId[] = [];
   for (const id of devIds(state)) {
+    // En congé ou en arrêt : ni au bureau, ni en télétravail.
+    if (isAbsent(state, id, clock)) {
+      decisions.set(id, null);
+      continue;
+    }
     const reason = personalRemoteReason(state, id);
     decisions.set(id, reason);
     // L'IA Agent tourne sur un serveur : elle n'occupe pas de bureau.

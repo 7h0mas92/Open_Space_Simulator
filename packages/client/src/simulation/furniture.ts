@@ -5,6 +5,7 @@ import {
   officeDepthWithAnnexes,
   annexCount,
   annexDecorItem,
+  lobbyDecorItem,
   PHASES,
   DEFAULT_MONITOR,
   getFurniture,
@@ -30,9 +31,14 @@ import { meetingFormat } from './meetings';
 import { petEffects } from './pets';
 import { projectionEffects } from './projection';
 import { floorEffects } from './floors';
-import { fibreEffects, serverGearEffects } from './serverRoom';
+import { lobbyDepth, lobbyEffects } from './lobby';
+import { serverGearEffects } from './serverRoom';
+import { subscriptionEffects } from './subscriptions';
 import { wallEffects } from './walls';
 import { colorUnlocked, hasUnlock } from './unlocks';
+import { researchUnlocked } from './research';
+import { absenceOn } from './teamLife';
+import { getClock } from './time';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
 export function phaseIndex(phase: Phase): number {
@@ -58,6 +64,38 @@ function overlaps(a: Footprint, b: Footprint): boolean {
   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.depth && b.y < a.y + a.depth;
 }
 
+/**
+ * Un mur fin occupe une case mais n'est qu'un trait au milieu de celle-ci, dans son sens
+ * (rotation paire : le long de x). Un objet peut donc occuper la demi-case de part et d'autre :
+ * il ne gêne le mur que s'il traverse ce trait.
+ */
+function crossesPartition(wall: Footprint, rotation: number, area: Footprint): boolean {
+  if (rotation % 2 === 0) {
+    const line = wall.y + 0.5;
+    return (
+      area.y < line &&
+      line < area.y + area.depth &&
+      area.x < wall.x + 1 &&
+      wall.x < area.x + area.width
+    );
+  }
+  const line = wall.x + 0.5;
+  return (
+    area.x < line &&
+    line < area.x + area.width &&
+    area.y < wall.y + 1 &&
+    wall.y < area.y + area.depth
+  );
+}
+
+/** Les murs fins et les fenêtres restent sur des cases entières (raccords entre voisins). */
+function onWholeCells(item: FurnitureDefinition, x: number, y: number): boolean {
+  return (
+    !(item.wall === true || item.partition !== undefined) ||
+    (Number.isInteger(x) && Number.isInteger(y))
+  );
+}
+
 /** Vérifie qu'un objet tient dans le bureau sans chevaucher les autres. */
 export function canPlace(
   state: GameState,
@@ -69,9 +107,11 @@ export function canPlace(
 ): boolean {
   const office = OFFICE_SIZE[state.phase];
   const width = officeWidthWithWings(office.width, state.ventures.length);
-  const depth = officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds));
+  const depth =
+    officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds)) + lobbyDepth(state);
   const area = footprint(item, x, y, rotation);
   if (area.x + area.width > width || area.y + area.depth > depth) return false;
+  if (!onWholeCells(item, x, y)) return false;
   // Une fenêtre est fixée contre le mur du fond (rotation 0) ou le mur de gauche (rotation 1).
   const wall = item.wall === true;
   if (wall && !(rotation === 0 ? y === 0 : rotation === 1 && x === 0)) return false;
@@ -90,7 +130,18 @@ export function canPlace(
     const fullHeight = definition.partition === 'glass' || item.partition === 'glass';
     if ((definition.ceiling === true) !== ceiling && !fullHeight) continue;
     if (wall && placed.rotation !== rotation) continue;
-    if (overlaps(area, footprint(definition, placed.x, placed.y, placed.rotation))) return false;
+    const other = footprint(definition, placed.x, placed.y, placed.rotation);
+    // Un mur fin et un objet ordinaire : seul le trait du mur compte.
+    const wallInCell = definition.partition !== undefined && item.partition === undefined;
+    const cellOfWall = item.partition !== undefined && definition.partition === undefined;
+    if (
+      wallInCell
+        ? crossesPartition(other, placed.rotation, area)
+        : cellOfWall
+          ? crossesPartition(area, rotation, other)
+          : overlaps(area, other)
+    )
+      return false;
   }
   return true;
 }
@@ -130,6 +181,7 @@ function checkPurchase(state: GameState, item: FurnitureDefinition | undefined):
   if (!item) return { ok: false, error: 'NOT_FOUND' };
   if (phaseIndex(state.phase) < phaseIndex(item.minPhase)) return { ok: false, error: 'LOCKED' };
   if (!hasUnlock(state, item.unlock)) return { ok: false, error: 'LOCKED' };
+  if (!researchUnlocked(state, `item:${item.id}`)) return { ok: false, error: 'LOCKED' };
   if (countOf(state, item.id) >= item.maxCount) return { ok: false, error: 'NOT_ELIGIBLE' };
   if (state.gauges.treasury < item.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
   return { ok: true };
@@ -397,6 +449,7 @@ export function setComputer(
   const next = getComputer(computer);
   if (current.id === next.id) return { ok: true };
   if (phaseIndex(state.phase) < phaseIndex(next.minPhase)) return { ok: false, error: 'LOCKED' };
+  if (!researchUnlocked(state, `computer:${next.id}`)) return { ok: false, error: 'LOCKED' };
   const refund = current.price * RESALE_RATIO;
   if (state.gauges.treasury + refund < next.price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
   addMoney(state, refund - next.price);
@@ -444,7 +497,9 @@ export function moveAnnexDecor(
   y: number,
   rotation: number,
 ): CommandResult {
-  const itemId = annexDecorItem(key, annexCount(state.fundingRounds));
+  const itemId =
+    annexDecorItem(key, annexCount(state.fundingRounds)) ??
+    lobbyDecorItem(key, state.lobby !== null);
   const item = itemId ? getFurniture(itemId) : undefined;
   if (!item) return { ok: false, error: 'NOT_FOUND' };
   if (!canPlace(state, item, x, y, rotation)) return { ok: false, error: 'INVALID_PLACEMENT' };
@@ -485,6 +540,9 @@ export function setMonitor(
   if (!placed || !item || !model) return { ok: false, error: 'NOT_FOUND' };
   if (item.monitor !== true) return { ok: false, error: 'INVALID_PLACEMENT' };
   if (phaseIndex(state.phase) < phaseIndex(model.minPhase)) return { ok: false, error: 'LOCKED' };
+  if (!researchUnlocked(state, `monitor:${model.id}`)) return { ok: false, error: 'LOCKED' };
+  if (choice.mount === 'arm' && !researchUnlocked(state, 'monitor:arm'))
+    return { ok: false, error: 'LOCKED' };
   if (sameMonitor(monitorOf(placed), choice)) return { ok: false, error: 'NOT_ELIGIBLE' };
   const price = monitorPrice(choice);
   const refund = (placed.monitor?.price ?? 0) * RESALE_RATIO;
@@ -604,14 +662,22 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.quality += e.quality ?? 0;
     effects.hypePerDay += e.hypePerDay ?? 0;
   }
-  // Matériel des salles des serveurs qui tournent, et fibre si elle arrive dans une box.
-  const fibre = fibreEffects(state);
-  for (const e of fibre ? [...serverGearEffects(state), fibre] : serverGearEffects(state)) {
+  // Matériel des salles des serveurs qui tournent, et abonnements actifs (fibre arrivée dans une
+  // box, etc.).
+  for (const e of [...serverGearEffects(state), ...subscriptionEffects(state)]) {
     effects.moral += e.moral ?? 0;
+    effects.quality += e.quality ?? 0;
     effects.teamProductivity += e.teamProductivity ?? 0;
     effects.hypePerDay += e.hypePerDay ?? 0;
     effects.stabilityPerDay += e.stabilityPerDay ?? 0;
     effects.debtPerDay += e.debtPerDay ?? 0;
+  }
+  // Hall d'entrée : le hall, ses portes à badge, les secrétaires et le service de sécurité.
+  for (const e of lobbyEffects(state)) {
+    effects.moral += e.moral ?? 0;
+    effects.teamProductivity += e.teamProductivity ?? 0;
+    effects.hypePerDay += e.hypePerDay ?? 0;
+    effects.stabilityPerDay += e.stabilityPerDay ?? 0;
   }
   // L'aménagement de la salle de réunion s'ajoute au mobilier (bonus et malus).
   const room = meetingFormat(state);
@@ -642,7 +708,10 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
   effects.moral += floors.moral;
   effects.quality += floors.quality;
   effects.hypePerDay += floors.hypePerDay;
-  const inOffice = devIds(state).filter((id) => !(id in state.components.remote));
+  const today = getClock(state).day;
+  const inOffice = devIds(state).filter(
+    (id) => !(id in state.components.remote) && absenceOn(state, id, today) === null,
+  );
   effects.seatProductivity = distribute(productivitySeats, inOffice);
   effects.seatEnergySaving = distribute(energySeats, inOffice);
   inOffice.forEach((id, index) => {

@@ -1,4 +1,5 @@
-import { SEASONS, SPEEDS, type Phase, type Speed } from '@oss/shared';
+import { dirtLevel } from '../cleaning/Cleaning';
+import { SEASONS, SPEEDS, companyName, isEndless, type Phase, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView, type GaugeName } from '../../view/types';
 import { useSlack } from '../../slack/store';
@@ -38,7 +39,7 @@ const GAME_ACTIONS = [
   'slack',
 ] as const;
 type GameAction = (typeof GAME_ACTIONS)[number];
-const SYSTEM_PANELS = ['saves', 'settings'] as const;
+const SYSTEM_PANELS = ['business', 'subscriptions', 'saves', 'leaderboard', 'settings'] as const;
 
 /** Icône de chaque bouton du HUD, reprise dans l'en-tête du panneau ouvert. */
 export const PANEL_ICONS: Record<PanelId | 'build', string> = {
@@ -47,15 +48,23 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   hiring: '🤝',
   group: '🏛️',
   meetings: '🗓️',
+  tickets: '📽️',
   pets: '🐈',
   servers: '🗄️',
+  lobby: '🛎️',
+  cleaning: '🧹',
+  business: '💶',
+  subscriptions: '🧾',
   funding: '💼',
   career: '🧭',
   mission: '🎯',
+  market: '📈',
+  research: '🔬',
   build: '🛠️',
   dashboard: '📈',
   slack: '💬',
   saves: '💾',
+  leaderboard: '🏆',
   settings: '⚙️',
   credits: '©️',
 };
@@ -89,6 +98,7 @@ export function Company({ view }: { view: GameView }) {
     <div className="hud-company">
       <Tooltip
         text={[
+          t('hud.company', { name: companyName(view.seed) }),
           t('hud.phase', { phase }),
           t('hud.mode', { mode }),
           t('hud.team', { count: view.devs.length, max: view.teamMax }),
@@ -189,11 +199,22 @@ export function Gauges({ view }: { view: GameView }) {
 /** Date du jour simulé, périodes à thème en cours (🎃, 🎄…) et anniversaires (🎂). */
 function CalendarLine({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
-  const { date, seasons, birthdays } = view.calendar;
+  const { date, seasons, birthdays, holiday } = view.calendar;
   const names = view.devs.filter((dev) => birthdays.includes(dev.id)).map((dev) => dev.name);
   return (
     <p className="clock-line clock-calendar">
       <span>{formatGameDate(date, i18n.language)}</span>
+      {holiday && (
+        <span
+          className="clock-season"
+          title={t('leave.holiday', { name: t(`leave.holidays.${holiday}`) })}
+        >
+          <span aria-hidden="true">🏖️</span>
+          <span className="visually-hidden">
+            {t('leave.holiday', { name: t(`leave.holidays.${holiday}`) })}
+          </span>
+        </span>
+      )}
       {seasons.map((theme) => {
         const label = localized(SEASONS[theme].name, i18n.language);
         return (
@@ -203,6 +224,17 @@ function CalendarLine({ view }: { view: GameView }) {
           </span>
         );
       })}
+      {view.retroAction && (
+        <span
+          className="clock-season"
+          title={t('retro.active', { action: t(`retro.actions.${view.retroAction}.name`) })}
+        >
+          <span aria-hidden="true">🔁</span>
+          <span className="visually-hidden">
+            {t('retro.active', { action: t(`retro.actions.${view.retroAction}.name`) })}
+          </span>
+        </span>
+      )}
       {names.length > 0 && (
         <span className="clock-season" title={t('time.birthday', { names: names.join(', ') })}>
           <span aria-hidden="true">🎂</span>
@@ -224,7 +256,11 @@ export function Clock({ view }: { view: GameView }) {
   return (
     <div className="clock" data-tutorial="clock" aria-live="off">
       <p className="clock-line">
-        <strong>{t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}</strong>
+        <strong>
+          {isEndless(view.mode) || view.campaign?.freeSeason
+            ? t('time.sprintEndless', { sprint: time.sprint })
+            : t('time.sprint', { sprint: time.sprint, total: time.totalSprints })}
+        </strong>
         <span className={`clock-time ${isFridayFive(live) ? 'friday' : ''}`}>
           {t('time.day', { day: days[weekday(live.day)] ?? '', time: formatClock(live.minute) })}
         </span>
@@ -255,11 +291,22 @@ export function SystemButtons({ view }: { view: GameView }) {
   const replay = useGame((s) => s.replayOf !== null);
   // Mode Histoire : la mission (objectifs en direct) est à un clic, avant les sauvegardes.
   const story = useGame((s) => s.view?.mode === 'STORY');
+  // Histoire en actes : le marché (rivaux) à côté de la mission.
+  const campaign = useGame((s) => s.view?.campaign !== null && s.view?.campaign !== undefined);
   const system = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
-  const panels: readonly PanelId[] = story ? ['mission', ...system] : system;
+  // Arbre R&D : dans tous les modes qui en ont un (pas les missions courtes, ni les vieilles parties).
+  const research = view.research !== null;
+  const panels: readonly PanelId[] = campaign
+    ? ['mission', 'market', 'research', ...system]
+    : story
+      ? ['mission', ...system]
+      : research
+        ? ['research', ...system]
+        : system;
   const career = view.career;
   return (
     <div className="hud-system" role="group" aria-label={t('hud.system')}>
+      <CleaningButton view={view} />
       {career && (
         // Mode Carrière : les jalons de la légende, à portée de clic.
         <button
@@ -292,6 +339,32 @@ export function SystemButtons({ view }: { view: GameView }) {
         </button>
       ))}
     </div>
+  );
+}
+
+/** Ménage : un bouton-icône avec la saleté du bureau, qui ouvre le panneau Ménage. */
+function CleaningButton({ view }: { view: GameView }) {
+  const { t } = useTranslation();
+  const panel = useGame((s) => s.panel);
+  const openPanel = useGame((s) => s.openPanel);
+  const percent = Math.round(view.cleaning.dirt);
+  const level = dirtLevel(view.cleaning);
+  const label = t('cleaning.button', { percent });
+  return (
+    <button
+      type="button"
+      className={`system-button cleaning-button dirt-${level}`}
+      aria-pressed={panel === 'cleaning'}
+      aria-label={label}
+      title={label}
+      data-testid="open-cleaning"
+      onClick={() => openPanel(panel === 'cleaning' ? null : 'cleaning')}
+    >
+      <span aria-hidden="true">{view.cleaning.visit ? '🫧' : PANEL_ICONS.cleaning}</span>
+      <span className="dirt-badge" aria-hidden="true">
+        {percent}
+      </span>
+    </button>
   );
 }
 

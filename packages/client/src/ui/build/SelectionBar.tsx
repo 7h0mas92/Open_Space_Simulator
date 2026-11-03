@@ -1,4 +1,4 @@
-import { isProjector, PROJECTION_RANGE } from '@oss/shared';
+import { isProjector, PROJECTION_RANGE, RECEPTION_DESK_ID } from '@oss/shared';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
@@ -10,6 +10,18 @@ import { ItemThumbnail, showCatalogTab } from './Catalog';
 import { ColorPicker } from './ColorPicker';
 import { monitorLabel } from './MonitorShop';
 import { ComputerPicker } from './ComputerPicker';
+import { researchLockedReason } from './storyLock';
+import { COMPUTERS, type ComputerId } from '@oss/shared';
+
+/** Arbre R&D : le niveau à prendre pour chaque ordinateur pas encore débloqué. */
+function computerResearch(t: TFunction, view: GameView): Partial<Record<ComputerId, string>> {
+  const locks: Partial<Record<ComputerId, string>> = {};
+  for (const computer of COMPUTERS) {
+    const reason = researchLockedReason(t, view, `computer:${computer.id}`);
+    if (reason) locks[computer.id] = reason;
+  }
+  return locks;
+}
 
 /**
  * Barre contextuelle au-dessus de la barre d'actions (ou du catalogue en construction) :
@@ -53,7 +65,11 @@ export function SelectionBar({ view }: { view: GameView }) {
             <strong>{itemName(item.kind)}</strong>
           </p>
           <span className="item-description">
-            {gift ? t('build.annexDecor') : localized(def.description, i18n.language)}
+            {gift && item.annexDecor?.startsWith('L-')
+              ? t('build.lobbyDecor')
+              : gift
+                ? t('build.annexDecor')
+                : localized(def.description, i18n.language)}
           </span>
           {item.monitor && (
             <span className="item-description item-monitor" data-testid="selected-monitor">
@@ -67,16 +83,28 @@ export function SelectionBar({ view }: { view: GameView }) {
           )}
           {serverRoom && (
             <span className="item-status" data-testid="server-room-status">
-              {serverRoom.running
-                ? t('servers.statusRunning', { count: serverRoom.gear, max: serverRoom.slots })
-                : t('servers.statusMissing', {
+              {serverRoom.missing.length > 0
+                ? t('servers.statusMissing', {
                     missing: serverRoom.missing
                       .map((need) => t(`servers.needsShort.${need}`))
                       .join(', '),
-                  })}
+                  })
+                : serverRoom.level === 'overheat'
+                  ? t('servers.statusOverheat')
+                  : serverRoom.level === 'warm'
+                    ? t('servers.statusWarm', { count: serverRoom.gear, max: serverRoom.slots })
+                    : t('servers.statusRunning', {
+                        count: serverRoom.gear,
+                        max: serverRoom.slots,
+                      })}
             </span>
           )}
         </div>
+        {item.kind === RECEPTION_DESK_ID && view.lobby.built && (
+          <button type="button" onClick={() => openPanel('lobby')} data-testid="open-lobby">
+            🛎️ {t('lobby.open')}
+          </button>
+        )}
         {serverRoom && (
           <button type="button" onClick={() => openPanel('servers')} data-testid="open-servers">
             🌐 {t('servers.open')}
@@ -126,6 +154,7 @@ export function SelectionBar({ view }: { view: GameView }) {
           <ComputerPicker
             value={item.computer}
             phase={view.phase}
+            research={computerResearch(t, view)}
             treasury={view.gauges.treasury}
             onChange={(computer) =>
               void dispatch({ type: 'setComputer', itemId: item.id, computer })

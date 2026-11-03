@@ -16,7 +16,7 @@ import { useThumbnail } from './thumbnails';
 import { MonitorShop } from './MonitorShop';
 import { FloorShop } from './FloorShop';
 import { WallFinishes } from './WallFinishes';
-import { storyLockedReason } from './storyLock';
+import { researchLockedReason, storyLockedReason } from './storyLock';
 
 /** Icône de chaque rayon (et de ses objets tant que leur vignette 3D n'est pas prête). */
 export const CATEGORY_ICONS: Record<ItemCategory, string> = {
@@ -32,6 +32,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   accessory: '🦆',
   devices: '📽️',
   servers: '🗄️',
+  lobby: '🛎️',
 };
 
 /**
@@ -121,6 +122,11 @@ export function Catalog({ view }: { view: GameView }) {
           {category === 'servers' && (
             <li>
               <FibreCard view={view} />
+            </li>
+          )}
+          {category === 'lobby' && (
+            <li>
+              <LobbyCard view={view} />
             </li>
           )}
           {items.map((item) => (
@@ -245,14 +251,14 @@ function AdoptCard({ view }: { view: GameView }) {
 
 /**
  * Rayon Serveurs : la première carte ouvre le panneau de la salle des serveurs (état des salles,
- * abonnement fibre). Elle rappelle l'offre en cours ou ce qu'il faut pour s'abonner.
+ * abonnement internet). Elle rappelle l'offre en cours, ou le prix de la moins chère.
  */
 function FibreCard({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const openPanel = useGame((s) => s.openPanel);
-  const { fibre, plans, hasBox } = view.servers;
-  const current = fibre ? plans.find((plan) => plan.id === fibre.plan) : undefined;
-  const cheapest = Math.min(...plans.map((plan) => plan.weeklyPrice));
+  const internet = view.subscriptions.services.find((service) => service.id === 'internet');
+  const current = internet?.current?.offer;
+  const cheapest = Math.min(...(internet?.offers ?? []).map((offer) => offer.price));
   return (
     <button
       type="button"
@@ -266,17 +272,62 @@ function FibreCard({ view }: { view: GameView }) {
       <span className="catalog-card-name">{t('servers.fibreCard')}</span>
       <span className="catalog-card-meta">
         <span className="catalog-card-price">
-          {t('servers.fibre.perWeek', {
-            price: formatMoney(fibre?.weeklyPrice ?? cheapest, i18n.language),
+          {t('subscriptions.perWeek', {
+            price: formatMoney(current?.price ?? cheapest, i18n.language),
           })}
         </span>
       </span>
-      <span className={fibre || hasBox ? 'catalog-card-text' : 'catalog-card-text locked'}>
+      <span className="catalog-card-text">
         {current
           ? t('servers.fibreCardCurrent', { plan: localized(current.name, i18n.language) })
-          : hasBox
-            ? t('servers.fibreCardReady')
-            : t('servers.fibreCardMissing')}
+          : t('servers.fibreCardReady')}
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Rayon Accueil : la première carte ouvre le panneau du hall d'entrée (travaux, secrétaires,
+ * sécurité). Elle rappelle le prix des travaux, ou ce qui est en place.
+ */
+function LobbyCard({ view }: { view: GameView }) {
+  const { t, i18n } = useTranslation();
+  const openPanel = useGame((s) => s.openPanel);
+  const { lobby } = view;
+  const plan = view.subscriptions.services.find((s) => s.id === 'security')?.current?.offer;
+  return (
+    <button
+      type="button"
+      className="catalog-card adopt-card"
+      onClick={() => openPanel('lobby')}
+      data-testid="catalog-lobby"
+    >
+      <span className="item-thumb" aria-hidden="true">
+        🛎️
+      </span>
+      <span className="catalog-card-name">{t('lobby.card')}</span>
+      <span className="catalog-card-meta">
+        <span className="catalog-card-price">
+          {lobby.built
+            ? t('lobby.cardBuilt')
+            : t('build.price', { price: formatMoney(lobby.price, i18n.language) })}
+        </span>
+      </span>
+      <span
+        className={
+          lobby.built || lobby.buildBlocker === null
+            ? 'catalog-card-text'
+            : 'catalog-card-text locked'
+        }
+      >
+        {lobby.built
+          ? t('lobby.cardStatus', {
+              count: lobby.receptionists,
+              security: plan ? localized(plan.name, i18n.language) : t('lobby.noSecurity'),
+            })
+          : lobby.buildBlocker === 'LOCKED'
+            ? t('build.locked', { phase: t(`phases.${lobby.minPhase}`) })
+            : t('lobby.cardBuild')}
       </span>
     </button>
   );
@@ -305,14 +356,16 @@ function CatalogCard({
   const { owned, block } = shopStatus(item, view);
   const reason =
     block === 'storyLocked'
-      ? storyLockedReason(t, view.mode)
-      : block === 'locked'
-        ? t('build.locked', { phase: t(`phases.${item.minPhase}`) })
-        : block === 'soldOut'
-          ? t('build.soldOut', { max: item.maxCount })
-          : block === 'tooExpensive'
-            ? t('build.tooExpensive')
-            : null;
+      ? storyLockedReason(t, view)
+      : block === 'researchLocked'
+        ? researchLockedReason(t, view, `item:${item.kind}`)
+        : block === 'locked'
+          ? t('build.locked', { phase: t(`phases.${item.minPhase}`) })
+          : block === 'soldOut'
+            ? t('build.soldOut', { max: item.maxCount })
+            : block === 'tooExpensive'
+              ? t('build.tooExpensive')
+              : null;
   return (
     <button
       type="button"

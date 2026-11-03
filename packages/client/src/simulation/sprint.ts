@@ -1,11 +1,27 @@
-import { BALANCE, TIME, type CommandResult, type GameState, type LocalizedText } from '@oss/shared';
+import { leavePlanning } from './teamLife';
+import { closeRetro, retroPlanning } from './retro';
+import {
+  BALANCE,
+  ENDLESS,
+  TIME,
+  endlessCostMultiplier,
+  endlessPressure,
+  freeSeasonStart,
+  supportChurnFactor,
+  type ClientNeed,
+  type CommandResult,
+  type GameState,
+  type LocalizedText,
+} from '@oss/shared';
 import { BUYERS, FEEDBACK_BAD, FEEDBACK_GOOD, FEEDBACK_NEUTRAL } from './data/flavor';
 import { careerDemo } from './career';
 import { generateCandidates } from './devs';
 import { destroyEntity, query } from './ecs';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from './economy';
 import { endGame, endOfTime } from './endings';
-import { missionTimeUp } from './story';
+import { rivalsSprint } from './rivals';
+import { researchSprint } from './research';
+import { campaignDeadline, missionTimeUp } from './story';
 import { phaseIndex } from './furniture';
 import { closeSprintPerformance } from './performance';
 import {
@@ -22,6 +38,8 @@ import { hypeDrift } from './systems/daily';
 import { rollObjective, settleObjective } from './taskFlow';
 import { refillBacklog } from './tasks';
 import { raisePlanning } from './raises';
+import { acquireUsers, currentPricing } from './pricing';
+import { clientsDemo, payClients, refreshClientOffers } from './clients';
 import { emergencySale, ventureSprint } from './ventures';
 
 /** Remise à zéro des compteurs du sprint. */
@@ -35,6 +53,7 @@ function resetTracker(state: GameState): void {
     incidents: 0,
     specialDone: 0,
     specialMissed: 0,
+    workByTrade: {},
   };
 }
 
@@ -48,6 +67,40 @@ export function beginPlanning(state: GameState, ctx: SimContext): void {
   resetTracker(state);
   rollObjective(state, ctx);
   raisePlanning(state, ctx);
+  leavePlanning(state, ctx);
+  retroPlanning(state);
+  refreshClientOffers(state);
+  announceCompetition(state, ctx);
+}
+
+/**
+ * Mode illimité : au premier sprint après les 18 mois, puis tous les 6 mois, le Slack annonce
+ * que la concurrence se renforce (frais fixes en hausse, utilisateurs plus volatils). Aucun
+ * tirage.
+ */
+function announceCompetition(state: GameState, ctx: SimContext): void {
+  const pressure = endlessPressure(state.mode, state.sprint, freeSeasonStart(state.story));
+  if (pressure < 1 || (pressure - 1) % ENDLESS.milestoneSprints !== 0) return;
+  const percent = Math.round(
+    (endlessCostMultiplier(state.mode, state.sprint, freeSeasonStart(state.story)) - 1) * 100,
+  );
+  notify(
+    state,
+    ctx,
+    'COMPETITION_RISES',
+    pressure === 1
+      ? text([
+          '18 mois passés et toujours en vie. La concurrence se réveille : chaque sprint coûtera un peu plus cher.',
+          '18 months and still alive. Competitors wake up: every sprint will cost a bit more.',
+        ])
+      : text(
+          [
+            'Sprint {sprint} : de nouveaux concurrents arrivent. Frais fixes +{percent} % depuis les 18 mois.',
+            'Sprint {sprint}: new competitors show up. Fixed costs +{percent}% since month 18.',
+          ],
+          { sprint: state.sprint, percent },
+        ),
+  );
 }
 
 /** Fin de la planification : le sprint démarre. */
@@ -56,6 +109,7 @@ export function startSprint(state: GameState, ctx: SimContext): CommandResult {
   // Une demande d'augmentation attend une réponse avant de lancer le sprint.
   if (state.raises.pending) return { ok: false, error: 'RAISE_PENDING' };
   state.stage = 'EXECUTION';
+  closeRetro(state);
   notify(
     state,
     ctx,
@@ -106,21 +160,26 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   const hypeFactor = 0.5 + state.gauges.hype / 100;
   const stabilityFactor = 0.5 + state.gauges.stability / 200;
   const designer = hasRole(state, 'DESIGNER') ? 1 + u.designerBonus : 1;
+  // Points livrés par type, pour les contrats des clients B2B.
+  const delivered: Partial<Record<ClientNeed, number>> = {};
   for (const task of done) {
     // Les urgences et tâches de la semaine ont leur propre récompense, pas d'effet à la démo.
     if (!task || task.kind) continue;
-    if (task.type === 'REFACTO') refactoPoints += task.size;
+    if (task.type !== 'REFACTO' && !task.hallucinated)
+      delivered[task.type] = (delivered[task.type] ?? 0) + task.size;
+    const points = task.size * BALANCE.work.pointEffect;
+    if (task.type === 'REFACTO') refactoPoints += points;
     if (task.type !== 'FEATURE') continue;
     if (task.hallucinated) {
       hallucinations += 1;
       continue;
     }
     shipped += 1;
-    featurePoints += task.size;
+    featurePoints += points;
     const quality = task.progress > 0 ? task.qualitySum / task.progress : 0.5;
-    usersGained += task.size * perPoint * (0.5 + quality) * hypeFactor * stabilityFactor * designer;
+    usersGained += points * perPoint * (0.5 + quality) * hypeFactor * stabilityFactor * designer;
   }
-  addUsers(state, usersGained);
+  usersGained = acquireUsers(state, usersGained);
   // Plus la hype est haute, plus il est dur de la faire monter encore.
   const hypeRoom = Math.max(0, 1 - state.gauges.hype / BALANCE.hype.softCap);
   addGauge(
@@ -128,8 +187,13 @@ export function endSprint(state: GameState, ctx: SimContext): void {
     'hype',
     featurePoints * u.hypePerFeaturePoint * hypeRoom + refactoPoints * u.hypePerRefactoPoint,
   );
+  clientsDemo(state, ctx, delivered);
   const objective = settleObjective(state, ctx);
   ventureSprint(state, ctx);
+  // Mode Histoire, longue partie : les rivaux jouent leur sprint (graine à part).
+  rivalsSprint(state, ctx);
+  // Arbre R&D : points d'innovation de la démo (après les rivaux, pour comparer les sprints).
+  researchSprint(state, ctx, shipped, objective?.status === 'SUCCESS');
   state.valuation = computeValuation(state);
 
   state.history.sprints.push({
@@ -216,10 +280,17 @@ function loseSprint(state: GameState, ctx: SimContext): void {
   const days = TIME.daysPerSprint;
   addMoney(state, (-monthlyExpenses(state) * days) / 30);
   addMoney(state, (monthlyRevenue(state) * days) / 30);
+  payClients(state, days);
   repayLoan(state, days);
-  const churn = state.gauges.users * BALANCE.users.baseDailyChurn * days;
+  const churn =
+    state.gauges.users *
+    BALANCE.users.baseDailyChurn *
+    currentPricing(state).churn *
+    supportChurnFactor(state.support.satisfaction) *
+    days;
   addUsers(state, -churn);
   for (let day = 0; day < days; day++) addGauge(state, 'hype', hypeDrift(state.gauges.hype));
+  clientsDemo(state, ctx, {});
   ventureSprint(state, ctx);
   state.valuation = computeValuation(state);
   state.history.sprints.push({
@@ -278,9 +349,11 @@ export function endDemo(state: GameState, ctx: SimContext): CommandResult {
     }
   }
   state.lostSprintsPending = 0;
+  // Mode Histoire, longue partie : l'objectif principal de l'acte doit être rempli à temps.
+  if (campaignDeadline(state, ctx)) return { ok: true };
   if (state.sprint >= state.totalSprints) {
     // Mode Histoire : le temps de la mission est écoulé, ses objectifs décident de la fin.
-    if (state.story) missionTimeUp(state, ctx);
+    if (state.story?.missionId) missionTimeUp(state, ctx);
     else endOfTime(state, ctx);
     return { ok: true };
   }

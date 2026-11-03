@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { EventCardListSchema, EventCardSchema } from '../sim/cards.js';
 import { CommandLogSchema } from '../sim/commands.js';
+import { ENDLESS } from '../sim/endless.js';
 import { GameStatsSchema, SaveDataSchema } from '../sim/state.js';
 import { GAME, GameModeSchema, OutcomeSchema, PhaseSchema } from '../game.js';
 import { LocaleSchema, LocalizedTextSchema } from '../i18n.js';
@@ -112,6 +113,8 @@ export const ScoreDtoSchema = z.object({
   outcome: OutcomeSchema,
   phaseReached: PhaseSchema,
   sprintsPlayed: z.number().int(),
+  /** Nom de l'entreprise, tiré de la graine (`companyName`). */
+  company: z.string(),
   dailyDate: IsoDateSchema.nullable(),
   createdAt: z.iso.datetime(),
 });
@@ -189,7 +192,7 @@ export const SlackAiRequestSchema = z.object({
   event: z.object({ kind: z.string().max(40), text: z.string().max(300) }),
   game: z.object({
     phase: PhaseSchema,
-    sprint: z.number().int().min(1).max(GAME.totalSprints),
+    sprint: z.number().int().min(1).max(ENDLESS.sprintCap),
     gauges: z.object({
       treasury: z.number(),
       coffee: z.number(),

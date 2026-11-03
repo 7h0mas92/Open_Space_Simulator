@@ -30,7 +30,14 @@ export class NavGrid {
   }
 
   inside(x: number, z: number): boolean {
-    return x >= 0 && z >= 0 && x < this.width && z < this.depth;
+    return (
+      Number.isInteger(x) &&
+      Number.isInteger(z) &&
+      x >= 0 &&
+      z >= 0 &&
+      x < this.width &&
+      z < this.depth
+    );
   }
 
   walkable(x: number, z: number): boolean {
@@ -60,15 +67,54 @@ export class NavGrid {
   }
 }
 
-/** Cases couvertes par un objet posé. */
+/**
+ * Emprise au sol d'un objet, en coordonnées de la scène (centre d'une case = entier). Un objet
+ * peut être posé sur une demi-case : ses bords tombent alors au milieu des cases.
+ */
+export interface ItemBounds {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minZ: number;
+  readonly maxZ: number;
+}
+
+export function itemBounds(item: ItemPlacement): ItemBounds {
+  const def = catalogItem(item.kind);
+  const [w, d] = def ? footprint(def, item.rotation) : [1, 1];
+  return { minX: item.x - 0.5, maxX: item.x - 0.5 + w, minZ: item.z - 0.5, maxZ: item.z - 0.5 + d };
+}
+
+/** Deux emprises se chevauchent (se toucher par un bord ne compte pas). */
+export function boundsOverlap(a: ItemBounds, b: ItemBounds): boolean {
+  return a.minX < b.maxX && b.minX < a.maxX && a.minZ < b.maxZ && b.minZ < a.maxZ;
+}
+
+/**
+ * Cases de la grille couvertes par un objet, même en partie : un objet posé sur une demi-case
+ * bloque les deux cases qu'il chevauche (personne ne traverse un bureau).
+ */
 export function itemCells(item: ItemPlacement): Cell[] {
   const def = catalogItem(item.kind);
   const [w, d] = def ? footprint(def, item.rotation) : [1, 1];
   const cells: Cell[] = [];
-  for (let dx = 0; dx < w; dx++) {
-    for (let dz = 0; dz < d; dz++) cells.push({ x: item.x + dx, z: item.z + dz });
+  for (let x = Math.floor(item.x); x < item.x + w; x++) {
+    for (let z = Math.floor(item.z); z < item.z + d; z++) cells.push({ x, z });
   }
   return cells;
+}
+
+/**
+ * Centre de chaque carré d'une case de l'objet (entiers pour un objet posé sur la grille,
+ * demi-entiers pour un objet décalé d'une demi-case).
+ */
+export function itemSquares(item: ItemPlacement): Cell[] {
+  const def = catalogItem(item.kind);
+  const [w, d] = def ? footprint(def, item.rotation) : [1, 1];
+  const squares: Cell[] = [];
+  for (let dx = 0; dx < w; dx++) {
+    for (let dz = 0; dz < d; dz++) squares.push({ x: item.x + dx, z: item.z + dz });
+  }
+  return squares;
 }
 
 /** Direction « avant » d'un objet selon sa rotation (quart de tour anti-horaire vu du dessus). */
@@ -82,8 +128,11 @@ export function frontDirection(rotation: number): readonly [number, number] {
   return directions[((rotation % 4) + 4) % 4] ?? directions[0];
 }
 
-/** Case où se tient un personnage qui utilise l'objet : devant son milieu. */
-export function accessCell(item: ItemPlacement): Cell {
+/**
+ * Point exact où se tient un personnage qui utilise l'objet : devant son milieu. Pour un objet
+ * décalé d'une demi-case, ce point tombe entre deux cases (la chaise du bureau y est posée).
+ */
+export function accessPoint(item: ItemPlacement): { readonly x: number; readonly z: number } {
   const def = catalogItem(item.kind);
   const [w, d] = def ? footprint(def, item.rotation) : [1, 1];
   const [fx, fz] = frontDirection(item.rotation);
@@ -91,6 +140,18 @@ export function accessCell(item: ItemPlacement): Cell {
   const midZ = item.z + Math.floor((d - 1) / 2);
   if (fx === 0) return { x: midX, z: fz > 0 ? item.z + d : item.z - 1 };
   return { x: fx > 0 ? item.x + w : item.x - 1, z: midZ };
+}
+
+/**
+ * Case où se tient un personnage qui utilise l'objet : devant son milieu. Toujours une case
+ * entière de la grille, la première hors de l'objet quand il est décalé d'une demi-case.
+ */
+export function accessCell(item: ItemPlacement): Cell {
+  const point = accessPoint(item);
+  const [fx, fz] = frontDirection(item.rotation);
+  const toward = (value: number, sign: number) =>
+    sign > 0 ? Math.ceil(value) : sign < 0 ? Math.floor(value) : Math.round(value);
+  return { x: toward(point.x, fx), z: toward(point.z, fz) };
 }
 
 export function buildNavGrid(layout: OfficeLayout, items: readonly ItemPlacement[]): NavGrid {

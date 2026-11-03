@@ -1,8 +1,17 @@
-import { BALANCE, type EntityId, type GameState, type LocalizedText } from '@oss/shared';
+import {
+  BALANCE,
+  SKILLS,
+  difficultyOf,
+  type EntityId,
+  type GameState,
+  type LocalizedText,
+} from '@oss/shared';
 import { forceCard } from '../../events/draw';
 import { addGauge, addUsers, devsWithRole, notify, text, type SimContext } from '../helpers';
 import { holdCrisisMeeting } from '../meetings';
+import { clientsOutage } from '../clients';
 import { recordIncident } from '../performance';
+import { hasSkill } from '../skills';
 import { urgentProdFix } from '../taskFlow';
 import type { SimClock } from '../time';
 
@@ -27,6 +36,7 @@ export function prodDown(
   state.stats.prodOutages += 1;
   if (devId) recordIncident(state, devId);
   notify(state, ctx, 'PROD_DOWN', cause, devId);
+  clientsOutage(state, ctx);
   const fixId = urgentProdFix(state, ctx);
   // Salle de réunion aménagée : les personnes concernées s'y réunissent en cellule de crise.
   if (fixId) holdCrisisMeeting(state, ctx, fixId, devId);
@@ -43,7 +53,11 @@ export function incidentSystem(state: GameState, ctx: SimContext, clock: SimCloc
   if (clock.hour === 12) {
     for (const internId of devsWithRole(state, 'INTERN')) {
       if (state.components.activity[internId]?.kind === 'GONE') continue;
-      if (!rng.chance(BALANCE.roles.internBreakProdDaily)) continue;
+      // « Ne touche plus à main » : même tirage, probabilité plus faible.
+      const odds = hasSkill(state, internId, 'hands-off-main')
+        ? SKILLS.handsOffMainOdds
+        : BALANCE.roles.internBreakProdDaily;
+      if (!rng.chance(odds)) continue;
       const name = state.components.identity[internId]?.name ?? '?';
       prodDown(
         state,
@@ -62,7 +76,9 @@ export function incidentSystem(state: GameState, ctx: SimContext, clock: SimCloc
 
   if (clock.hour === 15) {
     const debt = state.gauges.debt / 100;
-    if (rng.chance(BALANCE.stability.debtOutageMax * debt * debt)) {
+    if (
+      rng.chance(BALANCE.stability.debtOutageMax * debt * debt * difficultyOf(state.mode).outages)
+    ) {
       prodDown(
         state,
         ctx,
@@ -84,7 +100,10 @@ export function incidentSystem(state: GameState, ctx: SimContext, clock: SimCloc
         'Friday, 5pm. Nobody deploys. Nobody.',
       ]),
     );
-    const odds = BALANCE.stability.fridayOutageMax * (1 - state.gauges.stability / 100);
+    const odds =
+      BALANCE.stability.fridayOutageMax *
+      (1 - state.gauges.stability / 100) *
+      difficultyOf(state.mode).outages;
     if (rng.chance(odds)) {
       state.stats.fridayOutages += 1;
       state.stats.fridayOutageStreak += 1;

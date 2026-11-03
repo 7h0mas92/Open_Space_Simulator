@@ -1,9 +1,15 @@
-import { ACHIEVEMENTS, type LeaderboardEntry, type ProfileResponse } from '@oss/shared';
+import {
+  ACHIEVEMENTS,
+  companyName,
+  type LeaderboardEntry,
+  type ProfileResponse,
+} from '@oss/shared';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../../src/i18n';
 import { pendingAchievements } from '../../../src/save/achievements';
+import { localScores } from '../../../src/save/localScores';
 import { AUTOSAVE_SLOT, saves } from '../../../src/save/saves';
 import { MemoryStore, setLocalStore } from '../../../src/save/storage';
 import { App } from '../../../src/ui/App';
@@ -35,6 +41,7 @@ function entry(rank: number, pseudo: string): LeaderboardEntry {
     outcome: 'IPO',
     phaseReached: 'UNICORN',
     sprintsPlayed: 39,
+    company: `Startup ${pseudo}`,
     dailyDate: null,
     createdAt: '2026-10-06T10:00:00.000Z',
   };
@@ -77,7 +84,13 @@ const board =
 beforeEach(async () => {
   setLocalStore(new MemoryStore());
   useGame.getState().quit();
-  useSession.setState({ status: 'guest', user: null, error: null, githubEnabled: false });
+  useSession.setState({
+    status: 'guest',
+    user: null,
+    error: null,
+    githubEnabled: false,
+    serverAvailable: true,
+  });
   await i18n.changeLanguage('fr');
 });
 
@@ -92,8 +105,8 @@ describe('Leaderboard', () => {
     });
     render(<Leaderboard />);
 
-    expect(await screen.findByRole('rowheader', { name: 'jade' })).toBeInTheDocument();
-    expect(screen.getByRole('rowheader', { name: 'kevin_ninja' })).toBeInTheDocument();
+    expect(await screen.findByRole('rowheader', { name: /jade/ })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: /kevin_ninja/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Global' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('button', { name: 'Revoir la partie de jade' })).toBeEnabled();
     expect(calls(fetchMock)).toEqual(['GET /api/scores/top?limit=50']);
@@ -106,11 +119,11 @@ describe('Leaderboard', () => {
       'GET /api/scores/top?mode=HARDCORE&limit=50': board(),
     });
     render(<Leaderboard />);
-    await screen.findByRole('rowheader', { name: 'jade' });
+    await screen.findByRole('rowheader', { name: /jade/ });
 
     await userEvent.click(screen.getByRole('tab', { name: 'Daily du jour' }));
-    expect(await screen.findByRole('rowheader', { name: 'daily_dan' })).toBeInTheDocument();
-    expect(screen.queryByRole('rowheader', { name: 'jade' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('rowheader', { name: /daily_dan/ })).toBeInTheDocument();
+    expect(screen.queryByRole('rowheader', { name: /jade/ })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('tab', { name: 'Hardcore' }));
     expect(await screen.findByText("Personne n'a encore publié de score ici.")).toBeInTheDocument();
@@ -134,6 +147,7 @@ describe('Leaderboard', () => {
       'Hardcore',
       'Stagiaires Only',
       'Défi 3 sprints',
+      'Illimité',
       'Carrière',
     ]);
   });
@@ -141,7 +155,49 @@ describe('Leaderboard', () => {
   it('affiche une erreur si le serveur est injoignable', async () => {
     mockApi({});
     render(<Leaderboard />);
-    expect(await screen.findByRole('alert')).toHaveTextContent('Impossible de joindre le serveur.');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Le classement en ligne a besoin du serveur du jeu',
+    );
+  });
+
+  it('montre les entreprises de cet appareil sans serveur, illimité classé aux sprints', async () => {
+    useSession.setState({ serverAvailable: false });
+    const fetchMock = mockApi({});
+    const ended = { outcome: 'BANKRUPTCY', phaseReached: 'SEED', valuation: 0 } as const;
+    await localScores.add({ ...ended, seed: 'court', mode: 'ENDLESS', sprint: 45 });
+    await localScores.add({ ...ended, seed: 'long', mode: 'ENDLESS', sprint: 90 });
+    await localScores.add({
+      seed: 'normale',
+      mode: 'NORMAL',
+      outcome: 'IPO',
+      phaseReached: 'UNICORN',
+      valuation: 2e9,
+      sprint: 39,
+    });
+    render(<Leaderboard />);
+
+    expect(screen.getByRole('button', { name: /Sur cet appareil/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(await screen.findByRole('rowheader', { name: companyName('normale') })).toBeVisible();
+    // Le classement global ne mélange pas les parties illimitées.
+    expect(screen.getAllByRole('rowheader')).toHaveLength(1);
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Illimité' }));
+    await screen.findByRole('rowheader', { name: companyName('long') });
+    expect(screen.getAllByRole('rowheader').map((cell) => cell.textContent)).toEqual([
+      companyName('long'),
+      companyName('court'),
+    ]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('cache les replays quand il est ouvert en jeu', async () => {
+    mockApi({ 'GET /api/scores/top?limit=50': board(entry(1, 'jade')) });
+    render(<Leaderboard inGame />);
+    expect(await screen.findByRole('rowheader', { name: /jade/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Revoir/ })).not.toBeInTheDocument();
   });
 
   it('affiche une erreur si le replay ne se charge pas', async () => {
@@ -265,7 +321,7 @@ describe('App : menu du méta-jeu', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: /Classements/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Classements' })).toBeInTheDocument();
-    expect(await screen.findByRole('rowheader', { name: 'jade' })).toBeInTheDocument();
+    expect(await screen.findByRole('rowheader', { name: /jade/ })).toBeInTheDocument();
     expect(calls(fetchMock)).toContain('GET /api/scores/top?limit=50');
 
     await userEvent.click(screen.getByRole('button', { name: /Retour/ }));

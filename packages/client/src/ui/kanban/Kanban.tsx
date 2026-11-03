@@ -75,6 +75,13 @@ export function Kanban({ view }: { view: GameView }) {
   return (
     <div className="kanban">
       {view.objective && <ObjectiveBanner objective={view.objective} />}
+      <p className="kanban-load" data-testid="kanban-load">
+        {t('kanban.load', {
+          count: view.sprintLoad.takers,
+          capacity: view.sprintLoad.capacity,
+          planned: view.sprintLoad.planned,
+        })}
+      </p>
       <div className="kanban-toolbar">
         <p className="hint">{t('kanban.dragHint')}</p>
         {backlogCount > 0 && (

@@ -19,7 +19,7 @@ import {
 } from '../../src/simulation/meetings';
 import { prodDown } from '../../src/simulation/systems/incidents';
 import { replay } from '../../src/simulation/replay';
-import type { Simulation } from '../../src/simulation/simulation';
+import { Simulation } from '../../src/simulation/simulation';
 import { productivity, workSystem } from '../../src/simulation/systems/work';
 import { clockAt, getClock } from '../../src/simulation/time';
 import { toGameView } from '../../src/view/adapter';
@@ -391,7 +391,8 @@ describe('Salle de réunion : sauvegardes et replays', () => {
 
   it('une partie avec salle de réunion se rejoue à l’identique (replay, anti-triche)', () => {
     const cards = new CardLibrary(EVENT_CARDS);
-    const simulation = newSimulation('organizer-replay', 'NORMAL', [...EVENT_CARDS]);
+    // Partie avec son arbre R&D, comme le rejeu.
+    const simulation = Simulation.create({ seed: 'organizer-replay', mode: 'NORMAL' }, cards);
     playWithBot(simulation, createBot('organizer', 'organizer-replay'), cards);
     expect(simulation.commands.some((c) => c.command.type === 'FIT_MEETING_ROOM')).toBe(true);
     const replayed = replay({

@@ -1,18 +1,34 @@
 import {
   FURNITURE_CATALOG,
+  RESEARCH,
+  RESEARCH_LEVELS,
+  getResearchNode,
+  researchBlock,
+  type ResearchBranch,
   ROLE_PROFILES,
+  TEAM_LIFE,
+  OUTINGS,
+  OUTING_DEFINITIONS,
   getMeetingFormat,
   ROLE_TRADE,
+  TRAININGS,
+  branchNodes,
+  skillsEnabled,
   taskTrade,
   type CardEffects,
+  type CleaningPlanId,
   type Command,
   type DevRole,
   type EventCard,
   type FinancingKind,
   type GameState,
   type MeetingFormatId,
+  type SkillBranch,
+  type SkillId,
   type TaskTrade,
   type TaskType,
+  SUPPORT,
+  SUPPORT_MAX_AGENTS,
 } from '@oss/shared';
 import type { CardLibrary } from '../events/library';
 import { runwayMonths } from './economy';
@@ -21,9 +37,16 @@ import { expectedAnswer } from './fundraising';
 import { canPlace, findFreeSlot, phaseIndex } from './furniture';
 import { devIds, teamMax, teamMoral, teamSize } from './helpers';
 import { meetingFormatBlocker } from './meetings';
+import { researchOf, researchStage } from './research';
+import { hasSkillTree, skillPoints } from './skills';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
+import { subscriptionOf } from './subscriptions';
 import { tasksInColumn } from './tasks';
+import { ticketsToday } from './support';
+import { leaveSlots } from './teamLife';
+import { retroWinner } from './retro';
+import { outingBlocker } from './teamBuilding';
 import { activeVentures, investableCash, ventureBlocker, ventureOffers } from './ventures';
 
 /**
@@ -105,6 +128,14 @@ interface PlanningStyle {
   meetingRoom?: (state: Readonly<GameState>) => MeetingFormatId | null;
   /** Utilise les autres financements (prêt, business angels…) quand l'argent manque. */
   finances?: boolean;
+  /** Pose des congés à ceux qui ont 5 jours en réserve (vie d'équipe). */
+  booksLeave?: boolean;
+  /** Tient la rétrospective et suit le vote de l'équipe. */
+  holdsRetro?: boolean;
+  /** Réserve une sortie d'équipe quand le moral moyen passe sous 50. */
+  teamBuilds?: boolean;
+  /** Dépense les points de compétence et paie des formations (arbre de compétences). */
+  skills?: boolean;
 }
 
 /** Bot « raisonnable », paramétré par un style de jeu. */
@@ -134,6 +165,11 @@ class PlannerBot implements Bot {
               accept: runwayMonths(state as GameState) >= this.style.hireRunway / 2,
             },
           ];
+        // Rétrospective : l'action votée par l'équipe (moral pour tous, bonus au sprint).
+        if (this.style.holdsRetro && state.retro.pending?.sprint === state.sprint) {
+          const { options, votes } = state.retro.pending;
+          return [{ type: 'HOLD_RETRO', action: retroWinner(options, votes) }, ...this.plan(state)];
+        }
         return this.plan(state);
       default:
         return [];
@@ -157,6 +193,10 @@ class PlannerBot implements Bot {
   }
 
   private endgame(state: Readonly<GameState>): Command[] {
+    // Mode illimité : les bots visent la distance, ils ne vendent pas et n'entrent pas en Bourse.
+    if (state.mode === 'ENDLESS') return [];
+    // Histoire en actes : après l'entrée en Bourse, les bots s'arrêtent sur la fin écrite.
+    if (state.story?.campaign?.freeSeason) return [{ type: 'END_STORY' }];
     const offer = state.acquisitionOffer;
     if (
       offer &&
@@ -200,6 +240,12 @@ class PlannerBot implements Bot {
       if (blocker === null) commands.push({ type: 'FIT_MEETING_ROOM', format });
     }
 
+    // 2 ter. Congés : une semaine à ceux qui ont 5 jours en réserve, s'il reste une place.
+    if (style.booksLeave) commands.push(...leaveBookings(state));
+
+    // 2 quater. Team building : la meilleure sortie possible quand le moral flanche.
+    if (style.teamBuilds) commands.push(...teamOuting(state, runway));
+
     // 3. Recrutement.
     if (teamSize(state) < teamMax(state) && runway > style.hireRunway) {
       const candidate = state.candidates
@@ -217,8 +263,19 @@ class PlannerBot implements Bot {
         });
     }
 
-    // 4. Mobilier utile.
-    if (style.buysFurniture) commands.push(...this.furniture(state));
+    // 3 bis. Arbre R&D (Histoire en actes) : avant d'acheter, débloquer ce qu'on veut acheter.
+    commands.push(...researchCommands(state));
+
+    // 4. Mobilier utile, et un abonnement de ménage à la mesure de l'équipe.
+    if (style.buysFurniture) {
+      commands.push(...this.furniture(state));
+      const plan = sensibleCleaningPlan(state);
+      if (plan && plan !== subscriptionOf(state, 'cleaning')?.offer.id && runway > 6)
+        commands.push({ type: 'SUBSCRIBE', offer: plan });
+      const agents = sensibleSupportAgents(state);
+      if (agents !== state.support.agents)
+        commands.push({ type: 'SET_SUPPORT', agents, duty: state.support.duty });
+    }
 
     // 5. Kanban : on remplit TODO selon la capacité estimée de chaque métier (un 10x ou une
     // IA abattent plus de travail qu'un dev moyen ; la designeuse ne code pas).
@@ -250,6 +307,8 @@ class PlannerBot implements Bot {
       commands.push({ type: 'MOVE_TASK', taskId: id, column: 'TODO' });
       planned[trade] += task.size;
     }
+    // 6. Arbre de compétences : points dépensés, et un livre ou une formation si on a de la marge.
+    if (style.skills) commands.push(...skillCommands(state, runway));
     commands.push({ type: 'START_SPRINT' });
     return commands;
   }
@@ -370,7 +429,136 @@ class RandomBot implements Bot {
   }
 }
 
+/** Congés qu'un joueur attentif poserait : 5 jours aux devs qui les ont, une semaine libre. */
+export function leaveBookings(state: Readonly<GameState>): Command[] {
+  const life = state.teamLife;
+  if (!life) return [];
+  const slots = leaveSlots(state as GameState);
+  const firstDay = (state.sprint - 1) * 14;
+  const taken = [0, 1].map(
+    (week) =>
+      Object.values(life.absences).filter(
+        (absence) => absence.kind === 'LEAVE' && absence.from === firstDay + week * 7,
+      ).length,
+  );
+  const commands: Command[] = [];
+  for (const id of devIds(state)) {
+    if ((life.leave[id] ?? 0) < TEAM_LIFE.leaveDaysMax || life.absences[id]) continue;
+    const week = taken.findIndex((count) => count < slots);
+    if (week !== 0 && week !== 1) break;
+    taken[week] = (taken[week] ?? 0) + 1;
+    commands.push({ type: 'BOOK_LEAVE', devId: id, week, days: TEAM_LIFE.leaveDaysMax });
+  }
+  return commands;
+}
+
+/** La sortie qu'un joueur attentif réserverait : la plus chère qu'il peut se permettre. */
+export function teamOuting(state: Readonly<GameState>, runway: number): Command[] {
+  if (teamMoral(state) >= 50 || runway < 6 || teamSize(state) < 2) return [];
+  const outing = [...OUTINGS]
+    .reverse()
+    .find((id) => outingBlocker(state as GameState, OUTING_DEFINITIONS[id]) === null);
+  return outing ? [{ type: 'BOOK_TEAM_BUILDING', outing }] : [];
+}
+
 const fixPriority = (state: Readonly<GameState>) => state.gauges.stability < 60;
+
+/** Branches préférées d'un profil, dans l'ordre : ce qu'un joueur logique choisirait. */
+export function preferredBranches(role: DevRole): SkillBranch[] {
+  switch (role) {
+    case 'PRODUCT_OWNER':
+    case 'DESIGNER':
+      return ['HUMAN', 'SPEED', 'TECH'];
+    case 'TEN_X':
+    case 'AI_AGENT':
+    case 'GHOST':
+    case 'FRONTEND':
+    case 'BACKEND':
+    case 'FULLSTACK':
+      return ['SPEED', 'TECH', 'HUMAN'];
+    default:
+      return ['TECH', 'HUMAN', 'SPEED'];
+  }
+}
+
+/** Ordre de recherche des bots : niveau par niveau, l'utile (café, écrans, réunions) d'abord. */
+export const BOT_RESEARCH_ORDER: readonly ResearchBranch[] = [
+  'kitchen',
+  'tech',
+  'organisation',
+  'comfort',
+  'ambiance',
+];
+
+/**
+ * Arbre R&D d'un bot (tous les modes qui en ont un) : il prend tous les niveaux payables, le
+ * niveau 1 de chaque branche avant le niveau 2, et ainsi de suite.
+ */
+export function researchCommands(state: Readonly<GameState>): Command[] {
+  const research = researchOf(state as GameState);
+  if (!research) return [];
+  const { stage, gate } = researchStage(state as GameState);
+  const commands: Command[] = [];
+  const simulated = { ...research, nodes: [...research.nodes] };
+  for (const level of RESEARCH_LEVELS)
+    for (const branch of BOT_RESEARCH_ORDER) {
+      const node = getResearchNode(`${branch}-${level}`);
+      if (!node || researchBlock(simulated, stage, node, gate) !== null) continue;
+      simulated.points -= RESEARCH.cost[node.level];
+      simulated.nodes.push(node.id);
+      commands.push({ type: 'RESEARCH_NODE', nodeId: node.id });
+    }
+  return commands;
+}
+
+/**
+ * Choix de compétences d'un bot : chaque point va au premier nœud libre de la branche préférée
+ * (le nœud de métier dès qu'il est accessible). Le Crunch est laissé de côté : c'est un pouvoir
+ * à déclencher pendant le sprint, et le bot ne joue que quand la partie est bloquée. Puis un
+ * livre (ou une formation, avec beaucoup de marge) pour le dev le moins expérimenté.
+ */
+export function skillCommands(state: Readonly<GameState>, runway: number): Command[] {
+  if (!skillsEnabled(state.mode)) return [];
+  const commands: Command[] = [];
+  const devs = devIds(state).filter((id) => hasSkillTree(state as GameState, id));
+  for (const devId of devs) {
+    const role = state.components.identity[devId]?.role;
+    if (!role) continue;
+    const learned = new Set<SkillId>(state.components.skills[devId]?.learned ?? []);
+    let points = skillPoints(state as GameState, devId).available;
+    while (points > 0) {
+      const next = preferredBranches(role)
+        .flatMap((branch) => {
+          const nodes = branchNodes(branch, role);
+          const own = nodes.filter((node) => node.role !== undefined || node.id === 'versatile');
+          return [...own, ...nodes.filter((node) => !own.includes(node))];
+        })
+        .find(
+          (node) =>
+            !node.active &&
+            !learned.has(node.id) &&
+            (node.requires === null || learned.has(node.requires)),
+        );
+      if (!next) break;
+      learned.add(next.id);
+      points -= 1;
+      commands.push({ type: 'LEARN_SKILL', devId, skill: next.id });
+    }
+  }
+  if (devs.length > 0 && runway > 12) {
+    const levelOf = (id: string) => state.components.employment[id]?.level ?? 1;
+    const student = [...devs]
+      .filter((id) => state.components.skills[id]?.trainedSprint !== state.sprint)
+      .sort((a, b) => levelOf(a) - levelOf(b))[0];
+    const book = TRAININGS[0];
+    const course = TRAININGS[1];
+    if (student && book && course) {
+      const kind = runway > 24 && state.gauges.treasury > course.price * 50 ? course : book;
+      commands.push({ type: 'TRAIN_DEV', devId: student, kind: kind.kind });
+    }
+  }
+  return commands;
+}
 
 export const BOT_NAMES = [
   'random',
@@ -380,6 +568,10 @@ export const BOT_NAMES = [
   'investor',
   'organizer',
   'financier',
+  'rested',
+  'retro',
+  'teambuilder',
+  'coach',
 ] as const;
 export type BotName = (typeof BOT_NAMES)[number];
 
@@ -427,6 +619,22 @@ export function sensibleMeetingRoom(state: Readonly<GameState>): MeetingFormatId
         ? 'boardroom'
         : (state.meetingRoom?.format ?? 'brainstorm');
   }
+}
+
+/** L'abonnement de ménage qu'un joueur attentif prendrait : plus de passages avec l'équipe. */
+export function sensibleCleaningPlan(state: Readonly<GameState>): CleaningPlanId | null {
+  const team = teamSize(state);
+  if (team === 0) return null;
+  return team <= 2 ? 'cleaning-weekly' : team <= 6 ? 'cleaning-twice' : 'cleaning-daily';
+}
+
+/**
+ * Les agents de support qu'un joueur attentif garderait : de quoi traiter les tickets du jour et
+ * résorber l'attente en une semaine, dans la limite de la phase.
+ */
+export function sensibleSupportAgents(state: Readonly<GameState>): number {
+  const needed = (ticketsToday(state) + state.support.backlog / 5) / SUPPORT.agentCapacity;
+  return Math.min(SUPPORT_MAX_AGENTS[state.phase], Math.ceil(needed - 0.25));
 }
 
 /** Crée un bot par son nom. `seed` ne sert qu'au bot aléatoire. */
@@ -490,6 +698,51 @@ export function createBot(name: BotName, seed: string): Bot {
         pitchRunway: 10,
         buysFurniture: true,
         finances: true,
+      });
+    case 'rested':
+      // Comme « balanced », mais il pose les congés de l'équipe au lieu d'attendre qu'ils
+      // les réclament.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        booksLeave: true,
+      });
+    case 'retro':
+      // Comme « balanced », mais il tient la rétrospective et suit le vote de l'équipe.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        holdsRetro: true,
+      });
+    case 'teambuilder':
+      // Comme « balanced », mais il emmène l'équipe en sortie quand le moral flanche.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        teamBuilds: true,
+      });
+    case 'coach':
+      // Comme « balanced », mais il fait progresser l'équipe : arbre de compétences et formations.
+      return new PlannerBot(name, {
+        priority: balancedPriority,
+        avoidRoles: ['INTERN'],
+        hireRunway: 10,
+        offerRatio: 1.05,
+        pitchRunway: 10,
+        buysFurniture: true,
+        skills: true,
       });
     case 'cautious':
       // Code propre, petite équipe, levées tardives.

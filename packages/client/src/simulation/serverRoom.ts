@@ -1,26 +1,27 @@
 /**
- * Salle des serveurs et abonnement fibre côté simulation : effets du matériel des salles qui
- * tournent, économies d'hébergement, souscription et facturation hebdomadaire de la fibre. Les
- * règles (ce qu'il faut pour qu'une salle tourne, les offres) sont dans `@oss/shared`
- * (`serverRoom.ts`), partagées avec l'interface. Aucun tirage aléatoire.
+ * Salle des serveurs côté simulation : température et effets du matériel des salles, économies
+ * d'hébergement, alertes de la sonde de supervision. Les règles (ce qu'il faut pour qu'une salle
+ * tourne, la température) sont dans `@oss/shared` (`serverRoom.ts`), partagées avec
+ * l'interface. L'abonnement internet est un abonnement comme les autres (`subscriptions.ts`).
+ * Aucun tirage aléatoire.
  */
 import {
-  FIBRE_WEEK_TICKS,
   HOSTING_SAVING_MAX,
-  getFibrePlan,
+  civilFromDays,
   getFurniture,
-  hasFibreBox,
+  isSummerMonth,
+  overheatStability,
   serverRooms,
-  type CommandResult,
-  type FibrePlanId,
   type FurnitureEffects,
   type GameState,
+  type ServerHeatLevel,
   type ServerRoomItem,
   type ServerRoomStatus,
 } from '@oss/shared';
 import { query } from './ecs';
-import { phaseIndex } from './furniture';
-import { addMoney, moneyText, notify, text, type SimContext } from './helpers';
+import { notify, text, type SimContext } from './helpers';
+import { calendarDay } from './systems/calendar';
+import { getClock } from './time';
 
 /** Objets posés, dans l'ordre d'achat, sous la forme attendue par `serverRooms`. */
 export function serverRoomItems(state: GameState): ServerRoomItem[] {
@@ -37,20 +38,48 @@ export function serverRoomItems(state: GameState): ServerRoomItem[] {
   });
 }
 
-/** Les salles des serveurs posées, leur matériel et ce qui leur manque. */
-export function serverRoomStatuses(state: GameState): ServerRoomStatus[] {
-  return serverRooms(serverRoomItems(state));
+/** Été dans le calendrier de la partie (juin à août) : les salles des serveurs chauffent plus. */
+export function isSummer(state: GameState): boolean {
+  return isSummerMonth(civilFromDays(calendarDay(state, getClock(state).day)).month);
 }
 
-/** Effets du matériel installé dans les salles qui tournent (les autres surchauffent). */
+/** Les salles des serveurs posées : leur matériel, leur température, ce qui leur manque. */
+export function serverRoomStatuses(state: GameState): ServerRoomStatus[] {
+  return serverRooms(serverRoomItems(state), { summer: isSummer(state) });
+}
+
+/** Les effets d'un équipement, réduits quand sa salle chauffe. */
+function scaled(effects: FurnitureEffects, factor: number): FurnitureEffects {
+  if (factor === 1) return effects;
+  const out: FurnitureEffects = {};
+  for (const key of [
+    'moral',
+    'teamProductivity',
+    'hypePerDay',
+    'stabilityPerDay',
+    'debtPerDay',
+    'hostingSaving',
+  ] as const) {
+    const value = effects[key];
+    if (value !== undefined) out[key] = value * factor;
+  }
+  return out;
+}
+
+/**
+ * Effets du matériel installé dans les salles qui tournent (réduits si elles chauffent), et
+ * stabilité perdue par celles où des serveurs surchauffent.
+ */
 export function serverGearEffects(state: GameState): FurnitureEffects[] {
   const effects: FurnitureEffects[] = [];
   for (const room of serverRoomStatuses(state)) {
+    const crash = overheatStability(room);
+    if (crash !== 0) effects.push({ stabilityPerDay: crash });
     if (!room.running) continue;
     for (const id of room.gear) {
       const placed = state.components.furniture[id];
       const item = placed ? getFurniture(placed.itemId) : undefined;
-      if (item) effects.push(item.effects);
+      if (item) effects.push(scaled(item.effects, room.efficiency));
     }
   }
   return effects;
@@ -62,99 +91,56 @@ export function hostingSaving(state: GameState): number {
   return Math.min(HOSTING_SAVING_MAX, total);
 }
 
-/** La fibre arrive-t-elle quelque part ? (abonnement en cours et box posée dans une salle) */
-export function fibreConnected(state: GameState): boolean {
-  return state.fibre !== null && hasFibreBox(serverRoomItems(state));
-}
-
-/** Effets de la fibre : ceux de l'offre souscrite, si la ligne arrive dans une box. */
-export function fibreEffects(state: GameState): FurnitureEffects | null {
-  if (!state.fibre || !fibreConnected(state)) return null;
-  return getFibrePlan(state.fibre.plan).effects;
-}
-
-/** Coût mensuel de la fibre (30 jours de jeu), pour le calcul des mois de trésorerie. */
-export function fibreMonthly(state: GameState): number {
-  return state.fibre ? (getFibrePlan(state.fibre.plan).weeklyPrice * 30) / 7 : 0;
-}
-
-/**
- * Souscrit à une offre fibre, ou passe à une autre : la première semaine de la nouvelle offre est
- * payée tout de suite (la semaine entamée de l'ancienne n'est pas remboursée). Il faut une box
- * fibre posée dans une salle des serveurs.
- */
-export function subscribeFibre(
-  state: GameState,
-  ctx: SimContext,
-  planId: FibrePlanId,
-): CommandResult {
-  if (state.stage === 'PITCH') return { ok: false, error: 'WRONG_STAGE' };
-  const plan = getFibrePlan(planId);
-  if (phaseIndex(state.phase) < phaseIndex(plan.minPhase)) return { ok: false, error: 'LOCKED' };
-  if (state.fibre?.plan === planId) return { ok: false, error: 'NOT_ELIGIBLE' };
-  if (!hasFibreBox(serverRoomItems(state))) return { ok: false, error: 'NOT_ELIGIBLE' };
-  if (state.gauges.treasury < plan.weeklyPrice) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
-  addMoney(state, -plan.weeklyPrice);
-  const changed = state.fibre !== null;
-  state.fibre = {
-    plan: planId,
-    paidUntil: state.tick + FIBRE_WEEK_TICKS,
-    since: changed && state.fibre ? state.fibre.since : state.sprint,
-    totalPaid: (state.fibre?.totalPaid ?? 0) + plan.weeklyPrice,
-  };
-  notify(
-    state,
-    ctx,
-    'FIBRE_SUBSCRIBED',
-    text(
-      changed
-        ? ['Nouvelle offre fibre : {plan} ({speed}).', 'New fibre plan: {plan} ({speed}).']
-        : [
-            'La fibre est arrivée : {plan} ({speed}), {price} par semaine.',
-            'Fibre is in: {plan} ({speed}), {price} a week.',
-          ],
-      { plan: plan.name, speed: plan.speed, price: moneyText(plan.weeklyPrice) },
-    ),
-  );
-  return { ok: true };
-}
-
-/** Résilie l'abonnement : la ligne est coupée tout de suite, sans remboursement. */
-export function cancelFibre(state: GameState, ctx: SimContext): CommandResult {
-  if (state.stage === 'PITCH') return { ok: false, error: 'WRONG_STAGE' };
-  if (!state.fibre) return { ok: false, error: 'NOT_FOUND' };
-  state.fibre = null;
-  notify(
-    state,
-    ctx,
-    'FIBRE_CANCELLED',
-    text(['Abonnement fibre résilié.', 'Fibre subscription cancelled.']),
-  );
-  return { ok: true };
-}
+const HEAT_ALERTS: Record<
+  ServerHeatLevel,
+  { kind: 'SERVER_ROOM_COOL' | 'SERVER_ROOM_WARM' | 'SERVER_ROOM_OVERHEAT'; text: [string, string] }
+> = {
+  cool: {
+    kind: 'SERVER_ROOM_COOL',
+    text: [
+      'Salle des serveurs revenue à {temp} °C : tout va bien.',
+      'Server room back to {temp} °C: all good.',
+    ],
+  },
+  warm: {
+    kind: 'SERVER_ROOM_WARM',
+    text: [
+      'Supervision : la salle des serveurs monte à {temp} °C, les serveurs ralentissent.',
+      'Monitoring: the server room is up to {temp} °C, the servers are throttling.',
+    ],
+  },
+  overheat: {
+    kind: 'SERVER_ROOM_OVERHEAT',
+    text: [
+      'Alerte supervision : {temp} °C en salle des serveurs, arrêt d’urgence. Ajoute de la clim !',
+      'Monitoring alert: {temp} °C in the server room, emergency shutdown. Add more cooling!',
+    ],
+  },
+};
 
 /**
- * Facture de la fibre, chaque semaine de jeu (7 jours après la précédente). Si la trésorerie ne
- * la couvre pas, l'opérateur coupe la ligne plutôt que de pousser la startup à la faillite.
+ * Suit la température de chaque salle des serveurs : retient son dernier niveau (frais, chaud,
+ * surchauffe) et, si une sonde de supervision est installée, prévient quand il change. Sans
+ * sonde, personne ne remarque rien avant que la prod tombe.
  */
-export function fibreSystem(state: GameState, ctx: SimContext): void {
-  const fibre = state.fibre;
-  if (!fibre || state.tick < fibre.paidUntil) return;
-  const plan = getFibrePlan(fibre.plan);
-  if (state.gauges.treasury < plan.weeklyPrice) {
-    state.fibre = null;
+export function serverHeatSystem(state: GameState, ctx: SimContext): void {
+  const rooms = serverRoomStatuses(state);
+  if (rooms.length === 0 && Object.keys(state.serverHeat).length === 0) return;
+  const known: Record<string, ServerHeatLevel> = {};
+  for (const room of rooms) {
+    // Une salle vide ou sans serveur n'a rien à surveiller.
+    const level = room.missing.includes('server') ? 'cool' : room.level;
+    known[room.id] = level;
+    const before = state.serverHeat[room.id] ?? 'cool';
+    if (level === before || !room.monitored) continue;
+    const alert = HEAT_ALERTS[level];
     notify(
       state,
       ctx,
-      'FIBRE_CUT',
-      text([
-        'Facture fibre impayée : l’opérateur a coupé la ligne.',
-        'Unpaid fibre bill: the provider cut the line.',
-      ]),
+      alert.kind,
+      text(alert.text, { temp: Math.round(room.temperature) }),
+      room.id,
     );
-    return;
   }
-  addMoney(state, -plan.weeklyPrice);
-  fibre.paidUntil += FIBRE_WEEK_TICKS;
-  fibre.totalPaid += plan.weeklyPrice;
+  state.serverHeat = known;
 }

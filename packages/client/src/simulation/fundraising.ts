@@ -13,6 +13,9 @@ import {
   ROLE_PROFILES,
   TEAM_MAX,
   annexCount,
+  endlessRaiseShare,
+  freeSeasonStart,
+  difficultyOf,
   fundingTier,
   fundingTierIndex,
   getInvestor,
@@ -174,6 +177,71 @@ export function expectedAnswer(state: GameState, pitch: PitchState, argumentId: 
   return answerDelta(expectedStrength(state, argument, tier), like, onTopic, tier);
 }
 
+/**
+ * Réglage de l'estimation, calé sur des milliers de pitchs simulés (bot qui prend le
+ * meilleur argument proposé) : écart de moins de 5 points par tranche de 10 %.
+ * Part du meilleur argument du thème (il n'est pas toujours proposé) et dispersion due au
+ * hasard (investisseur, questions, arguments proposés).
+ */
+const ESTIMATE_BEST_SHARE = 0.35;
+const ESTIMATE_SPREAD = 1.5;
+
+/**
+ * Chance estimée de réussir le prochain tour de table, avant d'entrer dans la salle : la
+ * hype de départ, puis, à chaque question, un argument du bon thème (entre la moyenne et le
+ * meilleur des arguments de ce thème, car on ne choisit que parmi ceux qui sont proposés),
+ * les thèmes étant pondérés par les goûts de l'investisseur. Moyenne sur les investisseurs
+ * possibles. Sans tirage : c'est ce que le panneau « Lever des fonds » affiche.
+ */
+export function estimatePitchChance(state: GameState): number {
+  const tierIndex = fundingTierIndex(state.fundingRounds);
+  const tier = fundingTier(state.fundingRounds);
+  const pool = argumentPool(tierIndex, []).flatMap((id) => getPitchArgument(id) ?? []);
+  const investors = tierIndex >= LATE_INVESTOR_TIER ? INVESTOR_ARCHETYPES : EARLY_INVESTORS;
+  const start = initialInterest(state) - pitchBar(state, tier);
+  let total = 0;
+  for (const archetype of investors) {
+    const { likes } = getInvestor(archetype);
+    let weights = 0;
+    let perQuestion = 0;
+    for (const category of PITCH_CATEGORIES) {
+      const answers = pool
+        .filter((argument) => argument.category === category)
+        .map((argument) =>
+          answerDelta(expectedStrength(state, argument, tier), likes[category], true, tier),
+        );
+      if (answers.length === 0) continue;
+      weights += likes[category];
+      const mean = answers.reduce((a, b) => a + b, 0) / answers.length;
+      const best = Math.max(...answers);
+      perQuestion += likes[category] * (mean + (best - mean) * ESTIMATE_BEST_SHARE);
+    }
+    const x = start + (tier.manches * perQuestion) / Math.max(weights, 1e-9);
+    // Les tirages (investisseur, questions, arguments proposés) dispersent le résultat.
+    total +=
+      (softSigmoid(x - ESTIMATE_SPREAD) + softSigmoid(x) + softSigmoid(x + ESTIMATE_SPREAD)) / 3;
+  }
+  return total / investors.length;
+}
+
+/**
+ * Force moyenne de chaque thème au prochain tour de table (sans les goûts de l'investisseur) :
+ * ce qui marchera ou non face aux questions, d'après l'état de la startup.
+ */
+export function categoryStrengths(state: GameState): Record<PitchCategory, number> {
+  const tierIndex = fundingTierIndex(state.fundingRounds);
+  const tier = fundingTier(state.fundingRounds);
+  const pool = argumentPool(tierIndex, []).flatMap((id) => getPitchArgument(id) ?? []);
+  const result = {} as Record<PitchCategory, number>;
+  for (const category of PITCH_CATEGORIES) {
+    const values = pool
+      .filter((argument) => argument.category === category && !argument.bluff)
+      .map((argument) => expectedStrength(state, argument, tier));
+    result[category] = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+  }
+  return result;
+}
+
 /** Arguments disponibles à ce tour de table, sauf ceux déjà avancés. */
 function argumentPool(tierIndex: number, exclude: readonly string[]): string[] {
   return PITCH_ARGUMENTS.filter(
@@ -248,7 +316,11 @@ export function maxRaise(state: GameState): number {
     fixedCostsMonthly[state.phase] +
     fixedCostsMonthly[next] +
     hires * AVERAGE_HIRE_COST;
-  const target = projected * BALANCE.fundraising.maxRunwayMonths;
+  // En mode illimité, après les 18 mois, les investisseurs financent de moins en moins.
+  const target =
+    projected *
+    BALANCE.fundraising.maxRunwayMonths *
+    endlessRaiseShare(state.mode, state.sprint, freeSeasonStart(state.story));
   return Math.round(Math.max(target * 0.25, target - Math.max(0, state.gauges.treasury)));
 }
 
@@ -310,7 +382,9 @@ export function pitchArgument(
   // Aux grands tours, un investisseur qui s'ennuie quitte la salle avant la fin (jamais
   // avant d'avoir entendu deux réponses).
   const walkOut =
-    tier.walkOut !== null && pitch.round >= 2 && pitch.interest - tier.bar < tier.walkOut;
+    tier.walkOut !== null &&
+    pitch.round >= 2 &&
+    pitch.interest - pitchBar(state, tier) < tier.walkOut;
   if (pitch.round < pitch.manches && !walkOut) {
     pitch.question = askQuestion(state, pitch, pitch.round);
     pitch.options = drawOptions(ctx, pitch, tier.options);
@@ -323,13 +397,19 @@ export function pitchArgument(
   return { ok: true };
 }
 
+/** Intérêt que l'investisseur attend à ce tour : plus haut en Hardcore (`difficultyOf`). */
+export function pitchBar(state: Readonly<GameState>, tier: FundingTier): number {
+  return tier.bar + difficultyOf(state.mode).pitchBar;
+}
+
 /** Décision de l'investisseur et calcul de la dilution. */
 function concludePitch(state: GameState, ctx: SimContext): void {
   const pitch = state.pitch;
   if (!pitch) return;
   const tier = FUNDING_TIERS[pitch.tier] ?? fundingTier(0);
   // L'investisseur parti, il n'y a rien à décider (et rien à tirer).
-  const success = !pitch.walkedOut && ctx.rng.chance(softSigmoid(pitch.interest - tier.bar));
+  const success =
+    !pitch.walkedOut && ctx.rng.chance(softSigmoid(pitch.interest - pitchBar(state, tier)));
   if (!success) {
     pitch.result = { success: false, amount: 0, preMoney: 0, dilution: 0 };
     addGauge(state, 'hype', -5 - pitch.tier);

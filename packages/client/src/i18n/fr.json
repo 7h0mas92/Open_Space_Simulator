@@ -281,6 +281,7 @@
   },
   "time": {
     "sprint": "Sprint {{sprint}}/{{total}}",
+    "sprintEndless": "Sprint {{sprint}}",
     "day": "{{day}} {{time}}",
     "birthday": "Anniversaire de {{names}} : gâteau au bureau !",
     "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
@@ -323,7 +324,15 @@
     "funding": "Lever des fonds",
     "pets": "Chats du bureau",
     "servers": "Salle des serveurs",
-    "mission": "Mission"
+    "mission": "Mission",
+    "lobby": "Hall d’entrée",
+    "subscriptions": "Abonnements",
+    "cleaning": "Ménage",
+    "tickets": "Kanbanana, l’appli de tickets",
+    "leaderboard": "Classement",
+    "market": "Marché",
+    "research": "R&D",
+    "business": "Business"
   },
   "kanban": {
     "columns": {
@@ -337,6 +346,8 @@
     "nobody": "Personne",
     "moveLeft": "Déplacer vers {{column}}",
     "moveRight": "Déplacer vers {{column}}",
+    "load_one": "{{count}} personne prend des tâches : environ {{capacity}} tâches finies d’ici la démo, {{planned}} prévues. Si ça va plus vite, d’autres tâches arrivent en cours de sprint.",
+    "load_other": "{{count}} personnes prennent des tâches : environ {{capacity}} tâches finies d’ici la démo, {{planned}} prévues. Si ça va plus vite, d’autres tâches arrivent en cours de sprint.",
     "dragHint": "Glisse une carte entre Backlog et À faire, ou utilise les flèches. Chacun prend tout seul les tâches « À faire » de son métier.",
     "impact": "Impact",
     "empty": "Rien ici. Profite.",
@@ -420,7 +431,8 @@
     "leaving": "🚪 A démissionné : part au début du sprint {{sprint}}.",
     "leavingShort": "🚪 part au sprint {{sprint}}",
     "specialty": "Spécialité : {{specialty}} (+20 % sur les {{focus}})",
-    "stack": "Côté de la stack : {{stack}}"
+    "stack": "Côté de la stack : {{stack}}",
+    "officeSummaryAway": "{{office}} au bureau · {{remote}} en télétravail · {{away}} absent·e(s) · {{desks}} bureaux"
   },
   "teamFilters": {
     "sortLabel": "Trier par",
@@ -443,7 +455,8 @@
       "TIRED": "Fatigué·e",
       "LOW_MORALE": "Moral bas",
       "REMOTE": "Télétravail",
-      "OFFICE": "Au bureau"
+      "OFFICE": "Au bureau",
+      "ABSENT": "Absent·e"
     },
     "sorts": {
       "PERF_DESC": "Meilleure performance",
@@ -603,7 +616,8 @@
       "wing-3": "Aile 3",
       "arcade": "Arcade",
       "garden": "Jardin",
-      "auditorium": "Auditorium"
+      "auditorium": "Auditorium",
+      "lobby": "Hall"
     }
   },
   "build": {
@@ -634,7 +648,8 @@
       "accessory": "Accessoires",
       "monitors": "Écrans",
       "devices": "Périphériques",
-      "servers": "Serveurs"
+      "servers": "Serveurs",
+      "lobby": "Accueil"
     },
     "price": "{{price}} €",
     "owned": "{{count}}/{{max}}",
@@ -642,6 +657,7 @@
     "soldOut": "Maximum atteint ({{max}})",
     "tooExpensive": "Pas assez de trésorerie",
     "annexDecor": "Décor offert avec l’annexe : tu peux le déplacer et le tourner, mais il n’a pas d’effet et ne se revend pas. Le même objet est en vente dans la boutique.",
+    "lobbyDecor": "Décor offert avec le hall : tu peux le déplacer et le tourner, mais il n’a pas d’effet et ne se revend pas. Le même objet est en vente dans la boutique.",
     "rotate": "Tourner",
     "sell": "Revendre ({{price}} €)",
     "move": "Déplacer",
@@ -707,7 +723,8 @@
     "stopInventory": "{{item}} : plus rien en stock, retour à l’inventaire.",
     "monitor": "Écran",
     "storyLocked": "🔒 Récompense du mode Histoire : réussis sa mission pour l’acheter.",
-    "storyLockedMode": "🔒 Récompense du mode Histoire, indisponible dans ce mode."
+    "storyLockedMode": "🔒 Récompense du mode Histoire, indisponible dans ce mode.",
+    "storyLockedPrestige": "🏆 Prestige : remplis l’objectif de l’histoire qui donne cette récompense."
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -738,7 +755,10 @@
     "TOO_LATE": "Trop tard : une filiale n’aurait pas le temps de grandir.",
     "NOT_AVAILABLE": "Ce financement n’est pas disponible pour le moment.",
     "INVENTORY_FULL": "L’inventaire est plein : revends des objets rangés.",
-    "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation."
+    "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation.",
+    "NOT_ENOUGH_LEAVE": "Pas assez de jours de congé en réserve.",
+    "LEAVE_SLOTS_FULL": "Trop de monde en congé cette semaine-là : choisis l’autre semaine.",
+    "NOT_ENOUGH_POINTS": "Pas assez de points d’innovation : livre des features et remplis des objectifs."
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
@@ -769,10 +789,12 @@
     "volumes": {
       "musicVolume": "Musique",
       "sfxVolume": "Effets",
-      "ambienceVolume": "Ambiance"
+      "ambienceVolume": "Ambiance",
+      "sfxNone": "Aucun effet sonore dans le jeu pour l'instant : ce curseur servira quand ils seront ajoutés."
     },
     "slackAi": "Slack piloté par l'IA",
-    "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques."
+    "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques.",
+    "dailyPause": "Arrêter le temps quelques secondes au Daily du matin"
   },
   "credits": {
     "title": "Crédits",
@@ -809,9 +831,9 @@
       "officeCharacters": "Personnages de bureau en Three.js (barbus, Rustacés, designeuses, robot, fantôme…) et accessoires des personnages Kenney",
       "uiPack": "Pack UI Kenney (interface en CSS)",
       "soundPacks": "Packs sons Kenney (effets sonores et ambiance à venir) ; en attendant, clics de souris synthétisés en Web Audio ; frappes au clavier tirées d'un enregistrement fourni par l'équipe du projet",
-      "seasonalDecor": "Décorations de saison (12 thèmes) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit",
+      "seasonalDecor": "Décorations de saison (12 thèmes : guirlandes à fil et ampoules ou fanions, ornements muraux, objets de bureau) et table d'anniversaire : gâteau, cadeaux et ballons en formes Three.js, sur la table à nappe du Furniture Kit",
       "meetingRoomProps": "Salle de réunion : tableau blanc, horloge du stand-up, aquarium, écrans de la war room, tableau de la salle du conseil et parois vitrées en formes Three.js, avec les tables et chaises du Furniture Kit",
-      "citySkyline": "Vue par les fenêtres sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve, taxis) en formes Three.js, sans bâtiment réel",
+      "citySkyline": "Vue par les fenêtres sur une ville façon New York (tours, réservoirs d'eau, parc, fleuve) en formes Three.js, sans bâtiment réel, et 7 modèles de véhicules (taxi, berline, citadine, SUV, camionnette, pick-up, bus)",
       "mug": "Mug de dev : anse, bande colorée, café froid et cuillère",
       "rubberDuck": "Canard en plastique : ailes, queue, bec et yeux",
       "trophy": "Trophée de hackathon : socle à deux étages, plaque, coupe à anses et étoile",
@@ -841,6 +863,8 @@
       "catTreeMedium": "Arbre à chat double (2 cases, moquette grise) : niche, panier et souris",
       "catTreeLarge": "Arbre à chat géant (3 cases, moquette mauve) : niche, passerelle et souris",
       "officeCats": "Chats du bureau : six robes construites en formes Three.js, animées par le code (marche, sieste, repas)",
+      "cleaningCrew": "Équipe de ménage : trois agents en uniforme construits comme les devs (clips Kenney), chariot, aspirateur et serpillière en formes Three.js",
+      "officeLitter": "Déchets au sol : papiers froissés, emballages, canettes, gobelets, boîtes de pizza, peaux de banane et taches",
       "windowSmall": "Petite fenêtre et son pan de mur",
       "windowMedium": "Fenêtre de deux cases",
       "windowLarge": "Grande fenêtre de trois cases",
@@ -869,6 +893,8 @@
       "projectionScreenMedium": "Écran de projection déroulant (moyen) : caisson alu, pieds, toile, mât et barre animés",
       "projectionScreenLarge": "Écran de projection déroulant (grand) : caisson alu, pieds, toile, mât et barre animés",
       "serverCloset": "Local serveurs : sol technique en dalles, cloisons vitrées, porte à badge, chemin de câbles",
+      "receptionDesk": "Comptoir d’accueil : façade en bois, plateau de pierre, deux écrans, registre des visiteurs et sonnette",
+      "badgeGates": "Hall d’entrée : portiques à badge en inox à portillons vitrés, secrétaires, agent de sécurité et caméra",
       "serverRoom": "Salle des serveurs : sol technique, dalles perforées, cloisons vitrées, porte à badge, chemin de câbles",
       "rackServer": "Baie de serveurs 1U : armoire, six serveurs à voyants, brassage et porte fumée",
       "bladeServer": "Châssis de serveurs lames : deux châssis de lames verticales aux voyants bleus",
@@ -889,7 +915,10 @@
       "lectern": "Pupitre de conférence en bois, plateau incliné et micro",
       "auditoriumScreen": "Écran géant d'auditorium : dalle lumineuse sur deux mâts",
       "unicornStatue": "Statue de licorne : socle de marbre à moulures, licorne dorée cabrée, corne et crinière",
-      "ipoBell": "Cloche de la Bourse : portique en bois, cloche de bronze tournée, battant et corde à pompon"
+      "ipoBell": "Cloche de la Bourse : portique en bois, cloche de bronze tournée, battant et corde à pompon",
+      "splitAc": "Climatiseur mural : unité intérieure blanche à volet, sur support, groupe et tuyaux",
+      "inrowCooling": "Climatisation en rangée : armoire noire perforée, ventilateurs et écran bleu",
+      "serverMonitoring": "Supervision : pupitre, écran de courbes de température, sonde et gyrophare"
     },
     "back": "Retour"
   },
@@ -915,7 +944,25 @@
     "short": "Lever",
     "roundTitle": "Levée de fonds · {{round}}",
     "difficulty": "Difficulté {{level}} sur {{total}}",
-    "interest": "Intérêt",
+    "interest": "Chance de signer",
+    "ratings": {
+      "strong": "fort",
+      "fair": "moyen",
+      "weak": "faible"
+    },
+    "ratingTitle": "Effet attendu sur cet investisseur : {{rating}}, selon {{basis}}.",
+    "random": "aléatoire",
+    "basis": {
+      "users": "tes utilisateurs",
+      "revenue": "ton chiffre d’affaires",
+      "runway": "ta trésorerie",
+      "stability": "la stabilité de la prod",
+      "debt": "ta dette technique",
+      "team": "ton équipe",
+      "hype": "ta hype",
+      "luck": "la chance",
+      "bluff": "le bluff"
+    },
     "offTopic": "hors sujet",
     "bluffCaught": "bluff démasqué !",
     "bluffTag": "bluff",
@@ -998,6 +1045,7 @@
     },
     "ownership": "Ta part du capital",
     "sprints": "Sprints joués",
+    "sprintsEndless": "Sprints tenus",
     "again": "Rejouer",
     "menu": "Menu principal",
     "share": "Partager",
@@ -1013,7 +1061,7 @@
     "title": "Choisis ton mode",
     "EASY": {
       "name": "Facile",
-      "rule": "Pour apprendre : tutoriel complet, plus d'argent, crises adoucies.",
+      "rule": "Pour apprendre : tutoriel complet, un peu plus d'argent, crises adoucies. Mal géré, ça coule quand même.",
       "tag": "Débutant"
     },
     "NORMAL": {
@@ -1023,7 +1071,7 @@
     },
     "HARDCORE": {
       "name": "Hardcore",
-      "rule": "Pas de pause. Jamais.",
+      "rule": "Pas de pause, moins d'argent, plus de crises. Chaque décision compte.",
       "tag": "Expert"
     },
     "INTERNS_ONLY": {
@@ -1035,6 +1083,11 @@
       "name": "Défi 3 sprints",
       "rule": "Cette app doit sortir en 3 sprints.",
       "tag": "Partie courte"
+    },
+    "ENDLESS": {
+      "name": "Illimité",
+      "rule": "Pas de fin : tiens le plus longtemps possible, la concurrence monte après 18 mois.",
+      "tag": "Jusqu'où ?"
     },
     "DAILY": {
       "name": "Daily",
@@ -1083,7 +1136,19 @@
     "watch": "Revoir la partie de {{pseudo}}",
     "empty": "Personne n'a encore publié de score ici.",
     "error": "Impossible de joindre le serveur.",
-    "replayError": "Impossible de charger ce replay."
+    "replayError": "Impossible de charger ce replay.",
+    "local": "Sur cet appareil",
+    "localHint": "Tes meilleures entreprises, gardées sur cet appareil, même sans compte.",
+    "localEmpty": "Termine une partie pour inscrire ta première entreprise ici.",
+    "onlineHint": "Les meilleures entreprises de tous les joueurs connectés.",
+    "offline": "Le classement en ligne a besoin du serveur du jeu, qui n'est pas joignable ici. Le classement de cet appareil fonctionne toujours.",
+    "company": "Entreprise",
+    "mode": "Mode",
+    "date": "Date",
+    "endlessHint": "En mode illimité, le classement suit les sprints tenus, puis la valorisation.",
+    "you": "toi",
+    "online": "En ligne",
+    "sources": "Origine du classement"
   },
   "replay": {
     "banner": "Replay de {{pseudo}} : commande {{played}}/{{total}}",
@@ -1239,7 +1304,7 @@
       "off": "Désactivé"
     },
     "decor": {
-      "intro": "Chaque thème décore le bureau : guirlandes aux murs, objets au sol et sur les bureaux. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
+      "intro": "Chaque thème décore le bureau : guirlandes aux murs et un petit objet sur chaque bureau. Par défaut, un thème décore le bureau pendant sa période dans le calendrier de la partie (Halloween fin octobre, Noël en décembre…), en même temps que ses événements de saison. Tu peux aussi le désactiver ou le laisser toujours affiché. Les joueurs voient les changements au lancement de leur prochaine partie.",
       "legend": "Réglage du thème {{theme}}",
       "previewAlt": "Un coin de bureau décoré pour le thème {{theme}}",
       "live": "Affiché en ce moment",
@@ -1340,7 +1405,7 @@
         "steps": {
           "easy": {
             "title": "Le mode Facile",
-            "body": "Le mode Facile est fait pour apprendre :\n\n• tu démarres avec 3 M€ au lieu de 2 M€ ;\n• au plus 2 cartes tirées au hasard par sprint au lieu de 3 (la panne du vendredi 17h peut toujours en ajouter une) ;\n• les effets négatifs des crises sont divisés par deux.\n\nLes scores du mode Facile ont leur propre classement : ils ne comptent pas dans le classement global."
+            "body": "Le mode Facile est fait pour apprendre, pas pour gagner à coup sûr :\n\n• tu démarres avec 2,2 M€ au lieu de 2 M€ ;\n• les effets négatifs des crises sont réduits de 15 % ;\n• il tombe autant de cartes qu'en Normal (3 au plus par sprint, plus la panne du vendredi 17h).\n\nLes salaires, les clients et les investisseurs sont les mêmes qu'en Normal : une équipe mal gérée finit quand même en faillite.\n\nLes scores du mode Facile ont leur propre classement : ils ne comptent pas dans le classement global."
           },
           "normal": {
             "title": "Le mode Normal",
@@ -1348,11 +1413,11 @@
           },
           "hardcore": {
             "title": "Le mode Hardcore",
-            "body": "Pas de pause. Jamais. Le bouton pause et la barre d'espace ne répondent plus, et même ce tutoriel ne peut pas arrêter le temps : lis-le en gardant un œil sur le bureau.\n\nLe reste des règles est celui du mode Normal : 2 M€, 18 mois, 3 cartes tirées au hasard par sprint au maximum.\n\nAstuce : le temps reste arrêté pendant la planification et la démo. C'est là que tu réfléchis."
+            "body": "Pas de pause. Jamais. Le bouton pause et la barre d'espace ne répondent plus, et même ce tutoriel ne peut pas arrêter le temps : lis-le en gardant un œil sur le bureau.\n\nEt tout est plus dur qu'en Normal :\n\n• 1,5 M€ au départ au lieu de 2 M€ ;\n• salaires et frais 15 % plus chers, clients qui paient 15 % de moins ;\n• plus de crises (4 cartes au plus par sprint) et des effets négatifs 30 % plus forts ;\n• pannes de prod 50 % plus fréquentes ;\n• investisseurs plus exigeants à chaque levée.\n\nAttendre sans rien décider mène à la faillite : chaque choix compte.\n\nAstuce : le temps reste arrêté pendant la planification et la démo. C'est là que tu réfléchis."
           },
           "hardcoreEvents": {
             "title": "Les crises n’attendent pas",
-            "body": "En Hardcore, une carte d'événement n'arrête pas le temps. Si tu ne choisis pas dans les 2 heures de jeu (un peu moins de 2 secondes à x1), la dernière réponse est choisie pour toi : « tu n'as rien décidé, le problème a décidé pour toi ».\n\nCette dernière réponse est souvent la pire. Reste en x1 pendant les heures de bureau pour avoir le temps de lire, et garde x2 ou x4 pour les nuits et les week-ends."
+            "body": "En Hardcore, une carte d'événement n'arrête pas le temps. Si tu ne choisis pas dans les 2 heures de jeu (un peu moins de 2 secondes à x1), la dernière réponse est choisie pour toi : « tu n'as rien décidé, le problème a décidé pour toi ».\n\nCette dernière réponse est souvent la pire, et les effets négatifs sont 30 % plus forts qu'en Normal (les chiffres affichés en tiennent compte). Reste en x1 pendant les heures de bureau pour avoir le temps de lire, et garde x2 ou x4 pour les nuits et les week-ends."
           },
           "interns": {
             "title": "Le mode Stagiaires Only",
@@ -1369,6 +1434,14 @@
           "shipTips": {
             "title": "Livrer, livrer, livrer",
             "body": "Seules les features comptent pour les 5 : le refacto, le bugfix et l'infra n'en font pas partie.\n\n• Remplis « À faire » de petites features dès le premier sprint.\n• Recrute dès le premier sprint : chaque dev en plus, ce sont des points livrés.\n• Ne t'inquiète pas trop de la dette : tu n'auras pas le temps d'en payer le prix.\n\nLe bilan de chaque démo indique combien de features le sprint a livrées."
+          },
+          "endless": {
+            "title": "Le mode illimité",
+            "body": "Ici, la partie ne s'arrête pas au bout de 18 mois (39 sprints). Elle dure tant que ta trésorerie tient.\n\nAprès le 39e sprint, la concurrence se réveille :\n\n• les frais fixes montent à chaque sprint, de plus en plus vite ;\n• les utilisateurs partent un peu plus vite ;\n• les investisseurs se lassent : chaque levée rapporte moins.\n\nTu peux encore entrer en Bourse ou accepter un rachat, mais la partie s'arrête alors."
+          },
+          "endlessTips": {
+            "title": "Aller le plus loin possible",
+            "body": "Le classement du mode illimité compte d'abord les sprints tenus, puis la valorisation.\n\n• Garde une trésorerie confortable : la pression monte sans arrêt.\n• Fais grossir les revenus plus vite que les frais : les utilisateurs paient les salaires.\n• Surveille la stabilité : avec la concurrence, chaque panne fait fuir plus de monde.\n\nSuccès à la clé : 2, 3 et 5 ans tenus."
           },
           "daily": {
             "title": "Le Daily",
@@ -1388,11 +1461,15 @@
           },
           "story": {
             "title": "La mission",
-            "body": "Lis bien le briefing : il donne le point de départ (phase, équipe, trésorerie), la durée en sprints et les objectifs.\n\n• ✓ : objectif rempli ;\n• ○ : objectif à remplir ;\n• 🛡️ : contrainte à respecter jusqu'au bout.\n\nUne mission réussie débloque la suivante et une récompense."
+            "body": "Lis bien le briefing : il donne le point de départ, la durée et les objectifs. Dans l’histoire en 5 actes, chaque acte a un objectif principal à remplir avant sa date limite, et des objectifs secondaires qui rapportent des récompenses.\n\n• ✓ : objectif rempli ;\n• ○ : objectif à remplir ;\n• 🛡️ : contrainte à respecter jusqu'au bout.\n\nUne mission réussie débloque la suivante et une récompense ; un acte réussi ouvre le suivant."
           },
           "storyTips": {
             "title": "Les récompenses",
             "body": "Chaque récompense (papier peint, sol, couleur, objet ou bonus de départ) sert ensuite dans les modes Facile, Normal, Hardcore, Stagiaires Only et Défi 3 sprints.\n\nPas dans le Daily : la partie du jour reste la même pour tout le monde. Les missions n'ont pas de classement."
+          },
+          "storyResearch": {
+            "title": "L’arbre R&D",
+            "body": "Dans l’histoire en 5 actes, le catalogue de construction démarre réduit : bureaux, plantes, cafetière. Le reste se débloque dans le panneau 🔬 R&D, en haut à droite, avec des points d’innovation.\n\n• +1 point par feature livrée, +3 par objectif rempli, +2 quand tu gagnes plus d’utilisateurs que tous les rivaux sur un sprint.\n• 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation) : chaque niveau demande le précédent et l’acte qui lui correspond.\n• Prestige : les récompenses des objectifs s’achètent dès que l’objectif est rempli.\n\nLes missions courtes gardent tout le catalogue ; les autres modes ont le même arbre, ouvert par les phases."
           }
         }
       },
@@ -1525,7 +1602,7 @@
           },
           "soft": {
             "title": "En mode Facile",
-            "body": "En mode Facile, les effets négatifs des cartes sont divisés par deux (les chiffres affichés en tiennent déjà compte) et il tombe au plus 2 cartes au hasard par sprint. Seule la panne du vendredi 17h peut s'y ajouter."
+            "body": "En mode Facile, les effets négatifs des cartes sont réduits de 15 % (les chiffres affichés en tiennent déjà compte). Il tombe autant de cartes qu'en Normal : au plus 3 au hasard par sprint, plus la panne du vendredi 17h."
           }
         }
       },
@@ -1582,11 +1659,15 @@
           },
           "manage": {
             "title": "Tourner, peindre, déplacer, revendre",
-            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne et Échap le repose dans le catalogue. « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
+            "body": "En construction, touche un objet déjà posé pour le tourner, le repeindre, le déplacer ou le revendre (la revente rapporte la moitié du prix d'achat). Avec un objet en main, R le tourne, les flèches le décalent d'une demi-case et Échap le repose dans le catalogue. Les objets se posent à la demi-case près : contre un mur fin, la moitié de case libre se meuble, et un objet de 3 cases se centre dans une pièce de 4 (les murs fins et les fenêtres restent sur des cases entières). « Terminer » referme le mode construction.\n\nLe rayon Accessoires (lampe, mug, canard en plastique…) se pose sur les bureaux, la bibliothèque ou le frigo, et suit son meuble.\n\nCertains objets ne se débloquent qu'aux phases suivantes, quand le bureau s'agrandit."
           },
           "items": {
             "title": "Les objets utiles",
             "body": "• Machine à café : plus de café chaque matin. La premium en remet deux fois plus et remonte le moral.\n• Plantes, tapis, canapé : du moral en plus.\n• Babyfoot : beaucoup de moral, un peu moins de productivité.\n• Écouteurs à réduction de bruit : annulent le malus des réunions du Product Owner.\n• Chaise ergonomique et bureau debout : les devs se fatiguent moins.\n• Baie de serveurs : de la stabilité chaque jour.\n• Écran de dashboard : un peu de hype chaque jour."
+          },
+          "research": {
+            "title": "L’arbre R&D",
+            "body": "Le catalogue de construction démarre réduit : bureaux, plantes, cafetière. Le reste se débloque dans le panneau 🔬 R&D, en haut à droite, avec des points d’innovation.\n\n• +1 point par feature livrée, +3 par levée de fonds réussie, +2 quand l’objectif du sprint est atteint.\n• 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation) : chaque niveau demande le précédent et une phase (niveau 2 en Seed, 3 en Série A, 4 en Licorne).\n\nUn objet à débloquer affiche « 🔬 R&D » et le niveau à prendre dans le catalogue."
           }
         }
       },
@@ -1617,7 +1698,7 @@
           },
           "pitch": {
             "title": "Le pitch",
-            "body": "Face à l'investisseur, tu réponds à ses questions, une par manche, en choisissant un argument. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nRéponds à la question posée : hors sujet, l'intérêt baisse. Chaque tour est plus dur que le précédent : plus de questions, une barre plus haute, des bluffs plus souvent démasqués, et dès la Série B l'investisseur peut quitter la salle. Un pitch raté coûte de la hype."
+            "body": "Face à l'investisseur, tu réponds à ses questions, une par manche, en choisissant un argument. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nRéponds à la question posée : hors sujet, l'intérêt baisse. Chaque tour est plus dur que le précédent : plus de questions, une barre plus haute, des bluffs plus souvent démasqués, et dès la Série B l'investisseur peut quitter la salle. Un pitch raté coûte de la hype.\n\nAvant d’entrer, le panneau donne tes chances estimées et la force de chaque thème. Pendant le pitch, chaque argument proposé indique sa force face à cet investisseur (fort, moyen, faible) et la jauge sur laquelle il s’appuie, et la jauge « Chance de signer » est la vraie probabilité que l’investisseur signe."
           },
           "dilution": {
             "title": "La dilution",
@@ -1682,7 +1763,7 @@
     }
   },
   "hud": {
-    "company": "Ta startup",
+    "company": "Entreprise : {{name}}",
     "phase": "Phase : {{phase}}",
     "mode": "Mode {{mode}}",
     "team": "Équipe : {{count}} sur {{max}} postes",
@@ -1795,6 +1876,7 @@
   },
   "meetings": {
     "intro": "Aménage la salle de réunion du bureau. Chaque formule a un bonus et un malus, et l'équipe s'y retrouve chaque matin de semaine à {{hour}}, dès son arrivée, pendant {{minutes}} minutes : une réunion utile rapporte quelque chose, une réunion inutile coûte du moral.",
+    "dailyIntro": "Le Daily, c'est le point sur les tickets : chacun dit où il en est et ce qu'il fait aujourd'hui, et l'appli de tickets s'affiche au projecteur de la salle. Réunion utile : les participants avancent de {{focus}} % plus vite jusqu'au soir. Sans Daily ce matin-là (salle vide) ou pour ceux qui n'y étaient pas (télétravail), deux devs finissent par coder la même chose et une partie d'un ticket est à refaire.",
     "crisisIntro": "Quand la prod tombe, la salle devient une cellule de crise : le coupable s'il y en a un, les {{count}} devs les plus solides (DevOps et Tech Lead d'abord, coupable compris) et le Product Owner ou un manager s'y réunissent une demi-heure. En sortant, le meilleur prend « Réparer la prod », déjà avancée.",
     "crisis": "Réunions de crise",
     "crisisOne": "Réunion de crise",
@@ -1827,6 +1909,9 @@
     "annexes": "Annexes du bureau",
     "nextRound": "Prochain tour de table : {{round}}",
     "difficulty": "Difficulté",
+    "chance": "Chances estimées",
+    "chanceHint": "Si tu réponds à chaque question avec un argument fort. Pendant le pitch, la jauge « Chance de signer » donne la vraie chance, réponse après réponse.",
+    "strengths": "Tes arguments aujourd’hui",
     "roundHint": "Face à un investisseur : {{manches}} questions, {{options}} réponses au choix à chaque fois. Réponds à la question posée : une réponse hors sujet fait baisser son intérêt. Chaque tour est plus exigeant que le précédent.",
     "annexNext": "Réussir ce tour agrandit le bureau : une nouvelle annexe ouvre, avec 2 places de plus dans l’équipe.",
     "annexLater": "À partir de la {{round}}, chaque tour réussi agrandit le bureau d’une annexe.",
@@ -1933,8 +2018,34 @@
     "adoptCardMissing_other": "Il manque encore {{count}} équipements : litière, gamelle et arbre à chat.",
     "adoptCardReady": "Tout est prêt : choisis sa robe et adopte-le."
   },
+  "lobby": {
+    "card": "Hall d’entrée",
+    "cardBuilt": "Aménagé",
+    "cardBuild": "Hall au rez-de-chaussée : portes à badge, comptoir d’accueil, sécurité.",
+    "cardStatus_one": "{{count}} secrétaire · sécurité : {{security}}",
+    "cardStatus_other": "{{count}} secrétaires · sécurité : {{security}}",
+    "open": "Accueil et sécurité",
+    "intro": "Le hall du rez-de-chaussée accueille l’équipe et les visiteurs : on y entre, on badge, puis on monte au bureau. Il passe devant toutes les autres pièces.",
+    "buildTitle": "Aménager le hall",
+    "features": {
+      "gates": "Deux portes à badge magnétique entre le hall et le bureau (+stabilité)",
+      "desk": "Un comptoir d’accueil pour deux secrétaires",
+      "waiting": "Une banquette et deux plantes pour les visiteurs (+hype, +moral)"
+    },
+    "build": "Lancer les travaux ({{price}} €)",
+    "built": "Hall aménagé : tout le monde entre par les portes à badge.",
+    "receptionTitle": "Accueil",
+    "receptionHint": "Jusqu’à deux secrétaires filtrent les appels, les colis et les visiteurs : +1 % de productivité, +moral et +hype chacun. Salaire : {{salary}} € par mois, ajouté aux dépenses.",
+    "receptionists_zero": "Aucune secrétaire (sur {{max}})",
+    "receptionists_one": "{{count}} secrétaire sur {{max}}",
+    "receptionists_other": "{{count}} secrétaires sur {{max}}",
+    "hire": "Embaucher une secrétaire ({{salary}} € par mois)",
+    "dismiss": "Se séparer d’une secrétaire",
+    "payroll": "Salaires de l’accueil : {{price}} € par mois.",
+    "noSecurity": "aucune"
+  },
   "servers": {
-    "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer.",
+    "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer. Chaque appareil chauffe : prévois assez de clim.",
     "roomsTitle": "Tes salles",
     "noRoom": "Pas encore de salle des serveurs : achète un local serveurs (Seed) ou une salle des serveurs (Série A) dans le rayon Serveurs.",
     "slots": "{{count}}/{{max}} emplacements",
@@ -1943,7 +2054,7 @@
     "needs": {
       "server": "Au moins un serveur (baie, lames ou GPU)",
       "network": "Du réseau (switch ou box fibre)",
-      "cooling": "Une climatisation de précision"
+      "cooling": "Une climatisation (murale, de précision ou en rangée)"
     },
     "needsShort": {
       "server": "un serveur",
@@ -1955,29 +2066,25 @@
     "saving": "Facture d’hébergement : −{{percent}} % grâce à tes serveurs ({{max}} % au plus).",
     "statusRunning": "Elle tourne · {{count}}/{{max}} emplacements",
     "statusMissing": "Ne tourne pas : il manque {{missing}}.",
-    "open": "Salle et fibre",
-    "fibreCard": "Abonnement fibre",
+    "open": "Salle et internet",
+    "fibreCard": "Abonnement internet",
     "fibreCardCurrent": "Abonné : {{plan}}. Touche pour changer d’offre ou résilier.",
-    "fibreCardReady": "La box fibre est posée : choisis une offre.",
-    "fibreCardMissing": "Pose d’abord une box fibre dans une salle des serveurs.",
-    "fibre": {
-      "title": "Abonnement fibre",
-      "intro": "La fibre se paie chaque semaine (tous les 7 jours de jeu) et arrive dans la box fibre de ta salle des serveurs. Changer d’offre repart pour une semaine payée tout de suite ; si la trésorerie ne couvre plus la facture, l’opérateur coupe la ligne.",
-      "none": "Pas d’abonnement : choisis une offre ci-dessous.",
-      "needBox": "Pour t’abonner, installe une box fibre dans une salle des serveurs (rayon Serveurs).",
-      "needBoxShort": "Il faut une box fibre dans une salle des serveurs.",
-      "connected": "La ligne arrive dans la box : l’offre donne ses effets.",
-      "noBox": "Aucune box fibre dans une salle : tu paies la ligne mais elle ne sert à rien.",
-      "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
-      "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
-      "totalPaid": "{{price}} € payés en tout",
-      "perWeek": "{{price}} € / semaine",
-      "subscribe": "S’abonner ({{price}} € la 1re semaine)",
-      "switch": "Passer à cette offre ({{price}} €)",
-      "currentPlan": "Ton offre actuelle",
-      "cancel": "Résilier",
-      "cancelWarning": "La ligne sera coupée tout de suite, sans remboursement de la semaine entamée.",
-      "cancelConfirm": "Résilier la fibre"
+    "fibreCardReady": "De la box 4G à la fibre dédiée : choisis l’offre qui suit ton équipe.",
+    "warm": "Elle chauffe : les serveurs ralentissent et ne donnent que {{percent}} % de leurs effets.",
+    "overheat": "Surchauffe : les serveurs plantent, plus aucun effet et la prod se dégrade. Ajoute de la clim ou retire du matériel.",
+    "statusWarm": "Elle chauffe · {{count}}/{{max}} emplacements",
+    "statusOverheat": "Surchauffe : il faut plus de clim.",
+    "heat": {
+      "load": "Chaleur {{heat}} kW · clim {{cooling}} kW",
+      "summer": "été, +3 °C",
+      "meter": "Charge de la climatisation",
+      "temperature": "🌡️ {{temp}} °C · {{level}}",
+      "unmonitored": "🌡️ Température inconnue : installe une sonde de supervision pour la suivre et être prévenu quand elle monte.",
+      "levels": {
+        "cool": "tout va bien",
+        "warm": "ça chauffe (au-delà de 27 °C)",
+        "overheat": "surchauffe (au-delà de 32 °C)"
+      }
     }
   },
   "career": {
@@ -2121,7 +2228,9 @@
           "max_other": "Recruter {{count}} personnes au plus",
           "none": "Ne recruter personne"
         }
-      }
+      },
+      "rivalUsers": "Plus d’utilisateurs que {{name}}",
+      "marketShare": "Au moins {{value}} % du marché"
     },
     "end": {
       "success": "Mission réussie !",
@@ -2136,6 +2245,572 @@
         "TIME": "Le temps de la mission est écoulé avant d’avoir rempli tous les objectifs.",
         "SOLD": "La startup a été vendue avant la fin de la mission."
       }
+    },
+    "tabs": {
+      "label": "Mode Histoire",
+      "campaign": "📖 Histoire",
+      "missions": "🎯 Missions"
+    },
+    "campaign": {
+      "eyebrow": "Une seule longue partie, en 5 actes",
+      "meta": "Environ {{sprints}} sprints · {{done}} objectifs sur {{total}} déjà remplis (histoire et missions) · un point de sauvegarde au début de chaque acte",
+      "prologue": "Prologue",
+      "actNumber": "Acte {{number}}",
+      "deadline_one": "Objectif principal avant la fin du sprint {{sprint}} (encore {{count}} sprint)",
+      "deadline_other": "Objectif principal avant la fin du sprint {{sprint}} (encore {{count}} sprints)",
+      "exitGoal": "Dernier acte : entre en Bourse ou accepte un rachat avant la fin du sprint {{sprint}}.",
+      "deadlineShort": "Avant le sprint {{sprint}}",
+      "exitShort": "Bourse ou rachat",
+      "sideTitle": "Objectifs secondaires",
+      "sideCount_one": "{{count}} objectif secondaire",
+      "sideCount_other": "{{count}} objectifs secondaires",
+      "side": {
+        "done": "✓ Rempli",
+        "missed": "✕ Raté",
+        "active": "En cours"
+      },
+      "start": "Commencer l’histoire",
+      "restart": "Recommencer l’histoire du début",
+      "continueHint": "Pour continuer ton histoire, utilise « Continuer » dans le menu principal.",
+      "resume": "Reprendre « {{act}} »",
+      "noCheckpoint": "Pas de point de sauvegarde pour cet acte sur cet appareil.",
+      "endings": {
+        "IPO": {
+          "title": "Fin : la cloche de la Bourse",
+          "text": "Tu sonnes la cloche. Bastien Lemaître regarde le direct depuis la tour d’en face, et Mamie Josette t’envoie un SMS tout en majuscules."
+        },
+        "ACQUISITION": {
+          "title": "Fin : le chèque de Gigacorp",
+          "text": "Tu signes. Gigacorp rachète ta startup, et Bastien Lemaître apprend la nouvelle dans un article d’Inès Kader. Ton idée a gagné, même si elle porte un autre logo."
+        }
+      },
+      "end": {
+        "failure": "Histoire arrêtée",
+        "failures": {
+          "TIME": "L’objectif principal de l’acte n’était pas rempli à temps.",
+          "BANKRUPTCY": "Faillite : il n’y a plus d’argent pour payer l’équipe.",
+          "SOLD": "Startup vendue trop tôt : l’histoire ne se finit pas comme ça."
+        },
+        "goals": "Objectifs remplis en tout : {{count}} sur {{total}}",
+        "retry": "Reprendre « {{act}} »",
+        "restart": "Recommencer l’histoire",
+        "freeSeason_one": "Saison libre : {{count}} sprint tenu après l’entrée en Bourse.",
+        "freeSeason_other": "Saison libre : {{count}} sprints tenus après l’entrée en Bourse.",
+        "rivals": "Bilan face aux concurrents",
+        "replayScene": "Revoir la scène de fin"
+      },
+      "freeSeason": {
+        "title": "Saison libre",
+        "text_one": "Histoire finie : {{count}} sprint tenu depuis l’entrée en Bourse. Tous les 10 sprints, une nouvelle startup attaque ton marché.",
+        "text_other": "Histoire finie : {{count}} sprints tenus depuis l’entrée en Bourse. Tous les 10 sprints, une nouvelle startup attaque ton marché.",
+        "end": "Terminer la partie"
+      }
+    },
+    "market": {
+      "yourShare": "Ta part du marché : {{share}}",
+      "chart": "Utilisateurs comparés, sprint après sprint",
+      "you": "Ta startup",
+      "boughtBy": "Rachetée par {{name}}",
+      "bankrupt": "En faillite",
+      "rivalLine": "{{share}} du marché · valorisée {{valuation}}",
+      "lastAction": "Sprint {{sprint}} : {{action}}",
+      "actions": {
+        "copy": "a copié ta dernière feature",
+        "poach": "a voulu débaucher ton meilleur dev",
+        "lawsuit": "t’a fait un procès",
+        "priceCut": "a cassé ses prix",
+        "pivot": "a encore pivoté",
+        "clone": "a sorti un clone gratuit de ton produit",
+        "adBlitz": "a acheté toutes les pubs du métro"
+      }
+    },
+    "scene": {
+      "next": "Suivant",
+      "skip": "Passer",
+      "close": "À toi de jouer",
+      "freeSeason": "Continuer en Saison libre",
+      "endHere": "Terminer la partie ici",
+      "titles": {
+        "prologue": "Prologue · Le garage",
+        "race": "Acte I · La course",
+        "price-war": "Acte II · La guerre des prix",
+        "giant": "Acte III · Le géant",
+        "bell": "Acte IV · La cloche",
+        "ending-ipo": "Fin · La cloche de la Bourse",
+        "ending-acquisition": "Fin · Le chèque de Gigacorp",
+        "free-season": "Épilogue · Saison libre"
+      }
     }
+  },
+  "cleaning": {
+    "intro": "Chaque jour de semaine, l’équipe présente au bureau le salit : emballages, gobelets, canettes, boîtes de pizza… Plus tu attends, plus la saleté monte vite, et un bureau sale ralentit tous ceux qui y travaillent (pas les télétravailleurs). Appelle l’entreprise de nettoyage Nickel Chrome ou prends un abonnement.",
+    "dirtTitle": "Saleté du bureau",
+    "dirt": "{{percent}} % de saleté",
+    "levels": {
+      "clean": "Propre",
+      "warn": "À surveiller",
+      "dirty": "Sale"
+    },
+    "loss": "L’équipe sur place travaille {{percent}} % moins vite.",
+    "noLoss": "Bureau impeccable : aucun travail perdu.",
+    "days_one": "{{count}} jour sans ménage",
+    "days_other": "{{count}} jours sans ménage",
+    "crewTitle": "Nickel Chrome, entreprise de nettoyage",
+    "tools": {
+      "cart": "cheffe d’équipe, chariot",
+      "vacuum": "aspirateur",
+      "mop": "serpillière"
+    },
+    "status": {
+      "visit": "Ménage en cours ({{percent}} %)",
+      "express": "L’équipe express arrive tout de suite",
+      "booked_one": "L’équipe passe dans {{count}} heure",
+      "booked_other": "L’équipe passe dans {{count}} heures"
+    },
+    "call": "Appeler pour ce soir ({{price}} €)",
+    "express": "Express, tout de suite ({{price}} €)",
+    "callHint": "Un appel est payé à la réservation : l’équipe passe le soir à 19h, ou tout de suite en express.",
+    "history_one": "{{count}} passage, {{price}} € dépensés en appels",
+    "history_other": "{{count}} passages, {{price}} € dépensés en appels",
+    "button": "Ménage : {{percent}} % de saleté"
+  },
+  "subscriptions": {
+    "intro": "Les services payés à intervalle régulier. La première période se paie à la souscription, puis à chaque échéance ; changer d’offre repart pour une période payée tout de suite. Si la trésorerie ne couvre plus une échéance, le prestataire coupe le service. Résilier l’arrête tout de suite, sans remboursement.",
+    "summaryNone": "Aucun abonnement en cours.",
+    "summary_one": "{{count}} abonnement en cours · environ {{price}} € par mois",
+    "summary_other": "{{count}} abonnements en cours · environ {{price}} € par mois",
+    "services": {
+      "internet": {
+        "name": "Internet",
+        "intro": "De la box 4G à la fibre dédiée. Chaque offre supporte un nombre de salariés : au-delà, le réseau sature et toute l’équipe ralentit. Prix mensuels hors taxes constatés chez les opérateurs français pour les entreprises (2026), prélevés chaque semaine (tous les 7 jours de jeu) ; la mise en service se paie à la souscription."
+      },
+      "cleaning": {
+        "name": "Ménage",
+        "intro": "Nickel Chrome passe le soir à 19h, les jours prévus par l’offre, et remet la saleté à zéro. Payé chaque semaine (tous les 7 jours de jeu), moins cher qu’un appel ; le prix suit la taille du bureau."
+      },
+      "security": {
+        "name": "Sécurité",
+        "intro": "Un service de sécurité aux prix du marché, payé chaque semaine (tous les 7 jours de jeu). L’agent se tient dans le hall, à côté des portes à badge."
+      }
+    },
+    "requires": {
+      "fibreBox": {
+        "long": "La fibre dédiée arrive dans une box fibre : installe-la dans une salle des serveurs (rayon Serveurs).",
+        "short": "La fibre dédiée arrive dans une box fibre posée dans une salle des serveurs.",
+        "inactive": "Aucune box fibre dans une salle : tu paies la fibre dédiée mais elle n’arrive nulle part."
+      },
+      "lobby": {
+        "long": "Pour t’abonner, aménage d’abord le hall d’entrée (rayon Accueil) : l’agent et les portes à badge y sont.",
+        "short": "Il faut un hall d’entrée.",
+        "inactive": "Pas de hall d’entrée : tu paies le service mais il ne sert à rien."
+      }
+    },
+    "none": "Pas d’abonnement : choisis une offre ci-dessous.",
+    "active": "Actif : l’offre donne ses effets.",
+    "nextBill_one": "Prochain prélèvement de {{price}} € dans {{count}} jour",
+    "nextBill_other": "Prochain prélèvement de {{price}} € dans {{count}} jours",
+    "totalPaid": "{{price}} € payés en tout",
+    "since": "depuis le sprint {{sprint}}",
+    "perWeek": "{{price}} € / semaine",
+    "perMonth": "{{price}} € / mois",
+    "perDays_one": "{{price}} € / jour",
+    "perDays_other": "{{price}} € / {{count}} jours",
+    "subscribe": "S’abonner ({{price}} € tout de suite)",
+    "switch": "Passer à cette offre ({{price}} €)",
+    "currentOffer": "Ton offre actuelle",
+    "cancel": "Résilier",
+    "cancelWarning": "Le service s’arrête tout de suite, sans remboursement de la période entamée.",
+    "cancelConfirm": "Résilier {{offer}}",
+    "manageAll": "Voir tous les abonnements",
+    "users_one": "{{count}} salarié utilise la connexion (télétravail compris, par le VPN).",
+    "users_other": "{{count}} salariés utilisent la connexion (télétravail compris, par le VPN).",
+    "activeUsers": "La ligne tient la charge : {{count}}/{{max}} salariés.",
+    "saturated": "Réseau saturé : {{count}} salariés pour {{max}} prévus, −{{percent}} % de productivité. Passe à une offre plus grosse.",
+    "maxUsers_one": "Jusqu’à {{count}} salarié",
+    "maxUsers_other": "Jusqu’à {{count}} salariés",
+    "tooSmall": "trop petite pour ton équipe",
+    "setupFee": "Mise en service : {{price}} €, payée à la souscription"
+  },
+  "cleaning": {
+    "intro": "Chaque jour de semaine, l’équipe présente au bureau le salit : emballages, gobelets, canettes, boîtes de pizza… Plus tu attends, plus la saleté monte vite, et un bureau sale ralentit tous ceux qui y travaillent (pas les télétravailleurs). Appelle l’entreprise de nettoyage Nickel Chrome ou prends un abonnement.",
+    "dirtTitle": "Saleté du bureau",
+    "dirt": "{{percent}} % de saleté",
+    "levels": {
+      "clean": "Propre",
+      "warn": "À surveiller",
+      "dirty": "Sale"
+    },
+    "loss": "L’équipe sur place travaille {{percent}} % moins vite.",
+    "noLoss": "Bureau impeccable : aucun travail perdu.",
+    "days_one": "{{count}} jour sans ménage",
+    "days_other": "{{count}} jours sans ménage",
+    "crewTitle": "Nickel Chrome, entreprise de nettoyage",
+    "tools": {
+      "cart": "cheffe d’équipe, chariot",
+      "vacuum": "aspirateur",
+      "mop": "serpillière"
+    },
+    "status": {
+      "visit": "Ménage en cours ({{percent}} %)",
+      "express": "L’équipe express arrive tout de suite",
+      "booked_one": "L’équipe passe dans {{count}} heure",
+      "booked_other": "L’équipe passe dans {{count}} heures"
+    },
+    "call": "Appeler pour ce soir ({{price}} €)",
+    "express": "Express, tout de suite ({{price}} €)",
+    "callHint": "Un appel est payé à la réservation : l’équipe passe le soir à 19h, ou tout de suite en express.",
+    "history_one": "{{count}} passage, {{price}} € dépensés en appels",
+    "history_other": "{{count}} passages, {{price}} € dépensés en appels",
+    "button": "Ménage : {{percent}} % de saleté"
+  },
+  "daily": {
+    "liveUseful": "Daily en salle de réunion : chacun fait le point sur son ticket. Utile, +{{focus}} % jusqu’au soir.",
+    "liveUseless": "Daily en salle de réunion : ça aurait pu être un mail.",
+    "open": "Voir {{app}}",
+    "resume": "Reprendre"
+  },
+  "tickets": {
+    "intro": "L’appli de tickets du bureau, projetée dans la salle de réunion pendant le Daily. Lecture seule : les tickets se déplacent dans le Kanban.",
+    "sprint": "Sprint {{sprint}}",
+    "pointsDone": "{{done}} / {{total}} points terminés",
+    "dailyTitle": "Daily de ce matin",
+    "noDaily": "Pas encore de Daily : aménage la salle de réunion, l’équipe s’y retrouvera chaque matin de semaine à 9h.",
+    "useful": "Daily utile : les participants savent où ils en sont, +{{focus}} % de productivité jusqu’au soir.",
+    "usefulPast": "Daily utile.",
+    "useless": "Daily inutile : du moral en moins, mais au moins personne ne code la même chose.",
+    "notToday": "(dernier Daily, pas aujourd’hui)",
+    "started": "commencé, {{now}} %",
+    "moved": "{{before}} % → {{now}} %",
+    "nothing": "Rien en cours.",
+    "duplicates": "Sans Daily, deux devs finissent par coder la même chose. Tickets en partie recodés pour rien depuis le début : {{count}}.",
+    "empty": "Aucun ticket.",
+    "backlog": "{{count}} idées restent au backlog.",
+    "unassigned": "Personne",
+    "progress": "Avancement",
+    "points": "Points",
+    "kinds": {
+      "URGENT": "Urgent",
+      "WEEKLY": "Semaine"
+    }
+  },
+  "business": {
+    "intro": "Ton produit doit rapporter de l’argent, mais chaque euro demandé fait fuir des utilisateurs. La trésorerie suit le revenu, la valorisation suit surtout le nombre d’utilisateurs (un client qui paie compte plus pour les investisseurs).",
+    "pricing": {
+      "title": "Modèle économique",
+      "model": "Modèle",
+      "tier": "Niveau de prix",
+      "current": "En cours : {{model}}, prix {{tier}}",
+      "revenue": "{{price}} par mois de revenus des utilisateurs",
+      "inUse": "en cours",
+      "tiers": {
+        "LOW": "bas",
+        "STANDARD": "standard",
+        "PREMIUM": "premium"
+      },
+      "arpu": "Revenu par utilisateur et par mois",
+      "oneTime": "Payé une fois par nouvel utilisateur",
+      "acquisition": "Nouveaux utilisateurs",
+      "churn": "Départs d’utilisateurs",
+      "userValue": "Valeur d’un utilisateur pour les investisseurs",
+      "monthly": "Revenus mensuels avec ce réglage",
+      "loss": "Hausse de prix : {{users}} utilisateurs partent tout de suite et la hype perd {{hype}} points.",
+      "cut": "Baisse de prix : +{{hype}} points de hype.",
+      "unchanged": "C’est le réglage en cours. Choisis un autre modèle ou un autre prix pour comparer.",
+      "apply": "Appliquer ce modèle",
+      "blockers": {
+        "COOLDOWN": "Déjà changé ce sprint : les clients ont besoin d’un peu de stabilité. Réessaie au prochain sprint.",
+        "WRONG_STAGE": "Pas pendant une levée de fonds."
+      }
+    },
+    "clients": {
+      "title": "Clients B2B",
+      "intro": "Des entreprises veulent ton produit, à condition que tu fasses le travail qu’elles demandent avant l’échéance. Elles paient une prime à la signature, un forfait chaque mois et une prime à la livraison. Chaque panne de prod te coûte une pénalité (SLA), et une échéance ratée coûte cher. Les points se gagnent à la démo, avec les tâches du bon type terminées.",
+      "slots": "Contrats en cours : {{used}}/{{max}}",
+      "monthly": "{{price}} par mois",
+      "record": "{{delivered}} livré(s), {{lost}} perdu(s)",
+      "contracts": "Contrats signés",
+      "offers": "Offres de ce sprint",
+      "noOffers": "Aucune offre pour l’instant : de nouveaux clients se présentent à chaque planification.",
+      "sizes": {
+        "SMALL": "petit contrat",
+        "MEDIUM": "contrat moyen",
+        "LARGE": "gros contrat"
+      },
+      "needs": {
+        "FEATURE": "feature",
+        "INFRA": "infra",
+        "BUGFIX": "bugfix"
+      },
+      "need_one": "Livrer {{count}} point de {{type}} en {{sprints}} sprints",
+      "need_other": "Livrer {{count}} points de {{type}} en {{sprints}} sprints",
+      "fee": "Forfait mensuel",
+      "signing": "À la signature",
+      "delivery": "À la livraison",
+      "users_one": "{{users}} utilisateur",
+      "users_other": "{{users}} utilisateurs",
+      "risks": "Risques",
+      "riskText": "{{penalty}} si raté, {{sla}} par panne",
+      "sign": "Signer le contrat",
+      "blockers": {
+        "NO_SLOT": "Plus de place pour un contrat en cours : livre ou romps d’abord un contrat.",
+        "WRONG_STAGE": "Pas pendant une levée de fonds."
+      },
+      "progress": "{{done}}/{{total}} points livrés",
+      "left_one": "dernier sprint pour livrer",
+      "left_other": "{{count}} sprints pour livrer",
+      "maintenance_one": "Livré, en maintenance encore {{count}} sprint",
+      "maintenance_other": "Livré, en maintenance encore {{count}} sprints",
+      "paying": "Paie {{price}} par mois",
+      "breaches": "{{count}}/{{max}} pannes tolérées",
+      "drop": "Rompre le contrat",
+      "end": "Arrêter la maintenance",
+      "dropWarning": "Rompre maintenant coûte {{penalty}} de pénalités et de la hype.",
+      "endWarning": "Le client part sans frais : plus de forfait, plus de pénalité de panne.",
+      "dropConfirm": "Confirmer"
+    },
+    "support": {
+      "title": "Support client",
+      "intro": "Tes utilisateurs écrivent : bugs, questions, « ça marche pas ». Plus ils sont nombreux, plus la dette est haute et la prod instable, plus il y a de tickets. Sans réponse, la satisfaction baisse et ils partent ; contents, ils recommandent le produit.",
+      "satisfaction": "Satisfaction {{value}}/100",
+      "satisfactionLabel": "Satisfaction des utilisateurs",
+      "levels": {
+        "happy": "Ravis",
+        "ok": "Ça va",
+        "angry": "Furieux"
+      },
+      "churn": "Les utilisateurs partent {{percent}} % plus vite.",
+      "happy": "Ils recommandent le produit : +{{percent}} % de croissance et un peu de hype.",
+      "ok": "Au-dessus de {{threshold}}, ils recommanderaient le produit.",
+      "tickets": "{{backlog}} tickets en attente · {{perDay}} par jour ouvré · {{capacity}} traités par jour",
+      "agents_one": "{{count}} agent de support",
+      "agents_other": "{{count}} agents de support",
+      "agentInfo": "{{salary}} par mois chacun, {{capacity}} tickets par jour, {{max}} au plus dans cette phase",
+      "hire": "Embaucher un agent",
+      "fire": "Remercier un agent",
+      "monthly": "Salaires du support : {{price}} par mois",
+      "duty": "Devs de garde au support",
+      "duties": {
+        "NONE": "Aucun",
+        "LIGHT": "Un peu ({{percent}} %)",
+        "HEAVY": "Beaucoup ({{percent}} %)"
+      }
+    }
+  },
+  "leave": {
+    "title": "Congés",
+    "balance": "Réserve : {{days}}/{{max}} jours",
+    "claim": "réclame ses vacances (−1 moral par jour)",
+    "week": "Semaine",
+    "weekOption": "Semaine {{week}} du sprint",
+    "days": "Durée",
+    "daysOption_one": "{{count}} jour",
+    "daysOption_other": "{{count}} jours",
+    "book": "Poser des congés",
+    "cancel": "Annuler",
+    "planned_one": "Congés prévus semaine {{week}} : {{count}} jour",
+    "planned_other": "Congés prévus semaine {{week}} : {{count}} jours",
+    "plannedShort": "congés S{{week}}",
+    "current": {
+      "LEAVE": "En congés ({{days}} j), retour le {{date}}",
+      "BRIDGE": "Fait le pont, retour le {{date}}",
+      "SICK": "Arrêt maladie ({{days}} j), retour le {{date}}",
+      "BURNOUT": "Burn-out : arrêt de {{days}} jours ouvrés, retour le {{date}}"
+    },
+    "short": {
+      "LEAVE": "en congés",
+      "BRIDGE": "fait le pont",
+      "SICK": "malade",
+      "BURNOUT": "burn-out"
+    },
+    "hint": "1 jour gagné par sprint, 10 au plus. Au retour : énergie au maximum et +{{moral}} moral par jour posé. {{slots}} dev(s) en congé à la fois par semaine. Réserve pleine trop longtemps : le dev pose 5 jours lui-même.",
+    "hintLater": "Les congés se posent pendant la planification.",
+    "bridge": "🌉 Pont ce sprint : ceux qui ont des jours en réserve feront le pont.",
+    "bridgeRefused": "🌉 Ponts refusés : tout le monde viendra travailler (−{{moral}} moral pour ceux qui comptaient le faire).",
+    "refuseBridges": "Refuser les ponts",
+    "acceptBridges": "Accepter les ponts",
+    "holiday": "Jour férié : {{name}}",
+    "holidays": {
+      "NEW_YEAR": "Jour de l’an",
+      "EASTER_MONDAY": "Lundi de Pâques",
+      "LABOUR_DAY": "Fête du Travail",
+      "VICTORY_1945": "Victoire 1945",
+      "ASCENSION": "Ascension",
+      "WHIT_MONDAY": "Lundi de Pentecôte",
+      "BASTILLE_DAY": "Fête nationale",
+      "ASSUMPTION": "Assomption",
+      "ALL_SAINTS": "Toussaint",
+      "ARMISTICE": "Armistice",
+      "CHRISTMAS": "Noël"
+    }
+  },
+  "retro": {
+    "title": "Rétrospective",
+    "kicker": "Fin de sprint, post-it et café tiède",
+    "intro": "L’équipe propose une action pour le prochain sprint. Suivre son vote : +{{follow}} moral pour tous. Imposer autre chose : −{{impose}} moral pour ceux qui ont voté autrement.",
+    "teamChoice": "choix de l’équipe",
+    "votes_one": "1 voix : {{names}}",
+    "votes_other": "{{count}} voix : {{names}}",
+    "noVote": "Aucune voix",
+    "skip": "Passer la rétro",
+    "active": "Action de la rétro : {{action}}",
+    "actions": {
+      "MORE_TESTS": {
+        "name": "Plus de tests",
+        "problem": "La prod est tombée plusieurs fois.",
+        "effect": "−15 % de dette sur les features livrées"
+      },
+      "CODE_REVIEW": {
+        "name": "Revue de code obligatoire",
+        "problem": "La dette technique est haute.",
+        "effect": "+5 % de qualité, −5 % de vitesse"
+      },
+      "COFFEE_BAR": {
+        "name": "Café en libre-service",
+        "problem": "Le café a manqué.",
+        "effect": "−30 % de consommation de café"
+      },
+      "NO_MEETING_WEDNESDAY": {
+        "name": "Mercredi sans réunion",
+        "problem": "Trop de réunions.",
+        "effect": "Pas de réunion ni de malus de réunion le mercredi"
+      },
+      "MEDIATION": {
+        "name": "Médiation",
+        "problem": "Des collègues sont en conflit.",
+        "effect": "+15 d’affinité pour chaque relation tendue, tout de suite"
+      },
+      "ON_CALL": {
+        "name": "Astreinte organisée",
+        "problem": "Des urgences ont été ratées.",
+        "effect": "+25 % de vitesse sur les urgences"
+      },
+      "FLEX_HOURS": {
+        "name": "Horaires flexibles",
+        "problem": "L’équipe est fatiguée.",
+        "effect": "−15 % de fatigue au travail"
+      },
+      "SMALLER_TICKETS": {
+        "name": "Découper les tickets",
+        "problem": "Presque rien n’a été livré.",
+        "effect": "+8 % de vitesse sur les petites tâches (2 points au plus)"
+      },
+      "KUDOS": {
+        "name": "Kudos du vendredi",
+        "problem": "Le moral est bas.",
+        "effect": "+1 moral par jour ouvré"
+      },
+      "KEEP_GOING": {
+        "name": "Continuer comme ça",
+        "problem": "Rien de grave à signaler.",
+        "effect": "+3 % de vitesse"
+      }
+    }
+  },
+  "teamBuilding": {
+    "title": "Team building",
+    "intro": "Une sortie par sprint, en fin de 2e semaine. Payée à la réservation, elle coûte du temps de travail et répare le moral et les conflits. Sorties faites : {{count}}.",
+    "booked": "{{outing}} réservé {{when}} ({{cost}}).",
+    "cancel": "Annuler (remboursé à {{refund}} %)",
+    "hoursLost_one": "{{when}} : {{count}} heure de travail perdue",
+    "hoursLost_other": "{{when}} : {{count}} heures de travail perdues",
+    "noTimeLost": "{{when}} : aucune heure de travail perdue",
+    "repeat": "Déjà fait au dernier sprint : moral divisé par deux.",
+    "locked": "Disponible dès la phase {{phase}}",
+    "blockers": {
+      "COOLDOWN": "Une sortie est déjà prévue ce sprint.",
+      "NOT_ENOUGH_MONEY": "Pas assez de trésorerie.",
+      "LOCKED": "Pas encore disponible."
+    },
+    "outings": {
+      "afterwork": {
+        "name": "Afterwork pizza-bière",
+        "when": "jeudi soir de la 2e semaine",
+        "effect": "+6 moral, +8 d’affinité entre tous ; −15 d’énergie le lendemain"
+      },
+      "escape-game": {
+        "name": "Escape game",
+        "when": "vendredi après-midi de la 2e semaine",
+        "effect": "+10 moral, +25 d’affinité pour les paires en conflit (15 % de chance que ça empire)"
+      },
+      "laser-game": {
+        "name": "Laser game",
+        "when": "vendredi après-midi de la 2e semaine",
+        "effect": "+12 moral, +10 d’affinité entre tous ; les gros egos perdants boudent"
+      },
+      "seminar": {
+        "name": "Séminaire au vert",
+        "when": "vendredi de la 2e semaine",
+        "effect": "+20 moral, +20 d’affinité, +40 d’énergie, +3 hype"
+      },
+      "offsite": {
+        "name": "Off-site à Lisbonne",
+        "when": "jeudi et vendredi de la 2e semaine",
+        "effect": "+30 moral, +30 d’affinité, +20 d’énergie, +8 hype, −5 de dette"
+      }
+    }
+  },
+  "research": {
+    "title": "Recherche et développement",
+    "intro": "Débloque le catalogue de construction avec des points d’innovation. Chaque niveau demande le précédent et l’acte de l’histoire qui lui correspond.",
+    "points": "{{points}} points d’innovation",
+    "earned": "{{earned}} gagnés depuis le début de la partie",
+    "howTo": "+{{feature}} par feature livrée, +{{goal}} par objectif rempli, +{{rivals}} quand tu gagnes plus d’utilisateurs que tous les rivaux sur un sprint.",
+    "howToCompany": "+{{feature}} par feature livrée, +{{round}} par levée de fonds réussie, +{{objective}} par objectif de sprint atteint. Chaque niveau s’ouvre avec une phase : 2 en Seed, 3 en Série A, 4 en Licorne.",
+    "branches": {
+      "comfort": "Confort",
+      "tech": "Tech",
+      "ambiance": "Ambiance",
+      "kitchen": "Cuisine",
+      "organisation": "Organisation",
+      "prestige": "Prestige"
+    },
+    "level": "Niveau {{level}}",
+    "status": {
+      "owned": "✓ Débloqué",
+      "available": "Disponible",
+      "previous": "🔒 Niveau précédent d’abord",
+      "act": "🔒 Dès l’acte « {{act}} »",
+      "phase": "🔒 Dès la phase {{phase}}",
+      "points": "Il manque {{missing}} points"
+    },
+    "take": "Débloquer ({{cost}} pts)",
+    "unlocks": "Débloque : {{list}}",
+    "needed": "🔬 R&D : {{branch}}, niveau {{level}}",
+    "prestigeIntro": "Les récompenses des objectifs de l’histoire, sans points : remplis l’objectif pour les acheter.",
+    "prestigeDone": "✓ Gagnée",
+    "prestigeTodo": "Objectif : {{mission}}",
+    "free": "Au départ : bureau, bureau IKEA, plantes, cafetière, mug, canard, lampe, poubelle, tour et écran bureautiques."
+  },
+  "skills": {
+    "tabs": "Fiche du dev",
+    "tabSheet": "Fiche",
+    "tabSkills": "Compétences",
+    "badge_one": "{{count}} point de compétence à dépenser",
+    "badge_other": "{{count}} points de compétence à dépenser",
+    "pointsAvailable_one": "⭐ {{count}} point à dépenser.",
+    "pointsAvailable_other": "⭐ {{count}} points à dépenser.",
+    "noPoints": "Aucun point à dépenser : le prochain niveau en donnera un.",
+    "pointsHint": "1 point par niveau gagné, {{spent}} dépensé(s). Chaque nœud demande le précédent.",
+    "branches": {
+      "TECH": "🛠️ Technique",
+      "SPEED": "⚡ Vitesse",
+      "HUMAN": "🤝 Humain"
+    },
+    "roleNode": "Métier",
+    "power": "Pouvoir",
+    "learn": "Apprendre « {{name}} » (1 point)",
+    "learned": "Appris",
+    "locked": "Verrouillé",
+    "crunch": "Lancer le Crunch",
+    "crunchActive": "Crunch en cours",
+    "crunchHint": "+50 % de vitesse pendant 24 h, -10 de moral. Une fois par sprint.",
+    "crunchActiveHint": "Pizza froide et Red Bull : il code à fond jusqu'à demain.",
+    "crunchUnavailable": "Pendant un sprint seulement, une fois par sprint.",
+    "trainings": "Formations",
+    "trainingsHint": "Une formation par dev et par sprint.",
+    "trainingsPlanningOnly": "Les formations se réservent pendant la planification.",
+    "trainedThisSprint": "Déjà en formation ce sprint.",
+    "reset": "Réinitialiser l'arbre ({{cost}})",
+    "resetConfirm": "Rendre tous les points de {{name}} pour {{cost}} (un mois de salaire) ?"
   }
 }

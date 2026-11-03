@@ -1,4 +1,6 @@
+import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SOUND_FILES } from '../../audio/manifest';
 import { ZOOM_SPEEDS } from '../../render/isoCamera';
 import { QUALITY_LEVELS } from '../../render/quality';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -6,6 +8,9 @@ import { useGame } from '../store/game';
 import { TEXT_SCALES, useSettings, VOLUME_KEYS } from '../store/settings';
 import { useSlackAiAvailable } from '../slack/useSlackAiAvailable';
 import { GuideIndex } from '../tutorial/Guide';
+
+/** Les effets sonores ne sont pas encore déposés : le curseur « Effets » n'a rien à régler. */
+const HAS_SFX = Object.keys(SOUND_FILES).length > 0;
 
 /**
  * Options : qualité graphique, vitesse du zoom, audio, Slack IA, accessibilité, langue.
@@ -87,6 +92,14 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
       <label className="switch">
         <input
           type="checkbox"
+          checked={settings.dailyPause}
+          onChange={(e) => settings.update({ dailyPause: e.target.checked })}
+        />
+        {t('settings.dailyPause')}
+      </label>
+      <label className="switch">
+        <input
+          type="checkbox"
           checked={settings.showFps}
           onChange={(e) => settings.update({ showFps: e.target.checked })}
         />
@@ -95,18 +108,23 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
       <fieldset>
         <legend>{t('settings.audio')}</legend>
         {VOLUME_KEYS.map((key) => (
-          <label key={key} className="slider">
-            <span>{t(`settings.volumes.${key}`)}</span>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={5}
-              value={Math.round(settings[key] * 100)}
-              onChange={(e) => settings.update({ [key]: Number(e.target.value) / 100 })}
-            />
-            <output>{Math.round(settings[key] * 100)} %</output>
-          </label>
+          <Fragment key={key}>
+            <label className="slider">
+              <span>{t(`settings.volumes.${key}`)}</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={Math.round(settings[key] * 100)}
+                onChange={(e) => settings.update({ [key]: Number(e.target.value) / 100 })}
+              />
+              <output>{Math.round(settings[key] * 100)} %</output>
+            </label>
+            {key === 'sfxVolume' && !HAS_SFX && (
+              <p className="slider-note">{t('settings.volumes.sfxNone')}</p>
+            )}
+          </Fragment>
         ))}
       </fieldset>
       {slackAiAvailable && (

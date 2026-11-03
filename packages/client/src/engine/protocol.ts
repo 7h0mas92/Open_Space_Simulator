@@ -8,7 +8,7 @@ import type {
   Notification,
   SaveData,
   Speed,
-  StoryMissionId,
+  StoryStart,
   StoryRewardId,
 } from '@oss/shared';
 
@@ -21,7 +21,7 @@ import type {
 export interface GameSetup {
   seed: string;
   mode: GameMode;
-  mission?: StoryMissionId;
+  mission?: StoryStart;
   unlocks?: readonly StoryRewardId[];
 }
 

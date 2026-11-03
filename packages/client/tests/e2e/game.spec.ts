@@ -26,6 +26,16 @@ async function startAsGuest(page: Page) {
   await expect(page.getByTestId('game')).toBeVisible();
 }
 
+/** Prend un niveau de l'arbre R&D (4 points au départ : un niveau 1), puis referme le panneau. */
+async function research(page: Page, nodeId: string) {
+  await page.locator('[data-tutorial="panel-research"]').click();
+  await page.getByTestId(`research-tab-${nodeId.split('-')[0]}`).click();
+  await page.getByTestId(`research-take-${nodeId}`).click();
+  await expect(page.getByTestId(`research-node-${nodeId}`)).toContainText('Débloqué');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('research-panel')).toBeHidden();
+}
+
 test('une partie en invité affiche la scène 3D, les personnages et le HUD', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -310,6 +320,8 @@ test('mode construction : choisir l’écran des bureaux', async ({ page }) => {
   // Vignettes 3D des écrans redessinées en WebGL logiciel : plus lent sur les runners.
   test.slow();
   await startAsGuest(page);
+  // Les écrans gaming sont au niveau 1 de la branche Tech de l'arbre R&D.
+  await research(page, 'tech-1');
   await page.getByRole('button', { name: /Construction/ }).click();
   // Au garage, il n'y a que des bureaux IKEA (portable) : on pose un bureau de dev.
   await page.getByTestId('catalog-desk').click();
@@ -321,8 +333,8 @@ test('mode construction : choisir l’écran des bureaux', async ({ page }) => {
   await expect(page.getByTestId('monitor-curved')).toContainText('Débloqué en');
   await page.getByTestId('monitor-gaming').click();
   await page.getByTestId('monitor-size-large').click();
-  await page.getByTestId('monitor-mount-arm').click();
-  await expect(page.getByTestId('monitor-mount-arm')).toHaveAttribute('aria-pressed', 'true');
+  // Le bras articulé attend le niveau 2 de Tech.
+  await expect(page.getByTestId('monitor-mount-arm')).toContainText('🔬');
 
   // Cibles tactiles de 44 px, rien ne déborde.
   const tooSmall = await page.evaluate(() =>
@@ -340,8 +352,10 @@ test('mode construction : choisir l’écran des bureaux', async ({ page }) => {
   await expect(all).toContainText('Équiper 0 poste');
 });
 
-test('mode construction : peindre un mur puis le tapisser', async ({ page }) => {
+test('mode construction : peindre un mur, puis tous les murs', async ({ page }) => {
   await startAsGuest(page);
+  // Les peintures sont au niveau 1 de la branche Ambiance de l'arbre R&D.
+  await research(page, 'ambiance-1');
   await page.getByRole('button', { name: /Construction/ }).click();
   await page.getByTestId('catalog-tab-walls').click();
   await expect(page.getByTestId('walls')).toBeVisible();
@@ -355,8 +369,10 @@ test('mode construction : peindre un mur puis le tapisser', async ({ page }) => 
   await expect(zone).toBeDisabled();
   await expect(zone).toHaveAccessibleName(/déjà en Bleu canard/);
 
-  // Puis un papier peint sur tous les murs.
-  await page.getByTestId('wall-finish-brick').click();
+  // Les papiers peints attendent le niveau 2 d'Ambiance (en Seed).
+  await expect(page.getByTestId('wall-finish-brick')).toContainText('🔬 R&D : Ambiance, niveau 2');
+  // Une autre peinture sur tous les murs.
+  await page.getByTestId('wall-finish-sage').click();
   await expect(zone).toBeEnabled();
   await page.getByTestId('wall-zone-all').click();
   await expect(page.getByTestId('wall-zone-left-open')).toBeDisabled();
@@ -377,6 +393,8 @@ test('mode construction : peindre un mur puis le tapisser', async ({ page }) => 
 test('mode construction : changer la matière et la couleur du sol', async ({ page }) => {
   test.slow();
   await startAsGuest(page);
+  // Vinyle et moquette sont au niveau 1 de la branche Ambiance de l'arbre R&D.
+  await research(page, 'ambiance-1');
   await page.getByRole('button', { name: /Construction/ }).click();
   await page.getByTestId('catalog-tab-floors').click();
   await expect(page.getByTestId('floors')).toBeVisible();
@@ -471,6 +489,40 @@ test('un panneau se ferme avec Échap et rend le focus', async ({ page, isMobile
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(button).toBeFocused();
+});
+
+test('le panneau Business change le modèle économique', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: 'Business', exact: true }).click();
+  await expect(page.getByTestId('pricing-current')).toContainText('Freemium');
+  await page.getByTestId('pricing-model-SUBSCRIPTION').click();
+  await expect(page.getByTestId('pricing-preview')).toBeVisible();
+  await page.getByTestId('pricing-apply').click();
+  await expect(page.getByTestId('pricing-current')).toContainText('Abonnement');
+  // Un seul changement par sprint.
+  await page.getByTestId('pricing-model-FREE_ADS').click();
+  await expect(page.getByTestId('pricing-apply')).toBeDisabled();
+});
+
+test('le panneau Business signe un contrat avec un client B2B', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: 'Business', exact: true }).click();
+  await expect(page.getByTestId('clients-summary')).toContainText('0/1');
+  await page.locator('[data-testid^="client-sign-"]').first().click();
+  await expect(page.getByTestId('clients-summary')).toContainText('1/1');
+  await expect(page.locator('[data-testid^="client-contract-"]')).toHaveCount(1);
+});
+
+test('le panneau Business embauche un agent de support', async ({ page }) => {
+  await startAsGuest(page);
+  await page.getByRole('button', { name: 'Business', exact: true }).click();
+  const support = page.locator('.support-stepper');
+  await expect(support).toContainText('0');
+  await page.getByTestId('support-hire').click();
+  await expect(support).toContainText('1');
+  await expect(page.getByTestId('support-hire')).toBeDisabled();
+  await page.getByTestId('support-fire').click();
+  await expect(support).toContainText('0');
 });
 
 test('mode Carrière : choisir une légende, suivre ses jalons depuis le HUD', async ({ page }) => {

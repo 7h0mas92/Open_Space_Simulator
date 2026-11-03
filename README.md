@@ -6,6 +6,7 @@ Jeu de gestion de startup jouable dans le navigateur, en 3D low-poly isométriqu
 Le cahier des charges complet est dans [`CLAUDE.md`](./CLAUDE.md).
 Le relais entre les développeurs (travaux en cours, décisions en attente, journal des
 passations) est dans [`CONTEXTE.md`](./CONTEXTE.md), mis à jour à la fin de chaque travail.
+Le rôle et l'emplacement de chaque fichier du dépôt sont dans [`ARBORESCENCE.md`](./ARBORESCENCE.md).
 
 **État actuel : jeu complet, prêt à déployer.** Socle, simulation, rendu 3D, interface,
 événements, progression, méta-jeu (succès, modes, Daily, classements, replays vérifiés),
@@ -266,8 +267,11 @@ flowchart LR
   objets masqués quand on dézoome (LOD).
 - **Vue sur New York** : on la voit par les fenêtres achetées. Le bureau est au
   dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
-  gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
-  Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
+  gradins, réservoirs d'eau sur les toits, parc, fleuve, circulation), faite de formes
+  Three.js sans aucun bâtiment réel. Sept modèles de véhicules roulent dans les rues
+  (`render/cars.ts`) : taxi à enseigne et damier, berline, citadine, SUV, camionnette, pick-up et
+  bus, avec vitres, roues, phares et pare-chocs ; modèle et couleur figés par le numéro de la
+  voiture, deux InstancedMesh par modèle. La ville est la même à chaque partie (graine fixe, sans le
   hasard du jeu) et tient en une quinzaine d'appels de dessin. Aucun toit proche ne dépasse le
   plancher, donc rien ne cache la salle. Les façades sont dessinées par shader en 5 styles
   (verre qui reflète le ciel, brique, pierre, bandeaux, brownstone), les toits ont muret,
@@ -344,7 +348,12 @@ flowchart LR
   bluffs démasqués plus souvent, des arguments qui demandent de vrais chiffres, de gros fonds
   (souverain, crossover) et, dès la Série B, un investisseur qui peut quitter la salle. À chaque
   manche il pose une question (traction, technique, équipe, vision, buzzword) : une réponse hors
-  sujet fait baisser son intérêt, affiché avec ses réactions. Quatre autres financements, sans
+  sujet fait baisser son intérêt, affiché avec ses réactions. Avant d'entrer, le panneau donne
+  les chances estimées et la force de chaque thème d'argument d'après l'état de la startup ;
+  pendant le pitch, chaque argument proposé indique sa force (fort, moyen, faible), la jauge sur
+  laquelle il s'appuie et s'il se joue aux dés, et la jauge « Chance de signer » est la vraie
+  probabilité que l'investisseur signe (`estimatePitchChance`, `categoryStrengths`,
+  `pitchRating`). Quatre autres financements, sans
   hasard : business angels (6 % du capital), prêt bancaire (remboursé sur 12 mois), financement
   participatif (+hype, +dette) et subvention à l'innovation (-moral). Questions et bluffs sont
   tirés sur une graine à part (graine + pitch + sprint) (`shared/sim/pitch.ts`,
@@ -367,6 +376,20 @@ flowchart LR
   N features, finir N tâches, zéro panne, baisser la dette, gagner N utilisateurs), facile,
   moyen ou difficile, récompensé à la démo selon sa difficulté. Le hasard est tiré sur une
   graine à part (`shared/sim/taskFlow.ts`, `client/src/simulation/taskFlow.ts`).
+- **Charge du sprint selon l'équipe** (`client/src/simulation/sprintLoad.ts`) : 3 idées par
+  personne qui prend des tâches et par sprint (`TASK_FLOW.ideasPerDev`, l'encadrement ne compte
+  pas), backlog jusqu'à 4 par dev. Chaque matin de semaine à 9h, le rythme de chaque métier depuis
+  le début du sprint (`tracker.workByTrade`) est comparé au travail restant : s'il manque de quoi
+  tenir jusqu'à la démo, des tâches passent du backlog au « À faire », sinon de nouvelles idées
+  sont créées (`TODO_TOPPED_UP`) ; à 14h, un dev qui attend sans tâche en reçoit une. Au 6e jour
+  ouvré, une équipe nettement en retard est prévenue (`SPRINT_BEHIND`), rien n'est retiré. Ligne
+  au-dessus du Kanban : équipe, tâches finissables d'ici la démo, tâches prévues. Les devs ne
+  chôment plus (avant : environ 60 % du temps sans tâche), donc tâches du backlog plus longues
+  (`BALANCE.work.unitsPerPoint` 5 → 14, urgences et hebdo à 5) et chaque point livré pèse moins
+  (`BALANCE.work.pointEffect` 0,13). Nouvelles idées sur `seed#tasks#topup#…` ; règle qui change
+  toutes les parties (anciens replays de scores divergent). 192 titres de plus
+  (`data/moreTasks.ts`, 439 au total), 5 urgences et 5 tâches de la semaine de plus, 150 titres
+  récents gardés.
 - **Tâches par métier** : chaque carte du Kanban affiche son métier, 💻 Code, 🎨 Design (la
   designeuse) ou 📋 Produit (le Product Owner). Les nouvelles idées suivent les métiers présents
   dans l'équipe, et une tâche que le joueur n'assigne pas lui-même ne part qu'à quelqu'un du bon
@@ -387,6 +410,15 @@ flowchart LR
   formule ou vider la salle rend 50 % du prix. Chaque formule a son rendu 3D (modèles Kenney et
   formes Three.js) et les devs s'assoient autour de la table. Le hasard est tiré sur une graine à
   part (`shared/sim/meetings.ts`, `client/src/simulation/meetings.ts`, `render/meetingRoom.ts`).
+- **Daily et Kanbanana** : le Daily de 9h fait le point sur les tickets. Chacun dit où en est
+  son ticket (hier, aujourd'hui) ; un Daily utile donne +5 % de productivité aux participants
+  jusqu'au soir. Sans Daily, ou pour ceux en télétravail, deux devs finissent parfois par coder la
+  même chose à 10h et une partie d'un ticket est à refaire (dès la Seed, graine à part). Dans la
+  salle, un écran se déroule et un projecteur de plafond affiche **Kanbanana**, l'appli de tickets
+  du jeu (nom et logo inventés) ; le bandeau du Daily ou le bouton « 📽️ Voir Kanbanana » du panneau
+  Réunion l'ouvrent en grand. Le temps s'arrête 6 s au début du Daily pour voir l'équipe s'asseoir
+  (option désactivable, jamais en Hardcore ni en replay) (`view/ticketBoard.ts`,
+  `render/dailyBoard.ts`, `ui/meetings/TicketApp.tsx`, `ui/meetings/DailyMoment.tsx`).
 - **Variété des tâches** : le Kanban pioche dans plus de 250 tâches en français et en anglais.
   Le catalogue grandit avec la startup (page de tarifs en Seed, découper le monolithe en Série A,
   certification SOC 2 en Licorne), et pendant chaque période du calendrier une tâche de code sur
@@ -400,6 +432,38 @@ flowchart LR
   démissionner une fois sur deux (il part deux planifications plus tard, badge « 🚪 » dans
   l'équipe), sinon il reste démotivé et perd deux compétences. Réglages dans `BALANCE.raises` ;
   le hasard est tiré sur une graine à part, sans toucher au tirage du jeu.
+- **Arbre de compétences des devs** : chaque niveau gagné donne un point, à dépenser dans
+  l'onglet « Compétences » de la fiche du dev (badge ⭐ dans la liste de l'équipe). 3 branches de
+  5 nœuds, chacun demandant le précédent : 🛠️ Technique (code propre, débogueur, architecte, revue
+  de code, gardien de la prod), ⚡ Vitesse (raccourcis, concentration, deep work, fin de sprint,
+  Crunch : +50 % pendant 24 h, une fois par sprint) et 🤝 Humain (endurance, diplomate, mentor,
+  bonne humeur, leader : personne ne démissionne tant qu'il est là). Chaque profil qui code a son
+  nœud de métier (le stagiaire ne touche plus à main, l'IA hallucine 2 fois moins…). Formations
+  payantes en planification (livre, formation, conférence) et réinitialisation pour un mois de
+  salaire. Ouvert dans tous les modes sauf le Daily. Aucun tirage : sans compétence, chaque
+  multiplicateur vaut exactement 1 et la partie reste identique au bit près
+  (`shared/sim/skills.ts`, `client/src/simulation/skills.ts`, `ui/team/SkillTree.tsx`).
+- **Congés, jours fériés et arrêts maladie** : les 11 jours fériés français ferment le bureau.
+  Chaque dev gagne un jour de congé par sprint (10 au plus) et le joueur les pose pendant la
+  planification, dans la fiche du dev (1 à 5 jours, un absent pour 4 devs à la fois) : le dev
+  revient reposé et de meilleure humeur. Celui qui garde trop longtemps une réserve pleine râle,
+  puis pose ses jours tout seul. Les ponts de mai sont faits par défaut ; les refuser garde la
+  semaine entière mais vexe l'équipe. Des arrêts maladie de 1 à 3 jours tombent au hasard (plus
+  souvent l'hiver). Un dev à bout ne démissionne plus aussitôt : il part 10 jours en arrêt pour
+  burn-out et ne démissionne qu'en cas de rechute. Hasard sur une graine à part ; les anciennes
+  sauvegardes et le défi « 3 sprints » restent sans congés (`client/src/simulation/teamLife.ts`).
+- **Rétrospective** : dès le 2e sprint, la planification s'ouvre sur une rétro. L'équipe propose
+  trois actions tirées des problèmes du sprint écoulé (plus de tests après des pannes, médiation
+  après des disputes, café en libre-service quand la machine a été vidée…) et vote selon les goûts
+  de chacun. Suivre le vote remonte le moral de tous, imposer autre chose vexe ceux qui ont voté
+  autrement. L'action choisie vaut pour le sprint qui commence (🔁 dans le HUD). On peut passer la
+  rétro sans pénalité (`client/src/simulation/retro.ts`).
+- **Team building** : pendant la planification, le panneau Équipe propose une sortie pour la fin
+  du sprint : afterwork, escape game, laser game (Seed), séminaire au vert (Série A) ou off-site à
+  Lisbonne (Licorne). Elle se paie par participant et coûte des heures de travail, mais remonte
+  le moral et rapproche l'équipe ; l'escape game peut réconcilier deux devs en conflit, ou
+  empirer les choses. Refaire la même sortie au sprint suivant rapporte moitié moins
+  (`client/src/simulation/teamBuilding.ts`).
 - **Mode construction** : le HUD s'efface au profit d'un catalogue en bas de l'écran (vignettes
   3D rendues hors écran avec les modèles Kenney, colonne à droite sur téléphone couché). Choisir
   un objet replie le catalogue : l'aperçu apparaît sur une case libre près du centre, sur une
@@ -422,7 +486,9 @@ flowchart LR
   avant la pose ou après (gratuit, purement esthétique) ; la chaise d'un bureau prend sa
   couleur.
 - **Murs fins** : le rayon Cloisons propose un mur fin à mi-hauteur et un mur fin vitré du sol
-  au plafond, posés case par case. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
+  au plafond, posés case par case. Les autres objets se posent à la demi-case près : la moitié
+  de case libre de chaque côté d'un mur fin se meuble, et un objet de 3 cases se centre dans une
+  pièce de 4. Ils se raccordent d'eux-mêmes aux cloisons du bureau et entre
   eux (angles, T, croix), sans jour entre deux murs, et se tournent, se repeignent et se revendent.
   Un mur qui enfermerait une zone est refusé, pour que chacun puisse toujours rejoindre son bureau.
   Quand le bureau s'agrandit, le plan cède la place aux meubles déjà posés : une cloison qui
@@ -431,9 +497,9 @@ flowchart LR
 - **Vidéoprojecteur** : le rayon Périphériques propose un vidéoprojecteur posé sur un meuble, un
   projecteur fixé au plafond (sans prendre de place au sol ni sur un bureau) et
   trois écrans de projection déroulants (2, 3 et 4 cases). Allumé et tourné vers un écran, le
-  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. Projecteur et
-  écran ne donnent leur effet (moral, qualité, hype, léger malus de productivité) que pendant la
-  projection.
+  projecteur déroule la toile et y lance un diaporama ; éteint, la toile s'enroule. La toile reste
+  toute blanche, sans cadre noir, quand elle monte ou descend. Projecteur et écran ne donnent leur
+  effet (moral, qualité, hype, léger malus de productivité) que pendant la projection.
 - **Fenêtres** : les locaux démarrent sans fenêtre. Le rayon Fenêtres propose une petite
   fenêtre (1 case), une fenêtre (2 cases), une grande fenêtre (3 cases) et une baie vitrée du sol
   au plafond (2 cases), avec un bonus de moral. Elles se fixent dans un des deux murs du fond
@@ -447,15 +513,53 @@ flowchart LR
   carrelage, parquet en lames ou en chevrons, terrazzo, marbre poli), dont certaines se débloquent
   avec les levées, chacune en plusieurs teintes neutres ou essences de bois. On choisit la pièce à
   refaire ou « Toutes les pièces » ; chaque pièce refaite donne un peu de moral, parfois de la
-  qualité ou de la hype.
+  qualité ou de la hype. Tant qu'on n'y touche pas, toutes les pièces ont le même sol d'origine,
+  y compris celles qui apparaissent quand le bureau grandit.
 - **Salle des serveurs et fibre** : le rayon Serveurs propose un local serveur (dès la Seed) et
   une salle des serveurs vitrée (dès la Série A), à équiper au choix : serveurs rack, lames ou
   GPU, switch, box fibre, climatisation, onduleur, NAS de sauvegarde, pare-feu et extinction
   automatique. Une salle ne tourne qu'avec un serveur, du réseau et du froid ; elle réduit alors la
-  facture d'hébergement (jusqu'à 40 %) et renforce la stabilité. Le panneau « 🗄️ Serveurs »
-  montre ce qui manque et propose trois abonnements fibre payés chaque semaine (400, 900 ou
-  2 500 €), qui demandent une box fibre posée dans une salle ; faute de trésorerie à l'échéance,
-  la ligne est coupée.
+  facture d'hébergement (jusqu'à 40 %) et renforce la stabilité. Chaque appareil chauffe et chaque
+  clim refroidit (climatiseur mural 5 kW, clim de précision 15 kW, clim en rangée 35 kW) : au-delà
+  de 27 °C la salle ne donne que la moitié de ses effets, au-delà de 32 °C elle plante et la prod
+  en pâtit (+3 °C l'été). La sonde de supervision affiche la température et prévient quand elle
+  change. Internet est un abonnement (rubrique 🧾 Abonnements, reprise dans le panneau « 🗄️
+  Serveurs ») : 6 offres aux prix des opérateurs français pour les entreprises, de la box 4G
+  (39 €/mois, 3 salariés) à la fibre dédiée 10 Gb/s (2 600 €/mois, 200 salariés), prélevées
+  chaque semaine, avec frais de mise en service. Au-delà de son nombre de salariés, le réseau
+  sature et toute l'équipe ralentit ; seule la fibre dédiée demande une box fibre dans une salle.
+- **Saleté et ménage** : chaque jour de semaine, l'équipe présente au bureau le salit
+  (emballages, gobelets, canettes, boîtes de pizza, peaux de banane, taches au sol). La saleté
+  monte de plus en plus vite sans ménage et ralentit les devs sur place (-20 % de travail à 50 %
+  de saleté, -40 % à 100 %) ; les télétravailleurs, le Dev Fantôme et l'IA Agent ne sont pas
+  gênés. Le bouton 🧹 en haut affiche le pourcentage et ouvre le panneau « Ménage » : l'entreprise
+  de nettoyage Nickel Chrome (trois agents) passe sur appel le soir à 19h, en express tout de
+  suite (plus cher), ou avec l'abonnement « Ménage » de la rubrique Abonnements (vendredi, mardi
+  et vendredi, ou tous les soirs, prix selon la taille du bureau). Pendant le passage, les agents
+  vont d'un déchet à l'autre et les déchets disparaissent.
+- **Hall d'entrée** : dès la Seed, le rayon Accueil ouvre le panneau « Hall d'entrée ». Pour
+  18 000 €, un hall au rez-de-chaussée s'ajoute devant tout le bureau : on y entre, on passe
+  l'une des deux portes à badge (les portillons s'ouvrent au passage), puis on rejoint l'open
+  space. Il est livré avec un comptoir d'accueil, une banquette et deux plantes, déplaçables.
+  Jusqu'à deux secrétaires (3 100 € par mois chacune) donnent un peu de productivité, de moral
+  et de hype. La sécurité est un abonnement de la rubrique 🧾 Abonnements, payé chaque semaine :
+  télésurveillance, agent en journée ou gardiennage 24 h/24 (Série A) ; l'agent se tient dans
+  le hall (`shared/sim/lobby.ts`, `render/lobby.ts`).
+- **Business** (💶 en haut, `ui/business/Business.tsx`) : trois leviers économiques.
+  - **Modèle économique** : gratuit avec pub, freemium (le départ), abonnement ou achat unique, au
+    prix bas, standard ou premium. Un produit cher rapporte plus par utilisateur mais en attire
+    moins et en perd davantage ; un client qui paie compte plus pour les investisseurs. Un
+    changement par sprint, et une hausse de prix fait partir des utilisateurs
+    (`shared/sim/pricing.ts`).
+  - **Support client** : chaque jour ouvré, les utilisateurs envoient des tickets (plus nombreux
+    avec les utilisateurs, la dette et l'instabilité). Des agents de support (3 500 € par mois) et
+    les devs de garde y répondent. Avec des tickets en attente, la satisfaction baisse et les
+    utilisateurs partent plus vite ; au-dessus de 80, ils recommandent le produit
+    (`shared/sim/support.ts`).
+  - **Clients B2B** : 3 offres de contrat à chaque planification, dès le garage. Un contrat paie
+    une prime et un forfait mensuel, demande des points de features, d'infra ou de bugfix avant
+    une échéance, et applique un SLA à chaque panne. Livré : prime, utilisateurs, hype, puis
+    maintenance ; échéance ratée : pénalité (`shared/sim/clients.ts`).
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
@@ -471,7 +575,8 @@ flowchart LR
   « tycoon 1 » en planification et à la démo, les quatre « Détente » enchaînés pendant le sprint,
   « aria math » en levée de fonds et à l'écran de fin. Fondu enchaîné entre deux moments, reprise
   du morceau là où il s'était arrêté, volume réglable dans les options (`audio/music.ts`,
-  lecture en flux avec Howler.js). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
+  lecture en flux par une balise audio dont le volume passe par Web Audio, `audio/musicTrack.ts` :
+  Safari sur iPhone et iPad ignore le volume d'une balise audio). Les fichiers ne sont pas mis en cache par la PWA : hors ligne,
   le jeu reste jouable sans musique.
 - **Bruits de bureau** : en zoomant sur une zone, on entend le clavier et la souris des devs qui
   travaillent près du centre de l'écran, à la même distance, placés à gauche ou à droite selon
@@ -540,6 +645,20 @@ sequenceDiagram
 - **Replays** : `GET /api/scores/:id/replay` renvoie graine, commandes et cartes ; le moteur les
   rejoue en accéléré (les commandes du joueur sont bloquées).
 - **Daily** : graine `daily-AAAA-MM-JJ`, la même pour tous ; un seul score par joueur et par jour.
+- **Mode illimité** (`ENDLESS`, `packages/shared/src/sim/endless.ts`) : pas de fin au 39e sprint,
+  la partie dure tant que la trésorerie tient (ou jusqu'à une IPO ou un rachat accepté). Après
+  les 18 mois, la concurrence pèse un peu plus à chaque sprint : frais fixes en hausse
+  (+4 % par sprint, plus une part au carré), départs d'utilisateurs en plus, levées de plus en
+  plus petites ; un message tous les 6 mois. Les 18 premiers mois sont identiques au mode Normal
+  pour une même graine. 3 succès (2, 3 et 5 ans tenus). Les bots tiennent de 76 à 300 sprints.
+- **Classements des meilleures entreprises** (`ui/meta/Leaderboard.tsx`), ouverts depuis le menu
+  principal et en jeu (bouton 🏆 en haut à droite, sans replay pour ne pas quitter la partie) :
+  « En ligne » (tous les joueurs connectés, scores vérifiés par le serveur) ou « Sur cet
+  appareil » (parties terminées ici, même en invité et sans serveur, `save/localScores.ts`).
+  Chaque partie a un nom d'entreprise tiré de sa graine par hachage (`companyName`, sans
+  tirage) que le serveur retrouve aussi. Onglets global, Daily du jour et par mode ; le global
+  exclut le Facile, l'Illimité et la Carrière ; l'Illimité se classe aux sprints tenus puis à la
+  valorisation (`compareGames`, même règle côté serveur).
 - **Carrière** : refaire le parcours de 8 startups devenues géantes, jamais nommées (Pépin
   Computer, Matelas & Céréales, Rembobine, MicroMou, Trombinoscope, Orénoque, Centillion, Ampère
   Motors ; `packages/shared/src/sim/career.ts`). Chaque légende impose son départ (argent, hype,
@@ -561,7 +680,7 @@ sequenceDiagram
   automatique est effacée et ses sauvegardes manuelles ne sont plus proposées (elles restent
   dans « Charger une partie »). Sous « Continuer », le bouton « Nouvelle partie » lance une
   partie dans le mode suggéré, et les cartes des modes restent disponibles.
-- **Succès** : 67 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
+- **Succès** : 70 succès, vérifiés par la simulation à partir de l'état (donc infalsifiables) ou
   débloqués par des cartes. Chacun a une difficulté (facile, intermédiaire, difficile,
   légendaire) ; 22 sont secrets : leur nom est visible et compté avec les autres, mais leur
   condition reste « ??? » tant qu'ils ne sont pas débloqués. Un écran « Succès » est accessible
@@ -576,6 +695,31 @@ sequenceDiagram
   Facile, Normal et dans les défis, jamais en Daily. Les récompenses d'une partie sont fixées au
   départ, envoyées avec le score et rejouées par le serveur, qui refuse celles qui ne sont pas
   gagnées sur le compte (`UNLOCK_NOT_EARNED`). Les missions n'ont pas de classement.
+- **Histoire en 5 actes** (« Ctrl+Alt+Fonder », `packages/shared/src/story/acts.ts`) : une seule
+  longue partie de 60 sprints, du garage à la Bourse. Chaque acte a un objectif principal avec
+  une date limite et des objectifs secondaires, qui sont les 10 missions courtes (mêmes
+  récompenses, même vérification par rejeu côté serveur, avec `campaign: true`). Un point de
+  sauvegarde est pris au début de chaque acte sur l'appareil, pour reprendre un acte raté. Les
+  missions courtes restent jouables dans l'onglet « Missions ». Calibrage : `pnpm balance:campaign`.
+  Trois rivaux inventés (Synergix, Pivotly, Gigacorp, `packages/shared/src/sim/rivals.ts`) se
+  partagent le marché avec le joueur, agissent contre lui (copie, débauche, procès, prix cassés,
+  clone) et ont leur enseigne sur un toit de la ville ; panneau « 📈 Marché ». Leur hasard vient
+  d'une graine à part (`seed#rival#sprint`).
+  Scènes dialoguées à chaque acte, 10 cartes écrites pour l'histoire (`shared/story/cards.ts`,
+  imposées à un sprint fixé, sans tirage), SMS de Mamie Josette et articles d'Inès Kader dans le
+  Slack, deux fins écrites (rachat par Gigacorp, ou entrée en Bourse puis Saison libre sans limite,
+  avec une nouvelle startup rivale tous les 10 sprints). Chaque objectif secondaire rempli donne
+  un bonus d'histoire (argent, hype, utilisateurs). Équilibrage mesuré par un bot « conteur » dans
+  `pnpm balance` (section « Histoire en actes » de `docs/balance.md`).
+  **Arbre R&D des objets** (`packages/shared/src/sim/research.ts`, panneau « 🔬 R&D ») : dans
+  tous les modes, le catalogue de construction démarre réduit et se débloque avec des points
+  d'innovation (features livrées ; dans l'histoire, objectifs remplis et sprints gagnés face aux
+  rivaux ; ailleurs, levées de fonds réussies et objectifs de sprint atteints). 5 branches de 4
+  niveaux (Confort, Tech, Ambiance, Cuisine, Organisation), chaque niveau demandant le précédent
+  et son acte (histoire) ou sa phase (autres modes), plus dans l'histoire une branche Prestige :
+  les récompenses des objectifs, achetables dès l'objectif rempli. Le verrou passe par la
+  simulation (commande `RESEARCH_NODE`, achats refusés avec `LOCKED`), aucun tirage ; les missions
+  courtes et les vieilles sauvegardes gardent tout le catalogue.
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le
@@ -614,8 +758,13 @@ bouton 🛠 du menu principal.
   Costumes dans `render/characterPacks.ts`.
 - **Décorations** : un thème par période de l'année (Nouvel An, Saint-Valentin, Pâques, espace,
   Moyen Âge, super-héros, années 80, été, pirates, Halloween, cyberpunk, Noël). Chacun a une
-  guirlande murale, trois objets au sol et un petit objet par bureau, construits en Three.js, avec
-  un aperçu 3D. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
+  guirlande murale (fil et ampoules qui scintillent, ou cordelette et fanions, tendus en festons
+  entre des clous), un ornement accroché entre deux appliques (jamais devant une fenêtre, une
+  cloison ou un grand meuble : `decorWalls` dans `render/decorations.ts`) et un petit objet par
+  bureau, à l'écart de l'écran et des accessoires, construits en Three.js et fusionnés par
+  matériau (4 appels de dessin au plus par mur), avec un aperçu 3D. Deux thèmes actifs se
+  partagent les murs au lieu de s'empiler. Rien
+  n'est posé au sol : le joueur ne pourrait ni déplacer ni ranger un objet qu'il n'a pas acheté. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
   période) ou toujours. `GET /api/decor-themes` (public, en cache hors ligne) et
   `PUT /api/admin/decor-themes/:id`.
 - **Statistiques** : joueurs, parties, fins, faillites par phase, cartes les plus tirées et choix
@@ -647,11 +796,28 @@ bouton 🛠 du menu principal.
 financements hors tour de table, organisatrice qui aménage la salle de réunion) et produit un rapport : taux de faillite (global et par phase),
 valorisation moyenne et médiane, cartes les plus tirées et choix trop forts. Il suit aussi la
 trajectoire de chaque jauge (sprints 5, 13, 26 et 39), la part des jours où une jauge reste
-collée à 0 ou à 100, et rejoue 400 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
+collée à 0 ou à 100, et rejoue 700 parties dans chaque autre mode (Facile, Hardcore, Stagiaires
 Only, 3 sprints), puis 140 parties par légende du mode Carrière (étoiles et réussite de chaque
 jalon). Une section suit les tâches dynamiques : urgences et tâches de la semaine
 finies à temps, réussite des objectifs par type et difficulté. Le dernier rapport est dans
 [`docs/balance.md`](docs/balance.md).
+
+**Difficulté des modes** (`packages/shared/src/sim/difficulty.ts`, `difficultyOf(mode)`) : un
+profil de multiplicateurs par mode (trésorerie de départ, cartes par sprint, chance de tirage,
+effets négatifs des cartes, dépenses, revenus, pannes, barre des investisseurs). Le Normal, le
+Daily, Stagiaires Only et 3 sprints gardent le profil neutre, donc les mêmes parties qu'avant.
+
+| Mode     | Départ | Effets négatifs | Cartes / sprint | Dépenses | Revenus | Pannes | Investisseurs |
+| -------- | -----: | --------------: | --------------: | -------: | ------: | -----: | ------------: |
+| Facile   | 2,2 M€ |           -15 % |               3 |        = |       = |      = |             = |
+| Normal   |   2 M€ |               = |               3 |        = |       = |      = |             = |
+| Hardcore | 1,5 M€ |           +30 % | 4 (tirage x1,5) |    +15 % |   -15 % |  +50 % |    barre +0,3 |
+
+Mesuré par la section « Difficulté par mode et par stratégie » du rapport : en Facile, un
+joueur au hasard fait encore faillite ou finit zombie une fois sur quatre et les bons bots ne
+deviennent pas plus souvent licornes qu'en Normal ; en Hardcore, le joueur au hasard et le
+prudent qui attend coulent trois à neuf fois sur dix, les bonnes stratégies une fois sur dix
+environ, et la licorne reste possible (2 à 4 %).
 
 Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
 `packages/shared/src/sim/balance.ts`) :
@@ -664,6 +830,38 @@ Règles qui empêchent une jauge de s'emballer ou de rester à 0 (toutes dans
 - **Dette et stabilité** : le code vieillit un peu chaque jour (plus vite avec une grande équipe)
   et la charge des utilisateurs use la prod : rien ne reste à 0 de dette ou à 100 de stabilité
   sans entretien.
+
+## Branches et contributions
+
+```text
+feat/… fix/… docs/…  ──PR (squash)──▶  develop  ──PR « release » (merge commit)──▶  main  ──▶  GitHub Pages
+        ▲                                 tests de Thomas et Melvin                     │
+        └──────────── correctif urgent : PR vers main, puis main fusionnée dans develop ◀┘
+```
+
+- **`main`** : la version publiée. Seule cette branche est déployée (GitHub Pages, Render). On
+  n'y pousse jamais directement.
+- **`develop`** : la branche de test. Chaque fonctionnalité ou correctif part de `develop` dans
+  sa propre branche et revient par une PR vers `develop` (CI verte, validation, squash merge).
+  Une idée qu'on ne garde pas se retire de `develop` par un revert, sans toucher à `main`.
+- **Mise en production** : quand Thomas et Melvin ont validé `develop`, une PR `develop` →
+  `main` fusionnée en _merge commit_ (pas de squash : les deux branches gardent le même
+  historique).
+- La CI ([`ci.yml`](.github/workflows/ci.yml) : lint, format, typecheck, tests, build, e2e)
+  tourne à chaque push sur toutes les branches et sur chaque PR.
+
+```bash
+git switch develop && git pull
+git switch -c feat/ma-fonctionnalite
+# … commits conventionnels en français …
+git push -u origin feat/ma-fonctionnalite   # puis PR vers develop sur GitHub
+```
+
+Protection conseillée (_Settings_ → _Branches_ → _Add branch ruleset_, à régler par le
+propriétaire du dépôt) : sur `main` et `develop`, PR obligatoire, CI « Lint, typecheck, tests,
+build » et « Tests end-to-end (Playwright) » obligatoires, pas de force-push ni de suppression ;
+sur `main`, en plus, une approbation. Dans _Settings_ → _General_ → _Pull Requests_, garder le
+squash et le merge commit autorisés.
 
 ## Déploiement
 
@@ -720,10 +918,11 @@ d'auth Supabase, pas de SDK `supabase-js`).
 ### Version invité sur GitHub Pages
 
 Le workflow [`pages.yml`](.github/workflows/pages.yml) publie le client seul sur GitHub Pages à
-chaque push sur `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
+chaque push sur `main`, donc à chaque fusion de `develop` dans `main` (variable `BASE_PATH=/Open_Space_Simulator/` pour le sous-chemin).
 Sans serveur, le jeu se joue en invité avec les 130 cartes intégrées et les sauvegardes
-locales ; le compte, les classements, le Daily en ligne et le Slack IA demandent le serveur
-Render et sa base Supabase. Dans _Settings_ → _Pages_, la source doit être _GitHub Actions_.
+locales ; le compte, les classements en ligne, le Daily en ligne et le Slack IA demandent le serveur
+Render et sa base Supabase (le classement « Sur cet appareil » fonctionne sans). Dans _Settings_ →
+_Pages_, la source doit être _GitHub Actions_.
 
 Les secrets ne vont jamais dans le dépôt : ils se saisissent dans les tableaux de bord de
 Render et Vercel (le mot de passe de la base, dans Supabase puis dans Render). Toutes les variables sont décrites dans
@@ -731,10 +930,10 @@ Render et Vercel (le mot de passe de la base, dans Supabase puis dans Render). T
 
 ## Ce que l'application fait et ne fait pas
 
-Elle fait : un jeu de gestion solo complet (7 modes dont la Carrière, 39 sprints, 100 cartes, 8 profils de
+Elle fait : un jeu de gestion solo complet (8 modes dont un mode illimité et la Carrière, 39 sprints, 100 cartes, 8 profils de
 devs et 10 métiers d'une équipe web, 4 phases et 4 fins, plus 24 cartes de saison, des décorations par période, les
 anniversaires des devs et jusqu'à 3 filiales avec 6 cartes dédiées), jouable hors ligne en invité, avec classements en ligne (global,
-Daily, par mode), replays vérifiés par le serveur, 67 succès (dont 22 secrets), un back-office et un Slack
+Daily, par mode) et sur l'appareil, replays vérifiés par le serveur, 70 succès (dont 22 secrets), un back-office et un Slack
 optionnellement animé par l'IA.
 
 Elle ne fait pas : de multijoueur en temps réel, d'achats intégrés ni de publicité, de chat
@@ -755,8 +954,8 @@ génère que des messages Slack.
   MacBook Pro sans logo, cinq écrans sur pied ou sur bras articulé (dont un incurvé), bornes d'arcade, flipper, enseigne néon, arbre, fontaine, scène,
   pupitre et écran géant des annexes (aussi en vente), ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
   local et salle des serveurs, serveurs rack, lames et GPU, switch, box fibre, climatisation de
-  précision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz,
-  litières,
+  précision, climatiseur mural, clim en rangée, sonde de supervision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz,
+  déchets au sol et agents de nettoyage (chariot, aspirateur, serpillière), litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction

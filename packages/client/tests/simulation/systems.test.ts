@@ -396,8 +396,9 @@ describe('Journée (minuit)', () => {
     expect(stabilityAfterADay(1_000_000)).toBeLessThan(stabilityAfterADay(100));
   });
 
-  it('un dev à bout démissionne avec un faux post LinkedIn', () => {
+  it('sans vie d’équipe, un dev à bout démissionne avec un faux post LinkedIn', () => {
     const { state, ids } = stateWithTeam(['SENIOR_BEARD', 'TEN_X']);
+    state.teamLife = null;
     state.components.mood[ids[0]!]!.moral = 0;
     state.gauges.debt = 100;
     state.gauges.coffee = 0;

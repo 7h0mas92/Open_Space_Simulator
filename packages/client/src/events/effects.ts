@@ -1,4 +1,11 @@
-import { BALANCE, DEV_ROLES, type CardEffects, type EventCard, type GameState } from '@oss/shared';
+import {
+  BALANCE,
+  DEV_ROLES,
+  difficultyOf,
+  type CardEffects,
+  type EventCard,
+  type GameState,
+} from '@oss/shared';
 import { unlockAchievement } from '../simulation/achievements';
 import { fireDev, spawnDev } from '../simulation/devs';
 import {
@@ -10,6 +17,7 @@ import {
   devsWithRole,
   type SimContext,
 } from '../simulation/helpers';
+import { changeRivalUsers } from '../simulation/rivals';
 import { changeVentureValuation, latestActiveVenture } from '../simulation/ventures';
 
 /** Sens « négatif » de chaque effet chiffré : c'est lui qu'on aggrave en cas de report. */
@@ -41,9 +49,9 @@ export function escalate(
   return isBad ? value * (1 + BALANCE.events.escalation * level) * softening : value;
 }
 
-/** Part des effets négatifs conservée selon le mode : moitié moins en Facile. */
+/** Part des effets négatifs appliquée selon le mode : moins en Facile, plus en Hardcore. */
 export function badEffectFactor(mode: GameState['mode']): number {
-  return mode === 'EASY' ? BALANCE.easy.badEffectMultiplier : 1;
+  return difficultyOf(mode).badEffects;
 }
 
 /**
@@ -99,4 +107,5 @@ export function applyEffects(
   const venture = latestActiveVenture(state);
   if (effects.ventureValue !== undefined && venture)
     changeVentureValuation(venture, 1 + scaled('ventureValue') / 100);
+  if (effects.rivals !== undefined) changeRivalUsers(state, effects.rivals);
 }

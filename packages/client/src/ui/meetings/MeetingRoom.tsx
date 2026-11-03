@@ -1,9 +1,11 @@
-import { MEETINGS } from '@oss/shared';
+import { DAILY_SYNC, MEETINGS } from '@oss/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameView, MeetingFormatView } from '../../view/types';
+import { researchLockedReason } from '../build/storyLock';
 import { formatGauge, localized } from '../game/format';
 import { useGame } from '../store/game';
+import { TICKET_APP } from '../../view/ticketBoard';
 
 /*
  * Panneau « Réunions » : le joueur choisit comment aménager la salle de réunion du bureau.
@@ -20,6 +22,7 @@ export function MeetingRoom({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const money = useMoney();
   const dispatch = useGame((s) => s.dispatch);
+  const openPanel = useGame((s) => s.openPanel);
   const replay = useGame((s) => s.replayOf !== null);
   const [confirming, setConfirming] = useState(false);
   const room = view.meetingRoom;
@@ -28,6 +31,9 @@ export function MeetingRoom({ view }: { view: GameView }) {
   return (
     <div className="meeting-panel">
       <p className="hint">{t('meetings.intro', { hour, minutes: MEETINGS.dailyMinutes })}</p>
+      <p className="hint">
+        {t('meetings.dailyIntro', { focus: Math.round(DAILY_SYNC.focusBonus * 100) })}
+      </p>
       <p className="hint">{t('meetings.crisisIntro', { count: MEETINGS.crisisDevs })}</p>
       {!room.unlocked ? (
         <p className="warning" data-testid="meetings-locked">
@@ -45,6 +51,14 @@ export function MeetingRoom({ view }: { view: GameView }) {
                   <span aria-hidden="true">{current.icon} </span>
                   <strong>{localized(current.name, i18n.language)}</strong>
                 </p>
+                <button
+                  type="button"
+                  data-testid="open-ticket-app"
+                  onClick={() => openPanel('tickets')}
+                >
+                  <span aria-hidden="true">📽️ </span>
+                  {t('daily.open', { app: TICKET_APP.name })}
+                </button>
                 <dl className="facts group-facts">
                   <div>
                     <dt>{t('meetings.useful')}</dt>
@@ -122,6 +136,7 @@ export function MeetingRoom({ view }: { view: GameView }) {
                   current={format.id === room.format}
                   refund={room.format ? room.refund : 0}
                   disabled={replay}
+                  research={researchLockedReason(t, view, `meeting:${format.id}`)}
                 />
               </li>
             ))}
@@ -137,11 +152,14 @@ function FormatCard({
   current,
   refund,
   disabled,
+  research,
 }: {
   format: MeetingFormatView;
   current: boolean;
   refund: number;
   disabled: boolean;
+  /** Arbre R&D (Histoire) : le niveau à prendre pour cette formule, ou null. */
+  research: string | null;
 }) {
   const { t, i18n } = useTranslation();
   const money = useMoney();
@@ -187,7 +205,9 @@ function FormatCard({
           </button>
           {blocker && blocker !== 'NOT_ELIGIBLE' && (
             <p className="hint">
-              {t(`meetings.blockers.${blocker}`, { phase: t(`phases.${format.minPhase}`) })}
+              {blocker === 'LOCKED' && research
+                ? research
+                : t(`meetings.blockers.${blocker}`, { phase: t(`phases.${format.minPhase}`) })}
             </p>
           )}
         </>

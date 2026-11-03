@@ -6,16 +6,17 @@
  * 1 x 1, l'objet est posé au sol (y = 0), centré, et regarde vers +z (vers la caméra).
  *
  * Par thème :
- * - `floor` : modèles posés au sol le long des murs (sapin, citrouilles, fusée…) ;
  * - `desk` : un petit objet posé sur chaque bureau ;
- * - `wall` : guirlandes et ornements accrochés aux deux murs du fond.
+ * - `wall` : une guirlande (fil et ampoules, ou cordelette et fanions) tendue en festons sous le
+ *   plafond, et un ornement accroché entre deux appliques, jamais devant une fenêtre ni un grand
+ *   meuble (les emplacements viennent de `decorWalls`, dans `decorations.ts`).
+ * Les pièces d'un thème sont fusionnées par matériau (`Pieces`) : un mur entier se dessine en
+ * quatre appels au plus, et les ampoules scintillent en trois phases décalées.
  */
 import * as THREE from 'three';
 import type { DecorTheme } from '@oss/shared';
+import { Pieces, tint } from './pieces';
 import { material, PALETTE } from './primitives';
-
-/** Hauteur des murs du fond (voir `office.ts`). */
-const WALL_HEIGHT = 2.2;
 
 // --- Matériaux et formes de base -------------------------------------------------------------
 
@@ -167,49 +168,6 @@ function balloon(color: number, x: number, z: number, height: number): THREE.Gro
   );
 }
 
-/** Citrouille, éventuellement sculptée (yeux et bouche lumineux). */
-function pumpkin(r: number, carved: boolean, x = 0, z = 0): THREE.Group {
-  const result = group(ball(r, 0xf07f1e, x, r * 0.8, z, 0.8));
-  result.add(post(r * 0.12, r * 0.15, r * 0.35, 0x4c7a2a, x, r * 1.5, z, 5));
-  if (carved) {
-    for (const dx of [-0.35, 0.35])
-      result.add(
-        cone(r * 0.16, r * 0.25, decorGlow(0xffc94d), x + dx * r, r * 0.9, z + r * 0.88, 3),
-      );
-    result.add(box(r * 0.8, r * 0.14, 0.02, decorGlow(0xffc94d), x, r * 0.5, z + r * 0.9));
-  }
-  return result;
-}
-
-/** Œuf de Pâques peint de deux bandes. */
-function egg(r: number, base: number, stripe: number, x = 0, y = 0, z = 0): THREE.Group {
-  return group(
-    ball(r, base, x, y + r * 1.3, z, 1.3),
-    post(r * 1.01, r * 1.01, r * 0.25, stripe, x, y + r * 1.15, z, 10),
-  );
-}
-
-/** Ampoules colorées le long d'un segment (guirlande lumineuse). */
-function lightString(
-  from: THREE.Vector3,
-  to: THREE.Vector3,
-  colors: readonly number[],
-  sag = 0.15,
-  spacing = 0.35,
-): THREE.Group {
-  const result = new THREE.Group();
-  const length = from.distanceTo(to);
-  const count = Math.max(2, Math.round(length / spacing));
-  for (let i = 0; i <= count; i++) {
-    const t = i / count;
-    const point = from.clone().lerp(to, t);
-    point.y -= Math.sin(t * Math.PI) * sag;
-    const color = colors[i % colors.length] ?? PALETTE.yellow;
-    result.add(ball(0.05, decorGlow(color), point.x, point.y, point.z, 1.3));
-  }
-  return result;
-}
-
 /** Fanions triangulaires le long d'un segment, face à la caméra. */
 function bunting(
   from: THREE.Vector3,
@@ -233,104 +191,366 @@ function bunting(
   return result;
 }
 
-/** Les deux murs du fond : un segment par mur, légèrement décollé de la paroi. */
-interface WallSpan {
-  readonly from: THREE.Vector3;
-  readonly to: THREE.Vector3;
-  /** Rotation qui fait regarder un objet plat vers l'intérieur de la pièce. */
-  readonly facing: number;
-  /** Position le long du mur (0 à 1) → point sur la paroi à la hauteur `y`. */
-  readonly at: (t: number, y: number) => THREE.Vector3;
-  readonly length: number;
+// --- Assemblage fusionné ---------------------------------------------------------------------
+
+type At = readonly [number, number, number];
+
+/**
+ * Ampoules, néons et flammes des thèmes : trois matériaux non éclairés (lisibles même la nuit),
+ * peints par sommet. Trois phases décalées font scintiller les guirlandes sans que toutes les
+ * ampoules battent ensemble ; tout un mur tient ainsi en quatre maillages au plus.
+ */
+function bulbMaterial(phase: number): THREE.MeshBasicMaterial {
+  const mat = new THREE.MeshBasicMaterial({ vertexColors: true });
+  mat.name = `decor-bulbs-${phase}`;
+  return mat;
+}
+const BULBS = [bulbMaterial(0), bulbMaterial(1), bulbMaterial(2)] as const;
+
+/** Les matériaux des ampoules (animés par `DecorationsView`). */
+export function decorBulbMaterials(): readonly THREE.MeshBasicMaterial[] {
+  return BULBS;
 }
 
-function wallSpans(width: number, depth: number, y: number): WallSpan[] {
-  const back = -0.48;
-  const make = (from: THREE.Vector3, to: THREE.Vector3, facing: number): WallSpan => ({
-    from,
-    to,
-    facing,
-    length: from.distanceTo(to),
-    at: (t, height) => {
-      const point = from.clone().lerp(to, t);
-      point.y = height;
-      return point;
-    },
+/**
+ * Un décor en cours d'assemblage : des pièces placées dans son repère, fusionnées à la fin par
+ * matériau (`Pieces`). Les ornements d'un mur sont construits chacun dans son repère, puis
+ * « tamponnés » à leur place sur le mur.
+ */
+class Kit {
+  private readonly p = new Pieces();
+
+  box(w: number, h: number, d: number, color: number, at: At, tilt: Tilt = {}): void {
+    this.p.box(w, h, d, color, at, tilt);
+  }
+
+  soft(w: number, h: number, d: number, r: number, color: number, at: At, tilt: Tilt = {}): void {
+    this.p.soft(w, h, d, r, color, at, tilt);
+  }
+
+  /** Cylindre vertical posé sur `y`. */
+  post(top: number, bottom: number, h: number, color: number, at: At, segments = 10): void {
+    this.p.post(top, bottom, h, color, at, segments);
+  }
+
+  /** Cône posé sur `y`, pointe en haut. */
+  cone(r: number, h: number, color: number, at: At, segments = 8): void {
+    this.p.post(0.0005, r, h, color, at, segments);
+  }
+
+  /** Cône centré en `at`, pointe tournée de `turn` dans le plan du mur (pointe de flèche). */
+  coneAt(r: number, h: number, color: number, at: At, turn: number): void {
+    this.p.shape(new THREE.ConeGeometry(r, h, 8), color, at, { z: turn });
+  }
+
+  /** Géométrie déjà placée dans le repère du décor (fanion), peinte d'une couleur. */
+  piece(geometry: THREE.BufferGeometry, color: number): void {
+    this.p.shape(geometry, color, [0, 0, 0]);
+  }
+
+  /** Sphère facettée centrée en `at`, étirée par `scale`. */
+  ball(r: number, color: number, at: At, scale: At = [1, 1, 1], detail = 1): void {
+    const geometry = new THREE.IcosahedronGeometry(r, detail).scale(...scale);
+    this.p.shape(geometry, color, at);
+  }
+
+  /** Disque face à +z (horloge, disque vinyle, écusson), centré en `at`. */
+  disc(r: number, depth: number, color: number, at: At, segments = 18): void {
+    this.p.shape(new THREE.CylinderGeometry(r, r, depth, segments), color, at, { x: Math.PI / 2 });
+  }
+
+  /** Anneau face à +z (couronne, bouée), centré en `at`. */
+  ring(r: number, tube: number, color: number, at: At, arc = Math.PI * 2, turn = 0): void {
+    this.p.shape(new THREE.TorusGeometry(r, tube, 5, 18, arc), color, at, { z: turn });
+  }
+
+  /** Forme plate extrudée face à +z, centrée en `at`, tournée de `turn` dans son plan. */
+  flat(shape: THREE.Shape, depth: number, color: number, at: At, turn = 0): void {
+    const geometry = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
+    geometry.translate(0, 0, -depth / 2);
+    this.p.shape(geometry, color, at, { z: turn });
+  }
+
+  /** Barre tendue entre deux points (pattes, hampes, aiguilles). */
+  bar(from: At, to: At, radius: number, color: number, segments = 5): void {
+    this.p.bar(from, to, radius, color, segments);
+  }
+
+  /** Pièce lumineuse : ampoule, néon, flamme ou visage de citrouille. */
+  glow(geometry: THREE.BufferGeometry, color: number, at: At, phase = 0, tilt: Tilt = {}): void {
+    tint(geometry, color);
+    if (tilt.x) geometry.rotateX(tilt.x);
+    if (tilt.z) geometry.rotateZ(tilt.z);
+    if (tilt.y) geometry.rotateY(tilt.y);
+    geometry.translate(...at);
+    this.p.add(geometry, BULBS[phase % BULBS.length] ?? BULBS[0]);
+  }
+
+  glowBall(r: number, color: number, at: At, phase = 0, scaleY = 1): void {
+    this.glow(new THREE.IcosahedronGeometry(r, 1).scale(1, scaleY, 1), color, at, phase);
+  }
+
+  glowBox(w: number, h: number, d: number, color: number, at: At, phase = 0, turn = 0): void {
+    this.glow(new THREE.BoxGeometry(w, h, d), color, at, phase, { z: turn });
+  }
+
+  glowFlat(shape: THREE.Shape, depth: number, color: number, at: At, phase = 0): void {
+    const geometry = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
+    geometry.translate(0, 0, -depth / 2);
+    this.glow(geometry, color, at, phase);
+  }
+
+  /** Tube le long d'une courbe (fil de guirlande, cordelette). */
+  tube(points: readonly THREE.Vector3[], radius: number, color: number): void {
+    const curve = new THREE.CatmullRomCurve3([...points]);
+    this.p.shape(
+      new THREE.TubeGeometry(curve, points.length * 2, radius, 4, false),
+      color,
+      [0, 0, 0],
+    );
+  }
+
+  /** Recopie un autre décor (un ornement) à la place donnée par `matrix`. */
+  stamp(other: Kit, matrix: THREE.Matrix4): void {
+    for (const child of other.build('stamp').children) {
+      if (!(child instanceof THREE.Mesh)) continue;
+      const geometry = (child.geometry as THREE.BufferGeometry).applyMatrix4(matrix);
+      this.p.add(geometry, child.material as THREE.Material);
+    }
+  }
+
+  build(name: string): THREE.Group {
+    return this.p.build(name);
+  }
+}
+
+type Tilt = { readonly x?: number; readonly y?: number; readonly z?: number };
+
+// --- Les murs ----------------------------------------------------------------------------------
+
+/**
+ * Un mur du fond tel que le voit le décor : 0, le mur du fond (le long de x, en z = -0.5) ;
+ * 1, le mur de gauche (le long de z, en x = -0.5).
+ */
+export interface DecorWall {
+  readonly side: 0 | 1;
+  /** Morceaux de mur plein où tendre les guirlandes, de `from` à `to` (coordonnée le long du mur). */
+  readonly spans: readonly (readonly [number, number])[];
+  /** Cases où accrocher un ornement : entre les appliques, hors fenêtres, cloisons et grands meubles. */
+  readonly spots: readonly number[];
+}
+
+/** Hauteur des clous des guirlandes, juste sous le plafond. */
+const NAIL_Y = 2.06;
+/** Centre des ornements : à hauteur des appliques (1,5 m), sous les guirlandes. */
+export const ORNAMENT_Y = 1.4;
+/** Les ornements sont dessinés petits, puis agrandis d'un coup à leur place sur le mur. */
+const ORNAMENT_SCALE = 1.3;
+/** Face intérieure des murs du fond (voir `WALL_AXIS` et `WALL_THICKNESS`). */
+const WALL_FACE = -0.5;
+
+/** Point du mur : `along` le long du mur, à la hauteur `y`, décollé de la paroi de `off`. */
+function onWall(side: 0 | 1, along: number, y: number, off: number): THREE.Vector3 {
+  const out = WALL_FACE + off;
+  return side === 0 ? new THREE.Vector3(along, y, out) : new THREE.Vector3(out, y, along);
+}
+
+/** Les festons d'un morceau de mur : environ 2,4 m chacun, accrochés à des clous. */
+export function festoons(span: readonly [number, number]): [number, number][] {
+  const [from, to] = span;
+  const count = Math.max(1, Math.round((to - from) / 2.4));
+  const step = (to - from) / count;
+  return Array.from({ length: count }, (_, i) => [from + i * step, from + (i + 1) * step]);
+}
+
+/** Points d'un feston qui pend entre deux clous (parabole), du clou de gauche à celui de droite. */
+function sagging(side: 0 | 1, from: number, to: number, off: number, samples = 12) {
+  const sag = Math.min(0.12, 0.04 + 0.03 * (to - from));
+  return Array.from({ length: samples + 1 }, (_, i) => {
+    const u = i / samples;
+    return onWall(side, from + (to - from) * u, NAIL_Y - sag * 4 * u * (1 - u), off);
   });
-  return [
-    make(new THREE.Vector3(-0.45, y, back), new THREE.Vector3(width - 0.55, y, back), 0),
-    make(new THREE.Vector3(back, y, -0.45), new THREE.Vector3(back, y, depth - 0.55), Math.PI / 2),
-  ];
 }
 
-/** Répète un ornement mural le long des deux murs, tous les `spacing` mètres. */
-function alongWalls(
-  width: number,
-  depth: number,
-  y: number,
-  spacing: number,
-  build: (index: number) => THREE.Object3D,
-): THREE.Group {
-  const result = new THREE.Group();
-  let index = 0;
-  for (const span of wallSpans(width, depth, y)) {
-    const count = Math.max(1, Math.floor(span.length / spacing));
-    for (let i = 0; i < count; i++) {
-      const object = build(index++);
-      object.position.copy(span.at((i + 0.5) / count, y));
-      object.rotation.y = span.facing;
-      result.add(object);
-    }
+/** Guirlande lumineuse : un fil vert sombre, des douilles et des ampoules qui pendent. */
+function lightGarland(kit: Kit, walls: readonly DecorWall[], colors: readonly number[]): void {
+  const wire = 0x1f3b2a;
+  let bulb = 0;
+  for (const wall of walls)
+    for (const span of wall.spans)
+      for (const [from, to] of festoons(span)) {
+        const points = sagging(wall.side, from, to, 0.05);
+        kit.tube(points, 0.006, wire);
+        for (const end of [points[0], points[points.length - 1]])
+          if (end) kit.box(0.025, 0.025, 0.04, 0x707479, [end.x, end.y - 0.012, end.z]);
+        const count = Math.max(2, Math.round((to - from) / 0.2));
+        const curve = new THREE.CatmullRomCurve3(points);
+        for (let i = 1; i < count; i++) {
+          const point = curve.getPoint(i / count);
+          kit.box(0.018, 0.024, 0.018, wire, [point.x, point.y - 0.026, point.z]);
+          const color = colors[bulb % colors.length] ?? PALETTE.yellow;
+          kit.glowBall(0.024, color, [point.x, point.y - 0.046, point.z], bulb, 1.35);
+          bulb++;
+        }
+      }
+}
+
+type FlagShape = 'triangle' | 'heart' | 'pennant';
+
+/** Fanion qui pend sous la cordelette, pointe en bas, face à +z. */
+function flagShape(kind: FlagShape): THREE.Shape {
+  if (kind === 'heart') {
+    const shape = heartShape(0.09);
+    return shape;
   }
-  return result;
+  const shape = new THREE.Shape();
+  if (kind === 'pennant') {
+    // Fanion à queue d'aronde.
+    shape.moveTo(-0.09, 0);
+    shape.lineTo(0.09, 0);
+    shape.lineTo(0.09, -0.2);
+    shape.lineTo(0, -0.14);
+    shape.lineTo(-0.09, -0.2);
+  } else {
+    shape.moveTo(-0.1, 0);
+    shape.lineTo(0.1, 0);
+    shape.lineTo(0, -0.2);
+  }
+  shape.closePath();
+  return shape;
 }
 
-/** Une guirlande (fanions ou ampoules) en haut des deux murs. */
-function topGarland(
-  width: number,
-  depth: number,
-  kind: 'bunting' | 'lights',
+/** Guirlande de fanions : une cordelette claire et des fanions qui suivent sa courbe. */
+function flagGarland(
+  kit: Kit,
+  walls: readonly DecorWall[],
   colors: readonly number[],
-): THREE.Group {
-  const result = new THREE.Group();
-  for (const span of wallSpans(width, depth, WALL_HEIGHT - 0.12)) {
-    // Plusieurs festons de 3 m environ plutôt qu'une seule guirlande qui pend jusqu'au sol.
-    const loops = Math.max(1, Math.round(span.length / 3));
-    for (let i = 0; i < loops; i++) {
-      const a = span.at(i / loops, span.from.y);
-      const b = span.at((i + 1) / loops, span.from.y);
-      result.add(
-        kind === 'lights' ? lightString(a, b, colors) : bunting(a, b, colors, span.facing),
-      );
+  kind: FlagShape = 'triangle',
+): void {
+  let flag = 0;
+  for (const wall of walls)
+    for (const span of wall.spans)
+      for (const [from, to] of festoons(span)) {
+        const points = sagging(wall.side, from, to, 0.04);
+        kit.tube(points, 0.005, 0xf3eee2);
+        for (const end of [points[0], points[points.length - 1]])
+          if (end) kit.box(0.025, 0.025, 0.04, 0x707479, [end.x, end.y - 0.012, end.z]);
+        const curve = new THREE.CatmullRomCurve3(points);
+        const count = Math.max(2, Math.round((to - from) / 0.3));
+        for (let i = 0; i < count; i++) {
+          const u = (i + 0.5) / count;
+          const point = curve.getPoint(u);
+          const tangent = curve.getTangent(u);
+          const slope = Math.atan2(tangent.y, wall.side === 0 ? tangent.x : tangent.z);
+          const geometry = new THREE.ExtrudeGeometry(flagShape(kind), {
+            depth: 0.008,
+            bevelEnabled: false,
+          });
+          if (kind === 'heart') geometry.translate(0, -0.1, 0);
+          geometry.rotateZ(wall.side === 0 ? slope : -slope);
+          geometry.rotateY(wall.side === 0 ? 0 : Math.PI / 2);
+          geometry.translate(point.x, point.y - 0.004, point.z);
+          kit.piece(geometry, colors[flag % colors.length] ?? PALETTE.red);
+          flag++;
+        }
+      }
+}
+
+/** Accroche un ornement (construit dans son repère, face à +z) à chaque emplacement des murs. */
+function ornaments(kit: Kit, walls: readonly DecorWall[], build: (index: number) => Kit): void {
+  let index = 0;
+  const matrix = new THREE.Matrix4();
+  const scale = new THREE.Matrix4().makeScale(ORNAMENT_SCALE, ORNAMENT_SCALE, ORNAMENT_SCALE);
+  for (const wall of walls)
+    for (const spot of wall.spots) {
+      const at = onWall(wall.side, spot, ORNAMENT_Y, 0.01);
+      matrix
+        .makeRotationY(wall.side === 0 ? 0 : Math.PI / 2)
+        .multiply(scale)
+        .setPosition(at);
+      kit.stamp(build(index++), matrix);
     }
-  }
-  return result;
+}
+
+// --- Formes ------------------------------------------------------------------------------------
+
+/** Écu de blason : haut droit, flancs qui s'arrondissent jusqu'à la pointe. */
+function shieldShape(w: number, h: number): THREE.Shape {
+  const shape = new THREE.Shape();
+  shape.moveTo(-w / 2, h / 2);
+  shape.lineTo(w / 2, h / 2);
+  shape.lineTo(w / 2, 0);
+  shape.quadraticCurveTo(w / 2, -h * 0.35, 0, -h / 2);
+  shape.quadraticCurveTo(-w / 2, -h * 0.35, -w / 2, 0);
+  shape.closePath();
+  return shape;
+}
+
+/** Aile de chauve-souris festonnée, vers la droite (`side` = 1) ou la gauche (-1). */
+function batWing(size: number, side: number): THREE.Shape {
+  const s = size;
+  const x = side * s;
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0.02 * s);
+  shape.quadraticCurveTo(0.5 * x, 0.35 * s, x, 0.25 * s);
+  shape.quadraticCurveTo(0.85 * x, 0.05 * s, 0.78 * x, -0.12 * s);
+  shape.quadraticCurveTo(0.62 * x, -0.02 * s, 0.52 * x, -0.16 * s);
+  shape.quadraticCurveTo(0.36 * x, -0.04 * s, 0.24 * x, -0.16 * s);
+  shape.quadraticCurveTo(0.12 * x, -0.04 * s, 0, -0.08 * s);
+  shape.closePath();
+  return shape;
+}
+
+/** Planche de surf : un fuseau pointu en haut, arrondi en bas. */
+function surfboardShape(w: number, h: number): THREE.Shape {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, h / 2);
+  shape.quadraticCurveTo(w / 2, h * 0.2, w / 2, -h * 0.25);
+  shape.quadraticCurveTo(w / 2, -h / 2, 0, -h / 2);
+  shape.quadraticCurveTo(-w / 2, -h / 2, -w / 2, -h * 0.25);
+  shape.quadraticCurveTo(-w / 2, h * 0.2, 0, h / 2);
+  return shape;
+}
+
+/** Contour d'un rectangle en néon (quatre tubes). */
+function neonFrame(kit: Kit, w: number, h: number, color: number, phase: number, z = 0.03): void {
+  const t = 0.018;
+  kit.glowBox(w, t, t, color, [0, h / 2, z], phase);
+  kit.glowBox(w, t, t, color, [0, -h / 2, z], phase);
+  kit.glowBox(t, h, t, color, [w / 2, 0, z], phase);
+  kit.glowBox(t, h, t, color, [-w / 2, 0, z], phase);
+}
+
+/** Petit anneau d'accroche au-dessus d'un ornement, avec son clou. */
+function hanger(kit: Kit, top: number, color = 0x8a8d92): void {
+  kit.bar([0, top, 0.012], [0, top + 0.04, 0.006], 0.004, color, 4);
+  kit.box(0.02, 0.02, 0.03, 0x707479, [0, top + 0.03, 0]);
 }
 
 // --- Les thèmes --------------------------------------------------------------------------------
 
 export interface ThemeModels {
-  /** Modèles au sol, utilisés à tour de rôle. */
-  readonly floor: readonly (() => THREE.Object3D)[];
-  /** Petit objet posé sur les bureaux. */
+  /** Petit objet posé sur les bureaux (repère : le plateau, au centre de l'objet). */
   readonly desk: () => THREE.Object3D;
-  /** Décor des murs du fond pour un bureau de `width` x `depth` cases. */
-  readonly wall: (width: number, depth: number) => THREE.Group;
+  /** Guirlandes et ornements des murs du fond. */
+  readonly wall: (walls: readonly DecorWall[]) => THREE.Group;
 }
 
 const C = {
   gold: 0xf5c542,
   silver: 0xd5dbe3,
-  night: 0x2b3a67,
+  night: 0x24305a,
   magenta: 0xd94f9a,
-  red: 0xd93a3a,
+  red: 0xc8262e,
   pink: 0xf28fb1,
   rose: 0xe0405a,
   green: 0x2f8f4e,
   pine: 0x2a6b3f,
+  pineLight: 0x3a8a52,
+  pineDark: 0x1f5232,
   orange: 0xf07f1e,
   purple: 0x6b3fa0,
-  black: 0x2a2a30,
+  black: 0x24242a,
   slime: 0x7cf05a,
   cyan: 0x2de2e6,
   neonPink: 0xff4fb3,
@@ -345,647 +565,627 @@ const C = {
   lilac: 0xc9b3f0,
   pastelPink: 0xf7b8cf,
   sky: 0xa9d8f5,
+  cream: 0xf6f1e4,
+  warm: 0xffd27a,
+  wood: 0x8a5a36,
+  terracotta: 0xc2643f,
 } as const;
 
+/** Un décor de mur : la guirlande, puis les ornements. */
+function wallOf(
+  name: string,
+  garland: (kit: Kit, walls: readonly DecorWall[]) => void,
+  ornament: (index: number) => Kit,
+): (walls: readonly DecorWall[]) => THREE.Group {
+  return (walls) => {
+    const kit = new Kit();
+    garland(kit, walls);
+    ornaments(kit, walls, ornament);
+    return kit.build(`decor-${name}`);
+  };
+}
+
+/** Un objet de bureau assemblé. */
+function deskOf(name: string, draw: (kit: Kit) => void): () => THREE.Object3D {
+  return () => {
+    const kit = new Kit();
+    draw(kit);
+    return kit.build(`decor-desk-${name}`);
+  };
+}
+
 const NEW_YEAR: ThemeModels = {
-  floor: [
-    // Seau à champagne sur pied.
-    () =>
-      group(
-        post(0.03, 0.12, 0.7, PALETTE.dark),
-        post(0.16, 0.12, 0.25, C.silver, 0, 0.7),
-        post(0.04, 0.05, 0.3, C.pine, 0.03, 0.8, 0),
-        post(0.02, 0.02, 0.08, C.gold, 0.03, 1.1, 0),
-        post(0.04, 0.05, 0.28, C.pine, -0.06, 0.8, 0.04),
-      ),
-    // Bouquet de ballons or et argent.
-    () =>
-      group(
-        post(0.08, 0.1, 0.08, PALETTE.dark),
-        balloon(C.gold, -0.12, 0, 1.3),
-        balloon(C.silver, 0.1, 0.05, 1.45),
-        balloon(C.magenta, 0, -0.08, 1.6),
-      ),
-    // Boule à facettes sur un pied.
-    () =>
-      group(
-        post(0.02, 0.15, 1.1, PALETTE.dark),
-        new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 0), decorGlow(C.silver)).translateY(
-          1.35,
-        ),
-      ),
-  ],
-  desk: () =>
-    group(
-      cone(0.06, 0.2, C.magenta, 0, 0, 0, 6),
-      ball(0.025, C.gold, 0, 0.21, 0),
-      post(0.01, 0.01, 0.12, C.gold, 0.1, 0, 0.05, 4),
-    ),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'lights', [C.gold, C.silver, C.magenta]),
-      alongWalls(w, d, 1.45, 3, (i) =>
+  // Bouteille de champagne et sa flûte.
+  desk: deskOf('champagne', (k) => {
+    k.post(0.028, 0.03, 0.12, 0x1f4a2e, [-0.03, 0, 0], 12);
+    k.post(0.012, 0.028, 0.04, 0x1f4a2e, [-0.03, 0.12, 0], 12);
+    k.post(0.014, 0.014, 0.035, C.gold, [-0.03, 0.155, 0], 10);
+    k.post(0.0305, 0.0305, 0.04, C.cream, [-0.03, 0.04, 0], 12);
+    k.post(0.03, 0.03, 0.004, 0xd9d4c4, [0.05, 0, 0.02], 12);
+    k.post(0.003, 0.003, 0.05, 0xe8eef2, [0.05, 0.004, 0.02], 5);
+    k.post(0.022, 0.008, 0.07, 0xf2e3a6, [0.05, 0.054, 0.02], 10);
+  }),
+  wall: wallOf(
+    'new-year',
+    (kit, walls) => lightGarland(kit, walls, [C.warm, C.cream, C.gold]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
         // Horloge qui va sonner minuit.
-        i % 2 === 0
-          ? group(
-              post(0.25, 0.25, 0.04, C.gold, 0, -0.02).rotateX(Math.PI / 2),
-              box(0.02, 0.18, 0.02, PALETTE.dark, 0, -0.01, 0.04),
-              box(0.02, 0.13, 0.02, PALETTE.dark, 0, -0.01, 0.04),
-            )
-          : flat(starShape(0.2, 0.09), 0.03, decorGlow(C.gold)),
-      ),
-    ),
+        k.disc(0.17, 0.03, C.cream, [0, 0, 0.02], 24);
+        k.ring(0.17, 0.018, C.gold, [0, 0, 0.035]);
+        for (let h = 0; h < 12; h++) {
+          const a = (h / 12) * Math.PI * 2;
+          const r = h % 3 === 0 ? 0.13 : 0.135;
+          k.box(
+            0.012,
+            h % 3 === 0 ? 0.03 : 0.018,
+            0.006,
+            0x2b2f3a,
+            [Math.sin(a) * r, Math.cos(a) * r - 0.01, 0.038],
+            { z: -a },
+          );
+        }
+        k.box(0.016, 0.085, 0.006, 0x2b2f3a, [0, 0, 0.042]);
+        k.box(0.01, 0.12, 0.006, 0x2b2f3a, [0, 0, 0.046], { z: 0.1 });
+        k.disc(0.014, 0.012, C.gold, [0, 0, 0.05], 10);
+        hanger(k, 0.19);
+      } else {
+        // Étoile dorée et ses éclats.
+        k.glowFlat(starShape(0.13, 0.055), 0.03, C.gold, [0, 0, 0.03], i);
+        for (let r = 0; r < 8; r++) {
+          const a = (r / 8) * Math.PI * 2 + Math.PI / 8;
+          k.glowBox(
+            0.008,
+            0.06,
+            0.006,
+            C.cream,
+            [Math.sin(a) * 0.19, Math.cos(a) * 0.19, 0.03],
+            i,
+            -a,
+          );
+        }
+      }
+      return k;
+    },
+  ),
 };
 
 const VALENTINE: ThemeModels = {
-  floor: [
-    // Grand cœur sur un pied.
-    () => group(post(0.03, 0.12, 0.8, PALETTE.white), flat(heartShape(0.3), 0.08, C.rose, 0, 1.05)),
-    // Vase de roses.
-    () => {
-      const result = group(post(0.12, 0.09, 0.35, PALETTE.white));
-      for (const [x, z, h] of [
-        [0, 0, 0.75],
-        [0.07, 0.05, 0.7],
-        [-0.07, 0.03, 0.68],
-        [0.02, -0.07, 0.72],
-      ] as const) {
-        result.add(post(0.008, 0.008, h - 0.35, C.green, x, 0.35, z, 4));
-        result.add(ball(0.045, C.rose, x, h, z));
+  // Une rose dans un soliflore.
+  desk: deskOf('rose', (k) => {
+    k.post(0.022, 0.028, 0.09, 0xcfe6ee, [0, 0, 0], 10);
+    k.post(0.014, 0.022, 0.02, 0xcfe6ee, [0, 0.09, 0], 10);
+    k.bar([0, 0.1, 0], [0.008, 0.18, 0], 0.004, C.green);
+    k.ball(0.022, C.green, [0.018, 0.14, 0], [1.4, 0.4, 0.8], 0);
+    k.ball(0.028, C.red, [0.008, 0.195, 0], [1, 0.9, 1]);
+    k.ball(0.02, 0x9e1b24, [0.008, 0.215, 0], [1, 0.8, 1], 0);
+  }),
+  wall: wallOf(
+    'valentine',
+    (kit, walls) => flagGarland(kit, walls, [C.rose, C.pink, C.cream], 'heart'),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Grand cœur bordé de blanc, traversé d'une flèche.
+        k.flat(heartShape(0.17), 0.02, C.cream, [0, 0.02, 0.012]);
+        k.flat(heartShape(0.145), 0.035, C.rose, [0, 0.02, 0.03]);
+        k.bar([-0.22, -0.1, 0.06], [0.2, 0.12, 0.06], 0.006, C.gold);
+        const arrow = Math.atan2(0.22, 0.42);
+        k.coneAt(0.022, 0.05, C.gold, [0.205, 0.123, 0.06], arrow - Math.PI / 2);
+        k.box(0.04, 0.03, 0.006, C.pink, [-0.21, -0.11, 0.06], { z: arrow });
+        hanger(k, 0.17);
+      } else {
+        // Trois petits cœurs qui pendent d'une tringle.
+        k.bar([-0.16, 0.18, 0.02], [0.16, 0.18, 0.02], 0.007, C.gold);
+        [-0.1, 0, 0.1].forEach((x, n) => {
+          const y = [0.0, -0.08, 0.02][n] ?? 0;
+          k.bar([x, 0.18, 0.02], [x, y + 0.08, 0.02], 0.002, C.cream, 3);
+          k.flat(heartShape(0.055), 0.025, n === 1 ? C.pink : C.rose, [x, y + 0.03, 0.03]);
+        });
+        hanger(k, 0.18);
       }
-      return result;
+      return k;
     },
-    // Peluche ourson géante (rose).
-    () =>
-      group(
-        ball(0.26, C.pink, 0, 0.3, 0, 1.1),
-        ball(0.19, C.pink, 0, 0.72, 0),
-        ball(0.06, C.pink, -0.15, 0.88, 0),
-        ball(0.06, C.pink, 0.15, 0.88, 0),
-        ball(0.06, PALETTE.white, 0, 0.68, 0.17),
-        flat(heartShape(0.08), 0.02, C.rose, 0, 0.35, 0.28),
-      ),
-  ],
-  desk: () => flat(heartShape(0.08), 0.04, C.rose, 0, 0.09),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'bunting', [C.rose, C.pink, PALETTE.white]),
-      alongWalls(w, d, 1.4, 1.6, (i) =>
-        flat(heartShape(i % 2 === 0 ? 0.16 : 0.1), 0.03, i % 3 === 0 ? C.pink : C.rose),
-      ),
-    ),
+  ),
 };
 
 const EASTER: ThemeModels = {
-  floor: [
-    // Œuf géant peint.
-    () => group(egg(0.28, C.sky, C.pastelYellow), post(0.2, 0.22, 0.06, C.pastelGreen)),
-    // Lapin assis.
-    () => {
-      const bunny = group(
-        ball(0.22, PALETTE.white, 0, 0.24, 0, 1.1),
-        ball(0.15, PALETTE.white, 0, 0.58, 0.04),
-        ball(0.035, C.pastelPink, 0, 0.56, 0.18),
-        ball(0.06, PALETTE.white, 0, 0.12, -0.22),
-      );
-      for (const x of [-0.06, 0.06]) {
-        const ear = ball(0.045, PALETTE.white, x, 0.82, 0.02, 3);
-        bunny.add(ear, ball(0.025, C.pastelPink, x, 0.82, 0.05, 3));
+  // Panier en osier, herbe et trois œufs.
+  desk: deskOf('easter-basket', (k) => {
+    k.post(0.065, 0.05, 0.05, C.sand, [0, 0, 0], 12);
+    k.post(0.067, 0.067, 0.012, 0xc7a66a, [0, 0.045, 0], 12);
+    k.ball(0.05, C.pastelGreen, [0, 0.055, 0], [1.2, 0.3, 1.2], 0);
+    const eggs: [number, number, number][] = [
+      [-0.025, 0.07, 0.01],
+      [0.025, 0.072, -0.012],
+      [0.005, 0.07, 0.03],
+    ];
+    eggs.forEach((at, n) =>
+      k.ball(0.022, [C.pastelPink, C.sky, C.pastelYellow][n] ?? C.lilac, at, [1, 1.3, 1]),
+    );
+    k.ring(0.06, 0.006, 0xc7a66a, [0, 0.06, 0], Math.PI);
+  }),
+  wall: wallOf(
+    'easter',
+    (kit, walls) =>
+      flagGarland(kit, walls, [C.pastelPink, C.sky, C.pastelYellow, C.pastelGreen, C.lilac]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Couronne d'œufs pastel et son nœud.
+        const colors = [C.pastelPink, C.sky, C.pastelYellow, C.lilac, C.pastelGreen];
+        k.ring(0.14, 0.022, 0xc7a66a, [0, 0, 0.025]);
+        for (let n = 0; n < 10; n++) {
+          const a = (n / 10) * Math.PI * 2;
+          k.ball(
+            0.04,
+            colors[n % colors.length] ?? C.sky,
+            [Math.cos(a) * 0.14, Math.sin(a) * 0.14, 0.05],
+            [0.8, 1.05, 0.6],
+          );
+        }
+        k.soft(0.09, 0.05, 0.02, 0.01, C.lilac, [-0.045, -0.175, 0.07], { z: 0.4 });
+        k.soft(0.09, 0.05, 0.02, 0.01, C.lilac, [0.045, -0.175, 0.07], { z: -0.4 });
+        k.ball(0.022, C.lilac, [0, -0.15, 0.075]);
+        hanger(k, 0.16);
+      } else {
+        // Tête de lapin.
+        k.ball(0.12, C.cream, [0, -0.04, 0.03], [1, 0.9, 0.4]);
+        for (const side of [-1, 1]) {
+          k.soft(0.06, 0.2, 0.03, 0.025, C.cream, [side * 0.05, 0.03, 0.03], { z: -side * 0.18 });
+          k.soft(0.03, 0.14, 0.01, 0.012, C.pastelPink, [side * 0.052, 0.06, 0.05], {
+            z: -side * 0.18,
+          });
+          k.ball(0.014, 0x2b2f3a, [side * 0.04, -0.02, 0.075], [1, 1, 0.5], 0);
+          k.ball(0.025, C.pastelPink, [side * 0.06, -0.08, 0.07], [1, 0.7, 0.3], 0);
+        }
+        k.ball(0.016, C.pink, [0, -0.06, 0.08], [1.2, 0.8, 0.6], 0);
       }
-      return bunny;
+      return k;
     },
-    // Panier d'œufs.
-    () => {
-      const basket = group(post(0.25, 0.2, 0.22, PALETTE.wood, 0, 0, 0, 10));
-      const handle = new THREE.Mesh(
-        new THREE.TorusGeometry(0.22, 0.02, 4, 12, Math.PI),
-        material(PALETTE.woodDark),
-      );
-      handle.position.y = 0.22;
-      basket.add(handle);
-      const colors = [C.pastelPink, C.sky, C.pastelYellow, C.lilac, C.pastelGreen];
-      colors.forEach((color, i) => {
-        const a = (i / colors.length) * Math.PI * 2;
-        basket.add(egg(0.06, color, PALETTE.white, Math.cos(a) * 0.12, 0.16, Math.sin(a) * 0.12));
-      });
-      return basket;
-    },
-  ],
-  desk: () => egg(0.05, C.lilac, C.pastelYellow),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'bunting', [C.pastelPink, C.sky, C.pastelYellow, C.pastelGreen, C.lilac]),
-      alongWalls(w, d, 1.35, 1.8, (i) => {
-        const colors = [C.pastelPink, C.sky, C.pastelYellow, C.lilac];
-        return egg(0.09, colors[i % colors.length] ?? C.sky, PALETTE.white, 0, -0.12);
-      }),
-    ),
+  ),
 };
 
 const SPACE: ThemeModels = {
-  floor: [
-    // Maquette de fusée.
-    () => {
-      const rocket = group(
-        post(0.16, 0.16, 0.9, PALETTE.white, 0, 0.2, 0, 10),
-        cone(0.16, 0.35, C.red, 0, 1.1, 0, 10),
-        ball(0.07, C.sky, 0, 0.85, 0.15),
-        cone(0.12, 0.2, decorGlow(C.orange), 0, 0, 0, 8),
-      );
-      for (const a of [0, (Math.PI * 2) / 3, (Math.PI * 4) / 3]) {
-        const fin = box(0.04, 0.3, 0.16, C.red, Math.sin(a) * 0.17, 0.15, Math.cos(a) * 0.17);
-        fin.rotation.y = a;
-        rocket.add(fin);
+  // Maquette de fusée sur son socle.
+  desk: deskOf('rocket', (k) => {
+    k.post(0.05, 0.055, 0.015, 0x3a3f4b, [0, 0, 0], 12);
+    k.post(0.024, 0.024, 0.13, C.cream, [0, 0.03, 0], 12);
+    k.cone(0.024, 0.05, C.red, [0, 0.16, 0], 12);
+    k.disc(0.011, 0.006, C.sky, [0, 0.12, 0.024], 10);
+    for (let n = 0; n < 3; n++) {
+      const a = (n / 3) * Math.PI * 2;
+      k.box(0.006, 0.05, 0.035, C.red, [Math.sin(a) * 0.03, 0.025, Math.cos(a) * 0.03], {
+        y: a,
+      });
+    }
+    k.bar([0, 0.015, 0], [0, 0.03, 0], 0.006, 0x8a8d92);
+  }),
+  wall: wallOf(
+    'space',
+    (kit, walls) => lightGarland(kit, walls, [C.cream, C.sky, 0x7fb2ff]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Affiche encadrée : planète à anneau dans le ciel étoilé.
+        k.soft(0.34, 0.42, 0.025, 0.006, 0x2b2f3a, [0, -0.21, 0]);
+        k.box(0.3, 0.38, 0.006, C.night, [0, -0.19, 0.025]);
+        k.ball(0.07, C.orange, [0.02, 0.0, 0.04], [1, 1, 0.4]);
+        k.ring(0.11, 0.008, C.sand, [0.02, 0.0, 0.045], Math.PI * 2, 0.35);
+        const stars: [number, number][] = [
+          [-0.11, 0.13],
+          [0.1, 0.14],
+          [-0.08, -0.1],
+          [0.12, -0.12],
+          [-0.12, 0.02],
+          [0.0, -0.15],
+        ];
+        stars.forEach(([x, y], n) => k.glowBox(0.012, 0.012, 0.006, C.cream, [x, y, 0.032], n));
+        hanger(k, 0.21);
+      } else {
+        // Saturne en suspension.
+        k.bar([0, 0.2, 0.06], [0, 0.07, 0.06], 0.002, C.cream, 3);
+        k.ball(0.065, 0xe2b968, [0, 0, 0.06]);
+        k.ring(0.1, 0.012, C.sand, [0, 0, 0.06], Math.PI * 2, 0.4);
+        k.box(0.022, 0.022, 0.06, 0x707479, [0, 0.2, 0.03]);
       }
-      return rocket;
+      return k;
     },
-    // Planète à anneau sur un socle.
-    () => {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.025, 4, 20), material(C.sand));
-      ring.rotation.x = Math.PI / 2.4;
-      ring.position.y = 1.05;
-      return group(post(0.03, 0.13, 0.8, PALETTE.dark), ball(0.22, C.orange, 0, 1.05, 0), ring);
-    },
-    // Casque d'astronaute sur un piédestal.
-    () =>
-      group(
-        box(0.4, 0.7, 0.4, PALETTE.white),
-        ball(0.2, PALETTE.white, 0, 0.92, 0),
-        ball(0.15, decorGlow(0x3a78c9), 0, 0.93, 0.08, 0.8),
-      ),
-  ],
-  desk: () =>
-    group(
-      post(0.03, 0.03, 0.14, PALETTE.white, 0, 0.02),
-      cone(0.03, 0.06, C.red, 0, 0.16),
-      cone(0.04, 0.03, C.red),
-    ),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'lights', [PALETTE.white, C.sky]),
-      alongWalls(w, d, 1.4, 1.5, (i) =>
-        i % 3 === 0
-          ? ball(0.14, i % 2 === 0 ? C.orange : C.blue)
-          : flat(starShape(0.1, 0.045), 0.02, decorGlow(i % 2 === 0 ? C.gold : PALETTE.white)),
-      ),
-    ),
+  ),
 };
 
 const MEDIEVAL: ThemeModels = {
-  floor: [
-    // Armure de chevalier.
-    () =>
-      group(
-        box(0.3, 0.1, 0.25, PALETTE.woodDark),
-        box(0.08, 0.6, 0.1, C.steel, -0.08, 0.1),
-        box(0.08, 0.6, 0.1, C.steel, 0.08, 0.1),
-        box(0.36, 0.5, 0.22, C.steel, 0, 0.7),
-        box(0.08, 0.45, 0.08, C.steel, -0.23, 0.72),
-        box(0.08, 0.45, 0.08, C.steel, 0.23, 0.72),
-        post(0.12, 0.13, 0.26, C.steel, 0, 1.2, 0, 8),
-        box(0.18, 0.03, 0.02, PALETTE.dark, 0, 1.33, 0.12),
-        cone(0.03, 0.15, 0xa8323a, 0, 1.46, 0, 6),
-      ),
-    // Épée dans le rocher.
-    () =>
-      group(
-        ball(0.3, 0x8a8f99, 0, 0.12, 0, 0.6),
-        box(0.05, 0.55, 0.015, C.silver, 0, 0.25),
-        box(0.24, 0.04, 0.05, C.gold, 0, 0.78),
-        box(0.04, 0.16, 0.04, PALETTE.woodDark, 0, 0.82),
-        ball(0.035, C.gold, 0, 1, 0),
-      ),
-    // Torchère.
-    () =>
-      group(
-        post(0.04, 0.1, 1.1, PALETTE.dark),
-        post(0.1, 0.06, 0.12, PALETTE.dark, 0, 1.1),
-        cone(0.08, 0.22, decorGlow(C.orange), 0, 1.2, 0, 6),
-        cone(0.045, 0.14, decorGlow(C.gold), 0, 1.22, 0, 6),
-      ),
-  ],
-  desk: () =>
-    group(
-      post(0.04, 0.05, 0.06, C.gold),
-      post(0.035, 0.03, 0.08, C.gold, 0, 0.06),
-      cone(0.015, 0.04, C.red, 0, 0.14),
-    ),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'bunting', [0xa8323a, C.gold, C.blue]),
-      alongWalls(w, d, 1.3, 2, (i) => {
-        const color = i % 2 === 0 ? 0xa8323a : C.blue;
-        // Bouclier ou bannière.
-        return i % 2 === 0
-          ? group(
-              box(0.36, 0.42, 0.04, color, 0, -0.25),
-              cone(0.255, 0.18, color, 0, -0.42, 0, 4).rotateX(Math.PI).translateY(0.08),
-              box(0.06, 0.4, 0.05, C.gold, 0, -0.25),
-              box(0.3, 0.06, 0.05, C.gold, 0, -0.06),
-            )
-          : group(
-              box(0.5, 0.03, 0.03, PALETTE.woodDark, 0, 0.25),
-              box(0.4, 0.8, 0.02, color, 0, -0.55),
-              flat(triangleShape(0.4, 0.15), 0.02, color, 0, -0.55),
-              ball(0.07, C.gold, 0, -0.1, 0.02),
-            );
-      }),
-    ),
+  // Calice doré serti d'un rubis.
+  desk: deskOf('goblet', (k) => {
+    k.post(0.04, 0.045, 0.012, C.gold, [0, 0, 0], 12);
+    k.post(0.01, 0.014, 0.06, C.gold, [0, 0.012, 0], 8);
+    k.ball(0.014, C.gold, [0, 0.07, 0], [1.2, 0.8, 1.2]);
+    k.post(0.045, 0.022, 0.06, C.gold, [0, 0.075, 0], 12);
+    k.ball(0.01, 0xb3202c, [0, 0.1, 0.035], [1, 1, 0.6], 0);
+  }),
+  wall: wallOf(
+    'medieval',
+    (kit, walls) => flagGarland(kit, walls, [0xa8323a, C.gold, C.blue], 'pennant'),
+    (i) => {
+      const k = new Kit();
+      const color = i % 2 === 0 ? 0xa8323a : C.blue;
+      if (i % 2 === 0) {
+        // Écu bordé d'or, croix au centre.
+        k.flat(shieldShape(0.3, 0.38), 0.025, C.gold, [0, -0.02, 0.013]);
+        k.flat(shieldShape(0.26, 0.34), 0.035, color, [0, -0.015, 0.03]);
+        k.box(0.04, 0.24, 0.008, C.gold, [0, -0.15, 0.05]);
+        k.box(0.18, 0.04, 0.008, C.gold, [0, -0.05, 0.05]);
+        hanger(k, 0.17);
+      } else {
+        // Bannière sur sa hampe, emblème doré.
+        k.bar([-0.16, 0.19, 0.04], [0.16, 0.19, 0.04], 0.01, C.wood);
+        k.ball(0.018, C.gold, [-0.17, 0.19, 0.04]);
+        k.ball(0.018, C.gold, [0.17, 0.19, 0.04]);
+        const cloth = new THREE.Shape();
+        cloth.moveTo(-0.12, 0);
+        cloth.lineTo(0.12, 0);
+        cloth.lineTo(0.12, -0.38);
+        cloth.lineTo(0, -0.3);
+        cloth.lineTo(-0.12, -0.38);
+        cloth.closePath();
+        k.flat(cloth, 0.012, color, [0, 0.18, 0.03]);
+        k.disc(0.05, 0.01, C.gold, [0, 0.02, 0.04], 14);
+        k.flat(starShape(0.035, 0.016), 0.012, color, [0, 0.02, 0.046]);
+        k.box(0.022, 0.022, 0.03, 0x707479, [0, 0.21, 0.015]);
+      }
+      return k;
+    },
+  ),
 };
 
 const SUPERHEROES: ThemeModels = {
-  floor: [
-    // Mannequin portant une cape.
-    () => {
-      const cape = box(0.42, 0.85, 0.03, C.red, 0, 0.45, -0.14);
-      cape.rotation.x = 0.12;
-      return group(
-        post(0.12, 0.15, 0.06, PALETTE.dark),
-        post(0.025, 0.025, 0.45, PALETTE.dark),
-        box(0.36, 0.55, 0.22, C.blue, 0, 0.45),
-        ball(0.12, PALETTE.skin, 0, 1.13),
-        box(0.25, 0.06, 0.03, PALETTE.dark, 0, 1.13, 0.1),
-        flat(boltShape(0.13), 0.02, C.gold, 0, 0.75, 0.12),
-        cape,
-      );
+  // Figurine de super-héros (inventé) à cape rouge.
+  desk: deskOf('hero', (k) => {
+    k.post(0.035, 0.04, 0.012, 0x2b2f3a, [0, 0, 0], 12);
+    for (const side of [-1, 1]) k.box(0.016, 0.05, 0.02, C.blue, [side * 0.012, 0.012, 0]);
+    k.soft(0.05, 0.05, 0.028, 0.008, C.blue, [0, 0.06, 0]);
+    k.box(0.05, 0.008, 0.03, C.gold, [0, 0.06, 0]);
+    k.box(0.052, 0.08, 0.006, C.red, [0, 0.03, -0.02], { x: -0.15 });
+    k.flat(boltShape(0.014), 0.004, C.gold, [0, 0.09, 0.016]);
+    k.ball(0.019, 0xf0c39a, [0, 0.13, 0]);
+    k.box(0.04, 0.012, 0.03, C.blue, [0, 0.13, 0.004]);
+  }),
+  wall: wallOf(
+    'superheroes',
+    (kit, walls) => flagGarland(kit, walls, [C.red, C.blue, C.gold]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Écusson rond cerclé, éclair doré (emblème inventé).
+        const color = i % 4 === 0 ? C.red : C.blue;
+        k.disc(0.18, 0.025, C.gold, [0, 0, 0.013], 24);
+        k.disc(0.155, 0.035, color, [0, 0, 0.025], 24);
+        k.flat(boltShape(0.13), 0.02, C.gold, [0, 0, 0.05]);
+        hanger(k, 0.18);
+      } else {
+        // Bulle de BD qui explose : « ! ».
+        k.flat(starShape(0.2, 0.13, 12), 0.02, C.gold, [0, 0, 0.012]);
+        k.flat(starShape(0.15, 0.1, 12), 0.03, C.red, [0, 0, 0.025]);
+        k.box(0.04, 0.12, 0.01, C.cream, [0, -0.03, 0.045]);
+        k.box(0.04, 0.035, 0.01, C.cream, [0, -0.085, 0.045]);
+      }
+      return k;
     },
-    // Silhouette de ville en carton.
-    () => {
-      const city = new THREE.Group();
-      [0.9, 1.3, 0.7, 1.1].forEach((h, i) => {
-        city.add(box(0.22, h, 0.08, i % 2 === 0 ? C.night : C.blue, -0.36 + i * 0.24, 0, 0));
-        for (let y = 0.2; y < h - 0.1; y += 0.25)
-          city.add(box(0.06, 0.07, 0.01, decorGlow(C.gold), -0.36 + i * 0.24, y, 0.045));
-      });
-      return city;
-    },
-    // Podium du héros du sprint.
-    () =>
-      group(
-        box(0.7, 0.25, 0.5, C.red),
-        box(0.5, 0.2, 0.45, C.blue, 0, 0.25),
-        flat(starShape(0.18, 0.08), 0.03, C.gold, 0, 0.65, 0),
-      ),
-  ],
-  desk: () =>
-    group(box(0.08, 0.1, 0.04, C.blue), flat(boltShape(0.05), 0.01, C.gold, 0, 0.05, 0.025)),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'bunting', [C.red, C.blue, C.gold]),
-      alongWalls(w, d, 1.35, 2, (i) => {
-        // Écusson rond avec un éclair (emblème inventé).
-        const disc = post(0.22, 0.22, 0.04, i % 2 === 0 ? C.red : C.blue, 0, -0.02, 0, 12);
-        disc.rotation.x = Math.PI / 2;
-        return group(disc, flat(boltShape(0.16), 0.04, C.gold, 0, 0, 0.04));
-      }),
-    ),
+  ),
 };
 
 const RETRO_80S: ThemeModels = {
-  floor: [
-    // Borne d'arcade.
-    () =>
-      group(
-        box(0.55, 1.5, 0.5, C.violet),
-        box(0.45, 0.35, 0.02, decorGlow(C.cyan), 0, 0.95, 0.24),
-        box(0.5, 0.06, 0.3, PALETTE.dark, 0, 0.75, 0.25),
-        post(0.015, 0.015, 0.08, PALETTE.dark, -0.1, 0.81, 0.28, 4),
-        ball(0.03, C.red, -0.1, 0.9, 0.28),
-        ball(0.025, C.gold, 0.08, 0.83, 0.3),
-        ball(0.025, C.neonPink, 0.15, 0.83, 0.3),
-        box(0.55, 0.14, 0.04, decorGlow(C.neonPink), 0, 1.38, 0.24),
-      ),
-    // Gros radiocassette.
-    () =>
-      group(
-        box(0.12, 0.45, 0.12, PALETTE.dark),
-        box(0.7, 0.32, 0.2, PALETTE.dark, 0, 0.45),
-        post(0.1, 0.1, 0.02, C.silver, -0.22, 0.61, 0.1).rotateX(Math.PI / 2),
-        post(0.1, 0.1, 0.02, C.silver, 0.22, 0.61, 0.1).rotateX(Math.PI / 2),
-        box(0.18, 0.08, 0.02, decorGlow(C.cyan), 0, 0.6, 0.1),
-        box(0.5, 0.04, 0.04, C.silver, 0, 0.8),
-      ),
-    // Lampe à lave.
-    () =>
-      group(
-        cone(0.13, 0.18, PALETTE.dark, 0, 0, 0, 8),
-        post(0.05, 0.11, 0.55, decorGlow(C.neonPink), 0, 0.18, 0, 8),
-        cone(0.05, 0.08, PALETTE.dark, 0, 0.73, 0, 8),
-        ball(0.05, decorGlow(C.gold), 0, 0.42, 0),
-      ),
-  ],
-  desk: () =>
-    group(
-      box(0.16, 0.1, 0.02, PALETTE.dark),
-      post(0.025, 0.025, 0.01, C.silver, -0.04, 0.05, 0.01).rotateX(Math.PI / 2),
-      post(0.025, 0.025, 0.01, C.silver, 0.04, 0.05, 0.01).rotateX(Math.PI / 2),
-    ),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'lights', [C.neonPink, C.cyan, C.violet]),
-      alongWalls(w, d, 1.35, 1.8, (i) =>
-        i % 2 === 0
-          ? // Disque vinyle.
-            group(
-              post(0.18, 0.18, 0.015, PALETTE.dark, 0, 0, 0, 16).rotateX(Math.PI / 2),
-              post(0.06, 0.06, 0.02, C.neonPink, 0, 0, 0, 12).rotateX(Math.PI / 2),
-            )
-          : // Néon en zigzag.
-            flat(boltShape(0.18), 0.03, decorGlow(C.cyan)),
-      ),
-    ),
+  // Cube à facettes colorées (casse-tête des années 80).
+  desk: deskOf('puzzle-cube', (k) => {
+    const s = 0.07;
+    k.box(s, s, s, 0x1b1d21, [0, 0, 0]);
+    const face = [C.red, C.gold, C.blue, C.green, C.cream, C.orange];
+    const cell = s / 3;
+    for (let a = 0; a < 3; a++)
+      for (let b = 0; b < 3; b++) {
+        const u = (a - 1) * cell;
+        const v = (b - 1) * cell;
+        const pick = (n: number) => face[(a * 3 + b + n) % face.length] ?? C.red;
+        k.box(cell * 0.82, 0.004, cell * 0.82, pick(0), [u, s, v]);
+        k.box(cell * 0.82, cell * 0.82, 0.004, pick(2), [u, s / 2 + v - cell * 0.41 + 0.0, s / 2]);
+        k.box(0.004, cell * 0.82, cell * 0.82, pick(4), [s / 2, s / 2 + u - cell * 0.41, v]);
+      }
+  }),
+  wall: wallOf(
+    'retro-80s',
+    (kit, walls) => lightGarland(kit, walls, [C.neonPink, C.cyan, C.violet]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Disque vinyle : sillons et étiquette.
+        k.disc(0.18, 0.012, 0x16171b, [0, 0, 0.015], 28);
+        k.ring(0.14, 0.003, 0x34363d, [0, 0, 0.022]);
+        k.ring(0.11, 0.003, 0x34363d, [0, 0, 0.022]);
+        k.disc(0.06, 0.016, C.neonPink, [0, 0, 0.017], 18);
+        k.disc(0.008, 0.02, 0x16171b, [0, 0, 0.018], 8);
+        hanger(k, 0.18);
+      } else {
+        // Cassette audio.
+        k.soft(0.32, 0.2, 0.03, 0.012, 0x2b2f3a, [0, -0.1, 0.015]);
+        k.box(0.28, 0.08, 0.006, C.cream, [0, 0.0, 0.032]);
+        k.box(0.28, 0.02, 0.006, C.neonPink, [0, 0.06, 0.032]);
+        k.box(0.16, 0.05, 0.006, 0x16171b, [0, -0.005, 0.036]);
+        for (const x of [-0.05, 0.05]) k.disc(0.018, 0.01, C.cream, [x, 0.02, 0.038], 10);
+        k.box(0.18, 0.04, 0.008, 0x3a3f4b, [0, -0.09, 0.032]);
+      }
+      return k;
+    },
+  ),
 };
 
 const SUMMER: ThemeModels = {
-  floor: [
-    // Parasol et transat.
-    () => {
-      const umbrella = group(
-        post(0.02, 0.02, 1.5, PALETTE.white),
-        cone(0.5, 0.25, C.coral, 0, 1.4, 0, 8),
-      );
-      const chair = box(0.35, 0.05, 0.7, C.turquoise, 0.15, 0.2, 0.05);
-      chair.rotation.x = -0.25;
-      umbrella.add(chair, box(0.04, 0.2, 0.04, PALETTE.white, 0.15, 0, 0.3));
-      return umbrella;
-    },
-    // Palmier en pot.
-    () => {
-      const palm = group(post(0.18, 0.14, 0.3, PALETTE.terracotta));
-      for (let i = 0; i < 4; i++)
-        palm.add(post(0.05, 0.06, 0.28, PALETTE.woodDark, 0.02 * i, 0.3 + i * 0.27, 0, 6));
-      for (let i = 0; i < 6; i++) {
-        const leaf = box(0.12, 0.02, 0.55, C.green, 0, 0, 0.25);
-        const holder = new THREE.Group();
-        holder.add(leaf);
-        holder.position.set(0.06, 1.42, 0);
-        holder.rotation.y = (i / 6) * Math.PI * 2;
-        leaf.rotation.x = 0.45;
-        palm.add(holder);
+  // Cocktail à paille et à ombrelle.
+  desk: deskOf('cocktail', (k) => {
+    k.post(0.028, 0.03, 0.004, 0xe8eef2, [0, 0, 0], 10);
+    k.post(0.004, 0.004, 0.04, 0xe8eef2, [0, 0.004, 0], 5);
+    k.post(0.042, 0.006, 0.05, 0xff9e7a, [0, 0.044, 0], 12);
+    k.post(0.042, 0.042, 0.006, C.turquoise, [0, 0.088, 0], 12);
+    k.disc(0.018, 0.006, C.orange, [0.03, 0.098, 0.0], 10);
+    k.bar([-0.01, 0.07, 0], [-0.025, 0.14, 0.01], 0.003, C.cream);
+    k.bar([0.012, 0.09, 0], [0.02, 0.14, 0], 0.002, C.wood);
+    k.cone(0.04, 0.02, C.pink, [0.02, 0.14, 0], 8);
+  }),
+  wall: wallOf(
+    'summer',
+    (kit, walls) => flagGarland(kit, walls, [C.turquoise, C.coral, C.pastelYellow]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Soleil rayonnant.
+        for (let r = 0; r < 12; r++) {
+          const a = (r / 12) * Math.PI * 2;
+          k.flat(
+            triangleShape(0.06, 0.07),
+            0.015,
+            C.orange,
+            [Math.sin(a) * 0.12, Math.cos(a) * 0.12, 0.012],
+            -a + Math.PI,
+          );
+        }
+        k.glow(new THREE.CylinderGeometry(0.1, 0.1, 0.03, 20), C.gold, [0, 0, 0.03], i, {
+          x: Math.PI / 2,
+        });
+        hanger(k, 0.19);
+      } else {
+        // Planche de surf accrochée au mur.
+        k.flat(surfboardShape(0.13, 0.44), 0.025, C.coral, [0, -0.02, 0.02]);
+        k.box(0.012, 0.42, 0.008, C.cream, [0, -0.23, 0.037]);
+        k.box(0.11, 0.025, 0.008, C.turquoise, [0, -0.1, 0.037]);
+        k.box(0.05, 0.02, 0.05, 0x8a8d92, [0, 0.0, 0.025]);
       }
-      return palm;
+      return k;
     },
-    // Bouée flamant rose et ballon de plage.
-    () => {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.09, 6, 14), material(C.pink));
-      ring.rotation.x = Math.PI / 2;
-      ring.position.y = 0.09;
-      const neck = post(0.04, 0.05, 0.45, C.pink, 0, 0.1, -0.25, 6);
-      return group(
-        ring,
-        neck,
-        ball(0.08, C.pink, 0, 0.6, -0.22),
-        cone(0.03, 0.08, PALETTE.dark, 0, 0.57, -0.13, 4).rotateX(Math.PI / 2),
-        ball(0.12, PALETTE.white, 0.32, 0.12, 0.25),
-        ball(0.121, C.turquoise, 0.32, 0.12, 0.25, 0.3),
-      );
-    },
-  ],
-  desk: () =>
-    group(
-      post(0.04, 0.03, 0.12, decorGlow(C.coral)),
-      post(0.005, 0.005, 0.12, PALETTE.white, 0.015, 0.08, 0, 4),
-      cone(0.05, 0.03, C.turquoise, 0, 0.12, 0, 6),
-    ),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'bunting', [C.turquoise, C.coral, C.pastelYellow]),
-      alongWalls(w, d, 1.35, 2.2, (i) =>
-        i % 2 === 0
-          ? // Soleil.
-            group(
-              ball(0.15, decorGlow(C.gold), 0, 0, 0, 1),
-              flat(starShape(0.24, 0.16, 10), 0.02, C.gold, 0, 0, -0.02),
-            )
-          : // Planche de surf.
-            ball(0.12, C.coral, 0, -0.2, 0.02, 4.5),
-      ),
-    ),
+  ),
 };
 
 const PIRATES: ThemeModels = {
-  floor: [
-    // Coffre au trésor ouvert.
-    () => {
-      const lid = box(0.55, 0.06, 0.38, PALETTE.woodDark, 0, 0, -0.19);
-      const hinge = new THREE.Group();
-      hinge.add(lid);
-      hinge.position.set(0, 0.36, -0.18);
-      hinge.rotation.x = -1.1;
-      lid.position.z = -0.0;
-      return group(
-        box(0.55, 0.35, 0.38, PALETTE.wood),
-        box(0.57, 0.05, 0.4, C.gold, 0, 0.1),
-        box(0.08, 0.1, 0.02, C.gold, 0, 0.2, 0.2),
-        ball(0.2, decorGlow(C.gold), 0, 0.33, 0, 0.4),
-        hinge,
-      );
-    },
-    // Tonneau.
-    () =>
-      group(
-        post(0.22, 0.22, 0.6, PALETTE.wood, 0, 0, 0, 10),
-        post(0.235, 0.235, 0.05, PALETTE.dark, 0, 0.1, 0, 10),
-        post(0.235, 0.235, 0.05, PALETTE.dark, 0, 0.45, 0, 10),
-      ),
-    // Barre de navire.
-    () => {
-      const wheel = new THREE.Group();
-      wheel.add(
-        new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.03, 4, 16), material(PALETTE.woodDark)),
-      );
-      for (let i = 0; i < 8; i++) {
-        const spoke = box(0.03, 0.75, 0.03, PALETTE.wood, 0, -0.375, 0);
-        spoke.rotation.z = (i / 8) * Math.PI;
-        wheel.add(spoke);
+  // Coffre au trésor entrouvert.
+  desk: deskOf('treasure', (k) => {
+    k.box(0.1, 0.05, 0.065, 0x7a4a26, [0, 0, 0]);
+    for (const x of [-0.035, 0.035]) k.box(0.012, 0.052, 0.067, C.gold, [x, 0, 0]);
+    k.ball(0.03, C.gold, [0, 0.05, 0.0], [1.4, 0.5, 0.9], 0);
+    k.box(0.1, 0.012, 0.065, 0x6a3e1f, [0, 0.07, -0.03], { x: -0.9 });
+    k.box(0.016, 0.02, 0.006, C.gold, [0, 0.02, 0.034]);
+  }),
+  wall: wallOf(
+    'pirates',
+    (kit, walls) => flagGarland(kit, walls, [C.black, C.cream, C.red]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Pavillon noir sur sa hampe, tête de mort et tibias.
+        k.box(0.03, 0.06, 0.03, 0x707479, [-0.18, -0.03, 0.015]);
+        k.bar([-0.18, 0, 0.03], [0.04, 0.2, 0.1], 0.008, C.wood);
+        k.soft(0.3, 0.2, 0.012, 0.004, C.black, [0.08, -0.05, 0.08], { z: 0.15 });
+        const center: At = [0.07, 0.07, 0.09];
+        k.ball(0.038, C.cream, center, [1, 1, 0.4]);
+        k.box(0.04, 0.02, 0.01, C.cream, [center[0] + 0.002, center[1] - 0.05, 0.09], { z: 0.15 });
+        k.bar([0.0, 0.0, 0.09], [0.14, 0.09, 0.09], 0.008, C.cream);
+        k.bar([0.0, 0.09, 0.09], [0.14, 0.0, 0.09], 0.008, C.cream);
+      } else {
+        // Bouée rouge et blanche, cordage.
+        for (let q = 0; q < 4; q++)
+          k.ring(
+            0.13,
+            0.04,
+            q % 2 === 0 ? C.red : C.cream,
+            [0, 0, 0.04],
+            Math.PI / 2,
+            q * (Math.PI / 2),
+          );
+        k.ring(0.13, 0.008, C.sand, [0, 0, 0.08]);
+        hanger(k, 0.17, C.sand);
       }
-      wheel.position.y = 0.95;
-      return group(
-        box(0.12, 0.8, 0.12, PALETTE.woodDark),
-        box(0.4, 0.06, 0.3, PALETTE.woodDark),
-        wheel,
-      );
+      return k;
     },
-  ],
-  desk: () =>
-    group(
-      post(0.04, 0.035, 0.08, PALETTE.wood),
-      post(0.012, 0.012, 0.06, C.pine, 0, 0.08, 0, 6),
-      box(0.05, 0.03, 0.02, PALETTE.white, 0, 0.12, 0),
-    ),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'bunting', [C.black, PALETTE.white, C.red]),
-      alongWalls(w, d, 1.35, 2.5, (i) =>
-        i % 2 === 0
-          ? // Drapeau noir à tête de mort.
-            group(
-              box(0.6, 0.4, 0.02, C.black),
-              ball(0.07, PALETTE.white, 0, 0.23, 0.02),
-              box(0.25, 0.03, 0.02, PALETTE.white, 0, 0.12, 0.02).rotateZ(0.6),
-              box(0.25, 0.03, 0.02, PALETTE.white, 0, 0.12, 0.02).rotateZ(-0.6),
-            )
-          : // Bouée de sauvetage.
-            new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.05, 6, 12), material(C.red)),
-      ),
-    ),
+  ),
 };
 
 const HALLOWEEN: ThemeModels = {
-  floor: [
-    // Pile de citrouilles sculptées.
-    () =>
-      group(
-        pumpkin(0.24, true, 0, 0.05),
-        pumpkin(0.14, false, 0.28, -0.15),
-        pumpkin(0.12, true, -0.28, -0.1),
-      ),
-    // Fantôme.
-    () =>
-      group(
-        cone(0.3, 0.7, PALETTE.white, 0, 0, 0, 10),
-        ball(0.22, PALETTE.white, 0, 0.75, 0),
-        ball(0.04, PALETTE.dark, -0.08, 0.8, 0.19),
-        ball(0.04, PALETTE.dark, 0.08, 0.8, 0.19),
-        ball(0.05, PALETTE.dark, 0, 0.67, 0.2, 1.4),
-      ),
-    // Chaudron bouillonnant.
-    () =>
-      group(
-        ball(0.28, C.black, 0, 0.28, 0, 0.85),
-        post(0.24, 0.24, 0.03, decorGlow(C.slime), 0, 0.46),
-        ball(0.05, decorGlow(C.slime), 0.08, 0.52, 0.02),
-        ball(0.035, decorGlow(C.slime), -0.1, 0.53, -0.05),
-        new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.02, 4, 12), material(C.black))
-          .rotateX(Math.PI / 2)
-          .translateZ(-0.48),
-      ),
-  ],
-  desk: () => pumpkin(0.07, true),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'lights', [C.orange, C.purple, C.slime]),
-      alongWalls(w, d, 1.55, 1.4, (i) => {
-        // Chauve-souris.
-        const bat = group(ball(0.05, C.black, 0, 0, 0, 1.2));
-        for (const side of [-1, 1]) {
-          const wing = flat(triangleShape(0.2, 0.12), 0.01, C.black, side * 0.11, 0.05, 0);
-          wing.rotation.z = side * 0.3;
-          bat.add(wing);
+  // Citrouille à côtes, visage lumineux.
+  desk: deskOf('pumpkin', (k) => {
+    const r = 0.055;
+    for (let n = 0; n < 6; n++) {
+      const a = (n / 6) * Math.PI * 2;
+      k.ball(
+        r * 0.7,
+        C.orange,
+        [Math.cos(a) * r * 0.45, r * 0.75, Math.sin(a) * r * 0.45],
+        [0.9, 1, 0.9],
+      );
+    }
+    k.ball(r * 0.85, 0xe0701a, [0, r * 0.75, 0], [1, 0.9, 1]);
+    k.post(0.006, 0.01, 0.03, 0x4c7a2a, [0, r * 1.35, 0], 5);
+    for (const side of [-1, 1])
+      k.glow(new THREE.ConeGeometry(0.01, 0.016, 3), C.warm, [side * 0.017, r * 0.92, r * 0.95]);
+    k.glowBox(0.035, 0.009, 0.006, C.warm, [0, r * 0.55, r * 0.97]);
+  }),
+  wall: wallOf(
+    'halloween',
+    (kit, walls) => lightGarland(kit, walls, [C.orange, C.purple, C.slime]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Trois chauves-souris en vol.
+        const bats: [number, number, number, number][] = [
+          [-0.1, 0.06, 1, 0.15],
+          [0.1, 0.12, 0.75, -0.2],
+          [0.04, -0.1, 0.85, 0.05],
+        ];
+        for (const [x, y, s, turn] of bats) {
+          const bat = new Kit();
+          bat.ball(0.03 * s, C.black, [0, 0, 0.02], [1, 1.2, 0.6]);
+          bat.ball(0.022 * s, C.black, [0, 0.04 * s, 0.02], [1, 1, 0.7]);
+          for (const side of [-1, 1]) {
+            bat.cone(0.008 * s, 0.022 * s, C.black, [side * 0.012 * s, 0.05 * s, 0.02], 4);
+            bat.glowBox(0.007 * s, 0.007 * s, 0.004, C.warm, [side * 0.008 * s, 0.043 * s, 0.035]);
+            bat.flat(batWing(0.16 * s, side), 0.008, C.black, [side * 0.01, 0.01, 0.02]);
+          }
+          k.stamp(bat, new THREE.Matrix4().makeRotationZ(turn).setPosition(x, y, 0.01));
         }
-        bat.rotation.z = (i % 3) * 0.2 - 0.2;
-        return bat;
-      }),
-    ),
+      } else {
+        // Araignée au bout de son fil.
+        k.bar([0, 0.24, 0.04], [0, -0.02, 0.04], 0.003, 0xe8e8e8, 3);
+        k.ball(0.035, C.black, [0, -0.06, 0.04], [1, 1.15, 0.8]);
+        k.ball(0.022, C.black, [0, -0.01, 0.04], [1, 1, 0.8]);
+        for (const side of [-1, 1]) {
+          k.glowBox(0.006, 0.006, 0.004, 0xff3b30, [side * 0.008, -0.005, 0.06]);
+          for (let leg = 0; leg < 4; leg++) {
+            const y = -0.03 - leg * 0.018;
+            const knee: At = [side * 0.06, y + 0.03, 0.045];
+            k.bar([side * 0.015, y, 0.04], knee, 0.003, C.black, 3);
+            k.bar(knee, [side * 0.09, y - 0.02 - leg * 0.01, 0.045], 0.0025, C.black, 3);
+          }
+        }
+        k.box(0.022, 0.022, 0.06, 0x707479, [0, 0.23, 0.03]);
+      }
+      return k;
+    },
+  ),
 };
 
 const CYBERPUNK: ThemeModels = {
-  floor: [
-    // Colonne de néons.
-    () =>
-      group(
-        box(0.3, 1.6, 0.3, PALETTE.dark),
-        box(0.04, 1.5, 0.04, decorGlow(C.cyan), -0.15, 0.05, 0.15),
-        box(0.04, 1.5, 0.04, decorGlow(C.neonPink), 0.15, 0.05, 0.15),
-        box(0.32, 0.04, 0.32, decorGlow(C.violet), 0, 1.6),
-      ),
-    // Écran holographique.
-    () =>
-      group(
-        post(0.15, 0.2, 0.1, PALETTE.dark),
-        box(0.02, 0.5, 0.02, PALETTE.dark, 0, 0.1),
-        box(0.6, 0.4, 0.01, decorGlow(C.cyan), 0, 0.65, 0),
-        box(0.4, 0.04, 0.012, decorGlow(C.neonPink), 0, 0.85, 0.005),
-        box(0.25, 0.04, 0.012, decorGlow(C.gold), -0.08, 0.75, 0.005),
-      ),
-    // Robot de service.
-    () =>
-      group(
-        post(0.18, 0.22, 0.5, C.steel, 0, 0, 0, 8),
-        ball(0.17, C.steel, 0, 0.65, 0),
-        box(0.24, 0.05, 0.02, decorGlow(C.neonPink), 0, 0.66, 0.15),
-        post(0.01, 0.01, 0.15, PALETTE.dark, 0, 0.8, 0, 4),
-        ball(0.03, decorGlow(C.cyan), 0, 0.97, 0),
-      ),
-  ],
-  desk: () =>
-    group(
-      box(0.14, 0.02, 0.06, PALETTE.dark),
-      box(0.12, 0.012, 0.04, decorGlow(C.neonPink), 0, 0.02),
-    ),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'lights', [C.cyan, C.neonPink, C.violet]),
-      alongWalls(w, d, 1.2, 1.5, (i) =>
-        // Bandes de néon horizontales.
-        box(1, 0.04, 0.02, decorGlow(i % 2 === 0 ? C.cyan : C.neonPink), 0, i % 2 === 0 ? 0 : 0.3),
-      ),
-    ),
+  // Émetteur d'hologramme : socle sombre et cube lumineux.
+  desk: deskOf('holo', (k) => {
+    k.soft(0.08, 0.02, 0.08, 0.006, 0x1b1d21, [0, 0, 0]);
+    k.glowBox(0.07, 0.004, 0.004, C.cyan, [0, 0.022, 0.04], 1);
+    k.glow(new THREE.OctahedronGeometry(0.03, 0), C.neonPink, [0, 0.07, 0], 2);
+    k.glowBox(0.002, 0.03, 0.002, C.cyan, [0, 0.025, 0], 0);
+  }),
+  wall: wallOf(
+    'cyberpunk',
+    (kit, walls) => lightGarland(kit, walls, [C.cyan, C.neonPink, C.violet]),
+    (i) => {
+      const k = new Kit();
+      k.soft(0.42, 0.3, 0.02, 0.01, 0x15161c, [0, -0.15, 0.01]);
+      if (i % 2 === 0) {
+        // Enseigne néon : cadre cyan, signes roses.
+        neonFrame(k, 0.36, 0.24, C.cyan, i);
+        k.glowBox(0.15, 0.016, 0.016, C.neonPink, [-0.06, 0.05, 0.03], i + 1);
+        k.glowBox(0.016, 0.12, 0.016, C.neonPink, [-0.06, -0.01, 0.03], i + 1);
+        k.glowBox(0.1, 0.016, 0.016, C.neonPink, [0.08, -0.05, 0.03], i + 1, 0.6);
+        k.glow(new THREE.TorusGeometry(0.035, 0.008, 4, 14), C.violet, [0.09, 0.05, 0.03], i + 2);
+      } else {
+        // Triangle néon violet, barré de cyan.
+        neonFrame(k, 0.36, 0.24, C.neonPink, i);
+        for (const [a, b] of [
+          [
+            [-0.1, -0.08],
+            [0.1, -0.08],
+          ],
+          [
+            [0.1, -0.08],
+            [0, 0.09],
+          ],
+          [
+            [0, 0.09],
+            [-0.1, -0.08],
+          ],
+        ] as const) {
+          const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+          const angle = Math.atan2(b[1] - a[1], b[0] - a[0]);
+          k.glowBox(
+            length,
+            0.016,
+            0.016,
+            C.violet,
+            [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 0.03],
+            i + 1,
+            angle,
+          );
+        }
+        k.glowBox(0.26, 0.012, 0.012, C.cyan, [0, 0, 0.035], i + 2);
+      }
+      return k;
+    },
+  ),
 };
 
 const CHRISTMAS: ThemeModels = {
-  floor: [
-    // Sapin décoré.
-    () => {
-      const tree = group(post(0.06, 0.08, 0.2, PALETTE.woodDark), post(0.2, 0.2, 0.1, C.red));
-      [
-        [0.45, 0.5, 0.2],
-        [0.36, 0.45, 0.55],
-        [0.26, 0.4, 0.88],
-      ].forEach(([r, h, y]) => tree.add(cone(r ?? 0, h ?? 0, C.pine, 0, y, 0, 8)));
-      const colors = [C.red, C.gold, C.sky, C.magenta];
-      for (let i = 0; i < 10; i++) {
-        const a = i * 2.4;
-        const y = 0.35 + (i % 5) * 0.18;
-        const r = 0.4 - (i % 5) * 0.07;
-        tree.add(
-          ball(
-            0.04,
-            decorGlow(colors[i % colors.length] ?? C.red),
-            Math.cos(a) * r,
-            y,
-            Math.sin(a) * r,
-          ),
-        );
+  // Petit sapin en pot, boules et étoile.
+  desk: deskOf('fir', (k) => {
+    k.post(0.03, 0.024, 0.035, C.terracotta, [0, 0, 0], 10);
+    k.post(0.006, 0.006, 0.02, C.wood, [0, 0.035, 0], 5);
+    k.cone(0.06, 0.07, C.pine, [0, 0.05, 0], 10);
+    k.cone(0.047, 0.06, C.pineLight, [0, 0.09, 0], 10);
+    k.cone(0.032, 0.05, C.pine, [0, 0.125, 0], 10);
+    k.glowFlat(starShape(0.02, 0.009), 0.008, C.gold, [0, 0.185, 0]);
+    const baubles: [number, number, number, number][] = [
+      [0.035, 0.07, 0.03, C.red],
+      [-0.03, 0.08, 0.035, C.gold],
+      [0.02, 0.115, 0.03, C.gold],
+      [-0.015, 0.14, 0.022, C.red],
+      [0.045, 0.06, -0.02, C.silver],
+    ];
+    for (const [x, y, z, color] of baubles) k.ball(0.009, color, [x, y, z], [1, 1, 1], 0);
+  }),
+  wall: wallOf(
+    'christmas',
+    (kit, walls) => lightGarland(kit, walls, [C.red, C.warm, C.green, C.sky]),
+    (i) => {
+      const k = new Kit();
+      if (i % 2 === 0) {
+        // Couronne de sapin touffue, baies et grand nœud rouge.
+        const greens = [C.pine, C.pineLight, C.pineDark];
+        for (let n = 0; n < 16; n++) {
+          const a = (n / 16) * Math.PI * 2;
+          const r = 0.14 + (n % 2) * 0.02;
+          k.ball(
+            0.05,
+            greens[n % 3] ?? C.pine,
+            [Math.cos(a) * r, Math.sin(a) * r, 0.035],
+            [1.1, 0.9, 0.6],
+            0,
+          );
+        }
+        for (const a of [0.4, 1.3, 2.3, 3.1, 4.0, 5.6])
+          k.ball(0.016, C.red, [Math.cos(a) * 0.155, Math.sin(a) * 0.155, 0.07]);
+        k.soft(0.09, 0.06, 0.025, 0.012, C.red, [-0.05, -0.19, 0.075], { z: 0.35 });
+        k.soft(0.09, 0.06, 0.025, 0.012, C.red, [0.05, -0.19, 0.075], { z: -0.35 });
+        k.box(0.025, 0.09, 0.012, C.red, [-0.025, -0.26, 0.07], { z: -0.25 });
+        k.box(0.025, 0.09, 0.012, C.red, [0.025, -0.26, 0.07], { z: 0.25 });
+        k.ball(0.025, 0xa51d24, [0, -0.165, 0.085]);
+        hanger(k, 0.17, C.red);
+      } else {
+        // Chaussette de Noël.
+        k.soft(0.12, 0.22, 0.03, 0.03, C.red, [0, -0.2, 0.025]);
+        k.soft(0.17, 0.09, 0.03, 0.035, C.red, [0.03, -0.24, 0.025]);
+        k.soft(0.15, 0.06, 0.04, 0.02, C.cream, [0, 0.0, 0.025]);
+        k.soft(0.05, 0.04, 0.034, 0.015, C.cream, [0.09, -0.24, 0.026]);
+        k.ball(0.022, C.pine, [-0.03, 0.035, 0.05], [1.4, 0.6, 0.6], 0);
+        k.ball(0.022, C.pineLight, [0.0, 0.04, 0.05], [1.4, 0.6, 0.6], 0);
+        k.ball(0.012, C.red, [-0.012, 0.03, 0.065]);
+        hanger(k, 0.06, C.cream);
       }
-      tree.add(flat(starShape(0.1, 0.045), 0.03, decorGlow(C.gold), 0, 1.38, 0));
-      return tree;
+      return k;
     },
-    // Pile de cadeaux.
-    () =>
-      group(
-        gift(0.4, 0.3, C.red, C.gold, -0.12, 0, 0.05),
-        gift(0.3, 0.25, C.green, C.red, 0.2, 0, -0.1),
-        gift(0.22, 0.18, C.gold, C.red, -0.08, 0.3, 0.05),
-      ),
-    // Bonhomme de neige.
-    () =>
-      group(
-        ball(0.28, PALETTE.white, 0, 0.27, 0),
-        ball(0.2, PALETTE.white, 0, 0.68, 0),
-        ball(0.14, PALETTE.white, 0, 0.98, 0),
-        cone(0.025, 0.12, C.orange, 0, 0.98, 0.16, 6).rotateX(Math.PI / 2),
-        post(0.1, 0.1, 0.03, PALETTE.dark, 0, 1.08),
-        post(0.07, 0.07, 0.15, PALETTE.dark, 0, 1.1),
-        new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.04, 4, 10), material(C.red))
-          .rotateX(Math.PI / 2)
-          .translateZ(-0.84),
-      ),
-  ],
-  desk: () => gift(0.09, 0.07, C.red, C.gold),
-  wall: (w, d) =>
-    group(
-      topGarland(w, d, 'lights', [C.red, C.gold, C.green, C.sky]),
-      alongWalls(w, d, 1.35, 2.4, () => {
-        // Couronne de l'Avent.
-        const wreath = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.07, 6, 14), material(C.pine));
-        return group(
-          wreath,
-          ball(0.05, C.red, 0, -0.2, 0.06),
-          ball(0.04, C.red, 0.06, -0.18, 0.07),
-        );
-      }),
-    ),
+  ),
 };
 
 export const THEME_MODELS: Readonly<Record<DecorTheme, ThemeModels>> = {

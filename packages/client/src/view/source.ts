@@ -10,7 +10,7 @@ import {
   type LoggedCommand,
   type SaveData,
   type Speed,
-  type StoryMissionId,
+  type StoryStart,
   type StoryRewardId,
 } from '@oss/shared';
 import { createGameEngine, type EngineSnapshot, type GameEngine, type GameStart } from '../engine';
@@ -36,7 +36,7 @@ export interface NewGame {
   readonly seed: string;
   readonly mode: GameMode;
   /** Mode Histoire : la mission jouée. */
-  readonly mission?: StoryMissionId;
+  readonly mission?: StoryStart;
   /** Récompenses du mode Histoire débloquées par le joueur. */
   readonly unlocks?: readonly StoryRewardId[];
 }

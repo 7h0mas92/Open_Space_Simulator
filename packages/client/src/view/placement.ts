@@ -5,10 +5,25 @@
  * des bornes et des chevauchements ; les cloisons et l'entrée sont des contraintes du décor.
  */
 import { PHASES } from '@oss/shared';
-import { buildNavGrid, itemCells, NEIGHBORS_4, type ItemPlacement, type NavGrid } from '../ai/grid';
+import {
+  boundsOverlap,
+  buildNavGrid,
+  itemBounds,
+  itemCells,
+  NEIGHBORS_4,
+  type ItemPlacement,
+  type NavGrid,
+} from '../ai/grid';
 import { catalogItem, footprint, type CatalogItem } from './catalog';
 import type { Cell, OfficeLayout } from './layout';
+import {
+  partitionCells,
+  partitionShapes,
+  segmentCrosses,
+  type PartitionSegment,
+} from './partitions';
 import type { GameView, ItemHost, PlacedItemView, Rotation } from './types';
+import { researchNeed } from './research';
 
 export type PlacementError =
   | 'unknownItem'
@@ -32,6 +47,45 @@ export interface PlacementRequest {
   readonly ignoreId?: string;
 }
 
+/**
+ * Un objet peut-il se poser sur une demi-case ? Oui, sauf les fenêtres (fixées dans le mur) et
+ * les murs fins (raccordés à leurs voisins case par case). Un accessoire suit son meuble.
+ */
+export function snapsToHalf(kind: string): boolean {
+  const def = catalogItem(kind);
+  return Boolean(def && !def.wall && !def.partition && !def.accessory);
+}
+
+/** Pas de la grille pour cet objet : une demi-case, ou une case entière. */
+export function gridStep(kind: string): number {
+  return snapsToHalf(kind) ? 0.5 : 1;
+}
+
+/** Position la plus proche sur la grille de cet objet. */
+export function snapToGrid(kind: string, point: { readonly x: number; readonly z: number }): Cell {
+  const step = gridStep(kind);
+  return { x: Math.round(point.x / step) * step, z: Math.round(point.z / step) * step };
+}
+
+/** Tronçons des murs fins (plan et murs posés), mis en cache pour une même liste d'objets. */
+const segmentCache = new WeakMap<
+  readonly PlacedItemView[],
+  { layout: OfficeLayout; segments: readonly PartitionSegment[] }
+>();
+
+function partitionSegments(
+  layout: OfficeLayout,
+  items: readonly PlacedItemView[],
+): readonly PartitionSegment[] {
+  const cached = segmentCache.get(items);
+  if (cached?.layout === layout) return cached.segments;
+  const segments = partitionShapes(partitionCells(layout, items), layout).flatMap(
+    (shape) => shape.segments,
+  );
+  segmentCache.set(items, { layout, segments });
+  return segments;
+}
+
 export function checkPlacement(
   layout: OfficeLayout,
   items: readonly PlacedItemView[],
@@ -53,24 +107,55 @@ export function checkPlacement(
   ) {
     return 'outOfBounds';
   }
-  const cells = itemCells({ id: '', ...request });
-  const has = (list: readonly { x: number; z: number }[], x: number, z: number) =>
-    list.some((cell) => cell.x === x && cell.z === z);
+  // Hors grille (une fenêtre ou un mur fin sur une demi-case) : refusé comme la simulation.
+  const step = gridStep(request.kind);
+  if (request.x % step !== 0 || request.z % step !== 0) return 'outOfBounds';
+  const placement = { id: '', ...request };
+  const bounds = itemBounds(placement);
+  const cells = itemCells(placement);
 
-  for (const cell of cells) {
-    if (has(layout.partitions, cell.x, cell.z)) return 'wall';
-    if (cell.x === layout.entrance.x && cell.z === layout.entrance.z) return 'entrance';
+  if (def.partition) {
+    // Un mur fin occupe sa case : pas sur une autre cloison ni sur l'entrée, et ses tronçons
+    // (raccords aux voisins compris) ne traversent aucun meuble.
+    for (const cell of cells) {
+      if (layout.partitions.some((p) => p.x === cell.x && p.z === cell.z)) return 'wall';
+      if (cell.x === layout.entrance.x && cell.z === layout.entrance.z) return 'entrance';
+    }
+  } else {
+    if (partitionSegments(layout, items).some((segment) => segmentCrosses(bounds, segment)))
+      return 'wall';
+    const entrance = itemBounds({ id: '', kind: '', ...layout.entrance, rotation: 0 });
+    if (boundsOverlap(bounds, entrance)) return 'entrance';
   }
+  const others = items.filter((other) => other.id !== request.ignoreId);
+  const ownSegments = def.partition
+    ? partitionShapes(
+        partitionCells(layout, [
+          ...others,
+          { ...placement, resale: 0, color: 'natural', host: null },
+        ]),
+        layout,
+      )
+        .filter(({ cell }) => cell.x === request.x && cell.z === request.z)
+        .flatMap((shape) => shape.segments)
+    : [];
   // Même règle que la simulation : aucun chevauchement, tapis compris.
-  for (const other of items) {
+  for (const other of others) {
     const otherDef = catalogItem(other.kind);
-    if (other.id === request.ignoreId || other.host || otherDef?.wall) continue;
+    if (other.host || otherDef?.wall) continue;
     // Le plafond et le sol sont deux étages : un objet du plafond ne gêne que ceux du plafond.
     // Sauf un mur vitré, qui monte jusqu'au plafond.
     const fullHeight = otherDef?.partition === 'glass' || def.partition === 'glass';
     if ((otherDef?.ceiling ?? false) !== def.ceiling && !fullHeight) continue;
-    const otherCells = itemCells(other);
-    if (cells.some((cell) => has(otherCells, cell.x, cell.z))) return 'overlap';
+    const otherBounds = itemBounds(other);
+    if (def.partition && !otherDef?.partition) {
+      // On pose un mur fin : un meuble n'est gênant que s'il est sur le trait du mur.
+      if (ownSegments.some((segment) => segmentCrosses(otherBounds, segment))) return 'overlap';
+      continue;
+    }
+    // Un mur fin déjà posé est compté avec les cloisons ci-dessus.
+    if (otherDef?.partition && !def.partition) continue;
+    if (boundsOverlap(bounds, otherBounds)) return 'overlap';
   }
   if (def.partition && closesOff(layout, items, cells, request.ignoreId)) return 'blocksPath';
   return null;
@@ -193,10 +278,17 @@ export function resolveAccessory(
   const def = request.kind ? catalogItem(request.kind) : undefined;
   const appliance = def?.appliance ?? false;
   const gear = Boolean(def?.serverGear);
-  const host = items.find(
-    (item) =>
-      !item.host && itemCells(item).some((cell) => cell.x === request.x && cell.z === request.z),
-  );
+  // Le meuble sous le point visé (bords compris : le point est souvent le centre d'une case).
+  const host = items.find((item) => {
+    if (item.host) return false;
+    const bounds = itemBounds(item);
+    return (
+      request.x >= bounds.minX &&
+      request.x <= bounds.maxX &&
+      request.z >= bounds.minZ &&
+      request.z <= bounds.maxZ
+    );
+  });
   const hostDef = host ? catalogItem(host.kind) : undefined;
   if (gear && !hostDef?.serverRoom) return { error: 'noServerRoom' };
   if (!host || !hostDef?.surface?.length || (hostDef.serverRoom && !gear))
@@ -217,9 +309,10 @@ export function resolveAccessory(
 }
 
 /**
- * Case libre la plus proche de `from` pour l'objet demandé (recherche en anneaux de plus en plus
- * larges). Sert à poser l'aperçu à un endroit valide dès qu'on choisit un objet. `null` si le
- * bureau n'a plus aucune place pour lui.
+ * Place libre la plus proche de `from` pour l'objet demandé (recherche en anneaux de plus en
+ * plus larges, par demi-case pour les objets qui s'y posent). Sert à poser l'aperçu à un endroit
+ * valide dès qu'on choisit un objet. À distance égale, une case entière passe avant une
+ * demi-case. `null` si le bureau n'a plus aucune place pour lui.
  */
 export function nearestValidCell(
   layout: OfficeLayout,
@@ -227,7 +320,9 @@ export function nearestValidCell(
   request: Omit<PlacementRequest, 'x' | 'z'>,
   from: Cell,
 ): Cell | null {
-  const maxRadius = Math.max(layout.width, layout.depth);
+  const step = gridStep(request.kind);
+  const start = snapToGrid(request.kind, from);
+  const maxRadius = Math.max(layout.width, layout.depth) / step;
   for (let radius = 0; radius <= maxRadius; radius++) {
     let best: Cell | null = null;
     let bestDistance = Infinity;
@@ -235,9 +330,10 @@ export function nearestValidCell(
       for (let dz = -radius; dz <= radius; dz++) {
         // Seulement le bord de l'anneau : l'intérieur a déjà été testé.
         if (Math.max(Math.abs(dx), Math.abs(dz)) !== radius) continue;
-        const cell = { x: from.x + dx, z: from.z + dz };
+        const cell = { x: start.x + dx * step, z: start.z + dz * step };
         if (checkPlacement(layout, items, { ...request, ...cell }) !== null) continue;
-        const distance = dx * dx + dz * dz;
+        const offGrid = Number.isInteger(cell.x) && Number.isInteger(cell.z) ? 0 : 0.01;
+        const distance = dx * dx + dz * dz + offGrid;
         if (distance < bestDistance) {
           best = cell;
           bestDistance = distance;
@@ -251,7 +347,7 @@ export function nearestValidCell(
 
 /** Pourquoi un objet ne peut pas être acheté (ou `null` s'il est disponible). */
 /** `storyLocked` : récompense du mode Histoire pas débloquée (ou pas utilisable dans ce mode). */
-export type ShopBlock = 'locked' | 'storyLocked' | 'soldOut' | 'tooExpensive';
+export type ShopBlock = 'locked' | 'storyLocked' | 'researchLocked' | 'soldOut' | 'tooExpensive';
 
 export interface ShopStatus {
   readonly owned: number;
@@ -267,12 +363,15 @@ export function shopStatus(item: CatalogItem, view: GameView): ShopStatus {
   const block: ShopBlock | null =
     item.unlock !== null && !view.unlocks.includes(item.unlock)
       ? 'storyLocked'
-      : PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
+      : // La phase d'abord : c'est l'étape la plus lointaine, l'arbre R&D vient ensuite.
+        PHASES.indexOf(item.minPhase) > PHASES.indexOf(view.phase)
         ? 'locked'
-        : owned >= item.maxCount
-          ? 'soldOut'
-          : view.gauges.treasury < item.price
-            ? 'tooExpensive'
-            : null;
+        : researchNeed(view, `item:${item.kind}`)
+          ? 'researchLocked'
+          : owned >= item.maxCount
+            ? 'soldOut'
+            : view.gauges.treasury < item.price
+              ? 'tooExpensive'
+              : null;
   return { owned, block };
 }

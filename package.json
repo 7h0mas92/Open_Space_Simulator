@@ -19,6 +19,7 @@
     "test:e2e": "pnpm --filter @oss/client test:e2e",
     "balance": "pnpm --filter @oss/shared build && pnpm --filter @oss/client balance",
     "balance:story": "pnpm --filter @oss/shared build && pnpm --filter @oss/client balance:story",
+    "balance:campaign": "pnpm --filter @oss/shared build && pnpm --filter @oss/client balance:campaign",
     "db:up": "docker compose up -d db",
     "db:migrate": "pnpm --filter @oss/server db:migrate",
     "db:seed": "pnpm --filter @oss/shared build && pnpm --filter @oss/server db:seed",
