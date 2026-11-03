@@ -846,7 +846,8 @@ feat/… fix/… docs/…  ──PR (squash)──▶  develop  ──PR « rele
   Une idée qu'on ne garde pas se retire de `develop` par un revert, sans toucher à `main`.
 - **Mise en production** : quand Thomas et Melvin ont validé `develop`, une PR `develop` →
   `main` fusionnée en _merge commit_ (pas de squash : les deux branches gardent le même
-  historique).
+  historique). Les migrations Prisma s'appliquent seules au démarrage de Render
+  (`db:deploy`). Dernière mise en production : 3 novembre 2026 (PR #166).
 - La CI ([`ci.yml`](.github/workflows/ci.yml) : lint, format, typecheck, tests, build, e2e)
   tourne à chaque push sur toutes les branches et sur chaque PR.
 

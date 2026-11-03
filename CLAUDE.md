@@ -1071,6 +1071,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   chauves-souris, araignée…). Fusion par matériau (`Pieces`, 4 maillages au plus par mur), deux
   thèmes se partagent les murs (`shareWalls`). Rendu seulement.
 
+- Mise en production du 3 novembre 2026 (PR #166, T6) : `develop` (PR #123 à #165) fusionné dans
+  `main` en merge commit ; migration `endless_mode` appliquée sur Supabase au démarrage de Render.
+  Vercel, Render et GitHub Pages servent désormais tout ce qui précède.
+
 Reste à faire :
 - Connexion GitHub : créer l'application GitHub OAuth (callback
   `https://open-space-simulator.vercel.app/api/auth/github/callback`) et mettre ses clés sur
