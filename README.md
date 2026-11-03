@@ -523,6 +523,21 @@ flowchart LR
   et de hype. La sécurité est un abonnement de la rubrique 🧾 Abonnements, payé chaque semaine :
   télésurveillance, agent en journée ou gardiennage 24 h/24 (Série A) ; l'agent se tient dans
   le hall (`shared/sim/lobby.ts`, `render/lobby.ts`).
+- **Business** (💶 en haut, `ui/business/Business.tsx`) : trois leviers économiques.
+  - **Modèle économique** : gratuit avec pub, freemium (le départ), abonnement ou achat unique, au
+    prix bas, standard ou premium. Un produit cher rapporte plus par utilisateur mais en attire
+    moins et en perd davantage ; un client qui paie compte plus pour les investisseurs. Un
+    changement par sprint, et une hausse de prix fait partir des utilisateurs
+    (`shared/sim/pricing.ts`).
+  - **Support client** : chaque jour ouvré, les utilisateurs envoient des tickets (plus nombreux
+    avec les utilisateurs, la dette et l'instabilité). Des agents de support (3 500 € par mois) et
+    les devs de garde y répondent. Avec des tickets en attente, la satisfaction baisse et les
+    utilisateurs partent plus vite ; au-dessus de 80, ils recommandent le produit
+    (`shared/sim/support.ts`).
+  - **Clients B2B** : 3 offres de contrat à chaque planification, dès le garage. Un contrat paie
+    une prime et un forfait mensuel, demande des points de features, d'infra ou de bugfix avant
+    une échéance, et applique un SLA à chaque panne. Livré : prime, utilisateurs, hype, puis
+    maintenance ; échéance ratée : pénalité (`shared/sim/clients.ts`).
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le

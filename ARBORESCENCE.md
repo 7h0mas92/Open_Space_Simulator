@@ -125,36 +125,39 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 
 ### `src/sim/` : règles et catalogues de la simulation
 
-| Fichier           | Rôle                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------ |
-| `balance.ts`      | Toutes les constantes d'équilibrage (`BALANCE`) : temps, salaires, jauges, pauses, raises… |
-| `state.ts`        | Schéma Zod de l'état de partie complet (`GameState`), étapes du sprint.                    |
-| `components.ts`   | Composants de l'ECS (identité, stats, moral, tâches…), métiers (`ROLE_TRADE`).             |
-| `commands.ts`     | Commandes typées envoyées à la simulation : le seul moyen de modifier une partie.          |
-| `cards.ts`        | Format des cartes d'événements (conditions, choix, effets).                                |
-| `calendar.ts`     | Calendrier : date réelle de chaque jour simulé, 12 saisons à thème.                        |
-| `furniture.ts`    | Catalogue du mode construction : prix, emprise, effets, phase de déblocage.                |
-| `annexDecor.ts`   | Décor offert avec chaque annexe (arcade, jardin, auditorium).                              |
-| `computers.ts`    | Ordinateurs des postes (tour sobre, tours gaming, MacBook) et leurs effets.                |
-| `monitors.ts`     | Écrans des postes : 5 modèles, 3 tailles, pied ou bras articulé.                           |
-| `floors.ts`       | Sols : matières, teintes, prix et effets par pièce.                                        |
-| `walls.ts`        | Peintures et papiers peints, zones de mur.                                                 |
-| `projection.ts`   | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                |
-| `serverRoom.ts`   | Salle des serveurs, équipements, température et offres internet.                           |
-| `cleaning.ts`     | Saleté du bureau, entreprise de nettoyage, tarifs et offres de ménage.                     |
-| `lobby.ts`        | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                     |
-| `meetings.ts`     | Formules de salle de réunion, réunion du matin, réunion de crise.                          |
-| `pets.ts`         | Chats du bureau : équipement requis, prix, effets.                                         |
-| `teamRoles.ts`    | Équipe web : devs front, back, fullstack, tech lead, DevOps, QA, encadrement.              |
-| `taskFlow.ts`     | Tâches dynamiques : backlog, urgences, tâches de la semaine, objectif de sprint.           |
-| `raises.ts`       | Demandes d'augmentation : fréquence, montants, conséquences.                               |
-| `pitch.ts`        | Mini-jeu de levée de fonds : questions, arguments, intérêt de l'investisseur.              |
-| `funding.ts`      | Autres financements : business angels, prêt, financement participatif, subvention.         |
-| `ventures.ts`     | Filiales : projets, parts, dividendes, revente.                                            |
-| `teamLife.ts`     | Congés payés, jours fériés français, ponts, arrêts maladie et burn-out.                    |
-| `retro.ts`        | Rétrospective : les 10 actions, leurs effets, le vote.                                     |
-| `teamBuilding.ts` | Team building : les 5 sorties, prix, horaires et effets.                                   |
-| `career.ts`       | Mode Carrière : les 8 légendes, leur départ, leurs jalons, la légende lue dans la graine.  |
+| Fichier           | Rôle                                                                                         |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| `balance.ts`      | Toutes les constantes d'équilibrage (`BALANCE`) : temps, salaires, jauges, pauses, raises…   |
+| `state.ts`        | Schéma Zod de l'état de partie complet (`GameState`), étapes du sprint.                      |
+| `components.ts`   | Composants de l'ECS (identité, stats, moral, tâches…), métiers (`ROLE_TRADE`).               |
+| `commands.ts`     | Commandes typées envoyées à la simulation : le seul moyen de modifier une partie.            |
+| `cards.ts`        | Format des cartes d'événements (conditions, choix, effets).                                  |
+| `calendar.ts`     | Calendrier : date réelle de chaque jour simulé, 12 saisons à thème.                          |
+| `furniture.ts`    | Catalogue du mode construction : prix, emprise, effets, phase de déblocage.                  |
+| `annexDecor.ts`   | Décor offert avec chaque annexe (arcade, jardin, auditorium).                                |
+| `computers.ts`    | Ordinateurs des postes (tour sobre, tours gaming, MacBook) et leurs effets.                  |
+| `monitors.ts`     | Écrans des postes : 5 modèles, 3 tailles, pied ou bras articulé.                             |
+| `floors.ts`       | Sols : matières, teintes, prix et effets par pièce.                                          |
+| `walls.ts`        | Peintures et papiers peints, zones de mur.                                                   |
+| `projection.ts`   | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                  |
+| `serverRoom.ts`   | Salle des serveurs, équipements, température et offres internet.                             |
+| `cleaning.ts`     | Saleté du bureau, entreprise de nettoyage, tarifs et offres de ménage.                       |
+| `lobby.ts`        | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                       |
+| `pricing.ts`      | Modèles économiques et niveaux de prix : revenu, arrivées, départs, valeur d'un utilisateur. |
+| `clients.ts`      | Clients B2B : tailles de contrat, entreprises, forfaits, SLA, maintenance.                   |
+| `support.ts`      | Support client : tickets par jour, agents, garde des devs, satisfaction.                     |
+| `meetings.ts`     | Formules de salle de réunion, réunion du matin, réunion de crise.                            |
+| `pets.ts`         | Chats du bureau : équipement requis, prix, effets.                                           |
+| `teamRoles.ts`    | Équipe web : devs front, back, fullstack, tech lead, DevOps, QA, encadrement.                |
+| `taskFlow.ts`     | Tâches dynamiques : backlog, urgences, tâches de la semaine, objectif de sprint.             |
+| `raises.ts`       | Demandes d'augmentation : fréquence, montants, conséquences.                                 |
+| `pitch.ts`        | Mini-jeu de levée de fonds : questions, arguments, intérêt de l'investisseur.                |
+| `funding.ts`      | Autres financements : business angels, prêt, financement participatif, subvention.           |
+| `ventures.ts`     | Filiales : projets, parts, dividendes, revente.                                              |
+| `teamLife.ts`     | Congés payés, jours fériés français, ponts, arrêts maladie et burn-out.                      |
+| `retro.ts`        | Rétrospective : les 10 actions, leurs effets, le vote.                                       |
+| `teamBuilding.ts` | Team building : les 5 sorties, prix, horaires et effets.                                     |
+| `career.ts`       | Mode Carrière : les 8 légendes, leur départ, leurs jalons, la légende lue dans la graine.    |
 
 ### `src/meta/` : méta-jeu et contrats de l'API
 
@@ -278,6 +281,9 @@ graine + mêmes commandes = même partie.
 | `serverRoom.ts`   | Effets des salles de serveurs selon leur température, alertes de la sonde.              |
 | `cleaning.ts`     | Saleté qui monte, malus de travail, appels et passages de l'équipe de ménage.           |
 | `lobby.ts`        | Aménagement du hall, secrétaires de l'accueil et leurs effets.                          |
+| `pricing.ts`      | Changement de modèle économique, arrivées d'utilisateurs et ventes à l'unité.           |
+| `clients.ts`      | Offres B2B de chaque sprint, signature, livraison à la démo, pannes et pénalités.       |
+| `support.ts`      | Journée du support : tickets reçus et traités, satisfaction, réglage des agents.        |
 | `pets.ts`         | Adoption des chats, départ, effets sur l'équipe.                                        |
 | `achievements.ts` | Succès vérifiés à partir de l'état.                                                     |
 | `endings.ts`      | Fins de partie et phrase partageable de l'écran de fin.                                 |
@@ -495,6 +501,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `servers/ServerRoom.tsx`          | Panneau « Serveurs » : état des salles, offres fibre.                   |
 | `cleaning/Cleaning.tsx`           | Panneau « Ménage » : saleté, appel de l'équipe, abonnement.             |
 | `lobby/Lobby.tsx`                 | Panneau « Hall d'entrée » : travaux, secrétaires, sécurité.             |
+| `business/Business.tsx`           | Panneau « Business » : modèle économique, support client, clients B2B.  |
 | `pets/Pets.tsx`                   | Panneau « Chats » : adoption et liste des chats.                        |
 | `funding/Funding.tsx`             | Panneau « Lever des fonds » : pitch et autres financements.             |
 | `group/Group.tsx`                 | Panneau « Investir » : filiales.                                        |
