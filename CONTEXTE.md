@@ -1,8 +1,9 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : histoire en 5 actes
-> (T2) fusionnée dans `develop` (PR #157 : socle, rivaux, scènes, fins et Saison libre),
-> équilibrage à venir. Avant : modèle économique (#151), clients B2B (#153) et support client
+> **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : arbre R&D des
+> objets (T4) en PR vers `develop` (branche `claude/project-thread-xbj9as`), à valider par
+> Thomas. Avant : histoire en 5 actes (T2) fusionnée dans `develop` (PR #157 : socle, rivaux,
+> scènes, fins et Saison libre), équilibrage à venir. Avant : modèle économique (#151), clients B2B (#153) et support client
 > (#154) de Melvin, panneau « 💶 Business ».
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
@@ -74,7 +75,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                                   |
 | **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                                   |
 | Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | Fusionné dans `develop` le 3 novembre (#157) ; équilibrage à venir |
-| Arbre R&D des objets (T4)                           | Thomas          | Après T2                                                           |
+| Arbre R&D des objets (T4)                           | Thomas + Claude | PR vers `develop` ouverte le 3 novembre, attend la validation      |
 | Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)                            |
 | Économie : modèle, B2B, support (M3)                | Melvin + Claude | Fusionné dans `develop` le 3 novembre                              |
 | Économie : marketing (M3)                           | Melvin          | Idée, rien de codé                                                 |
@@ -237,6 +238,7 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   Sinon les replays, le Daily, les sauvegardes et les scores déjà enregistrés cassent. Les PR
   l'écrivent « aucun tirage » ou « graine à part ».
 - **Abonnements payés à la semaine** (fibre, ménage) : tick `paidUntil`, facture dans un système, ligne coupée si la trésorerie manque, coût mensuel ajouté au calcul des mois de trésorerie (`runwayMonths`).
+- **Arbre R&D** (`shared/sim/research.ts`) : en histoire en actes, tout contenu achetable (objet, ordinateur, écran, mur, sol, formule de salle) doit être dans `RESEARCH_FREE` ou dans un niveau de `RESEARCH_TREE`, sinon `research.test.ts` échoue. Vérifier aussi `researchUnlocked(state, clé)` dans la commande d'achat d'un nouveau type de contenu.
 - **Bonus sans tirage** (arbre de compétences, encadrement) : sans le bonus, le multiplicateur
   vaut exactement 1 (multiplier par 1 ne change aucun bit). Un bonus qui change une probabilité
   garde le même appel `rng.chance(p)` avec un autre `p`, jamais un tirage de plus ou de moins.
@@ -300,6 +302,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                  | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | -------- | --------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 03/11    | Thomas + Claude | T4                  | Arbre R&D des objets dans l'histoire en actes (`shared/sim/research.ts`, panneau 🔬 R&D) : catalogue réduit au départ, 5 branches x 4 niveaux payés en points d'innovation, Prestige par les objectifs. État `campaign.research` optionnel, commande `RESEARCH_NODE`, aucun tirage. **Pour Melvin** : un nouvel objet du catalogue doit être rattaché à un niveau de `RESEARCH_TREE` ou à `RESEARCH_FREE` (test `research.test.ts`) ; le hall et les offres internet ne sont pas verrouillés par l'arbre.                                                                                |
 | 03/11    | Thomas + Claude | #157, T2 PR 3 sur 4 | Scènes dialoguées (`shared/story/scenes.ts`, `ui/story/StoryScene.tsx`), 10 cartes d'histoire hors base, poids 0, imposées sans tirage (`STORY_CARD_SCHEDULE`, `events/storyCards.ts`), effet de carte `rivals`, SMS de Mamie Josette et articles d'Inès dans le Slack, fins écrites, Saison libre après l'entrée en Bourse (`campaign.freeSeason`, `END_STORY`, `freeSeasonStart` passé aux fonctions de `endless.ts`). Nouveau type de notification `STORY_END`.                                                                                                                       |
 | 03/11    | Thomas + Claude | #157, T2 PR 2 sur 4 | Rivaux de l'histoire : Synergix, Pivotly, Gigacorp simulés à chaque démo sur `seed#rival#sprint`, part de marché qui ajoute du churn, objectifs `rivalUsers` et `marketShare`, panneau Marché, enseignes sur les toits. État `campaign.rivals` et `campaign.usersHistory` vides par défaut ; les autres modes ne changent pas.                                                                                                                                                                                                                                                           |
 | 03/11    | Thomas + Claude | #157, T2 PR 1 sur 4 | Histoire en 5 actes, socle : `mission: 'campaign'`, 60 sprints, actes et dates limites dans `shared/story/acts.ts`, les 10 missions deviennent les objectifs secondaires (mêmes récompenses), `POST /api/story/complete` avec `campaign: true`, point de sauvegarde par acte sur l'appareil, onglets Histoire et Missions. Champ `story.campaign` optionnel, `story.missionId` devenu optionnel, aucun tirage. Réponses aux questions de la proposition : partir de #122, arbre des devs dans tous les modes sauf Daily (fil T3), 60 sprints, noms tels quels, missions courtes gardées. |

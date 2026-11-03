@@ -868,6 +868,28 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   Hyperlane, Blitzly), commande `END_STORY` pour finir sur l'entrée en Bourse
   (`result.campaign.freeSeasonSprints`). Écran de fin : scène de la fin, bilan face aux rivaux.
   Aucun tirage sur le RNG de la partie ; hors de l'histoire en actes, rien ne change.
+- Arbre R&D des objets (T4 ; `shared/sim/research.ts`, `client/src/simulation/research.ts`, panneau
+  « 🔬 R&D » `ui/story/ResearchPanel.tsx`, `view/research.ts`) : dans l'histoire en 5 actes, le
+  catalogue démarre réduit (`RESEARCH_FREE` : bureau, bureau IKEA, plantes, cafetière, mug, canard,
+  lampe, poubelle, tour et écran bureautiques, mur crème) et se débloque avec des points
+  d'innovation : +1 par feature livrée, +3 par objectif secondaire rempli, +2 quand le joueur gagne
+  plus d'utilisateurs que chaque rival sur un sprint (comptés à la démo, `researchSprint`), 4 au
+  départ. 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation ; coûts 4, 8,
+  14, 20) : chaque niveau demande le précédent et l'acte correspondant (niveau 1 au garage, 4 dès
+  « Le géant ») ; le verrou de phase reste. Chaque niveau débloque des clés `item:`, `computer:`,
+  `monitor:` (et `monitor:arm`), `wall:`, `floor:`, `meeting:` ; un test vérifie que tout le
+  catalogue est rattaché. Branche Prestige : les récompenses des objectifs (papiers peints, sols,
+  couleurs, objets, pas les bonus de départ) s'achètent dès l'objectif rempli dans la partie
+  (`prestigeEarned`, lu par `hasUnlock`). Verrou dans chaque achat (erreur `LOCKED`), blocage
+  `researchLocked` de `shopStatus`, raison « 🔬 R&D : Tech, niveau 3 » dans le catalogue, les murs,
+  les sols, les écrans, les ordinateurs et les salles de réunion. Commande `RESEARCH_NODE`, erreur
+  `NOT_ENOUGH_POINTS`, notifications `RESEARCH_POINTS` / `RESEARCH_DONE`, état
+  `campaign.research` optionnel (absent des histoires commencées avant : catalogue complet),
+  étape « L'arbre R&D » du tutoriel. Aucun tirage : missions courtes et autres modes inchangés.
+  Bot de recherche (`researchCommands`) ; `pnpm balance:campaign` affiche les points et niveaux
+  (réussite des bots inchangée à ±1 partie sur 20). Choix de Thomas (« le plus logique, tu es
+  libre ») : rattachement explicite objet par objet, Prestige par les objectifs ; coûts de 2, 4, 7,
+  10 doublés après calibrage. Hall d'entrée et offres internet (fichiers de Melvin) non verrouillés.
 - Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
   menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
   8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,

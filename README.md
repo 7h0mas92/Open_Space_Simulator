@@ -686,6 +686,13 @@ sequenceDiagram
   imposées à un sprint fixé, sans tirage), SMS de Mamie Josette et articles d'Inès Kader dans le
   Slack, deux fins écrites (rachat par Gigacorp, ou entrée en Bourse puis Saison libre sans limite,
   avec une nouvelle startup rivale tous les 10 sprints).
+  **Arbre R&D des objets** (`packages/shared/src/sim/research.ts`, panneau « 🔬 R&D ») : dans
+  l'histoire, le catalogue de construction démarre réduit et se débloque avec des points
+  d'innovation (features livrées, objectifs remplis, sprints gagnés face aux rivaux). 5 branches
+  de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation), chaque niveau demandant le
+  précédent et son acte, plus une branche Prestige : les récompenses des objectifs, achetables dès
+  l'objectif rempli. Le verrou passe par la simulation (commande `RESEARCH_NODE`, achats refusés
+  avec `LOCKED`), aucun tirage : les missions courtes et les autres modes gardent tout le catalogue.
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le
