@@ -55,7 +55,9 @@ import type {
   PetNeed,
   NotificationKind,
   Phase,
+  PitchBasis,
   PitchCategory,
+  PitchRating,
   PitchResult,
   VentureRisk,
   VentureStatus,
@@ -534,6 +536,16 @@ export interface PitchArgumentView {
   readonly bluff: boolean;
 }
 
+/** Argument proposé à la manche en cours, avec sa force attendue face à cette question. */
+export interface PitchOptionView extends PitchArgumentView {
+  /** Effet attendu sur l'intérêt de cet investisseur (goûts et question compris). */
+  readonly rating: PitchRating;
+  /** Jauge sur laquelle l'argument s'appuie. */
+  readonly basis: PitchBasis;
+  /** Son effet se joue aux dés (démo en direct, buzzwords, bluffs). */
+  readonly random: boolean;
+}
+
 /** Réponse déjà donnée, avec la réaction de l'investisseur. */
 export interface PitchAnswerView extends PitchArgumentView {
   readonly reaction: 'good' | 'neutral' | 'bad';
@@ -553,9 +565,9 @@ export interface PitchView {
   readonly rounds: number;
   /** Question de l'investisseur à cette manche. */
   readonly question: { readonly text: LocalizedText; readonly category: PitchCategory } | null;
-  readonly options: readonly PitchArgumentView[];
+  readonly options: readonly PitchOptionView[];
   readonly chosen: readonly PitchAnswerView[];
-  /** Intérêt de l'investisseur (0 à 1) : sa probabilité actuelle de signer. */
+  /** Intérêt de l'investisseur (0 à 1) : sa probabilité actuelle de signer (la vraie). */
   readonly interest: number;
   /** L'investisseur est parti avant la fin. */
   readonly walkedOut: boolean;
@@ -581,6 +593,13 @@ export interface FundingView {
     readonly tier: number;
     readonly manches: number;
     readonly options: number;
+    /** Chance estimée de signer en répondant à chaque question avec un bon argument (0 à 1). */
+    readonly chance: number;
+    /** Force de chaque thème d'argument d'après l'état de la startup. */
+    readonly strengths: readonly {
+      readonly category: PitchCategory;
+      readonly rating: PitchRating;
+    }[];
   };
   readonly tiers: number;
   /** Sprint à partir duquel on pourra repitcher (cooldown), sinon null. */

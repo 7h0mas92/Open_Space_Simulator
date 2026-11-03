@@ -938,7 +938,25 @@
     "short": "Raise",
     "roundTitle": "Fundraising · {{round}}",
     "difficulty": "Difficulty {{level}} of {{total}}",
-    "interest": "Interest",
+    "interest": "Chance they sign",
+    "ratings": {
+      "strong": "strong",
+      "fair": "fair",
+      "weak": "weak"
+    },
+    "ratingTitle": "Expected effect on this investor: {{rating}}, based on {{basis}}.",
+    "random": "random",
+    "basis": {
+      "users": "your users",
+      "revenue": "your revenue",
+      "runway": "your cash",
+      "stability": "prod stability",
+      "debt": "your tech debt",
+      "team": "your team",
+      "hype": "your hype",
+      "luck": "luck",
+      "bluff": "bluffing"
+    },
     "offTopic": "off topic",
     "bluffCaught": "bluff called!",
     "bluffTag": "bluff",
@@ -1666,7 +1684,7 @@
           },
           "pitch": {
             "title": "The pitch",
-            "body": "Facing the investor, you answer their questions, one per round, by picking an argument. Each argument relies on a gauge:\n\n• Traction: you need users.\n• Tech: you need low debt.\n• Team: you need a large, happy team.\n• Stability: some arguments need a reliable prod, and the live demo can crash.\n\nAnswer the question asked: off topic, their interest drops. Each funding round is tougher than the last: more questions, a higher bar, bluffs called more often, and from Series B the investor may walk out. A failed pitch costs hype."
+            "body": "Facing the investor, you answer their questions, one per round, by picking an argument. Each argument relies on a gauge:\n\n• Traction: you need users.\n• Tech: you need low debt.\n• Team: you need a large, happy team.\n• Stability: some arguments need a reliable prod, and the live demo can crash.\n\nAnswer the question asked: off topic, their interest drops. Each funding round is tougher than the last: more questions, a higher bar, bluffs called more often, and from Series B the investor may walk out. A failed pitch costs hype.\n\nBefore you go in, the panel shows your estimated chance and how strong each theme is. During the pitch, each argument on offer shows its strength against this investor (strong, fair, weak) and the gauge it relies on, and the “Chance they sign” gauge is the real probability that the investor signs."
           },
           "dilution": {
             "title": "Dilution",
@@ -1877,6 +1895,9 @@
     "annexes": "Office annexes",
     "nextRound": "Next funding round: {{round}}",
     "difficulty": "Difficulty",
+    "chance": "Estimated chance",
+    "chanceHint": "If you answer every question with a strong argument. During the pitch, the “Chance they sign” gauge shows the real chance, answer after answer.",
+    "strengths": "Your arguments today",
     "roundHint": "Facing an investor: {{manches}} questions, {{options}} possible answers each time. Answer the question asked: an off-topic answer lowers their interest. Each round is tougher than the last.",
     "annexNext": "Closing this round grows the office: a new annex opens, with 2 more seats on the team.",
     "annexLater": "From {{round}} on, each successful round adds an annex to the office.",
