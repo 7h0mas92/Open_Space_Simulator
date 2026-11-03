@@ -506,6 +506,15 @@ flowchart LR
   (39 €/mois, 3 salariés) à la fibre dédiée 10 Gb/s (2 600 €/mois, 200 salariés), prélevées
   chaque semaine, avec frais de mise en service. Au-delà de son nombre de salariés, le réseau
   sature et toute l'équipe ralentit ; seule la fibre dédiée demande une box fibre dans une salle.
+- **Saleté et ménage** : chaque jour de semaine, l'équipe présente au bureau le salit
+  (emballages, gobelets, canettes, boîtes de pizza, peaux de banane, taches au sol). La saleté
+  monte de plus en plus vite sans ménage et ralentit les devs sur place (-20 % de travail à 50 %
+  de saleté, -40 % à 100 %) ; les télétravailleurs, le Dev Fantôme et l'IA Agent ne sont pas
+  gênés. Le bouton 🧹 en haut affiche le pourcentage et ouvre le panneau « Ménage » : l'entreprise
+  de nettoyage Nickel Chrome (trois agents) passe sur appel le soir à 19h, en express tout de
+  suite (plus cher), ou avec l'abonnement « Ménage » de la rubrique Abonnements (vendredi, mardi
+  et vendredi, ou tous les soirs, prix selon la taille du bureau). Pendant le passage, les agents
+  vont d'un déchet à l'autre et les déchets disparaissent.
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le
@@ -870,7 +879,7 @@ génère que des messages Slack.
   pupitre et écran géant des annexes (aussi en vente), ville, fenêtres et baies vitrées, murs fins pleins et vitrés, vidéoprojecteur, projecteur de plafond et écrans déroulants,
   local et salle des serveurs, serveurs rack, lames et GPU, switch, box fibre, climatisation de
   précision, climatiseur mural, clim en rangée, sonde de supervision, onduleur, NAS de sauvegarde, pare-feu, extinction au gaz,
-  litières,
+  déchets au sol et agents de nettoyage (chariot, aspirateur, serpillière), litières,
   gamelles, arbres à chat et chats, canapé, bibliothèque, bureaux, chaises, cuisine, détente et
   accessoires détaillés, huit plantes d'intérieur, tableau blanc, horloge,
   aquarium, mur d'écrans et tableau des salles de réunion, pack UI (interface en CSS), packs sons. Les autres objets du mode construction

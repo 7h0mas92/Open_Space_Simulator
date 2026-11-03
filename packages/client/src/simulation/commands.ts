@@ -27,7 +27,7 @@ import { answerRaise } from './raises';
 import { bookLeave, cancelLeave, refuseBridges } from './teamLife';
 import { holdRetro } from './retro';
 import { bookTeamBuilding, cancelTeamBuilding } from './teamBuilding';
-import { callCleaning, cancelCleaning, subscribeCleaning } from './cleaning';
+import { callCleaning } from './cleaning';
 import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
@@ -215,10 +215,6 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return cancelSubscription(state, ctx, command.service);
     case 'CALL_CLEANING':
       return callCleaning(state, ctx, command.express);
-    case 'SUBSCRIBE_CLEANING':
-      return subscribeCleaning(state, ctx, command.plan);
-    case 'CANCEL_CLEANING':
-      return cancelCleaning(state, ctx);
     case 'LEARN_SKILL':
       return learnSkill(state, ctx, command.devId, command.skill);
     case 'RESET_SKILLS':

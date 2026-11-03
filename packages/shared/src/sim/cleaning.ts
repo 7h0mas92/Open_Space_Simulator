@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
-import { TIME } from './balance.js';
+import { annexCount } from './funding.js';
+import type { GameState } from './state.js';
+import { VENTURES } from './ventures.js';
 
 /**
  * Saleté du bureau et entreprise de nettoyage.
@@ -13,7 +15,8 @@ import { TIME } from './balance.js';
  *
  * L'entreprise de nettoyage « Nickel Chrome » (3 personnes) fait le ménage :
  * - sur appel, le soir même à 19h, ou en express tout de suite (plus cher) ;
- * - avec un abonnement payé chaque semaine : 1, 2 ou 5 passages le soir.
+ * - avec l'abonnement « Ménage » de la rubrique Abonnements (`subscriptions.ts`), payé chaque
+ *   semaine : 1, 2 ou 5 passages le soir. Son prix suit la taille du bureau.
  * Un passage dure quelques heures : les déchets disparaissent peu à peu, puis le bureau est
  * propre.
  *
@@ -59,9 +62,6 @@ export const CLEANING_VISIT_PRICE: Record<Phase, number> = {
   END: 700,
 };
 
-/** Une semaine de jeu, en ticks : l'abonnement est facturé à ce rythme. */
-export const CLEANING_WEEK_TICKS = TIME.ticksPerDay * 7;
-
 /** Les 3 personnes de l'entreprise de nettoyage (noms fixes, rendu et panneau). */
 export const CLEANING_CREW = [
   { id: 'lead', name: 'Fatou', tool: 'cart' },
@@ -78,6 +78,8 @@ export interface CleaningPlan {
   readonly id: CleaningPlanId;
   readonly name: LocalizedText;
   readonly description: LocalizedText;
+  /** Jours de passage, en toutes lettres (affichés à côté du nom de l'offre). */
+  readonly detail: LocalizedText;
   /** Jours de passage, de 1 (lundi) à 5 (vendredi), le soir à 19h. */
   readonly days: readonly number[];
   /** Remise sur le prix des passages, par rapport au tarif d'un passage. */
@@ -94,6 +96,7 @@ export const CLEANING_PLANS: readonly CleaningPlan[] = [
       'Un passage le vendredi soir : le bureau repart propre chaque lundi.',
       'One visit on Friday evening: the office starts clean every Monday.',
     ),
+    detail: t('vendredi soir', 'Friday evening'),
     days: [5],
     discount: 0.1,
   },
@@ -104,6 +107,7 @@ export const CLEANING_PLANS: readonly CleaningPlan[] = [
       'Mardi et vendredi soir : la saleté ne dépasse presque jamais le seuil d’alerte.',
       'Tuesday and Friday evenings: dirt hardly ever reaches the alert level.',
     ),
+    detail: t('mardi et vendredi soir', 'Tuesday and Friday evenings'),
     days: [2, 5],
     discount: 0.15,
   },
@@ -114,13 +118,19 @@ export const CLEANING_PLANS: readonly CleaningPlan[] = [
       'Du lundi au vendredi soir : chaque matin, un bureau comme neuf.',
       'Monday to Friday evenings: a brand-new office every morning.',
     ),
+    detail: t('du lundi au vendredi soir', 'Monday to Friday evenings'),
     days: [1, 2, 3, 4, 5],
     discount: 0.25,
   },
 ];
 
-export function getCleaningPlan(id: CleaningPlanId): CleaningPlan {
-  return CLEANING_PLANS.find((plan) => plan.id === id) ?? (CLEANING_PLANS[0] as CleaningPlan);
+export function getCleaningPlan(id: string): CleaningPlan | undefined {
+  return CLEANING_PLANS.find((plan) => plan.id === id);
+}
+
+/** Ailes de filiales et annexes ouvertes : autant de surface en plus à nettoyer. */
+export function officeExtraRooms(state: Pick<GameState, 'ventures' | 'fundingRounds'>): number {
+  return Math.min(state.ventures.length, VENTURES.maxFounded) + annexCount(state.fundingRounds);
 }
 
 /** Prix d'un passage pour un bureau de cette phase avec `extraRooms` ailes ou annexes. */
@@ -150,18 +160,6 @@ export function dirtGrowth(days: number): number {
   return 1 + Math.min(CLEANING.growthMax, CLEANING.growthPerDay * Math.max(0, days));
 }
 
-/** Abonnement de ménage en cours. */
-export const CleaningSubscriptionSchema = z.object({
-  plan: CleaningPlanIdSchema,
-  /** Tick jusqu'auquel l'abonnement est payé : la semaine suivante est facturée à ce moment-là. */
-  paidUntil: z.number().int().nonnegative(),
-  /** Sprint de la souscription. */
-  since: z.number().int().min(1),
-  /** Total payé pour cet abonnement. */
-  totalPaid: z.number().nonnegative(),
-});
-export type CleaningSubscription = z.infer<typeof CleaningSubscriptionSchema>;
-
 export const CleaningStateSchema = z.object({
   /** Saleté du bureau, de 0 (impeccable) à 100 %. */
   dirt: z.number().min(0).max(100),
@@ -169,7 +167,6 @@ export const CleaningStateSchema = z.object({
   daysSinceClean: z.number().int().nonnegative(),
   /** L'équipe s'est déjà plainte de la saleté depuis le dernier ménage. */
   alerted: z.boolean(),
-  plan: CleaningSubscriptionSchema.nullable(),
   /** Appel ponctuel réservé : l'équipe arrive à ce tick. */
   booking: z.object({ start: z.number().int().nonnegative(), express: z.boolean() }).nullable(),
   /** Ménage en cours : du tick `start` au tick `end` (exclu), saleté de départ `from`. */
@@ -183,7 +180,7 @@ export const CleaningStateSchema = z.object({
     .nullable(),
   /** Passages effectués depuis le début de la partie. */
   visits: z.number().int().nonnegative(),
-  /** Dépensé en ménage depuis le début de la partie (appels et abonnements). */
+  /** Dépensé en appels ponctuels depuis le début de la partie (l'abonnement est compté à part). */
   spent: z.number().nonnegative(),
 });
 export type CleaningState = z.infer<typeof CleaningStateSchema>;
@@ -194,7 +191,6 @@ export function emptyCleaningState(): CleaningState {
     dirt: 0,
     daysSinceClean: 0,
     alerted: false,
-    plan: null,
     booking: null,
     visit: null,
     visits: 0,
