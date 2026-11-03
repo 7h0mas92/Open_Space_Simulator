@@ -1,8 +1,8 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : team building
-> (tâche T5, 3e des 3 PR). Base : `develop` avec les congés (#149) et la rétrospective (#155).
-> Puis hall d'entrée et sécurité (PR #134, projet de Melvin) fusionné dans `develop`.
+> **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Melvin) : modèle économique
+> (#151), clients B2B (#153) et support client (#154) fusionnés dans `develop`, panneau
+> « 💶 Business ».
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -74,7 +74,8 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                |
 | Histoire longue, rivaux, arbre R&D (T2, T4)         | Thomas          | Proposition prête, rien de codé                 |
 | Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)         |
-| Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                             |
+| Économie : modèle, B2B, support (M3)                | Melvin + Claude | Fusionné dans `develop` le 3 novembre           |
+| Économie : marketing (M3)                           | Melvin          | Idée, rien de codé                              |
 
 **Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
 progression et la vie de l'équipe. Détail, dépendances, fichiers à éviter et prompts prêts à coller
@@ -297,6 +298,9 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                |
 | -------- | --------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 03/11    | Melvin + Claude | #154              | Support client dans le panneau Business : tickets, agents, devs de garde, satisfaction (départs en plus sous 60, recommandations au-dessus de 80). État `support` par défaut, aucun tirage, mais règle de toutes les parties : les replays des anciens scores divergent.                                                                                                                                  |
+| 03/11    | Melvin + Claude | #153              | Clients B2B : 3 offres par planification sur `seed#clients#sprint`, contrats avec échéance, forfait, SLA et maintenance. Points livrés comptés à la démo par type de tâche. État `clients` par défaut ; sans contrat, partie identique.                                                                                                                                                                   |
+| 03/11    | Melvin + Claude | #151              | Modèle économique (panneau 💶 Business) : 4 modèles x 3 prix, freemium standard = partie d'avant. Au téléphone en portrait, les boutons système du haut ont leur propre ligne ; de 1024 à 1279 px, le nom de l'entreprise est masqué dans le HUD.                                                                                                                                                         |
 | 02/11    | Melvin + Claude | #134              | Hall d'entrée au rez-de-chaussée (rayon Accueil) : portes à badge, comptoir, 2 secrétaires. Sécurité branchée sur le modèle commun (service `security`, installation `lobby` dans `REQUIREMENT_CHECKS`). État `lobby` null par défaut, aucun tirage.                                                                                                                                                      |
 | 02/11    | Melvin + Claude | #147              | Ménage branché sur le modèle commun d'abonnements : service « cleaning » (🧹), 3 offres, `SUBSCRIBE` / `CANCEL_SUBSCRIPTION` à la place de `SUBSCRIBE_CLEANING` / `CANCEL_CLEANING`, `cleaning.plan` retiré. `PRICE_RULES` : prix d'une offre qui suit la partie (ménage selon la taille du bureau).                                                                                                      |
 | 02/11    | Thomas + Claude | T5 (3/3)          | Team building : 5 sorties réservées en planification, effets à 18h le dernier jour, hasard sur `seed#teambuilding#sprint`. État `teamBuilding` par défaut. T5 terminée : les 3 PR empilées sont fusionnées ensemble par #156 (#149 et #155 fermées, incluses).                                                                                                                                            |
