@@ -28,6 +28,7 @@ import { leadershipEffects, NO_LEADERSHIP, type LeadershipEffects } from '../lea
 import { recordTaskDone, recordWork } from '../performance';
 import { checkDuplicateWork, dailyFocus, isTeamMeetingTime } from '../meetings';
 import { completeSpecialTask } from '../taskFlow';
+import { recordTradeWork } from '../sprintLoad';
 import { supportWorkFactor } from '../support';
 import { activeRetro, retroActive } from '../retro';
 import {
@@ -244,6 +245,7 @@ function completeTask(
     return;
   }
 
+  const points = task.size * BALANCE.work.pointEffect;
   const quality = task.progress > 0 ? task.qualitySum / task.progress : 0.5;
   const debtMultiplier = task.progress > 0 ? task.debtFactor / task.progress : 1;
   const { debt, stability } = BALANCE;
@@ -253,7 +255,7 @@ function completeTask(
       addGauge(
         state,
         'debt',
-        task.size *
+        points *
           debt.featurePerPoint *
           (1.3 - quality) *
           debtMultiplier *
@@ -261,7 +263,7 @@ function completeTask(
           skills.featureDebtFactor *
           (retroActive(state, 'MORE_TESTS') ? RETRO.moreTestsDebtFactor : 1),
       );
-      addGauge(state, 'stability', task.size * stability.featurePerPoint);
+      addGauge(state, 'stability', points * stability.featurePerPoint);
       state.stats.featuresShipped += 1;
       // « Moins d'hallucinations » change la probabilité, pas le nombre de tirages.
       if (
@@ -298,7 +300,7 @@ function completeTask(
       addGauge(
         state,
         'debt',
-        task.size *
+        points *
           debt.refactoPerPoint *
           (0.5 + quality) *
           (hasSkill(state, devId, 'successful-rewrite') ? SKILLS.successfulRewriteRefacto : 1),
@@ -306,12 +308,12 @@ function completeTask(
       state.stats.refactosDone += 1;
       break;
     case 'BUGFIX':
-      addGauge(state, 'stability', task.size * stability.bugfixPerPoint * (0.5 + quality));
-      addGauge(state, 'debt', task.size * debt.bugfixPerPoint);
+      addGauge(state, 'stability', points * stability.bugfixPerPoint * (0.5 + quality));
+      addGauge(state, 'debt', points * debt.bugfixPerPoint);
       break;
     case 'INFRA':
-      addGauge(state, 'stability', task.size * stability.infraPerPoint * (0.5 + quality));
-      addGauge(state, 'debt', task.size * debt.infraPerPoint);
+      addGauge(state, 'stability', points * stability.infraPerPoint * (0.5 + quality));
+      addGauge(state, 'debt', points * debt.infraPerPoint);
       break;
   }
   addDevLog(
@@ -358,6 +360,7 @@ export function workSystem(
     const rate =
       productivity(state, ctx, devId, task, hasProductOwner, leadership, clock, skills) * share;
     task.progress += rate;
+    recordTradeWork(state, taskTrade(task), rate);
     const quality = effectiveQuality(state, ctx, devId);
     task.qualitySum += rate * quality;
     recordWork(state, devId, rate, quality);

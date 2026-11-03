@@ -33,6 +33,7 @@ import {
   type SimContext,
 } from './helpers';
 import { Rng } from './rng';
+import { sprintLoadSystem } from './sprintLoad';
 import { removeTask, reorder, tasksInColumn } from './tasks';
 import { clockAt, type SimClock } from './time';
 
@@ -111,7 +112,7 @@ function createSpecialTask(
     trade: 'DEV',
     size: template.size,
     progress: 0,
-    work: template.size * BALANCE.work.unitsPerPoint,
+    work: template.size * BALANCE.work.specialUnitsPerPoint,
     column: 'TODO',
     order: 0,
     assigneeId: null,
@@ -276,13 +277,17 @@ function maybeRandomUrgent(state: GameState, ctx: SimContext): void {
   if (template) raiseUrgent(state, ctx, template.id);
 }
 
-/** Système « flux de tâches » : échéances, tâches de la semaine et urgences du jour. */
+/**
+ * Système « flux de tâches » : échéances, tâches de la semaine, urgences du jour, puis
+ * réapprovisionnement du « À faire » selon le rythme de l'équipe (`sprintLoad.ts`).
+ */
 export function taskFlowSystem(state: GameState, ctx: SimContext, clock: SimClock): void {
   if (state.stage !== 'EXECUTION') return;
   expireTasks(state, ctx);
   if (clock.isWeekend) return;
   if (clock.dayOfWeek === 1 && clock.hour === 9) addWeeklyTasks(state, ctx, clock);
   if (clock.hour === 10) maybeRandomUrgent(state, ctx);
+  sprintLoadSystem(state, ctx, clock);
 }
 
 /** La prod tombe : une tâche urgente « Réparer la prod » apparaît (null si déjà ouverte). */

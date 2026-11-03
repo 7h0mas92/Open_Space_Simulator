@@ -53,6 +53,7 @@ function resetTracker(state: GameState): void {
     incidents: 0,
     specialDone: 0,
     specialMissed: 0,
+    workByTrade: {},
   };
 }
 
@@ -166,16 +167,17 @@ export function endSprint(state: GameState, ctx: SimContext): void {
     if (!task || task.kind) continue;
     if (task.type !== 'REFACTO' && !task.hallucinated)
       delivered[task.type] = (delivered[task.type] ?? 0) + task.size;
-    if (task.type === 'REFACTO') refactoPoints += task.size;
+    const points = task.size * BALANCE.work.pointEffect;
+    if (task.type === 'REFACTO') refactoPoints += points;
     if (task.type !== 'FEATURE') continue;
     if (task.hallucinated) {
       hallucinations += 1;
       continue;
     }
     shipped += 1;
-    featurePoints += task.size;
+    featurePoints += points;
     const quality = task.progress > 0 ? task.qualitySum / task.progress : 0.5;
-    usersGained += task.size * perPoint * (0.5 + quality) * hypeFactor * stabilityFactor * designer;
+    usersGained += points * perPoint * (0.5 + quality) * hypeFactor * stabilityFactor * designer;
   }
   usersGained = acquireUsers(state, usersGained);
   // Plus la hype est haute, plus il est dur de la faire monter encore.

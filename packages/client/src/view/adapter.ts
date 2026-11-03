@@ -145,6 +145,7 @@ import {
   qualityOf,
 } from '../simulation/performance';
 import { objectiveReached, objectiveValue, sprintTime } from '../simulation/taskFlow';
+import { sprintForecast } from '../simulation/sprintLoad';
 import { tasksInColumn } from '../simulation/tasks';
 import { birthdayOf, birthdayPartyIds, calendarDay } from '../simulation/systems/calendar';
 import { clockAt, getClock } from '../simulation/time';
@@ -1475,6 +1476,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     event: eventView(state, context),
     lastReport: state.history.sprints.at(-1) ?? null,
     objective: objectiveView(state),
+    sprintLoad: sprintForecast(state, getClock(state)),
     career: legendRunView(state),
     pitch: pitch ? pitchView(state, pitch) : null,
     pitchBlocker: pitchBlocker(state),
