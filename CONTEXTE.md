@@ -3,7 +3,7 @@
 > **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : arbre R&D des
 > objets (T4) en PR vers `develop` (branche `claude/project-thread-xbj9as`), à valider par
 > Thomas. Avant : histoire en 5 actes (T2) fusionnée dans `develop` (PR #157 : socle, rivaux,
-> scènes, fins et Saison libre), équilibrage à venir. Avant : modèle économique (#151), clients B2B (#153) et support client
+> scènes, fins et Saison libre), équilibrage à venir ; plus tôt, modèle économique (#151), clients B2B (#153) et support client
 > (#154) de Melvin, panneau « 💶 Business ».
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
