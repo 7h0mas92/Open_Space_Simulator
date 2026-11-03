@@ -59,6 +59,7 @@ export const PANEL_ICONS: Record<PanelId | 'build', string> = {
   career: '🧭',
   mission: '🎯',
   market: '📈',
+  research: '🔬',
   build: '🛠️',
   dashboard: '📈',
   slack: '💬',
@@ -294,7 +295,7 @@ export function SystemButtons({ view }: { view: GameView }) {
   const campaign = useGame((s) => s.view?.campaign !== null && s.view?.campaign !== undefined);
   const system = replay ? SYSTEM_PANELS.filter((id) => id !== 'saves') : SYSTEM_PANELS;
   const panels: readonly PanelId[] = campaign
-    ? ['mission', 'market', ...system]
+    ? ['mission', 'market', 'research', ...system]
     : story
       ? ['mission', ...system]
       : system;

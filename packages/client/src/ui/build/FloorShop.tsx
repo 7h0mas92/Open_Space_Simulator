@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { storyLockedReason } from './storyLock';
+import { researchLockedReason, storyLockedReason } from './storyLock';
 import type { TFunction } from 'i18next';
 import {
   FLOOR_MATERIALS,
@@ -98,7 +98,9 @@ export function FloorShop({ view }: { view: GameView }) {
   const money = (value: number) => formatMoney(value, language);
   const label = floorLabel(choice, t, language);
   const locked =
-    view.floors.locked.includes(material.id) || view.floors.storyLocked.includes(material.id);
+    view.floors.locked.includes(material.id) ||
+    view.floors.storyLocked.includes(material.id) ||
+    researchLockedReason(t, view, `floor:${material.id}`) !== null;
   const todo = view.floors.zones.filter((zone) => !sameFloor(zone.finish ?? undefined, choice));
   const allPrice = todo.length * material.price;
   const cover = (zones: readonly FloorZone[]) => {
@@ -173,7 +175,8 @@ export function FloorShop({ view }: { view: GameView }) {
       <ul className="catalog-items" aria-label={t('build.categories.floors')}>
         {FLOOR_MATERIALS.map((m) => {
           const storyLocked = view.floors.storyLocked.includes(m.id);
-          const isLocked = storyLocked || view.floors.locked.includes(m.id);
+          const research = researchLockedReason(t, view, `floor:${m.id}`);
+          const isLocked = storyLocked || research !== null || view.floors.locked.includes(m.id);
           const shown: FloorFinish = {
             material: m.id,
             tint: m.id === material.id ? choice.tint : m.tints[0],
@@ -196,10 +199,12 @@ export function FloorShop({ view }: { view: GameView }) {
                 </span>
                 <span className={isLocked ? 'catalog-card-text locked' : 'catalog-card-text'}>
                   {storyLocked
-                    ? storyLockedReason(t, view.mode)
-                    : isLocked
-                      ? t('build.locked', { phase: t(`phases.${m.minPhase}`) })
-                      : `${effectSummary(m, t)} · ${localized(m.description, language)}`}
+                    ? storyLockedReason(t, view)
+                    : research
+                      ? research
+                      : isLocked
+                        ? t('build.locked', { phase: t(`phases.${m.minPhase}`) })
+                        : `${effectSummary(m, t)} · ${localized(m.description, language)}`}
                 </span>
               </button>
             </li>

@@ -14,6 +14,7 @@ import {
 import { addMoney } from './helpers';
 import { hasUnlock } from './unlocks';
 import { wallOffice, type WallBlocker } from './walls';
+import { researchUnlocked } from './research';
 
 /*
  * Sols des pièces (catalogue dans `shared/sim/floors.ts`). Une commande pose une matière et une
@@ -35,6 +36,7 @@ export function floorBlocker(
   if (state.stage === 'PITCH') return 'WRONG_STAGE';
   if (phaseIndex(state.phase) < phaseIndex(material.minPhase)) return 'LOCKED';
   if (!hasUnlock(state, material.unlock)) return 'LOCKED';
+  if (!researchUnlocked(state, `floor:${material.id}`)) return 'LOCKED';
   if (sameFloor(state.floors[zone], finish)) return 'NOT_ELIGIBLE';
   if (state.gauges.treasury < material.price) return 'NOT_ENOUGH_MONEY';
   return null;

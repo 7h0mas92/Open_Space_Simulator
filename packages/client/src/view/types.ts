@@ -68,6 +68,10 @@ import type {
   SkillBranch,
   SkillId,
   TrainingKind,
+  ResearchBranch,
+  ResearchKey,
+  ResearchLevel,
+  ResearchNodeId,
 } from '@oss/shared';
 
 /**
@@ -1110,6 +1114,42 @@ export interface CampaignView {
   readonly freeSeasonSprints: number;
 }
 
+/** Pourquoi un niveau de l'arbre R&D n'est pas encore pris (null : il peut l'être). */
+export type ResearchNodeStatus = 'owned' | 'available' | 'previous' | 'act' | 'points';
+
+/** Un niveau de l'arbre R&D des objets. */
+export interface ResearchNodeView {
+  readonly id: ResearchNodeId;
+  readonly branch: ResearchBranch;
+  readonly level: ResearchLevel;
+  readonly name: LocalizedText;
+  readonly cost: number;
+  /** Acte à atteindre (0 = prologue). */
+  readonly act: number;
+  readonly status: ResearchNodeStatus;
+  /** Ce qu'il débloque (clés `item:…`, `wall:…`, `meeting:…`…). */
+  readonly keys: readonly ResearchKey[];
+}
+
+/** Branche Prestige : récompenses des objectifs de l'histoire, jamais achetées. */
+export interface ResearchPrestigeView {
+  readonly reward: StoryRewardId;
+  readonly mission: StoryMissionId;
+  readonly missionTitle: LocalizedText;
+  /** Objectif rempli dans cette partie (ou récompense déjà gagnée avant). */
+  readonly unlocked: boolean;
+}
+
+/** Arbre R&D des objets (longue partie du mode Histoire). */
+export interface ResearchView {
+  /** Points d'innovation à dépenser. */
+  readonly points: number;
+  /** Points gagnés depuis le début de l'histoire. */
+  readonly earned: number;
+  readonly nodes: readonly ResearchNodeView[];
+  readonly prestige: readonly ResearchPrestigeView[];
+}
+
 /** Ce qui vient de se passer dans la partie (toasts, effets visuels). */
 export interface GameNotification {
   readonly tick: number;
@@ -1217,6 +1257,8 @@ export interface GameView {
   readonly story: StoryView | null;
   /** Mode Histoire : la longue partie en actes (null dans les autres modes et les missions). */
   readonly campaign: CampaignView | null;
+  /** Arbre R&D des objets (longue partie du mode Histoire, null ailleurs). */
+  readonly research: ResearchView | null;
   /** Récompenses du mode Histoire utilisables dans cette partie. */
   readonly unlocks: readonly StoryRewardId[];
   /** Succès débloqués pendant cette partie (identifiants du catalogue). */
@@ -1316,6 +1358,8 @@ export type GameCommand =
   | { readonly type: 'cancelTeamBuilding' }
   | { readonly type: 'launchIpo' }
   | { readonly type: 'endStory' }
+  /** Arbre R&D (Histoire) : prendre un niveau contre des points d'innovation. */
+  | { readonly type: 'research'; readonly nodeId: ResearchNodeId }
   | { readonly type: 'foundVenture'; readonly ideaId: string }
   | { readonly type: 'sellVenture'; readonly ventureId: string }
   | { readonly type: 'fitMeetingRoom'; readonly format: MeetingFormatId }

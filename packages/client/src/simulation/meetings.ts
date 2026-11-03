@@ -28,6 +28,7 @@ import {
 import { assignTask } from './tasks';
 import { Rng } from './rng';
 import { getClock, type SimClock } from './time';
+import { researchUnlocked } from './research';
 
 /*
  * Salle de réunion : le joueur choisit une formule (stand-up, brainstorming, aquarium, zen,
@@ -72,6 +73,7 @@ export function meetingFormatBlocker(
   if (state.stage === 'PITCH') return 'WRONG_STAGE';
   if (!meetingRoomUnlocked(state) || phaseIndex(state.phase) < phaseIndex(format.minPhase))
     return 'LOCKED';
+  if (!researchUnlocked(state, `meeting:${format.id}`)) return 'LOCKED';
   if (state.meetingRoom?.format === format.id) return 'NOT_ELIGIBLE';
   if (state.gauges.treasury + meetingRoomRefund(state) < format.price) return 'NOT_ENOUGH_MONEY';
   return null;

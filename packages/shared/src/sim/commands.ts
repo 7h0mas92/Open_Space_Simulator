@@ -14,6 +14,7 @@ import { SkillIdSchema, TrainingKindSchema } from './skills.js';
 import { SubscriptionServiceSchema } from './subscriptions.js';
 import { WallFinishIdSchema, WallZoneSchema } from './walls.js';
 import { RetroActionSchema } from './retro.js';
+import { ResearchNodeIdSchema } from './research.js';
 import { OutingIdSchema } from './teamBuilding.js';
 
 /**
@@ -174,6 +175,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('LAUNCH_IPO') }),
   /** Histoire en actes, Saison libre : terminer la partie sur la fin « entrée en Bourse ». */
   z.object({ type: z.literal('END_STORY') }),
+  /** Arbre R&D des objets (Histoire) : prend un niveau contre des points d'innovation. */
+  z.object({ type: z.literal('RESEARCH_NODE'), nodeId: ResearchNodeIdSchema }),
   /** Crée une filiale à partir d'un des projets proposés pendant la planification. */
   z.object({ type: z.literal('FOUND_VENTURE'), ideaId: z.string() }),
   /** Revend les parts détenues dans une filiale. */
@@ -265,6 +268,7 @@ export const COMMAND_ERRORS = [
   'RAISE_PENDING',
   'NOT_ENOUGH_LEAVE',
   'LEAVE_SLOTS_FULL',
+  'NOT_ENOUGH_POINTS',
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 

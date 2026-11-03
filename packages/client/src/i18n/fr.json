@@ -331,6 +331,7 @@
     "tickets": "Kanbanana, l’appli de tickets",
     "leaderboard": "Classement",
     "market": "Marché",
+    "research": "R&D",
     "business": "Business"
   },
   "kanban": {
@@ -720,7 +721,8 @@
     "stopInventory": "{{item}} : plus rien en stock, retour à l’inventaire.",
     "monitor": "Écran",
     "storyLocked": "🔒 Récompense du mode Histoire : réussis sa mission pour l’acheter.",
-    "storyLockedMode": "🔒 Récompense du mode Histoire, indisponible dans ce mode."
+    "storyLockedMode": "🔒 Récompense du mode Histoire, indisponible dans ce mode.",
+    "storyLockedPrestige": "🏆 Prestige : remplis l’objectif de l’histoire qui donne cette récompense."
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -753,7 +755,8 @@
     "INVENTORY_FULL": "L’inventaire est plein : revends des objets rangés.",
     "RAISE_PENDING": "Réponds d'abord à la demande d'augmentation.",
     "NOT_ENOUGH_LEAVE": "Pas assez de jours de congé en réserve.",
-    "LEAVE_SLOTS_FULL": "Trop de monde en congé cette semaine-là : choisis l’autre semaine."
+    "LEAVE_SLOTS_FULL": "Trop de monde en congé cette semaine-là : choisis l’autre semaine.",
+    "NOT_ENOUGH_POINTS": "Pas assez de points d’innovation : livre des features et remplis des objectifs."
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
@@ -1442,6 +1445,10 @@
           "storyTips": {
             "title": "Les récompenses",
             "body": "Chaque récompense (papier peint, sol, couleur, objet ou bonus de départ) sert ensuite dans les modes Facile, Normal, Hardcore, Stagiaires Only et Défi 3 sprints.\n\nPas dans le Daily : la partie du jour reste la même pour tout le monde. Les missions n'ont pas de classement."
+          },
+          "storyResearch": {
+            "title": "L’arbre R&D",
+            "body": "Dans l’histoire en 5 actes, le catalogue de construction démarre réduit : bureaux, plantes, cafetière. Le reste se débloque dans le panneau 🔬 R&D, en haut à droite, avec des points d’innovation.\n\n• +1 point par feature livrée, +3 par objectif rempli, +2 quand tu gagnes plus d’utilisateurs que tous les rivaux sur un sprint.\n• 5 branches de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation) : chaque niveau demande le précédent et l’acte qui lui correspond.\n• Prestige : les récompenses des objectifs s’achètent dès que l’objectif est rempli.\n\nLes missions courtes et les autres modes gardent tout le catalogue."
           }
         }
       },
@@ -2713,6 +2720,36 @@
         "effect": "+30 moral, +30 d’affinité, +20 d’énergie, +8 hype, −5 de dette"
       }
     }
+  },
+  "research": {
+    "title": "Recherche et développement",
+    "intro": "Débloque le catalogue de construction avec des points d’innovation. Chaque niveau demande le précédent et l’acte de l’histoire qui lui correspond.",
+    "points": "{{points}} points d’innovation",
+    "earned": "{{earned}} gagnés depuis le début de l’histoire",
+    "howTo": "+{{feature}} par feature livrée, +{{goal}} par objectif rempli, +{{rivals}} quand tu gagnes plus d’utilisateurs que tous les rivaux sur un sprint.",
+    "branches": {
+      "comfort": "Confort",
+      "tech": "Tech",
+      "ambiance": "Ambiance",
+      "kitchen": "Cuisine",
+      "organisation": "Organisation",
+      "prestige": "Prestige"
+    },
+    "level": "Niveau {{level}}",
+    "status": {
+      "owned": "✓ Débloqué",
+      "available": "Disponible",
+      "previous": "🔒 Niveau précédent d’abord",
+      "act": "🔒 Dès l’acte « {{act}} »",
+      "points": "Il manque {{missing}} points"
+    },
+    "take": "Débloquer ({{cost}} pts)",
+    "unlocks": "Débloque : {{list}}",
+    "needed": "🔬 R&D : {{branch}}, niveau {{level}}",
+    "prestigeIntro": "Les récompenses des objectifs de l’histoire, sans points : remplis l’objectif pour les acheter.",
+    "prestigeDone": "✓ Gagnée",
+    "prestigeTodo": "Objectif : {{mission}}",
+    "free": "Au départ : bureau, bureau IKEA, plantes, cafetière, mug, canard, lampe, poubelle, tour et écran bureautiques."
   },
   "skills": {
     "tabs": "Fiche du dev",

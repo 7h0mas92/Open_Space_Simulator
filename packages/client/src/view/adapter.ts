@@ -97,6 +97,11 @@ import {
   skillsEnabled,
   getRival,
   type CampaignState,
+  PRESTIGE_REWARDS,
+  RESEARCH,
+  RESEARCH_TREE,
+  STORY_MISSIONS,
+  researchBlock,
 } from '@oss/shared';
 import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
@@ -175,6 +180,7 @@ import type {
   RetroView,
   StoryView,
   CampaignView,
+  ResearchView,
   MarketView,
   ClientDealView,
   ClientsView,
@@ -1311,6 +1317,39 @@ function marketView(state: GameState, campaign: CampaignState): MarketView {
   };
 }
 
+/** Arbre R&D des objets : niveaux, points et récompenses de Prestige (null hors de l'histoire). */
+function researchView(state: GameState): ResearchView | null {
+  const campaign = state.story?.campaign;
+  const research = campaign?.research;
+  if (!campaign || !research) return null;
+  return {
+    points: research.points,
+    earned: research.earned,
+    nodes: RESEARCH_TREE.map((node) => ({
+      id: node.id,
+      branch: node.branch,
+      level: node.level,
+      name: node.name,
+      cost: RESEARCH.cost[node.level],
+      act: RESEARCH.act[node.level],
+      status: researchBlock(research, campaign.act, node) ?? 'available',
+      keys: node.keys,
+    })),
+    prestige: STORY_MISSIONS.flatMap((mission) =>
+      PRESTIGE_REWARDS.includes(mission.reward)
+        ? [
+            {
+              reward: mission.reward,
+              mission: mission.id,
+              missionTitle: mission.title,
+              unlocked: hasUnlock(state, mission.reward),
+            },
+          ]
+        : [],
+    ),
+  };
+}
+
 function campaignView(state: GameState): CampaignView | null {
   const progress = actProgress(state);
   if (!progress) return null;
@@ -1431,7 +1470,12 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     result: state.result,
     story: storyView(state),
     campaign: campaignView(state),
-    unlocks: [...state.unlocks],
+    research: researchView(state),
+    // Branche Prestige de l'arbre R&D : les récompenses gagnées pendant l'histoire s'y ajoutent.
+    unlocks: [
+      ...state.unlocks,
+      ...PRESTIGE_REWARDS.filter((id) => !state.unlocks.includes(id) && hasUnlock(state, id)),
+    ],
     achievements: [...state.achievements],
     replay: context.replay ?? null,
     running: context.running,
@@ -1607,6 +1651,8 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'LAUNCH_IPO' };
     case 'endStory':
       return { type: 'END_STORY' };
+    case 'research':
+      return { type: 'RESEARCH_NODE', nodeId: command.nodeId };
     case 'foundVenture':
       return { type: 'FOUND_VENTURE', ideaId: command.ideaId };
     case 'sellVenture':

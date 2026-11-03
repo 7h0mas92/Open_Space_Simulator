@@ -1,5 +1,6 @@
 import {
   ENDLESS,
+  emptyResearch,
   STORY_ACTS,
   STORY_STATS,
   getStoryAct,
@@ -251,6 +252,7 @@ export function emptyCampaign(): CampaignState {
     statsAtAct: zero as CampaignState['statsAtAct'],
     rivals: startingRivals(),
     usersHistory: [],
+    research: emptyResearch(),
   };
 }
 

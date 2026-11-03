@@ -40,6 +40,7 @@ import { coverFloor } from './floors';
 import { coverWall } from './walls';
 import { learnSkill, resetSkills, trainDev, startCrunch } from './skills';
 import { endStory, startFreeSeason } from './story';
+import { researchNode } from './research';
 
 const fail = (error: Extract<CommandResult, { ok: false }>['error']): CommandResult => ({
   ok: false,
@@ -202,6 +203,8 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return { ok: true };
     case 'END_STORY':
       return endStory(state, ctx);
+    case 'RESEARCH_NODE':
+      return researchNode(state, ctx, command.nodeId);
     case 'FOUND_VENTURE':
       return foundVenture(state, ctx, command.ideaId);
     case 'SELL_VENTURE':
