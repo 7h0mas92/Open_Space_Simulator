@@ -382,13 +382,13 @@ et du README.
 - La CI tourne sur toutes les branches et toutes les PR ; l'ÉTAT D'AVANCEMENT ci-dessous décrit
   `develop`, la date de la dernière mise en production est dans `CONTEXTE.md`.
 
-# ÉTAT D'AVANCEMENT (mis à jour le 13 octobre 2026)
+# ÉTAT D'AVANCEMENT (mis à jour le 2 novembre 2026)
 Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis, à conserver :
 - Mode Facile et tutoriel adapté à chaque mode ; zoom trackpad progressif ; défilement de la
   caméra au bord de l'écran.
 - Mode construction refondu : catalogue en bas, aperçu sur la grille, bouton « Poser » au
   tactile, rendu 3D distinct pour chacun des 22 objets.
-- 68 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
+- 70 succès avec difficultés, dont 22 secrets (nom visible, condition « ??? »).
 - Menu principal refondu ; sans serveur, la fenêtre Connexion explique que les comptes sont
   indisponibles et le jeu reste jouable en invité.
 - Interface de jeu refondue : en haut ce qu'on lit (jauges, trésorerie en mois, horloge), en
@@ -467,6 +467,37 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   salaire relevé, +20 moral, 2 compétences +1. Refusé : 50 % de démission (départ 2 planifications
   plus tard, badge dans l'équipe), sinon -15 moral et 2 compétences -1. Commande `ANSWER_RAISE`,
   hasard sur une graine à part, état `raises` par défaut pour les anciennes sauvegardes.
+- Congés, jours fériés et arrêts maladie (`shared/sim/teamLife.ts`, `client/src/simulation/teamLife.ts`,
+  bloc « Congés » de la fiche d'un dev, `ui/team/Leave.tsx`) : 11 jours fériés français (Pâques
+  calculé), personne au bureau ce jour-là. 1 jour de congé par sprint dès le 2e (10 au plus), posé
+  en planification sur la 1re ou la 2e semaine (1 à 5 jours, 1 dev absent pour 4 en même temps) :
+  +4 moral par jour au retour (20 au plus). Réserve pleine : -1 moral par jour, et après 2 sprints
+  le dev pose 5 jours tout seul. Ponts de mai (vendredi après un jeudi férié, lundi avant un mardi
+  férié) : faits par défaut, refusés en un clic (-5 moral pour tous). Arrêt maladie de 1 à 3 jours
+  (0,5 % par jour, double l'hiver, moins avec l'endurance). Moral à 0 : arrêt de 10 jours ouvrés
+  pour burn-out au lieu de la démission, retour à 40 de moral ; rechute dans les 10 sprints :
+  démission. Un absent n'a ni tâche ni bureau, filtre 🏖️ de l'équipe. Commandes `BOOK_LEAVE`,
+  `CANCEL_LEAVE`, `REFUSE_BRIDGES`, état `teamLife` (null pour les anciennes sauvegardes et le défi
+  3 sprints = comportement d'avant), hasard sur `seed#leave#jour`. 2 succès, bot « rested ».
+- Rétrospective de sprint (`shared/sim/retro.ts`, `client/src/simulation/retro.ts`, fenêtre
+  « Rétrospective » en planification dès le 2e sprint) : 3 actions proposées selon les problèmes du
+  sprint écoulé (dette, pannes, urgences ratées, café, fatigue, conflits, réunions…) parmi 10 (plus
+  de tests, revue de code, café en libre-service, médiation, astreinte, horaires souples, petits
+  tickets, mercredi sans réunion, kudos, continuer comme ça). Chaque dev vote selon son profil et
+  son caractère (`seed#retro#sprint`). Suivre le vote : +3 moral pour tous ; imposer autre chose :
+  -3 pour ceux qui ont voté autrement ; passer la rétro ne coûte rien. L'action dure un sprint
+  (🔁 dans le HUD). Commande `HOLD_RETRO`, état `retro` (vide par défaut), bot « retro ».
+- Team building (`shared/sim/teamBuilding.ts`, `client/src/simulation/teamBuilding.ts`, bloc
+  « 🎉 Team building » du panneau Équipe, `ui/team/TeamBuilding.tsx`) : une sortie par sprint,
+  réservée et payée en planification (prix par participant, sans Dev Fantôme ni IA Agent), en fin
+  de 2e semaine. Afterwork (40 €, jeudi 18h, aucune heure perdue, -15 énergie), escape game (90 €,
+  vendredi 14h, +25 d'affinité pour les paires en conflit, 15 % de chance que ça empire), laser
+  game (70 €, Seed, gros egos perdants qui boudent), séminaire au vert (600 €, Série A, journée,
+  +énergie, +hype), off-site à Lisbonne (2 500 €, Licorne, 2 jours, +hype, -dette). Effets à 18h le
+  dernier jour (moral selon le caractère, affinités) ; même sortie deux sprints de suite : moitié
+  moins de moral ; annulation remboursée à 50 %. Hasard sur `seed#teambuilding#sprint`. Commandes
+  `BOOK_TEAM_BUILDING` / `CANCEL_TEAM_BUILDING`, état `teamBuilding` (vide par défaut), 2 succès,
+  bot « teambuilder ».
 - Levées de fonds (`shared/sim/pitch.ts`, `shared/sim/funding.ts`, panneau « Lever des fonds ») :
   6 tours de plus en plus durs (Seed à pré-IPO : 3 à 5 questions, 3 à 4 réponses, barre plus
   haute, bluffs démasqués plus souvent, gros fonds, départ de l'investisseur dès la Série B) ;
@@ -526,6 +557,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   effacée (appareil et serveur) et sa date de fin notée ; ses sauvegardes manuelles restent dans
   « Charger une partie » (`saves.markFinished`, `saves.latestResumable` dans
   `client/src/save/saves.ts`). Un Daily rejoué reste proposé.
+- Nouvelle partie depuis le menu : avec une partie en cours, l'accueil affiche « Continuer » et,
+  dessous, « Nouvelle partie » (mode suggéré : Facile au premier lancement, puis Normal), en plus
+  des cartes des modes (`ui/menu/HomeMenu.tsx`). La sauvegarde automatique marche aussi en
+  `pnpm dev` : `installGameLifecycle` se rebranche après le double montage de StrictMode.
 - Variété des tâches du Kanban (`client/src/simulation/taskTitles.ts`, catalogues dans
   `client/src/simulation/data/tasks.ts`) : 114 titres de code de base, 28 débloqués par phase
   (`GROWTH_TASK_TITLES` : Seed, Série A, Licorne), 48 de saison (`SEASON_TASK_TITLES`, une tâche de
@@ -662,9 +697,10 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   posé sur un meuble, bouton « ⏻ Allumer / Éteindre ») et 3 écrans de projection posés au sol
   (petit 2 cases 450 €, moyen 3 cases 1 100 € en Seed, grand 4 cases 2 400 € en Série A). Allumé et
   tourné vers un écran (cône de 50°, 1,5 à 10 cases, devant la toile), il déroule la toile, puis
-  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule. Un écran
-  par projecteur, le plus proche, projecteurs servis dans l'ordre d'achat (`projectionPairs`, même
-  calcul pour la simulation et le rendu). Effets seulement pendant la projection : écran +qualité,
+  l'image s'allume (faisceau, diaporama) ; éteint, l'image s'éteint et la toile s'enroule ; la toile
+  reste toute blanche, sans cadre noir (`FABRIC_WHITE`). Un écran par projecteur, le plus proche,
+  projecteurs servis dans l'ordre d'achat (`projectionPairs`, même calcul pour la simulation et le
+  rendu). Effets seulement pendant la projection : écran +qualité,
   +hype (+moral moyen et grand), projecteur +moral et -0,4 % de productivité. Commande
   `SWITCH_PROJECTOR`, champ `on` optionnel (absent = éteint), `GameView.projections`, rendu animé
   dans `render/projection.ts` (sans animation si « réduire les animations »). Aucun tirage.
@@ -786,15 +822,118 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   `StoryMission`) ; `POST /api/scores` vérifie et rejoue les récompenses (`Score.unlocks`,
   `UNLOCK_NOT_EARNED`). Champs `story` (null) et `unlocks` ([]) par défaut, aucun tirage de plus.
   Calibrage par les bots : `pnpm balance:story` (chapitre 1 facile, chapitres 3 et 4 difficiles).
+- Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
+  menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
+  8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,
+  MicroMou, Trombinoscope, Orénoque, Centillion, Ampère Motors), 3 niveaux de difficulté. Chaque
+  légende fixe le départ (trésorerie, hype, dette, profil du premier dev, cofondateur) et 4 jalons
+  (phase, utilisateurs, valorisation, levées, features, équipe, stabilité, hype, part du capital
+  avant un sprint ou à la fin, dette maximale, issue). Jalons vérifiés à chaque démo, puis jugés à
+  la fin : ★ un jalon, ★★ la moitié, ★★★ tous, ajouté à la phrase partageable
+  (`GameResult.career`). Légende écrite dans la graine (`career:<légende>:<graine>`), aucun tirage :
+  replays, sauvegardes et anti-triche inchangés. Mode `CAREER` (migration Prisma), état `career`
+  (null par défaut), notifications `CAREER_MILESTONE` / `CAREER_MISSED`, bouton 🧭 du HUD, chapitre
+  du tutoriel, meilleur résultat par légende sur l'appareil (`oss.career.best`), 2 succès
+  (`career-first-star`, `career-legend`), section « Mode Carrière » de `pnpm balance`.
+
+- Base de production sur Supabase (projet `open-space-simulator`, offre gratuite,
+  `eu-central-1`) : simple PostgreSQL hébergé derrière Prisma, sans auth ni SDK Supabase. Toutes
+  les migrations y sont appliquées et notées dans `_prisma_migrations`. Migration
+  `row_level_security` : RLS sur toutes les tables, sans politique, pour que l'API REST publique
+  de Supabase ne lise rien (le serveur, propriétaire des tables, n'est pas concerné) ; toute
+  nouvelle table l'active aussi (`tests/rls.test.ts`). `DATABASE_URL` = URL du _Session pooler_
+  (5432, IPv4) + `?sslmode=require` ; `createPrismaClient` ajoute `uselibpqcompat=true` pour que
+  `pg` accepte le certificat de Supabase (`withLibpqSslMode`, `src/lib/prisma.ts`). `render.yaml`
+  ne crée plus de base Render. En local, docker compose ne change pas.
+
+- Daily et appli de tickets « Kanbanana » (`shared/sim/meetings.ts` : `DAILY_SYNC`,
+  `MorningSyncSchema` ; `client/src/simulation/meetings.ts`, `view/ticketBoard.ts`,
+  `render/dailyBoard.ts`, `ui/meetings/TicketApp.tsx`, `ui/meetings/DailyMoment.tsx`) : le Daily
+  de 9h fait le point sur les tickets, chaque participant note l'avancement du sien (hier,
+  aujourd'hui). Daily utile : +5 % de productivité aux participants jusqu'au soir. Sans Daily ce
+  matin-là, ou pour les absents, dès la Seed : travail en double à 10h, une partie d'un ticket
+  est à refaire (graine à part `seed#duplicate#tick`, stat `duplicateWork`, notification
+  `DUPLICATE_WORK`). Dans la salle, écran déroulant et projecteur de plafond affichent Kanbanana
+  (nom et logo inventés) : colonnes, clés OSS-42, type, points, avatars, point de chacun ; panneau
+  « 📽️ » en grand, lecture seule. Le temps s'arrête 6 s au début du Daily (option « Pause pendant
+  le Daily », active par défaut, jamais en Hardcore ni en replay). État `morningSync` (null par
+  défaut). `pnpm balance` : aménager la salle rapporte plus (bot organizer 352 → 434 M€ médians).
+- Placement à la demi-case (`GridPositionSchema` dans `shared/sim/components.ts`, `view/partitions.ts`) :
+  tous les objets se posent et se déplacent d'une demi-case (souris, doigt, flèches du clavier) ;
+  la demi-case libre de part et d'autre d'un mur fin (cloison du plan ou mur posé) se meuble tant
+  que l'objet ne traverse pas le trait du mur, et un objet de 3 cases se centre dans une pièce de 4.
+  Murs fins et fenêtres restent sur des cases entières. La grille de navigation bloque chaque case
+  chevauchée ; chaise et dev assis au point exact devant un bureau décalé (`accessPoint`). Positions
+  entières toujours valides : anciennes sauvegardes, replays, Daily et scores inchangés, aucun tirage.
+
+- Internet et clim de la salle des serveurs (`shared/sim/serverRoom.ts`, `shared/sim/subscriptions.ts`,
+  `client/src/simulation/serverRoom.ts`), remplace les 3 offres fibre ci-dessus : 6 offres du
+  service `internet` des abonnements (`FIBRE_PLANS` : box 4G 39 €/mois 3 salariés, box 5G 59 € 6,
+  Fibre Pro 49 € 10, Fibre Pro+ 119 € 25 en Seed, fibre dédiée 1 Gb/s 890 € 60 en Série A, 10 Gb/s
+  2 600 € 200 en Licorne), prix mensuels HT prélevés chaque semaine (`weeklyPrice`), mise en
+  service payée à la souscription (`setupFee`, `firstPayment`), box fibre exigée seulement pour la
+  fibre dédiée. Salariés connectés = toute l'équipe (`serviceUsers`) ; au-delà de `maxUsers`,
+  réseau saturé : plus d'effet et jusqu'à -12 % de productivité (`saturationPenalty`), alertes
+  `INTERNET_SATURATED` / `INTERNET_OK`, champ `saturated` optionnel. Chaleur et froid en kW (`heat`,
+  `cooling` du catalogue) : climatiseur mural 5 kW (Seed), clim de précision 15 kW, clim en rangée
+  35 kW (Série A), sonde de supervision (Seed). Température 18 + 10 x chaleur / froid (+3 °C de
+  juin à août) : au-delà de 27 °C la moitié des effets (75 % avec sonde), au-delà de 32 °C plus
+  rien et -stabilité ; la sonde affiche la température et prévient quand le niveau change
+  (`serverHeatSystem`, état `serverHeat` vide par défaut). Aucun tirage.
+
+- Arbre de compétences des devs (`shared/sim/skills.ts`, `client/src/simulation/skills.ts`, onglet
+  « Compétences » de la fiche, `ui/team/SkillTree.tsx`) : 1 point par niveau, 3 branches de 5 nœuds
+  qui demandent chacun le précédent (Technique : code propre -10 % de dette, débogueur, architecte,
+  revue de code -5 % de dette des features de l'équipe, gardien de la prod x2 sur « Réparer la
+  prod » ; Vitesse : raccourcis +5 %, concentration, deep work le matin, fin de sprint, Crunch
+  +50 % pendant 24 h et -10 moral une fois par sprint ; Humain : endurance -15 % de fatigue,
+  diplomate, mentor +20 % d'XP aux collègues, bonne humeur, leader : plus de démission à moral 0).
+  Un nœud de métier par profil qui code (demande le 3e nœud de sa branche) ; l'encadrement n'a pas
+  d'arbre. Formations en planification (livre 500 €, formation 2 000 €, conférence 5 000 €, une
+  par dev et par sprint, niveaux gagnés sans tirer de statistique), réinitialisation pour un mois
+  de salaire. Ouvert partout sauf en Daily (`skillsEnabled`). Commandes `LEARN_SKILL`,
+  `RESET_SKILLS`, `TRAIN_DEV`, `USE_CRUNCH`, composant ECS `skills` (vide par défaut), stats
+  `skillsLearned`, `trainings`, `crunches`. Aucun tirage : sans compétence, chaque multiplicateur
+  vaut 1 (48 parties de 4 modes comparées à `develop`, état identique) ; une compétence qui change
+  une probabilité garde le même tirage. Bot « coach » dans `pnpm balance`.
+
+- Saleté et ménage (`shared/sim/cleaning.ts`, `client/src/simulation/cleaning.ts`, bouton 🧹 en
+  haut, panneau « Ménage », `ui/cleaning/Cleaning.tsx`) : chaque jour de semaine, l'équipe présente
+  salit le bureau (0 à 100 %, de plus en plus vite sans ménage, chats compris) ; un dev sur place
+  perd jusqu'à 40 % de travail (-20 % à 50 %, `dirtProductivity`), pas les télétravailleurs, le Dev
+  Fantôme ni l'IA Agent ; alerte à 50 %. Entreprise de nettoyage Nickel Chrome (Fatou, Jean-Marc,
+  Lucía) : appel le soir à 19h ou en express (`CALL_CLEANING`, payé à la réservation), ou
+  abonnement « Ménage » du modèle commun (service `cleaning`, 3 offres de 1 à 5 soirs par semaine).
+  Prix selon la phase et les ailes ou annexes (`PRICE_RULES` dans `simulation/subscriptions.ts`).
+  Déchets en InstancedMesh placés par hachage de la graine et 3 agents animés en A*
+  (`render/cleaning.ts`, formes des assets manquants). État `cleaning` par défaut, aucun tirage ;
+  règle qui change toutes les parties (anciens replays de scores divergent).
+
+- Hall d'entrée (`shared/sim/lobby.ts`, `client/src/simulation/lobby.ts`, rayon « 🛎️ Accueil » du
+  mode construction, panneau « Hall d'entrée », `ui/lobby/Lobby.tsx`) : dès la Seed, 18 000 €
+  pour un hall au rez-de-chaussée devant toutes les pièces (pièce `lobby`, `LobbyPlan` dans
+  `view/layout.ts`), cloison percée de deux portes à badge (portillons qui s'ouvrent au passage),
+  entrée du bureau par le hall ; comptoir d'accueil, banquette et deux plantes offerts et
+  déplaçables (clés `L-0` à `L-3`), comptoir aussi en vente (2 500 €). Jusqu'à 2 secrétaires
+  (3 100 € par mois, +1 % de productivité, +moral, +hype), au comptoir en semaine de 8h à 19h.
+  Sécurité en abonnement du modèle commun (service `security`, installation `lobby`) :
+  télésurveillance (95 €/mois), agent en journée (5 600 €, visible de 8h à 20h), gardiennage
+  24 h/24 (16 500 €, Série A), payés chaque semaine. Rendu `render/lobby.ts` et
+  `render/lobbyFurniture.ts` (formes `receptionDesk` et `badgeGates` des assets manquants).
+  Commandes `BUILD_LOBBY` / `SET_RECEPTIONISTS`, état `lobby` (null par défaut), aucun tirage.
 
 Reste à faire :
-- Comptes en ligne : déployer le serveur sur Render (`render.yaml`) et créer l'application
-  GitHub OAuth (étapes dans le README, section Déploiement). Le jeu invité est en ligne sur
-  https://7h0mas92.github.io/Open_Space_Simulator/ et se redéploie à chaque fusion.
+- Connexion GitHub : créer l'application GitHub OAuth (callback
+  `https://open-space-simulator.vercel.app/api/auth/github/callback`) et mettre ses clés sur
+  Render (étapes dans le README, section Déploiement). Le jeu avec comptes est en ligne sur
+  https://open-space-simulator.vercel.app (serveur Render `https://oss-server-e90i.onrender.com`,
+  base Supabase) ; la version invité reste sur https://7h0mas92.github.io/Open_Space_Simulator/.
+  Les deux se redéploient à chaque fusion.
 - Effets sonores et ambiance : le lecteur Howler est prêt (`audio/manifest.ts`), les fichiers
   restent à déposer (les bruits de clavier et de souris sont faits).
 
 Développement local : `pnpm db:up`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm dev` (jeu sur
 localhost:5173, API et Swagger sur localhost:3000/docs). Base : `pnpm --filter @oss/server
-db:studio` (Prisma Studio sur localhost:5555) ou `docker compose exec db psql -U oss -d oss`.
+db:studio` (Prisma Studio sur localhost:5555) ou `docker compose exec db psql -U oss -d oss`. Production :
+tableau de bord Supabase (Table Editor, SQL Editor).
 Compte admin de développement créé par le seed : `admin@oss.local` / `admin-dev-password`.

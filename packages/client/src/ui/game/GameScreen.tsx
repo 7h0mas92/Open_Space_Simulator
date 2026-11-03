@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BuildMode } from '../build/BuildMode';
+import { CareerPanel } from '../career/CareerPanel';
 import { SelectionBar } from '../build/SelectionBar';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Kanban } from '../kanban/Kanban';
@@ -18,6 +19,7 @@ import { DailyMoment } from '../meetings/DailyMoment';
 import { MeetingRoom } from '../meetings/MeetingRoom';
 import { TicketApp } from '../meetings/TicketApp';
 import { Pets } from '../pets/Pets';
+import { Lobby } from '../lobby/Lobby';
 import { ServerRoom } from '../servers/ServerRoom';
 import { Cleaning } from '../cleaning/Cleaning';
 import { Business } from '../business/Business';
@@ -62,6 +64,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Pets view={view} />;
     case 'servers':
       return <ServerRoom view={view} />;
+    case 'lobby':
+      return <Lobby view={view} />;
     case 'cleaning':
       return <Cleaning view={view} />;
     case 'business':
@@ -70,6 +74,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <SubscriptionsPanel view={view} />;
     case 'funding':
       return <Funding view={view} />;
+    case 'career':
+      return <CareerPanel view={view} />;
     case 'mission':
       return <MissionPanel view={view} />;
     case 'dashboard':

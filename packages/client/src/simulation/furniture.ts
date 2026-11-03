@@ -5,6 +5,7 @@ import {
   officeDepthWithAnnexes,
   annexCount,
   annexDecorItem,
+  lobbyDecorItem,
   PHASES,
   DEFAULT_MONITOR,
   getFurniture,
@@ -30,10 +31,13 @@ import { meetingFormat } from './meetings';
 import { petEffects } from './pets';
 import { projectionEffects } from './projection';
 import { floorEffects } from './floors';
+import { lobbyDepth, lobbyEffects } from './lobby';
 import { serverGearEffects } from './serverRoom';
 import { subscriptionEffects } from './subscriptions';
 import { wallEffects } from './walls';
 import { colorUnlocked, hasUnlock } from './unlocks';
+import { absenceOn } from './teamLife';
+import { getClock } from './time';
 
 /** Rang d'une phase (GARAGE = 0, SEED = 1...) pour les comparer. */
 export function phaseIndex(phase: Phase): number {
@@ -102,7 +106,8 @@ export function canPlace(
 ): boolean {
   const office = OFFICE_SIZE[state.phase];
   const width = officeWidthWithWings(office.width, state.ventures.length);
-  const depth = officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds));
+  const depth =
+    officeDepthWithAnnexes(office.depth, annexCount(state.fundingRounds)) + lobbyDepth(state);
   const area = footprint(item, x, y, rotation);
   if (area.x + area.width > width || area.y + area.depth > depth) return false;
   if (!onWholeCells(item, x, y)) return false;
@@ -489,7 +494,9 @@ export function moveAnnexDecor(
   y: number,
   rotation: number,
 ): CommandResult {
-  const itemId = annexDecorItem(key, annexCount(state.fundingRounds));
+  const itemId =
+    annexDecorItem(key, annexCount(state.fundingRounds)) ??
+    lobbyDecorItem(key, state.lobby !== null);
   const item = itemId ? getFurniture(itemId) : undefined;
   if (!item) return { ok: false, error: 'NOT_FOUND' };
   if (!canPlace(state, item, x, y, rotation)) return { ok: false, error: 'INVALID_PLACEMENT' };
@@ -659,6 +666,13 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
     effects.stabilityPerDay += e.stabilityPerDay ?? 0;
     effects.debtPerDay += e.debtPerDay ?? 0;
   }
+  // Hall d'entrée : le hall, ses portes à badge, les secrétaires et le service de sécurité.
+  for (const e of lobbyEffects(state)) {
+    effects.moral += e.moral ?? 0;
+    effects.teamProductivity += e.teamProductivity ?? 0;
+    effects.hypePerDay += e.hypePerDay ?? 0;
+    effects.stabilityPerDay += e.stabilityPerDay ?? 0;
+  }
   // L'aménagement de la salle de réunion s'ajoute au mobilier (bonus et malus).
   const room = meetingFormat(state);
   if (room) {
@@ -688,7 +702,10 @@ export function computeOfficeEffects(state: GameState): OfficeEffects {
   effects.moral += floors.moral;
   effects.quality += floors.quality;
   effects.hypePerDay += floors.hypePerDay;
-  const inOffice = devIds(state).filter((id) => !(id in state.components.remote));
+  const today = getClock(state).day;
+  const inOffice = devIds(state).filter(
+    (id) => !(id in state.components.remote) && absenceOn(state, id, today) === null,
+  );
   effects.seatProductivity = distribute(productivitySeats, inOffice);
   effects.seatEnergySaving = distribute(energySeats, inOffice);
   inOffice.forEach((id, index) => {

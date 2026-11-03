@@ -1,5 +1,5 @@
-import { BALANCE, endlessExtraChurn, type GameState } from '@oss/shared';
-import { resignDev } from '../devs';
+import { BALANCE, RETRO, endlessExtraChurn, type GameState } from '@oss/shared';
+import { retroActive } from '../retro';
 import { computeValuation, monthlyExpenses, monthlyRevenue, repayLoan } from '../economy';
 import {
   addDevLog,
@@ -20,8 +20,10 @@ import { acquireUsers, currentPricing } from '../pricing';
 import { payClients } from '../clients';
 import { supportDay } from '../support';
 import { supportChurnFactor, supportGrowthFactor } from '@oss/shared';
+import { applyDailySkills, skillTeamEffects, type SkillTeamEffects } from '../skills';
 import { log10Approx, round } from '../math';
 import type { SimClock } from '../time';
+import { burnOut, isAbsent } from '../teamLife';
 import { thinksInRust } from './work';
 
 const DAYS_PER_MONTH = 30;
@@ -88,13 +90,16 @@ function gauges(state: GameState, ctx: SimContext): void {
 }
 
 /** Moral quotidien de chaque dev ; à 0, il démissionne (faux post LinkedIn). */
-function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
+function moral(state: GameState, ctx: SimContext, clock: SimClock, skills: SkillTeamEffects): void {
   const { moral: m } = BALANCE;
   const coffeeEmpty = state.gauges.coffee <= 0;
+  const kudos = retroActive(state, 'KUDOS');
   for (const id of devIds(state)) {
     const identity = state.components.identity[id];
     const mood = state.components.mood[id];
     if (!identity || !mood || identity.role === 'AI_AGENT') continue;
+    // En congé ou en arrêt : le moral se refait au retour.
+    if (isAbsent(state, id, clock)) continue;
     const relations = Object.values(state.components.relations[id] ?? {});
     const affinity =
       relations.length > 0 ? relations.reduce((a, b) => a + b, 0) / relations.length : 0;
@@ -111,11 +116,16 @@ function moral(state: GameState, ctx: SimContext, clock: SimClock): void {
       loss += 1;
     if (identity.trait === 'ZEN') loss /= 2;
     if (identity.trait === 'WORKAHOLIC') gain += 0.3;
+    // Rétro « kudos du vendredi » : on se dit merci, même le lundi.
+    if (kudos && !clock.isWeekend) gain += RETRO.kudosDailyMoral;
     mood.moral = clamp(mood.moral + gain - loss, 0, 100);
   }
+  // Un Leader dans l'équipe (arbre de compétences) : personne ne démissionne pour un moral à 0.
+  if (skills.leader) return;
   for (const id of devIds(state)) {
     const mood = state.components.mood[id];
-    if (mood && mood.moral <= BALANCE.moral.resignationThreshold) resignDev(state, ctx, id);
+    if (mood && mood.moral <= BALANCE.moral.resignationThreshold)
+      burnOut(state, ctx, id, clock.day);
   }
 }
 
@@ -193,7 +203,9 @@ export function dailySystem(state: GameState, ctx: SimContext, clock: SimClock):
   users(state);
   gauges(state, ctx);
   applyDailyLeadership(state);
-  moral(state, ctx, clock);
+  const skills = skillTeamEffects(state);
+  applyDailySkills(state, skills);
+  moral(state, ctx, clock, skills);
   relations(state);
   rustConversion(state, ctx);
   if (state.gauges.coffee <= 0) state.stats.coffeeShortageDays += 1;

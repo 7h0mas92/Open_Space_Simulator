@@ -398,6 +398,28 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     ),
     check: (state) => endlessSprintsDone(state) >= ENDLESS.achievementSprints.fiveYears,
   },
+  {
+    id: 'career-first-star',
+    difficulty: 'EASY',
+    icon: '🧭',
+    title: t('Sur les traces des géants', 'In the Footsteps of Giants'),
+    description: t(
+      'Finir une partie Carrière avec au moins une étoile.',
+      'Finish a Career game with at least one star.',
+    ),
+    check: (state) => (state.result?.career?.stars ?? 0) >= 1,
+  },
+  {
+    id: 'career-legend',
+    difficulty: 'LEGENDARY',
+    icon: '🏛️',
+    title: t('Légende égalée', 'Legend Matched'),
+    description: t(
+      'Tenir tous les jalons d’une légende du mode Carrière (trois étoiles).',
+      'Meet every milestone of a Career legend (three stars).',
+    ),
+    check: (state) => state.result?.career?.stars === 3,
+  },
   // ── Ajoutés avec l'écran Succès : plus ou moins faciles, certains secrets ─
   {
     id: 'first-hire',
@@ -697,6 +719,56 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
       const team = Object.values(state.components.identity);
       return team.length >= 3 && team.every((identity) => identity.role === 'GHOST');
     },
+  },
+  // ── Vie de l'équipe ───────────────────────────────────────────────────────
+  {
+    id: 'right-to-disconnect',
+    icon: '🏖️',
+    difficulty: 'MEDIUM',
+    title: t('Droit à la déconnexion', 'Right to Disconnect'),
+    description: t(
+      'Finir une partie sans faillite ni burn-out, avec au moins 40 jours de congé pris.',
+      'Finish a game without bankruptcy or burnout, with at least 40 days of leave taken.',
+    ),
+    check: (state) =>
+      survived(state) && state.stats.leaveDays >= 40 && state.stats.burnoutLeaves === 0,
+  },
+  {
+    id: 'patient-zero',
+    icon: '🤧',
+    difficulty: 'MEDIUM',
+    secret: true,
+    title: t('Patient zéro', 'Patient Zero'),
+    description: t(
+      'Avoir trois devs en arrêt maladie en même temps.',
+      'Have three devs on sick leave at the same time.',
+    ),
+    check: (state) =>
+      Object.values(state.teamLife?.absences ?? {}).filter((absence) => absence.kind === 'SICK')
+        .length >= 3,
+  },
+  {
+    id: 'team-spirit',
+    icon: '🎉',
+    difficulty: 'MEDIUM',
+    title: t('Esprit d’équipe', 'Team Spirit'),
+    description: t(
+      'Faire 5 sorties d’équipe dans une partie.',
+      'Go on 5 team outings in one game.',
+    ),
+    check: (state) => state.teamBuilding.count >= 5,
+  },
+  {
+    id: 'what-happens-in-lisbon',
+    icon: '✈️',
+    difficulty: 'HARD',
+    secret: true,
+    title: t('Ce qui se passe à Lisbonne…', 'What Happens in Lisbon…'),
+    description: t(
+      'Emmener toute l’équipe en off-site à Lisbonne.',
+      'Take the whole team on an off-site in Lisbon.',
+    ),
+    check: (state) => state.teamBuilding.last?.outing === 'offsite',
   },
   // ── Filiales ──────────────────────────────────────────────────────────────
   {

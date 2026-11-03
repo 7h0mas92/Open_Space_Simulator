@@ -8,6 +8,7 @@ import { metaApi } from '../../api/meta';
 import { pendingAchievements } from '../../save/achievements';
 import { localScores } from '../../save/localScores';
 import { saves } from '../../save/saves';
+import { recordCareer } from '../career/records';
 import type { GameView } from '../../view/types';
 import { useGame } from './game';
 import { useSession } from './session';
@@ -112,6 +113,7 @@ function onViewChange(view: GameView | null, previous: GameView | null): void {
         })
         .catch(() => undefined);
     }
+    if (view.result?.career) recordCareer(view.result.career);
   }
   if (view.achievements.length > previous.achievements.length) {
     const fresh = view.achievements.filter((id) => !previous.achievements.includes(id));
@@ -121,10 +123,17 @@ function onViewChange(view: GameView | null, previous: GameView | null): void {
 
 let installed: (() => void) | null = null;
 
-/** Branche les effets de bord (une seule fois, au démarrage de l'application). */
+/**
+ * Branche les effets de bord (une seule fois, au démarrage de l'application). Le retour les
+ * débranche et permet de les rebrancher : en développement, React (StrictMode) monte deux fois
+ * l'application, et sans cela la sauvegarde automatique ne se faisait plus.
+ */
 export function installGameLifecycle(): () => void {
   installed ??= useGame.subscribe((state, previous) => onViewChange(state.view, previous.view));
-  return installed;
+  return () => {
+    installed?.();
+    installed = null;
+  };
 }
 
 /** À la connexion : envoie les sauvegardes et les succès faits hors ligne. */

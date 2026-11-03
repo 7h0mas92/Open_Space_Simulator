@@ -1,5 +1,6 @@
 import {
   BALANCE,
+  SKILLS,
   TIME,
   type Activity,
   type DevTrait,
@@ -10,6 +11,10 @@ import {
 import { clamp, devIds, devsWithRole, type SimContext } from '../helpers';
 import { holdTeamMeeting, isTeamMeetingTime } from '../meetings';
 import { autoAssign, devQueueKey, devTrade, hasFreeTask } from '../tasks';
+import { isAbsent } from '../teamLife';
+import { retroActive } from '../retro';
+import { awayOnOuting } from '../teamBuilding';
+import { hasSkill } from '../skills';
 import type { SimClock } from '../time';
 
 /** Le dev est-il au bureau (ou connecté, pour le Dev Fantôme) à cette heure ? */
@@ -120,7 +125,11 @@ function pickColleague(
 export function activitySystem(state: GameState, ctx: SimContext, clock: SimClock): void {
   const ids = devIds(state);
   const hasPO = devsWithRole(state, 'PRODUCT_OWNER').length > 0;
-  const meeting = hasPO && isMeetingTime(clock);
+  // Rétro « mercredi sans réunion » : le Product Owner garde ses réunions pour les autres jours.
+  const meeting =
+    hasPO &&
+    isMeetingTime(clock) &&
+    !(clock.dayOfWeek === 3 && retroActive(state, 'NO_MEETING_WEDNESDAY'));
   if (meeting) state.stats.meetings += 1;
   // Réunion d'équipe du matin, dès que la salle de réunion est aménagée.
   const teamMeeting = isTeamMeetingTime(state, clock);
@@ -146,6 +155,7 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
     const identity = state.components.identity[id];
     const current = state.components.activity[id];
     if (!identity || !current || id in state.components.remote || pauses.has(id)) continue;
+    if (clock.holiday || isAbsent(state, id, clock) || awayOnOuting(state, id, clock)) continue;
     if (
       isPresent(identity.trait, clock) &&
       (current.untilTick <= state.tick || current.kind === 'WORKING' || current.kind === 'IDLE')
@@ -161,7 +171,12 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
     const worker = state.components.worker[id];
     if (!identity || !mood || !current || !worker) continue;
 
-    if (!isPresent(identity.trait, clock)) {
+    if (
+      !isPresent(identity.trait, clock) ||
+      clock.holiday ||
+      isAbsent(state, id, clock) ||
+      awayOnOuting(state, id, clock)
+    ) {
       setActivity(state, id, 'GONE', 1);
       continue;
     }
@@ -253,7 +268,12 @@ export function activitySystem(state: GameState, ctx: SimContext, clock: SimCloc
         setActivity(state, id, 'ARGUING', 1, enemy.id);
         setActivity(state, enemy.id, 'ARGUING', 1, id);
         available.delete(enemy.id);
-        changeAffinity(state, id, enemy.id, -BALANCE.relations.argueLoss);
+        // Nœud « Diplomate » (de l'un ou de l'autre) : la dispute fait 2 fois moins de dégâts.
+        const diplomat =
+          hasSkill(state, id, 'diplomat') || hasSkill(state, enemy.id, 'diplomat')
+            ? SKILLS.diplomatConflict
+            : 1;
+        changeAffinity(state, id, enemy.id, -BALANCE.relations.argueLoss * diplomat);
         continue;
       }
     }

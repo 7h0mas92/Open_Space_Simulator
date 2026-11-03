@@ -16,6 +16,8 @@
     "playHint": "New game in {{mode}} mode",
     "resume": "Continue",
     "resumeHint": "{{mode}} · {{phase}} · sprint {{sprint}} · {{valuation}}",
+    "newGame": "New game",
+    "newGameHint": "{{mode}} mode, or pick another mode",
     "signIn": "Sign in",
     "account": "Account",
     "nav": "Main menu",
@@ -300,6 +302,7 @@
     "dashboard": "Dashboard",
     "settings": "Settings",
     "credits": "Credits",
+    "career": "Career",
     "close": "Close",
     "menu": "Menu",
     "actions": "Game actions",
@@ -322,6 +325,7 @@
     "pets": "Office cats",
     "servers": "Server room",
     "mission": "Mission",
+    "lobby": "Lobby",
     "subscriptions": "Subscriptions",
     "cleaning": "Cleaning",
     "tickets": "Kanbanana, the ticket app",
@@ -423,7 +427,8 @@
     "leaving": "🚪 Handed in their notice: leaves at the start of sprint {{sprint}}.",
     "leavingShort": "🚪 leaves at sprint {{sprint}}",
     "specialty": "Specialty: {{specialty}} (+20% on {{focus}})",
-    "stack": "Stack side: {{stack}}"
+    "stack": "Stack side: {{stack}}",
+    "officeSummaryAway": "{{office}} at the office · {{remote}} remote · {{away}} away · {{desks}} desks"
   },
   "teamFilters": {
     "sortLabel": "Sort by",
@@ -446,7 +451,8 @@
       "TIRED": "Tired",
       "LOW_MORALE": "Low morale",
       "REMOTE": "Remote",
-      "OFFICE": "At the office"
+      "OFFICE": "At the office",
+      "ABSENT": "Away"
     },
     "sorts": {
       "PERF_DESC": "Best performance",
@@ -606,7 +612,8 @@
       "wing-3": "Wing 3",
       "arcade": "Arcade",
       "garden": "Garden",
-      "auditorium": "Auditorium"
+      "auditorium": "Auditorium",
+      "lobby": "Lobby"
     }
   },
   "build": {
@@ -637,7 +644,8 @@
       "accessory": "Accessories",
       "monitors": "Monitors",
       "devices": "Devices",
-      "servers": "Servers"
+      "servers": "Servers",
+      "lobby": "Lobby"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -645,6 +653,7 @@
     "soldOut": "Limit reached ({{max}})",
     "tooExpensive": "Not enough cash",
     "annexDecor": "Decor that came with the annex: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
+    "lobbyDecor": "Decor that came with the lobby: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
     "rotate": "Rotate",
     "sell": "Sell (€{{price}})",
     "move": "Move",
@@ -741,7 +750,9 @@
     "TOO_LATE": "Too late: a subsidiary wouldn't have time to grow.",
     "NOT_AVAILABLE": "This financing is not available right now.",
     "INVENTORY_FULL": "The inventory is full: sell some stored items.",
-    "RAISE_PENDING": "Answer the raise request first."
+    "RAISE_PENDING": "Answer the raise request first.",
+    "NOT_ENOUGH_LEAVE": "Not enough leave days saved up.",
+    "LEAVE_SLOTS_FULL": "Too many people on leave that week: pick the other week."
   },
   "dashboard": {
     "intro": "Gauge history, one point per day.",
@@ -875,6 +886,8 @@
       "projectionScreenMedium": "Pull-up projection screen (medium): aluminium case, feet, animated fabric, pole and bar",
       "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar",
       "serverCloset": "Server closet: raised floor tiles, glass walls, badge-reader door, cable tray",
+      "receptionDesk": "Reception desk: wooden front, stone top, two screens, visitor log and bell",
+      "badgeGates": "Lobby: stainless steel badge gates with glass flaps, receptionists, security guard and camera",
       "serverRoom": "Server room: raised floor, perforated tiles, glass walls, badge-reader door, cable tray",
       "rackServer": "1U server rack: cabinet, six servers with LEDs, patch panel and smoked door",
       "bladeServer": "Blade server chassis: two enclosures of vertical blades with blue LEDs",
@@ -895,7 +908,10 @@
       "lectern": "Wooden lectern with a slanted top and a microphone",
       "auditoriumScreen": "Auditorium screen: glowing panel on two poles",
       "unicornStatue": "Unicorn statue: moulded marble plinth, rearing golden unicorn, horn and mane",
-      "ipoBell": "Stock exchange bell: wooden frame, turned bronze bell, clapper and tasselled rope"
+      "ipoBell": "Stock exchange bell: wooden frame, turned bronze bell, clapper and tasselled rope",
+      "splitAc": "Wall air conditioner: white indoor unit with a flap, on a bracket, outdoor unit and pipes",
+      "inrowCooling": "In-row cooling: perforated black cabinet, fans and blue screen",
+      "serverMonitoring": "Monitoring: desk stand, temperature chart screen, probe and beacon"
     },
     "back": "Back"
   },
@@ -1052,6 +1068,11 @@
       "name": "Daily",
       "rule": "The same game for everyone today.",
       "tag": "Daily leaderboard"
+    },
+    "CAREER": {
+      "name": "Career",
+      "rule": "Replay the story of a startup that became a giant.",
+      "tag": "8 legends"
     },
     "STORY": {
       "name": "Story",
@@ -1404,6 +1425,14 @@
           "dailyTips": {
             "title": "Today’s leaderboard",
             "body": "At the end of the game, your score goes to today’s leaderboard if you are signed in. The server replays your whole game from the seed and your decisions to check the score: no cheating possible.\n\nThere is no “Play again” button at the end: today’s game is played once. Come back tomorrow for a new seed."
+          },
+          "career": {
+            "title": "Career mode",
+            "body": "You replay the story of a startup that became a giant. It sets your start (more or less money, hype, debt, its first profile, sometimes a co-founder) and its milestones: reach a phase, a number of users or a funding round by a given sprint, then end the way it did.\n\nThe 🧭 button at the top of the screen shows your milestones and progress. Each milestone is checked at the sprint demo: a missed deadline is a missed milestone.\n\nAt the end: ★ if you met at least one milestone, ★★ half of them, ★★★ all of them."
+          },
+          "careerTips": {
+            "title": "Think like the legend",
+            "body": "• Read the milestones before the first sprint: they tell you when to raise, when to hire and what to aim for.\n• A close deadline comes first: a funding round closed in the right sprint is worth a star.\n• Everything else follows Normal mode: 18 months, 39 sprints, same cards.\n\nYour score counts in the Career leaderboard, and your best result for each legend is kept on this device."
           },
           "story": {
             "title": "The mission",
@@ -1953,8 +1982,34 @@
     "adoptCardMissing_other": "{{count}} pieces of equipment still missing: litter box, bowl and cat tree.",
     "adoptCardReady": "All set: pick a coat and adopt."
   },
+  "lobby": {
+    "card": "Lobby",
+    "cardBuilt": "Built",
+    "cardBuild": "Ground-floor lobby: badge doors, reception desk, security.",
+    "cardStatus_one": "{{count}} receptionist · security: {{security}}",
+    "cardStatus_other": "{{count}} receptionists · security: {{security}}",
+    "open": "Reception and security",
+    "intro": "The ground-floor lobby welcomes the team and visitors: you come in, badge, then go up to the office. It sits in front of every other room.",
+    "buildTitle": "Build the lobby",
+    "features": {
+      "gates": "Two magnetic badge doors between the lobby and the office (+stability)",
+      "desk": "A reception desk for two receptionists",
+      "waiting": "A bench and two plants for visitors (+hype, +morale)"
+    },
+    "build": "Start the works (€{{price}})",
+    "built": "Lobby built: everyone comes in through the badge doors.",
+    "receptionTitle": "Reception",
+    "receptionHint": "Up to two receptionists screen calls, parcels and visitors: +1% productivity, +morale and +hype each. Salary: €{{salary}} a month, added to expenses.",
+    "receptionists_zero": "No receptionist (out of {{max}})",
+    "receptionists_one": "{{count}} receptionist out of {{max}}",
+    "receptionists_other": "{{count}} receptionists out of {{max}}",
+    "hire": "Hire a receptionist (€{{salary}} a month)",
+    "dismiss": "Let a receptionist go",
+    "payroll": "Reception salaries: €{{price}} a month.",
+    "noSecurity": "none"
+  },
   "servers": {
-    "intro": "A server room hosts part of the product: the hosting bill goes down and prod holds up better. Buy a room (Servers aisle of build mode), then choose the hardware to install in it.",
+    "intro": "A server room hosts part of the product: the hosting bill goes down and prod holds up better. Buy a room (Servers aisle of build mode), then choose the hardware to install in it. Every device runs hot: plan enough cooling.",
     "roomsTitle": "Your rooms",
     "noRoom": "No server room yet: buy a server closet (Seed) or a server room (Series A) in the Servers aisle.",
     "slots": "{{count}}/{{max}} slots",
@@ -1963,7 +2018,7 @@
     "needs": {
       "server": "At least one server (rack, blades or GPU)",
       "network": "Networking (switch or fibre router)",
-      "cooling": "A precision air conditioner"
+      "cooling": "Air conditioning (wall unit, precision or in-row)"
     },
     "needsShort": {
       "server": "a server",
@@ -1975,11 +2030,58 @@
     "saving": "Hosting bill: −{{percent}}% thanks to your servers ({{max}}% at most).",
     "statusRunning": "Running · {{count}}/{{max}} slots",
     "statusMissing": "Not running: missing {{missing}}.",
-    "open": "Room and fibre",
-    "fibreCard": "Fibre subscription",
+    "open": "Room and internet",
+    "fibreCard": "Internet subscription",
     "fibreCardCurrent": "Subscribed: {{plan}}. Tap to change plan or cancel.",
-    "fibreCardReady": "The fibre router is installed: pick a plan.",
-    "fibreCardMissing": "First install a fibre router in a server room."
+    "fibreCardReady": "From a 4G box to dedicated fibre: pick the plan that fits your team.",
+    "warm": "It’s running hot: the servers throttle and give only {{percent}}% of their effects.",
+    "overheat": "Overheating: the servers crash, no effects at all and prod suffers. Add cooling or remove hardware.",
+    "statusWarm": "Running hot · {{count}}/{{max}} slots",
+    "statusOverheat": "Overheating: more cooling needed.",
+    "heat": {
+      "load": "Heat {{heat}} kW · cooling {{cooling}} kW",
+      "summer": "summer, +3 °C",
+      "meter": "Cooling load",
+      "temperature": "🌡️ {{temp}} °C · {{level}}",
+      "unmonitored": "🌡️ Temperature unknown: install a monitoring probe to track it and be warned when it climbs.",
+      "levels": {
+        "cool": "all good",
+        "warm": "running hot (above 27 °C)",
+        "overheat": "overheating (above 32 °C)"
+      }
+    }
+  },
+  "career": {
+    "intro": "Eight startups that started from nothing became giants. Their names have changed, their stories barely. Pick a legend, start with the same constraints and hit its milestones.",
+    "starsRule": "★ at least one milestone met · ★★ half of them · ★★★ all: legend matched.",
+    "difficulty": {
+      "1": "Approachable",
+      "2": "Tough",
+      "3": "Legendary"
+    },
+    "difficultyLabel": "Difficulty: {{level}}",
+    "year": "Inspired by a startup born in {{year}}",
+    "start": "Starting point",
+    "milestones": "Milestones",
+    "best": "Best result: {{stars}}",
+    "never": "Not tried yet",
+    "play": "Take the challenge",
+    "progress": "{{done}} of {{total}} milestones met",
+    "hudButton": "Career: {{done}} of {{total}} milestones met",
+    "status": {
+      "PENDING": "To meet",
+      "DONE": "Met in sprint {{sprint}}",
+      "FAILED": "Missed in sprint {{sprint}}"
+    },
+    "deadline": "Deadline: sprint {{sprint}} demo",
+    "atEnd": "Judged at the end of the game",
+    "endTitle": "Your career: {{name}}",
+    "stars": {
+      "0": "No stars",
+      "1": "One star: promising",
+      "2": "Two stars: almost a legend",
+      "3": "Three stars: legend matched!"
+    }
   },
   "story": {
     "title": "Story mode",
@@ -2107,6 +2209,38 @@
       }
     }
   },
+  "cleaning": {
+    "intro": "Every weekday, the team in the office makes a mess: wrappers, cups, cans, pizza boxes… The longer you wait, the faster it gets dirty, and a dirty office slows down everyone working there (not remote workers). Call the Nickel Chrome cleaning company or take a subscription.",
+    "dirtTitle": "Office dirt",
+    "dirt": "{{percent}}% dirty",
+    "levels": {
+      "clean": "Clean",
+      "warn": "Watch out",
+      "dirty": "Dirty"
+    },
+    "loss": "The team on site works {{percent}}% slower.",
+    "noLoss": "Spotless office: no work lost.",
+    "days_one": "{{count}} day without cleaning",
+    "days_other": "{{count}} days without cleaning",
+    "crewTitle": "Nickel Chrome, cleaning company",
+    "tools": {
+      "cart": "team lead, cart",
+      "vacuum": "vacuum cleaner",
+      "mop": "mop"
+    },
+    "status": {
+      "visit": "Cleaning in progress ({{percent}}%)",
+      "express": "The express crew is on its way",
+      "booked_one": "The crew comes in {{count}} hour",
+      "booked_other": "The crew comes in {{count}} hours"
+    },
+    "call": "Book for tonight (€{{price}})",
+    "express": "Express, right now (€{{price}})",
+    "callHint": "A call is paid when booked: the crew comes at 7 pm, or right away for express.",
+    "history_one": "{{count}} visit, €{{price}} spent on calls",
+    "history_other": "{{count}} visits, €{{price}} spent on calls",
+    "button": "Cleaning: {{percent}}% dirty"
+  },
   "subscriptions": {
     "intro": "Services paid at regular intervals. The first period is paid when you subscribe, then at each due date; switching plan starts a new period paid right away. If the treasury can’t cover a bill, the provider cuts the service. Cancelling stops it right away, with no refund.",
     "summaryNone": "No active subscription.",
@@ -2115,14 +2249,27 @@
     "services": {
       "internet": {
         "name": "Internet",
-        "intro": "Fibre comes into the fibre router of your server room and is paid every week (every 7 game days)."
+        "intro": "From a 4G router to dedicated fibre. Each plan supports a number of employees: beyond that, the network saturates and the whole team slows down. Monthly prices excluding VAT, as charged by French operators to businesses (2026), billed every week (every 7 game days); the setup fee is paid when you subscribe."
+      },
+      "cleaning": {
+        "name": "Cleaning",
+        "intro": "Nickel Chrome comes at 7 pm on the plan’s days and brings dirt back to zero. Paid every week (every 7 game days), cheaper than a call; the price follows the size of the office."
+      },
+      "security": {
+        "name": "Security",
+        "intro": "A security service at market prices, paid every week (every 7 game days). The guard stands in the lobby, next to the badge doors."
       }
     },
     "requires": {
       "fibreBox": {
-        "long": "To subscribe, install a fibre router in a server room (Servers aisle).",
-        "short": "You need a fibre router in a server room.",
-        "inactive": "No fibre router in a room: you pay for the line but it does nothing."
+        "long": "Dedicated fibre comes into a fibre router: install one in a server room (Servers aisle).",
+        "short": "Dedicated fibre needs a fibre router in a server room.",
+        "inactive": "No fibre router in a room: you pay for dedicated fibre but it goes nowhere."
+      },
+      "lobby": {
+        "long": "To subscribe, first build the lobby (Lobby aisle): the guard and the badge doors are there.",
+        "short": "A lobby is needed.",
+        "inactive": "No lobby: you pay for the service but it does nothing."
       }
     },
     "none": "No subscription: pick a plan below.",
@@ -2135,13 +2282,21 @@
     "perMonth": "€{{price}} / month",
     "perDays_one": "€{{price}} / day",
     "perDays_other": "€{{price}} / {{count}} days",
-    "subscribe": "Subscribe (€{{price}} for the 1st period)",
+    "subscribe": "Subscribe (€{{price}} now)",
     "switch": "Switch to this plan (€{{price}})",
     "currentOffer": "Your current plan",
     "cancel": "Cancel",
     "cancelWarning": "The service stops right away, with no refund for the current period.",
     "cancelConfirm": "Cancel {{offer}}",
-    "manageAll": "See all subscriptions"
+    "manageAll": "See all subscriptions",
+    "users_one": "{{count}} employee uses the connection (remote workers included, over the VPN).",
+    "users_other": "{{count}} employees use the connection (remote workers included, over the VPN).",
+    "activeUsers": "The line handles the load: {{count}}/{{max}} employees.",
+    "saturated": "Network saturated: {{count}} employees for {{max}} planned, −{{percent}}% productivity. Move to a bigger plan.",
+    "maxUsers_one": "Up to {{count}} employee",
+    "maxUsers_other": "Up to {{count}} employees",
+    "tooSmall": "too small for your team",
+    "setupFee": "Setup fee: €{{price}}, paid when you subscribe"
   },
   "cleaning": {
     "intro": "Every weekday, the team in the office makes a mess: wrappers, cups, cans, pizza boxes… The longer you wait, the faster it gets dirty, and a dirty office slows down everyone working there (not remote workers). Call the Nickel Chrome cleaning company or take a subscription.",
@@ -2171,17 +2326,8 @@
     "call": "Book for tonight (€{{price}})",
     "express": "Express, right now (€{{price}})",
     "callHint": "A call is paid when booked: the crew comes at 7 pm, or right away for express.",
-    "history_one": "{{count}} visit, €{{price}} spent",
-    "history_other": "{{count}} visits, €{{price}} spent",
-    "planTitle": "Cleaning subscription",
-    "none": "No subscription: the crew only comes when you call.",
-    "nextBill_one": "Next €{{price}} payment in {{count}} day",
-    "nextBill_other": "Next €{{price}} payment in {{count}} days",
-    "totalPaid": "€{{price}} paid in total",
-    "discount": "(-{{percent}}% per visit)",
-    "cancel": "Cancel",
-    "cancelWarning": "The crew won’t come any more; the current week isn’t refunded.",
-    "cancelConfirm": "Cancel cleaning",
+    "history_one": "{{count}} visit, €{{price}} spent on calls",
+    "history_other": "{{count}} visits, €{{price}} spent on calls",
     "button": "Cleaning: {{percent}}% dirty"
   },
   "daily": {
@@ -2316,5 +2462,190 @@
         "HEAVY": "A lot ({{percent}}%)"
       }
     }
+  },
+  "leave": {
+    "title": "Leave",
+    "balance": "Saved up: {{days}}/{{max}} days",
+    "claim": "wants a holiday (−1 morale per day)",
+    "week": "Week",
+    "weekOption": "Sprint week {{week}}",
+    "days": "Length",
+    "daysOption_one": "{{count}} day",
+    "daysOption_other": "{{count}} days",
+    "book": "Book leave",
+    "cancel": "Cancel",
+    "planned_one": "Leave booked in week {{week}}: {{count}} day",
+    "planned_other": "Leave booked in week {{week}}: {{count}} days",
+    "plannedShort": "leave W{{week}}",
+    "current": {
+      "LEAVE": "On leave ({{days}} d), back on {{date}}",
+      "BRIDGE": "Taking the bridge day, back on {{date}}",
+      "SICK": "Sick leave ({{days}} d), back on {{date}}",
+      "BURNOUT": "Burnout: {{days}} working days off, back on {{date}}"
+    },
+    "short": {
+      "LEAVE": "on leave",
+      "BRIDGE": "bridge day",
+      "SICK": "sick",
+      "BURNOUT": "burnout"
+    },
+    "hint": "1 day earned per sprint, 10 at most. On return: full energy and +{{moral}} morale per day off. {{slots}} dev(s) on leave at a time per week. Saved up too long: the dev books 5 days on their own.",
+    "hintLater": "Leave is booked during planning.",
+    "bridge": "🌉 Bridge day this sprint: anyone with days saved up will take it off.",
+    "bridgeRefused": "🌉 Bridge days refused: everyone comes in (−{{moral}} morale for those who planned to take it).",
+    "refuseBridges": "Refuse bridge days",
+    "acceptBridges": "Allow bridge days",
+    "holiday": "Public holiday: {{name}}",
+    "holidays": {
+      "NEW_YEAR": "New Year’s Day",
+      "EASTER_MONDAY": "Easter Monday",
+      "LABOUR_DAY": "Labour Day",
+      "VICTORY_1945": "Victory in Europe Day",
+      "ASCENSION": "Ascension Day",
+      "WHIT_MONDAY": "Whit Monday",
+      "BASTILLE_DAY": "Bastille Day",
+      "ASSUMPTION": "Assumption Day",
+      "ALL_SAINTS": "All Saints’ Day",
+      "ARMISTICE": "Armistice Day",
+      "CHRISTMAS": "Christmas Day"
+    }
+  },
+  "retro": {
+    "title": "Retrospective",
+    "kicker": "End of sprint, sticky notes and lukewarm coffee",
+    "intro": "The team suggests one action for the next sprint. Follow their vote: +{{follow}} morale for everyone. Impose something else: −{{impose}} morale for those who voted otherwise.",
+    "teamChoice": "team’s pick",
+    "votes_one": "1 vote: {{names}}",
+    "votes_other": "{{count}} votes: {{names}}",
+    "noVote": "No votes",
+    "skip": "Skip the retro",
+    "active": "Retro action: {{action}}",
+    "actions": {
+      "MORE_TESTS": {
+        "name": "More tests",
+        "problem": "Prod went down several times.",
+        "effect": "−15% debt on shipped features"
+      },
+      "CODE_REVIEW": {
+        "name": "Mandatory code review",
+        "problem": "Tech debt is high.",
+        "effect": "+5% quality, −5% speed"
+      },
+      "COFFEE_BAR": {
+        "name": "Self-service coffee",
+        "problem": "We ran out of coffee.",
+        "effect": "−30% coffee consumption"
+      },
+      "NO_MEETING_WEDNESDAY": {
+        "name": "No-meeting Wednesday",
+        "problem": "Too many meetings.",
+        "effect": "No meetings and no meeting penalty on Wednesdays"
+      },
+      "MEDIATION": {
+        "name": "Mediation",
+        "problem": "Some colleagues are in conflict.",
+        "effect": "+15 affinity for every strained relationship, right away"
+      },
+      "ON_CALL": {
+        "name": "Organised on-call",
+        "problem": "Urgent tasks were missed.",
+        "effect": "+25% speed on urgent tasks"
+      },
+      "FLEX_HOURS": {
+        "name": "Flexible hours",
+        "problem": "The team is tired.",
+        "effect": "−15% fatigue at work"
+      },
+      "SMALLER_TICKETS": {
+        "name": "Smaller tickets",
+        "problem": "Almost nothing shipped.",
+        "effect": "+8% speed on small tasks (2 points or less)"
+      },
+      "KUDOS": {
+        "name": "Friday kudos",
+        "problem": "Morale is low.",
+        "effect": "+1 morale per working day"
+      },
+      "KEEP_GOING": {
+        "name": "Keep it up",
+        "problem": "Nothing serious to report.",
+        "effect": "+3% speed"
+      }
+    }
+  },
+  "teamBuilding": {
+    "title": "Team building",
+    "intro": "One outing per sprint, at the end of week 2. Paid when booked, it costs working time and repairs morale and conflicts. Outings so far: {{count}}.",
+    "booked": "{{outing}} booked {{when}} ({{cost}}).",
+    "cancel": "Cancel ({{refund}}% refunded)",
+    "hoursLost_one": "{{when}}: {{count}} working hour lost",
+    "hoursLost_other": "{{when}}: {{count}} working hours lost",
+    "noTimeLost": "{{when}}: no working hours lost",
+    "repeat": "Already done last sprint: morale gain halved.",
+    "locked": "Available from the {{phase}} phase",
+    "blockers": {
+      "COOLDOWN": "An outing is already booked this sprint.",
+      "NOT_ENOUGH_MONEY": "Not enough cash.",
+      "LOCKED": "Not available yet."
+    },
+    "outings": {
+      "afterwork": {
+        "name": "Pizza & beer afterwork",
+        "when": "Thursday evening of week 2",
+        "effect": "+6 morale, +8 affinity between everyone; −15 energy the next day"
+      },
+      "escape-game": {
+        "name": "Escape game",
+        "when": "Friday afternoon of week 2",
+        "effect": "+10 morale, +25 affinity for pairs in conflict (15% chance it backfires)"
+      },
+      "laser-game": {
+        "name": "Laser tag",
+        "when": "Friday afternoon of week 2",
+        "effect": "+12 morale, +10 affinity between everyone; big egos on the losing side sulk"
+      },
+      "seminar": {
+        "name": "Countryside seminar",
+        "when": "Friday of week 2",
+        "effect": "+20 morale, +20 affinity, +40 energy, +3 hype"
+      },
+      "offsite": {
+        "name": "Lisbon off-site",
+        "when": "Thursday and Friday of week 2",
+        "effect": "+30 morale, +30 affinity, +20 energy, +8 hype, −5 debt"
+      }
+    }
+  },
+  "skills": {
+    "tabs": "Dev sheet",
+    "tabSheet": "Sheet",
+    "tabSkills": "Skills",
+    "badge_one": "{{count}} skill point to spend",
+    "badge_other": "{{count}} skill points to spend",
+    "pointsAvailable_one": "⭐ {{count}} point to spend.",
+    "pointsAvailable_other": "⭐ {{count}} points to spend.",
+    "noPoints": "No points to spend: the next level will give one.",
+    "pointsHint": "1 point per level gained, {{spent}} spent. Each node requires the previous one.",
+    "branches": {
+      "TECH": "🛠️ Technical",
+      "SPEED": "⚡ Speed",
+      "HUMAN": "🤝 Human"
+    },
+    "roleNode": "Role",
+    "power": "Power",
+    "learn": "Learn \"{{name}}\" (1 point)",
+    "learned": "Learned",
+    "locked": "Locked",
+    "crunch": "Start the crunch",
+    "crunchActive": "Crunch in progress",
+    "crunchHint": "+50% speed for 24 h, -10 morale. Once per sprint.",
+    "crunchActiveHint": "Cold pizza and energy drinks: full speed until tomorrow.",
+    "crunchUnavailable": "Only during a sprint, once per sprint.",
+    "trainings": "Training",
+    "trainingsHint": "One training per dev per sprint.",
+    "trainingsPlanningOnly": "Training is booked during planning.",
+    "trainedThisSprint": "Already trained this sprint.",
+    "reset": "Reset the tree ({{cost}})",
+    "resetConfirm": "Refund all of {{name}}'s points for {{cost}} (one month of salary)?"
   }
 }
