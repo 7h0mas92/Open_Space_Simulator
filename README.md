@@ -694,12 +694,14 @@ sequenceDiagram
   un bonus d'histoire (argent, hype, utilisateurs). Équilibrage mesuré par un bot « conteur » dans
   `pnpm balance` (section « Histoire en actes » de `docs/balance.md`).
   **Arbre R&D des objets** (`packages/shared/src/sim/research.ts`, panneau « 🔬 R&D ») : dans
-  l'histoire, le catalogue de construction démarre réduit et se débloque avec des points
-  d'innovation (features livrées, objectifs remplis, sprints gagnés face aux rivaux). 5 branches
-  de 4 niveaux (Confort, Tech, Ambiance, Cuisine, Organisation), chaque niveau demandant le
-  précédent et son acte, plus une branche Prestige : les récompenses des objectifs, achetables dès
-  l'objectif rempli. Le verrou passe par la simulation (commande `RESEARCH_NODE`, achats refusés
-  avec `LOCKED`), aucun tirage : les missions courtes et les autres modes gardent tout le catalogue.
+  tous les modes, le catalogue de construction démarre réduit et se débloque avec des points
+  d'innovation (features livrées ; dans l'histoire, objectifs remplis et sprints gagnés face aux
+  rivaux ; ailleurs, levées de fonds réussies et objectifs de sprint atteints). 5 branches de 4
+  niveaux (Confort, Tech, Ambiance, Cuisine, Organisation), chaque niveau demandant le précédent
+  et son acte (histoire) ou sa phase (autres modes), plus dans l'histoire une branche Prestige :
+  les récompenses des objectifs, achetables dès l'objectif rempli. Le verrou passe par la
+  simulation (commande `RESEARCH_NODE`, achats refusés avec `LOCKED`), aucun tirage ; les missions
+  courtes et les vieilles sauvegardes gardent tout le catalogue.
 - **Slack IA** (facultatif) : le client envoie un résumé (phase, jauges, devs), jamais l'état
   complet ; le serveur appelle Claude avec une sortie structurée, applique un quota par joueur
   et par jour et met les réponses en cache. Sans clé, en cas d'erreur ou de quota atteint, le

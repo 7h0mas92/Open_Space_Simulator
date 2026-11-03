@@ -211,6 +211,8 @@ export const LESSONS: readonly Lesson[] = [
       },
       { id: 'manage' },
       { id: 'items' },
+      // L'histoire en actes a sa propre étape (`storyResearch`) ; les missions courtes n'ont pas d'arbre.
+      { id: 'research', modes: ALL_BUT('STORY'), target: 'panel-research' },
     ],
   },
   {

@@ -4,20 +4,23 @@ import { STORY_MISSIONS, type StoryMissionId } from '../story/campaign.js';
 import { STORY_REWARDS, type StoryRewardId } from '../story/rewards.js';
 
 /**
- * Arbre R&D des objets (mode Histoire, longue partie « Ctrl+Alt+Fonder »).
+ * Arbre R&D des objets, dans tous les modes (sauf les missions courtes de l'Histoire).
  *
- * En Histoire, le catalogue démarre réduit au strict nécessaire (`RESEARCH_FREE`) : le reste se
+ * Le catalogue démarre réduit au strict nécessaire (`RESEARCH_FREE`) : le reste se
  * débloque dans un arbre d'entreprise avec des **points d'innovation**. On en gagne en livrant
- * des features, en remplissant les objectifs de l'histoire et en battant les rivaux sur un sprint.
+ * des features ; dans l'histoire en actes, en remplissant ses objectifs et en battant les rivaux
+ * sur un sprint ; dans les autres modes, en réussissant une levée de fonds ou l'objectif du sprint.
  *
  * 5 branches de 4 niveaux achetés avec ces points (Confort, Tech, Ambiance, Cuisine,
  * Organisation) et une 6e, Prestige, qui ne s'achète pas : ce sont les récompenses des objectifs
- * de l'histoire (statue licorne, cloche de la Bourse…), débloquées en les remplissant.
+ * de l'histoire (statue licorne, cloche de la Bourse…), débloquées en les remplissant (histoire en
+ * actes seulement).
  *
- * Chaque niveau demande le précédent de sa branche et l'acte qui lui correspond (niveau 1 dès le
- * garage, niveau 4 à partir de l'acte III « Le géant ») ; le verrou de phase de chaque objet
- * reste en plus. Les autres modes ne sont pas concernés : sans arbre (`campaign.research`
- * absent), tout le catalogue suit les règles habituelles.
+ * Chaque niveau demande le précédent de sa branche et une étape de la partie : l'acte dans
+ * l'histoire (niveau 1 dès le garage, niveau 4 à partir de l'acte III « Le géant »), la phase
+ * ailleurs (niveau 1 au garage, 2 en Seed, 3 en Série A, 4 en Licorne). Le verrou de phase de
+ * chaque objet reste en plus. Sans arbre (vieilles sauvegardes, missions courtes), tout le
+ * catalogue suit les règles habituelles.
  *
  * Aucun tirage : les points se calculent à partir de l'état à chaque démo, le serveur retrouve
  * le même arbre en rejouant les commandes.
@@ -81,7 +84,10 @@ export type ResearchKey =
 export const RESEARCH = {
   /** Coût de chaque niveau, en points d'innovation. */
   cost: { 1: 4, 2: 8, 3: 14, 4: 20 } as Record<ResearchLevel, number>,
-  /** Acte minimum (index dans `STORY_ACTS`, 0 = prologue) pour chaque niveau. */
+  /**
+   * Étape minimum pour chaque niveau : index de l'acte dans `STORY_ACTS` (0 = prologue) dans
+   * l'histoire, index de la phase dans `PHASES` (0 = garage) dans les autres modes.
+   */
   act: { 1: 0, 2: 1, 3: 2, 4: 3 } as Record<ResearchLevel, number>,
   /** Points par feature livrée à la démo. */
   perFeature: 1,
@@ -89,6 +95,10 @@ export const RESEARCH = {
   perGoal: 3,
   /** Points quand on gagne plus d'utilisateurs que chaque rival en jeu sur le sprint. */
   beatRivals: 2,
+  /** Hors histoire en actes : points par levée de fonds réussie. */
+  perRound: 3,
+  /** Hors histoire en actes : points quand l'objectif du sprint est atteint. */
+  perObjective: 2,
   /** Points au début de l'histoire : de quoi prendre un premier niveau tout de suite. */
   start: 4,
 } as const;
@@ -224,9 +234,11 @@ export const RESEARCH_TREE: readonly ResearchNode[] = [
     id: 'ambiance-1',
     branch: 'ambiance',
     level: 1,
-    name: t('Petites plantes et peinture', 'Small plants and paint'),
+    name: t('Petites plantes, peinture et sols simples', 'Small plants, paint and basic floors'),
     keys: [
       ...items('snake-plant', 'pothos', 'bonsai', 'succulent', 'mini-cactus'),
+      'floor:vinyl',
+      'floor:carpet',
       'wall:sage',
       'wall:teal',
       'wall:terracotta',
@@ -249,8 +261,6 @@ export const RESEARCH_TREE: readonly ResearchNode[] = [
       'wall:jungle',
       'wall:wainscot',
       'wall:chalkboard',
-      'floor:vinyl',
-      'floor:carpet',
       'floor:concrete',
       'floor:tiles',
       'floor:planks',
@@ -396,11 +406,19 @@ export const ResearchStateSchema = z.object({
   nodes: z.array(ResearchNodeIdSchema),
   /** Objectifs de l'histoire déjà comptés (longueur de `campaign.done` à la dernière démo). */
   goalsCounted: z.number().int().nonnegative(),
+  /** Hors histoire : levées de fonds déjà comptées (`fundingRounds` à la dernière démo). */
+  roundsCounted: z.number().int().nonnegative().default(0),
 });
 export type ResearchState = z.infer<typeof ResearchStateSchema>;
 
 export function emptyResearch(): ResearchState {
-  return { points: RESEARCH.start, earned: RESEARCH.start, nodes: [], goalsCounted: 0 };
+  return {
+    points: RESEARCH.start,
+    earned: RESEARCH.start,
+    nodes: [],
+    goalsCounted: 0,
+    roundsCounted: 0,
+  };
 }
 
 /**
@@ -415,17 +433,24 @@ export function researchAllows(research: ResearchState | undefined, key: Researc
 }
 
 /** Pourquoi un niveau ne peut pas être pris tout de suite (null : il peut l'être). */
-export type ResearchBlock = 'owned' | 'previous' | 'act' | 'points';
+export type ResearchBlock = 'owned' | 'previous' | 'act' | 'phase' | 'points';
 
+/** Ce qui ouvre les niveaux : l'acte de l'histoire, ou la phase de l'entreprise ailleurs. */
+export type ResearchGate = 'act' | 'phase';
+
+/**
+ * @param stage index de l'acte (`gate` = 'act') ou de la phase (`gate` = 'phase') en cours.
+ */
 export function researchBlock(
   research: ResearchState,
-  act: number,
+  stage: number,
   node: ResearchNode,
+  gate: ResearchGate = 'act',
 ): ResearchBlock | null {
   if (research.nodes.includes(node.id)) return 'owned';
   const previous = previousResearchNode(node);
   if (previous && !research.nodes.includes(previous)) return 'previous';
-  if (act < RESEARCH.act[node.level]) return 'act';
+  if (stage < RESEARCH.act[node.level]) return gate;
   if (research.points < RESEARCH.cost[node.level]) return 'points';
   return null;
 }

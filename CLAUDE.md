@@ -907,6 +907,17 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   (réussite des bots inchangée à ±1 partie sur 20). Choix de Thomas (« le plus logique, tu es
   libre ») : rattachement explicite objet par objet, Prestige par les objectifs ; coûts de 2, 4, 7,
   10 doublés après calibrage. Hall d'entrée et offres internet (fichiers de Melvin) non verrouillés.
+- Arbre R&D dans tous les modes (demande de Thomas, « r&d dans tous les modes ») : Normal, Facile,
+  Hardcore, Daily, Stagiaires Only, 3 sprints, Illimité et Carrière ont le même arbre, dans
+  `state.research` (null dans les missions courtes et les vieilles sauvegardes : tout le
+  catalogue). Les niveaux s'ouvrent avec la phase (niveau 2 en Seed, 3 en Série A, 4 en Licorne ;
+  `researchStage`, statut `phase`) ; points : +1 par feature livrée, +3 par levée de fonds réussie
+  (`RESEARCH.perRound`, compteur `roundsCounted`), +2 par objectif de sprint atteint
+  (`perObjective`), 4 au départ. Pas de Prestige hors histoire. Bouton 🔬 dans les boutons système,
+  étape « L'arbre R&D » du chapitre Construction du tutoriel, phase affichée avant la R&D dans les
+  raisons de verrou. Vinyle et moquette passent au niveau 1 d'Ambiance. Aucun tirage ; règle qui
+  change toutes les parties (anciens replays de scores divergent). Tests d'objets : `openCatalogue`
+  dans `tests/simulation/fixtures.ts`.
 - Mode Carrière (`shared/sim/career.ts`, `client/src/simulation/career.ts`, page « Carrière » du
   menu `ui/career/CareerPage.tsx`, panneau `ui/career/CareerPanel.tsx`) : refaire le parcours de
   8 startups devenues géantes, jamais nommées (Pépin Computer, Matelas & Céréales, Rembobine,

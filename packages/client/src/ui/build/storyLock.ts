@@ -10,7 +10,7 @@ import type { ResearchKey } from '@oss/shared';
  * de l'histoire pas encore rempli (branche Prestige de l'arbre R&D).
  */
 export function storyLockedReason(t: TFunction, view: Pick<GameView, 'mode' | 'research'>): string {
-  if (view.research) return t('build.storyLockedPrestige');
+  if (view.research?.gate === 'act') return t('build.storyLockedPrestige');
   return UNLOCK_MODES.includes(view.mode) ? t('build.storyLocked') : t('build.storyLockedMode');
 }
 

@@ -112,6 +112,7 @@ import { wallOffice } from '../simulation/walls';
 import { marketShare } from '../simulation/rivals';
 import { actProgress, completedSprints, missionProgress } from '../simulation/story';
 import { hasUnlock } from '../simulation/unlocks';
+import { researchOf, researchStage } from '../simulation/research';
 import {
   hasSkill,
   hasSkillTree,
@@ -1347,14 +1348,16 @@ function marketView(state: GameState, campaign: CampaignState): MarketView {
   };
 }
 
-/** Arbre R&D des objets : niveaux, points et récompenses de Prestige (null hors de l'histoire). */
+/** Arbre R&D des objets : niveaux, points et récompenses de Prestige (null sans arbre). */
 function researchView(state: GameState): ResearchView | null {
-  const campaign = state.story?.campaign;
-  const research = campaign?.research;
-  if (!campaign || !research) return null;
+  const research = researchOf(state);
+  if (!research) return null;
+  const { stage, gate } = researchStage(state);
+  const campaign = gate === 'act';
   return {
     points: research.points,
     earned: research.earned,
+    gate,
     nodes: RESEARCH_TREE.map((node) => ({
       id: node.id,
       branch: node.branch,
@@ -1362,11 +1365,11 @@ function researchView(state: GameState): ResearchView | null {
       name: node.name,
       cost: RESEARCH.cost[node.level],
       act: RESEARCH.act[node.level],
-      status: researchBlock(research, campaign.act, node) ?? 'available',
+      status: researchBlock(research, stage, node, gate) ?? 'available',
       keys: node.keys,
     })),
     prestige: STORY_MISSIONS.flatMap((mission) =>
-      PRESTIGE_REWARDS.includes(mission.reward)
+      campaign && PRESTIGE_REWARDS.includes(mission.reward)
         ? [
             {
               reward: mission.reward,

@@ -1,7 +1,8 @@
 # Contexte de passation
 
 > **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : arbre R&D des
-> objets (T4) fusionné dans `develop` (PR #160). Avant : levées de fonds lisibles (#161),
+> objets (T4) fusionné dans `develop` (PR #160), puis étendu à tous les modes (PR vers `develop`,
+> à valider par Thomas). Avant : levées de fonds lisibles (#161),
 > histoire en 5 actes (T2) fusionnée dans `develop` (#157, puis équilibrage #159) ;
 > plus tôt, modèle économique (#151), clients B2B (#153) et support client
 > (#154) de Melvin, panneau « 💶 Business ».
@@ -77,6 +78,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | #157 et #159 fusionnées le 3 novembre            |
 | Levées de fonds cohérentes avec l'affichage         | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (#161)    |
 | Arbre R&D des objets (T4)                           | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (PR #160) |
+| Arbre R&D dans tous les modes                       | Thomas + Claude | PR vers `develop` ouverte, attend Thomas         |
 | Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)          |
 | Économie : modèle, B2B, support (M3)                | Melvin + Claude | Fusionné dans `develop` le 3 novembre            |
 | Économie : marketing (M3)                           | Melvin          | Idée, rien de codé                               |
@@ -239,7 +241,7 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   Sinon les replays, le Daily, les sauvegardes et les scores déjà enregistrés cassent. Les PR
   l'écrivent « aucun tirage » ou « graine à part ».
 - **Abonnements payés à la semaine** (fibre, ménage) : tick `paidUntil`, facture dans un système, ligne coupée si la trésorerie manque, coût mensuel ajouté au calcul des mois de trésorerie (`runwayMonths`).
-- **Arbre R&D** (`shared/sim/research.ts`) : en histoire en actes, tout contenu achetable (objet, ordinateur, écran, mur, sol, formule de salle) doit être dans `RESEARCH_FREE` ou dans un niveau de `RESEARCH_TREE`, sinon `research.test.ts` échoue. Vérifier aussi `researchUnlocked(state, clé)` dans la commande d'achat d'un nouveau type de contenu.
+- **Arbre R&D** (`shared/sim/research.ts`) : dans tous les modes (sauf missions courtes), tout contenu achetable (objet, ordinateur, écran, mur, sol, formule de salle) doit être dans `RESEARCH_FREE` ou dans un niveau de `RESEARCH_TREE`, sinon `research.test.ts` échoue. Vérifier aussi `researchUnlocked(state, clé)` dans la commande d'achat d'un nouveau type de contenu. Un test qui achète un objet sans tester l'arbre passe par `openCatalogue` (`tests/simulation/fixtures.ts`).
 - **Bonus sans tirage** (arbre de compétences, encadrement) : sans le bonus, le multiplicateur
   vaut exactement 1 (multiplier par 1 ne change aucun bit). Un bonus qui change une probabilité
   garde le même appel `rng.chance(p)` avec un autre `p`, jamais un tirage de plus ou de moins.
@@ -303,6 +305,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                  | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | -------- | --------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 03/11    | Thomas + Claude | R&D tous modes      | Arbre R&D dans tous les modes (« r&d dans tous les modes ») : `state.research` (null en mission courte et dans les vieilles sauvegardes), niveaux ouverts par la phase, points par feature, levée de fonds et objectif de sprint, bouton 🔬, étape du tutoriel. Vinyle et moquette au niveau 1 d'Ambiance. Règle de toutes les parties : les replays des anciens scores divergent. Tests d'objets : `openCatalogue`.                                                                                                                                                                     |
 | 03/11    | Thomas + Claude | levées de fonds     | Le calcul du pitch ne change pas (`pnpm balance` identique) ; ce qui change, c'est l'affichage : chances estimées et force des thèmes dans « Lever des fonds » (`estimatePitchChance`, `categoryStrengths` dans `simulation/fundraising.ts`), force et jauge de chaque argument pendant le pitch (`pitchRating`, `argumentBasis`, `isRandomArgument` dans `shared/sim/pitch.ts`), jauge renommée « Chance de signer ». Si on retouche `FUNDING_TIERS` ou les forces d'arguments, le test de calibrage de `funding.test.ts` dira si l'estimation reste juste.                             |
 | 03/11    | Thomas + Claude | T2, PR 4 sur 4      | Équilibrage de l'histoire : dates limites 8 / 18 / 48 / 56 / 60, churn des rivaux divisé par deux, `STORY_SIDE_BONUS` (bonus par objectif secondaire, choix de Thomas), bot conteur et section « Histoire en actes » de `pnpm balance` (`--campaign-games`). Bons bots 40 à 65 % de réussite ; la guerre des prix reste l'acte qui bloque. Les anciennes histoires en cours gardent leur avancement mais suivent les nouvelles dates.                                                                                                                                                    |
 | 03/11    | Thomas + Claude | T4                  | Arbre R&D des objets dans l'histoire en actes (`shared/sim/research.ts`, panneau 🔬 R&D) : catalogue réduit au départ, 5 branches x 4 niveaux payés en points d'innovation, Prestige par les objectifs. État `campaign.research` optionnel, commande `RESEARCH_NODE`, aucun tirage. **Pour Melvin** : un nouvel objet du catalogue doit être rattaché à un niveau de `RESEARCH_TREE` ou à `RESEARCH_FREE` (test `research.test.ts`) ; le hall et les offres internet ne sont pas verrouillés par l'arbre.                                                                                |

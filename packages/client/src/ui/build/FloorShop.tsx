@@ -200,10 +200,10 @@ export function FloorShop({ view }: { view: GameView }) {
                 <span className={isLocked ? 'catalog-card-text locked' : 'catalog-card-text'}>
                   {storyLocked
                     ? storyLockedReason(t, view)
-                    : research
-                      ? research
-                      : isLocked
-                        ? t('build.locked', { phase: t(`phases.${m.minPhase}`) })
+                    : view.floors.locked.includes(m.id)
+                      ? t('build.locked', { phase: t(`phases.${m.minPhase}`) })
+                      : research
+                        ? research
                         : `${effectSummary(m, t)} · ${localized(m.description, language)}`}
                 </span>
               </button>

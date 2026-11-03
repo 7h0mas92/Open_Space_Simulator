@@ -30,12 +30,21 @@ export function makeContext(
   };
 }
 
+/**
+ * Retire l'arbre R&D d'une partie : tout le catalogue s'achète. Les tests d'un objet ou d'une
+ * pièce testent cet objet, pas l'arbre (vérifié à part dans `research.test.ts`).
+ */
+export function openCatalogue<T extends GameState>(state: T): T {
+  state.research = null;
+  return state;
+}
+
 /** État vide avec une équipe choisie (sans tirage de candidats ni backlog). */
 export function stateWithTeam(
   roles: DevRole[],
   mode: GameMode = 'NORMAL',
 ): { state: GameState; ids: string[] } {
-  const state = createEmptyState({ seed: 'fixture', mode });
+  const state = openCatalogue(createEmptyState({ seed: 'fixture', mode }));
   state.phase = 'SERIES_A';
   const ctx = makeContext(state);
   const ids = roles.map((role) => {
@@ -50,7 +59,9 @@ export function newSimulation(
   mode: GameMode = 'NORMAL',
   cards?: EventCard[],
 ): Simulation {
-  return Simulation.create({ seed, mode }, new CardLibrary(cards ?? []));
+  const simulation = Simulation.create({ seed, mode }, new CardLibrary(cards ?? []));
+  openCatalogue(simulation.state);
+  return simulation;
 }
 
 /** Une carte minimale pour les tests. */

@@ -1134,7 +1134,7 @@ export interface CampaignView {
 }
 
 /** Pourquoi un niveau de l'arbre R&D n'est pas encore pris (null : il peut l'être). */
-export type ResearchNodeStatus = 'owned' | 'available' | 'previous' | 'act' | 'points';
+export type ResearchNodeStatus = 'owned' | 'available' | 'previous' | 'act' | 'phase' | 'points';
 
 /** Un niveau de l'arbre R&D des objets. */
 export interface ResearchNodeView {
@@ -1143,7 +1143,7 @@ export interface ResearchNodeView {
   readonly level: ResearchLevel;
   readonly name: LocalizedText;
   readonly cost: number;
-  /** Acte à atteindre (0 = prologue). */
+  /** Étape à atteindre : acte de l'histoire (0 = prologue) ou phase ailleurs (0 = garage). */
   readonly act: number;
   readonly status: ResearchNodeStatus;
   /** Ce qu'il débloque (clés `item:…`, `wall:…`, `meeting:…`…). */
@@ -1163,9 +1163,12 @@ export interface ResearchPrestigeView {
 export interface ResearchView {
   /** Points d'innovation à dépenser. */
   readonly points: number;
-  /** Points gagnés depuis le début de l'histoire. */
+  /** Points gagnés depuis le début de la partie. */
   readonly earned: number;
+  /** Ce qui ouvre les niveaux : les actes (histoire en actes) ou les phases (autres modes). */
+  readonly gate: 'act' | 'phase';
   readonly nodes: readonly ResearchNodeView[];
+  /** Vide hors de l'histoire en actes (pas d'objectifs à remplir). */
   readonly prestige: readonly ResearchPrestigeView[];
 }
 

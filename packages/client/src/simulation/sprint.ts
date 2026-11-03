@@ -191,7 +191,7 @@ export function endSprint(state: GameState, ctx: SimContext): void {
   // Mode Histoire, longue partie : les rivaux jouent leur sprint (graine à part).
   rivalsSprint(state, ctx);
   // Arbre R&D : points d'innovation de la démo (après les rivaux, pour comparer les sprints).
-  researchSprint(state, ctx, shipped);
+  researchSprint(state, ctx, shipped, objective?.status === 'SUCCESS');
   state.valuation = computeValuation(state);
 
   state.history.sprints.push({

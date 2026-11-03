@@ -154,10 +154,10 @@ export function WallFinishes({ view }: { view: GameView }) {
                 <span className={isLocked ? 'catalog-card-text locked' : 'catalog-card-text'}>
                   {storyLocked
                     ? storyLockedReason(t, view)
-                    : research
-                      ? research
-                      : isLocked
-                        ? t('build.locked', { phase: t(`phases.${f.minPhase}`) })
+                    : view.walls.locked.includes(f.id)
+                      ? t('build.locked', { phase: t(`phases.${f.minPhase}`) })
+                      : research
+                        ? research
                         : `${effectSummary(f, t)} · ${localized(f.description, i18n.language)}`}
                 </span>
               </button>

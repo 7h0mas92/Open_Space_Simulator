@@ -1,10 +1,12 @@
 import {
+  PHASES,
   RESEARCH,
   getResearchNode,
   researchAllows,
   researchBlock,
   type CommandResult,
   type GameState,
+  type ResearchGate,
   type ResearchKey,
   type ResearchState,
 } from '@oss/shared';
@@ -13,14 +15,23 @@ import { notify, text, type SimContext } from './helpers';
 /*
  * Arbre R&D des objets (constantes et rattachements dans `shared/sim/research.ts`).
  *
- * Seule la longue partie du mode Histoire a un arbre (`state.story.campaign.research`) : partout
- * ailleurs `researchOf` renvoie `undefined` et rien n'est verrouillé. Aucun tirage : les points
- * se comptent à la démo à partir de l'état, le rejeu retombe sur le même arbre.
+ * L'histoire en actes garde son arbre dans `state.story.campaign.research` (niveaux ouverts par
+ * les actes) ; les autres modes dans `state.research` (niveaux ouverts par la phase). Missions
+ * courtes et vieilles sauvegardes n'en ont pas : `researchOf` renvoie `undefined` et rien n'est
+ * verrouillé. Aucun tirage : les points se comptent à la démo à partir de l'état, le rejeu
+ * retombe sur le même arbre.
  */
 
-/** L'arbre de la partie, ou `undefined` hors de la longue partie (et dans ses vieilles sauvegardes). */
+/** L'arbre de la partie, ou `undefined` sans arbre (missions courtes, vieilles sauvegardes). */
 export function researchOf(state: GameState): ResearchState | undefined {
-  return state.story?.campaign?.research;
+  return state.story?.campaign?.research ?? state.research ?? undefined;
+}
+
+/** Étape qui ouvre les niveaux : l'acte dans l'histoire en actes, la phase ailleurs. */
+export function researchStage(state: GameState): { stage: number; gate: ResearchGate } {
+  const campaign = state.story?.campaign;
+  if (campaign?.research) return { stage: campaign.act, gate: 'act' };
+  return { stage: Math.min(PHASES.indexOf(state.phase), 3), gate: 'phase' };
 }
 
 /** Le contenu est-il débloqué par l'arbre ? (Toujours vrai sans arbre.) */
@@ -31,16 +42,17 @@ export function researchUnlocked(state: GameState, key: ResearchKey): boolean {
 /** Commande `RESEARCH_NODE` : prend un niveau de l'arbre contre des points d'innovation. */
 export function researchNode(state: GameState, ctx: SimContext, nodeId: string): CommandResult {
   const research = researchOf(state);
-  const campaign = state.story?.campaign;
-  if (!research || !campaign) return { ok: false, error: 'NOT_ELIGIBLE' };
+  if (!research) return { ok: false, error: 'NOT_ELIGIBLE' };
   if (state.stage === 'ENDED') return { ok: false, error: 'WRONG_STAGE' };
   const node = getResearchNode(nodeId);
   if (!node) return { ok: false, error: 'NOT_FOUND' };
-  switch (researchBlock(research, campaign.act, node)) {
+  const { stage, gate } = researchStage(state);
+  switch (researchBlock(research, stage, node, gate)) {
     case 'owned':
       return { ok: false, error: 'NOT_ELIGIBLE' };
     case 'previous':
     case 'act':
+    case 'phase':
       return { ok: false, error: 'LOCKED' };
     case 'points':
       return { ok: false, error: 'NOT_ENOUGH_POINTS' };
@@ -84,20 +96,41 @@ export function beatRivalsThisSprint(state: GameState): boolean {
   return theirs.length > 0 && theirs.every((gain) => mine > gain);
 }
 
-/**
- * Démo : points d'innovation des features livrées, des objectifs remplis depuis la dernière démo
- * et du sprint gagné face aux rivaux. Appelé après le sprint des rivaux.
- */
-export function researchSprint(state: GameState, ctx: SimContext, shipped: number): void {
-  const research = researchOf(state);
+/** Points de la démo propres à l'histoire en actes : objectifs remplis, rivaux battus. */
+function campaignPoints(state: GameState, research: ResearchState): number {
   const campaign = state.story?.campaign;
-  if (!research || !campaign) return;
+  if (!campaign) return 0;
   const goals = Math.max(0, campaign.done.length - research.goalsCounted);
   research.goalsCounted = campaign.done.length;
+  return goals * RESEARCH.perGoal + (beatRivalsThisSprint(state) ? RESEARCH.beatRivals : 0);
+}
+
+/** Points de la démo des autres modes : levées de fonds réussies, objectif du sprint atteint. */
+function companyPoints(state: GameState, research: ResearchState, objectiveDone: boolean): number {
+  const counted = research.roundsCounted ?? 0;
+  const rounds = Math.max(0, state.fundingRounds - counted);
+  research.roundsCounted = state.fundingRounds;
+  return rounds * RESEARCH.perRound + (objectiveDone ? RESEARCH.perObjective : 0);
+}
+
+/**
+ * Démo : points d'innovation des features livrées, puis selon le mode les objectifs de
+ * l'histoire et le sprint gagné face aux rivaux, ou les levées de fonds et l'objectif du sprint.
+ * Appelé après le sprint des rivaux et le bilan de l'objectif.
+ */
+export function researchSprint(
+  state: GameState,
+  ctx: SimContext,
+  shipped: number,
+  objectiveDone = false,
+): void {
+  const research = researchOf(state);
+  if (!research) return;
   const gained =
     shipped * RESEARCH.perFeature +
-    goals * RESEARCH.perGoal +
-    (beatRivalsThisSprint(state) ? RESEARCH.beatRivals : 0);
+    (state.story?.campaign?.research
+      ? campaignPoints(state, research)
+      : companyPoints(state, research, objectiveDone));
   if (gained <= 0) return;
   research.points += gained;
   research.earned += gained;

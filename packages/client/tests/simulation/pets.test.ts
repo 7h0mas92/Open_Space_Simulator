@@ -14,7 +14,7 @@ import { petEffects } from '../../src/simulation/pets';
 import { replay } from '../../src/simulation/replay';
 import type { Simulation } from '../../src/simulation/simulation';
 import { toGameView } from '../../src/view/adapter';
-import { newSimulation } from './fixtures';
+import { newSimulation, openCatalogue } from './fixtures';
 
 /** Startup riche, en planification, au garage. */
 function richGarage(seed = 'pets'): Simulation {
@@ -179,6 +179,7 @@ describe('Animaux : sauvegardes et replays', () => {
       commands: [],
       cards: new CardLibrary([]),
     });
+    openCatalogue(replayed.state);
     replayed.state.gauges.treasury = 1_000_000;
     for (const entry of simulation.commands) replayed.dispatch(entry.command);
     expect(replayed.state.pets).toEqual(simulation.state.pets);

@@ -37,6 +37,7 @@ import { expectedAnswer } from './fundraising';
 import { canPlace, findFreeSlot, phaseIndex } from './furniture';
 import { devIds, teamMax, teamMoral, teamSize } from './helpers';
 import { meetingFormatBlocker } from './meetings';
+import { researchOf, researchStage } from './research';
 import { hasSkillTree, skillPoints } from './skills';
 import { Rng } from './rng';
 import type { Simulation } from './simulation';
@@ -490,19 +491,19 @@ export const BOT_RESEARCH_ORDER: readonly ResearchBranch[] = [
 ];
 
 /**
- * Arbre R&D d'un bot (longue partie du mode Histoire) : il prend tous les niveaux payables, le
+ * Arbre R&D d'un bot (tous les modes qui en ont un) : il prend tous les niveaux payables, le
  * niveau 1 de chaque branche avant le niveau 2, et ainsi de suite.
  */
 export function researchCommands(state: Readonly<GameState>): Command[] {
-  const campaign = state.story?.campaign;
-  const research = campaign?.research;
-  if (!campaign || !research) return [];
+  const research = researchOf(state as GameState);
+  if (!research) return [];
+  const { stage, gate } = researchStage(state as GameState);
   const commands: Command[] = [];
   const simulated = { ...research, nodes: [...research.nodes] };
   for (const level of RESEARCH_LEVELS)
     for (const branch of BOT_RESEARCH_ORDER) {
       const node = getResearchNode(`${branch}-${level}`);
-      if (!node || researchBlock(simulated, campaign.act, node) !== null) continue;
+      if (!node || researchBlock(simulated, stage, node, gate) !== null) continue;
       simulated.points -= RESEARCH.cost[node.level];
       simulated.nodes.push(node.id);
       commands.push({ type: 'RESEARCH_NODE', nodeId: node.id });
