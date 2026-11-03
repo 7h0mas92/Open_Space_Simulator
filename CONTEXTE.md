@@ -75,7 +75,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                                   |
 | **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                                   |
 | Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | Fusionné dans `develop` le 3 novembre (#157) ; équilibrage à venir |
-| Arbre R&D des objets (T4)                           | Thomas + Claude | PR vers `develop` ouverte le 3 novembre, attend la validation      |
+| Arbre R&D des objets (T4)                           | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (PR #160)                   |
 | Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)                            |
 | Économie : modèle, B2B, support (M3)                | Melvin + Claude | Fusionné dans `develop` le 3 novembre                              |
 | Économie : marketing (M3)                           | Melvin          | Idée, rien de codé                                                 |
