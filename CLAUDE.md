@@ -504,6 +504,13 @@ Les 12 étapes sont livrées et fusionnées dans `main`. Ajouts validés depuis,
   question par manche, réponse hors sujet pénalisée, jauge d'intérêt et réactions. Business
   angels, prêt bancaire, financement participatif, subvention (`TAKE_FINANCING`, état
   `financing`, sans hasard). Questions et bluffs sur une graine à part. Bot « financier ».
+  Affichage fidèle : le panneau donne les chances estimées du prochain tour
+  (`estimatePitchChance`, calée sur des milliers de pitchs simulés, écart de moins de 5 points
+  par tranche de 10 %) et la force de chaque thème (`categoryStrengths`) ; pendant le pitch,
+  chaque argument montre sa force face à cet investisseur et à la question (▲ fort, ● moyen,
+  ▼ faible, `pitchRating`), la jauge dont il dépend (`argumentBasis`) et 🎲 s'il est aléatoire ;
+  la jauge s'appelle « Chance de signer » (c'est la vraie probabilité). Rendu seulement :
+  `pnpm balance` inchangé.
 - Annexes du bureau : dès la Série B, chaque tour réussi ouvre une annexe pleine largeur (arcade,
   jardin, auditorium) avec décor fixe (`render/annexDecor.ts`) et +2 places. Sol d'origine
   identique dans toutes les pièces (damier beige, `BASE_FLOOR_COLORS` dans `render/office.ts`) :

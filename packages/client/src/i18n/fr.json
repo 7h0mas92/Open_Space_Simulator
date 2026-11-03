@@ -941,7 +941,25 @@
     "short": "Lever",
     "roundTitle": "Levée de fonds · {{round}}",
     "difficulty": "Difficulté {{level}} sur {{total}}",
-    "interest": "Intérêt",
+    "interest": "Chance de signer",
+    "ratings": {
+      "strong": "fort",
+      "fair": "moyen",
+      "weak": "faible"
+    },
+    "ratingTitle": "Effet attendu sur cet investisseur : {{rating}}, selon {{basis}}.",
+    "random": "aléatoire",
+    "basis": {
+      "users": "tes utilisateurs",
+      "revenue": "ton chiffre d’affaires",
+      "runway": "ta trésorerie",
+      "stability": "la stabilité de la prod",
+      "debt": "ta dette technique",
+      "team": "ton équipe",
+      "hype": "ta hype",
+      "luck": "la chance",
+      "bluff": "le bluff"
+    },
     "offTopic": "hors sujet",
     "bluffCaught": "bluff démasqué !",
     "bluffTag": "bluff",
@@ -1673,7 +1691,7 @@
           },
           "pitch": {
             "title": "Le pitch",
-            "body": "Face à l'investisseur, tu réponds à ses questions, une par manche, en choisissant un argument. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nRéponds à la question posée : hors sujet, l'intérêt baisse. Chaque tour est plus dur que le précédent : plus de questions, une barre plus haute, des bluffs plus souvent démasqués, et dès la Série B l'investisseur peut quitter la salle. Un pitch raté coûte de la hype."
+            "body": "Face à l'investisseur, tu réponds à ses questions, une par manche, en choisissant un argument. Chaque argument s'appuie sur une jauge :\n\n• Traction : il faut des utilisateurs.\n• Technique : il faut une dette basse.\n• Équipe : il faut une équipe nombreuse et heureuse.\n• Stabilité : certains arguments demandent une prod fiable, et la démo en direct peut planter.\n\nRéponds à la question posée : hors sujet, l'intérêt baisse. Chaque tour est plus dur que le précédent : plus de questions, une barre plus haute, des bluffs plus souvent démasqués, et dès la Série B l'investisseur peut quitter la salle. Un pitch raté coûte de la hype.\n\nAvant d’entrer, le panneau donne tes chances estimées et la force de chaque thème. Pendant le pitch, chaque argument proposé indique sa force face à cet investisseur (fort, moyen, faible) et la jauge sur laquelle il s’appuie, et la jauge « Chance de signer » est la vraie probabilité que l’investisseur signe."
           },
           "dilution": {
             "title": "La dilution",
@@ -1884,6 +1902,9 @@
     "annexes": "Annexes du bureau",
     "nextRound": "Prochain tour de table : {{round}}",
     "difficulty": "Difficulté",
+    "chance": "Chances estimées",
+    "chanceHint": "Si tu réponds à chaque question avec un argument fort. Pendant le pitch, la jauge « Chance de signer » donne la vraie chance, réponse après réponse.",
+    "strengths": "Tes arguments aujourd’hui",
     "roundHint": "Face à un investisseur : {{manches}} questions, {{options}} réponses au choix à chaque fois. Réponds à la question posée : une réponse hors sujet fait baisser son intérêt. Chaque tour est plus exigeant que le précédent.",
     "annexNext": "Réussir ce tour agrandit le bureau : une nouvelle annexe ouvre, avec 2 places de plus dans l’équipe.",
     "annexLater": "À partir de la {{round}}, chaque tour réussi agrandit le bureau d’une annexe.",

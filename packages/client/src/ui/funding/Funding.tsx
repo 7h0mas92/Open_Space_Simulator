@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { FinancingOfferView, GameView } from '../../view/types';
 import { formatGauge, intlLocale, localized } from '../game/format';
-import { DifficultyDots } from '../game/StageScreens';
+import { DifficultyDots, RATING_ICONS } from '../game/StageScreens';
 import { useGame } from '../store/game';
 
 /*
@@ -62,6 +62,21 @@ export function Funding({ view }: { view: GameView }) {
         <p className="funding-difficulty">
           <span>{t('funding.difficulty')}</span>
           <DifficultyDots tier={next.tier} tiers={funding.tiers} />
+        </p>
+        <div className="pitch-interest funding-chance" data-testid="funding-chance">
+          <span>{t('funding.chance')}</span>
+          <meter min={0} max={1} low={0.35} high={0.65} optimum={1} value={next.chance} />
+          <strong>{Math.round(next.chance * 100)} %</strong>
+        </div>
+        <p className="hint">{t('funding.chanceHint')}</p>
+        <p className="funding-strengths">
+          <span>{t('funding.strengths')}</span>
+          {next.strengths.map(({ category, rating }) => (
+            <span key={category} className={`tag pitch-rating rating-${rating}`}>
+              {RATING_ICONS[rating]} {t(`pitch.categories.${category}`)}
+              <span className="visually-hidden"> : {t(`pitch.ratings.${rating}`)}</span>
+            </span>
+          ))}
         </p>
         <p className="hint">
           {t('funding.roundHint', { manches: next.manches, options: next.options })}
