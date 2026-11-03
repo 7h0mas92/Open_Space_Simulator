@@ -1,8 +1,8 @@
 # Contexte de passation
 
 > **Dernière mise à jour : 3 novembre 2026**, par Claude (projet de Thomas) : arbre R&D des
-> objets (T4) fusionné dans `develop` (PR #160), puis étendu à tous les modes (PR vers `develop`,
-> à valider par Thomas). Avant : levées de fonds lisibles (#161),
+> objets (T4) fusionné dans `develop` (PR #160), puis étendu à tous les modes (#165,
+> fusionnée). Avant : levées de fonds lisibles (#161),
 > histoire en 5 actes (T2) fusionnée dans `develop` (#157, puis équilibrage #159) ;
 > plus tôt, modèle économique (#151), clients B2B (#153) et support client
 > (#154) de Melvin, panneau « 💶 Business ».
@@ -78,7 +78,7 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Histoire en 5 actes, rivaux (T2)                    | Thomas + Claude | #157 et #159 fusionnées le 3 novembre            |
 | Levées de fonds cohérentes avec l'affichage         | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (#161)    |
 | Arbre R&D des objets (T4)                           | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (PR #160) |
-| Arbre R&D dans tous les modes                       | Thomas + Claude | PR vers `develop` ouverte, attend Thomas         |
+| Arbre R&D dans tous les modes                       | Thomas + Claude | Fusionnée dans `develop` le 3 novembre (#165)    |
 | Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)          |
 | Économie : modèle, B2B, support (M3)                | Melvin + Claude | Fusionné dans `develop` le 3 novembre            |
 | Économie : marketing (M3)                           | Melvin          | Idée, rien de codé                               |
