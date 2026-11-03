@@ -1,51 +1,32 @@
 /**
  * Saleté du bureau et entreprise de nettoyage côté simulation : la saleté qui monte pendant les
- * heures de bureau, le ménage (appel ponctuel, express ou abonnement) et la facture
- * hebdomadaire de l'abonnement. Les règles et les tarifs sont dans `@oss/shared`
- * (`cleaning.ts`), partagés avec l'interface. Aucun tirage aléatoire.
+ * heures de bureau et le ménage (appel ponctuel, express, ou passages de l'abonnement « Ménage »
+ * de la rubrique Abonnements, facturé par `subscriptions.ts`). Les règles et les tarifs sont dans
+ * `@oss/shared` (`cleaning.ts`), partagés avec l'interface. Aucun tirage aléatoire.
  */
 import {
   CLEANING,
-  CLEANING_WEEK_TICKS,
   TIME,
-  VENTURES,
-  annexCount,
   cleaningCallPrice,
   cleaningVisitPrice,
-  cleaningWeeklyPrice,
   dirtGrowth,
   dirtProductivity,
   getCleaningPlan,
-  type CleaningPlanId,
+  officeExtraRooms,
   type CommandResult,
   type EntityId,
   type GameState,
 } from '@oss/shared';
 import { addMoney, clamp, devIds, moneyText, notify, text, type SimContext } from './helpers';
+import { activeOffer } from './subscriptions';
 import { getClock, type SimClock } from './time';
 
 /** Ticks d'une journée de bureau (de l'ouverture à la fermeture). */
 const OPEN_TICKS = (CLEANING.closeHour - CLEANING.openHour) * TIME.ticksPerHour;
 
-/** Ailes de filiales et annexes ouvertes : autant de surface en plus à nettoyer. */
-export function extraRooms(state: GameState): number {
-  return Math.min(state.ventures.length, VENTURES.maxFounded) + annexCount(state.fundingRounds);
-}
-
 /** Prix d'un passage pour le bureau actuel. */
 export function visitPrice(state: GameState): number {
-  return cleaningVisitPrice(state.phase, extraRooms(state));
-}
-
-/** Prix de la semaine d'un abonnement, pour le bureau actuel. */
-export function planWeeklyPrice(state: GameState, planId: CleaningPlanId): number {
-  return cleaningWeeklyPrice(getCleaningPlan(planId), visitPrice(state));
-}
-
-/** Coût mensuel de l'abonnement (30 jours de jeu), pour le calcul des mois de trésorerie. */
-export function cleaningMonthly(state: GameState): number {
-  const plan = state.cleaning.plan;
-  return plan ? (planWeeklyPrice(state, plan.plan) * 30) / 7 : 0;
+  return cleaningVisitPrice(state.phase, officeExtraRooms(state));
 }
 
 /**
@@ -139,86 +120,6 @@ export function callCleaning(state: GameState, ctx: SimContext, express: boolean
   return { ok: true };
 }
 
-/**
- * Souscrit à un abonnement de ménage, ou passe à un autre : la première semaine de la nouvelle
- * formule est payée tout de suite (la semaine entamée de l'ancienne n'est pas remboursée).
- */
-export function subscribeCleaning(
-  state: GameState,
-  ctx: SimContext,
-  planId: CleaningPlanId,
-): CommandResult {
-  if (state.stage === 'PITCH' || state.stage === 'ENDED')
-    return { ok: false, error: 'WRONG_STAGE' };
-  const current = state.cleaning.plan;
-  if (current?.plan === planId) return { ok: false, error: 'NOT_ELIGIBLE' };
-  const price = planWeeklyPrice(state, planId);
-  if (state.gauges.treasury < price) return { ok: false, error: 'NOT_ENOUGH_MONEY' };
-  addMoney(state, -price);
-  state.cleaning.spent += price;
-  state.cleaning.plan = {
-    plan: planId,
-    paidUntil: state.tick + CLEANING_WEEK_TICKS,
-    since: current ? current.since : state.sprint,
-    totalPaid: (current?.totalPaid ?? 0) + price,
-  };
-  const plan = getCleaningPlan(planId);
-  notify(
-    state,
-    ctx,
-    'CLEANING_SUBSCRIBED',
-    text(
-      current
-        ? ['Nouvelle formule de ménage : {plan}.', 'New cleaning plan: {plan}.']
-        : [
-            'Abonnement Nickel Chrome : {plan}, {price} par semaine.',
-            'Nickel Chrome subscription: {plan}, {price} a week.',
-          ],
-      { plan: plan.name, price: moneyText(price) },
-    ),
-  );
-  return { ok: true };
-}
-
-/** Résilie l'abonnement de ménage tout de suite, sans remboursement. */
-export function cancelCleaning(state: GameState, ctx: SimContext): CommandResult {
-  if (state.stage === 'PITCH' || state.stage === 'ENDED')
-    return { ok: false, error: 'WRONG_STAGE' };
-  if (!state.cleaning.plan) return { ok: false, error: 'NOT_FOUND' };
-  state.cleaning.plan = null;
-  notify(
-    state,
-    ctx,
-    'CLEANING_CANCELLED',
-    text(['Abonnement de ménage résilié.', 'Cleaning subscription cancelled.']),
-  );
-  return { ok: true };
-}
-
-/** Facture de l'abonnement chaque semaine ; impayée, Nickel Chrome arrête de venir. */
-function billPlan(state: GameState, ctx: SimContext): void {
-  const plan = state.cleaning.plan;
-  if (!plan || state.tick < plan.paidUntil) return;
-  const price = planWeeklyPrice(state, plan.plan);
-  if (state.gauges.treasury < price) {
-    state.cleaning.plan = null;
-    notify(
-      state,
-      ctx,
-      'CLEANING_CUT',
-      text([
-        'Facture de ménage impayée : Nickel Chrome ne viendra plus.',
-        'Unpaid cleaning bill: Nickel Chrome won’t come back.',
-      ]),
-    );
-    return;
-  }
-  addMoney(state, -price);
-  state.cleaning.spent += price;
-  plan.paidUntil += CLEANING_WEEK_TICKS;
-  plan.totalPaid += price;
-}
-
 /** La saleté monte pendant les heures de bureau, selon l'équipe présente et les chats. */
 function getDirty(state: GameState, ctx: SimContext, clock: SimClock): void {
   const cleaning = state.cleaning;
@@ -277,17 +178,16 @@ function clean(state: GameState, ctx: SimContext): void {
 
 /** Le passage du soir de l'abonnement est-il prévu maintenant ? */
 function planVisitDue(state: GameState, clock: SimClock): boolean {
-  const plan = state.cleaning.plan;
-  if (!plan || clock.hour !== CLEANING.eveningHour) return false;
-  return getCleaningPlan(plan.plan).days.includes(clock.dayOfWeek);
+  if (clock.hour !== CLEANING.eveningHour) return false;
+  const offer = activeOffer(state, 'cleaning');
+  return offer ? (getCleaningPlan(offer.id)?.days.includes(clock.dayOfWeek) ?? false) : false;
 }
 
 /**
- * Système de ménage, à chaque pas : facture de l'abonnement, saleté, arrivée de l'équipe de
- * nettoyage (appel ou passage prévu), puis le ménage lui-même.
+ * Système de ménage, à chaque pas : saleté, arrivée de l'équipe de nettoyage (appel ou passage
+ * de l'abonnement), puis le ménage lui-même.
  */
 export function cleaningSystem(state: GameState, ctx: SimContext, clock: SimClock): void {
-  billPlan(state, ctx);
   getDirty(state, ctx, clock);
   const cleaning = state.cleaning;
   if (!cleaning.visit) {

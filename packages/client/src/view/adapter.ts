@@ -58,7 +58,6 @@ import {
   SECURITY_PLANS,
   CLEANING,
   CLEANING_CREW,
-  CLEANING_PLANS,
   cleaningCallPrice,
   dirtProductivity,
   HOSTING_SAVING_MAX,
@@ -130,10 +129,11 @@ import { leavingAtSprint } from '../simulation/raises';
 import { holidayOf, leaveSlots, sprintHasBridge } from '../simulation/teamLife';
 import { activeRetro, retroWinner } from '../simulation/retro';
 import { outingBlocker, outingPrice } from '../simulation/teamBuilding';
-import { planWeeklyPrice, visitPrice } from '../simulation/cleaning';
+import { visitPrice } from '../simulation/cleaning';
 import {
   activeOffer,
   offerLoad,
+  offerPrice,
   requirementMet,
   serviceUsers,
   subscriptionOf,
@@ -966,17 +966,18 @@ function subscriptionOfferView(
   offer: SubscriptionOffer,
   currentId: string | undefined,
 ): SubscriptionOfferView {
+  const price = offerPrice(state, offer);
   return {
     id: offer.id,
     service: offer.service,
     name: offer.name,
     description: offer.description,
     detail: offer.detail ?? null,
-    price: offer.price,
+    price,
     periodDays: offer.periodDays,
     minPhase: offer.minPhase,
     setupFee: offer.setupFee ?? 0,
-    firstPayment: firstPayment(offer),
+    firstPayment: firstPayment(offer, price),
     maxUsers: offer.maxUsers ?? null,
     requires: offer.requires ?? null,
     blocker:
@@ -988,7 +989,7 @@ function subscriptionOfferView(
             ? 'WRONG_STAGE'
             : !requirementMet(state, offer)
               ? 'REQUIREMENT'
-              : state.gauges.treasury < firstPayment(offer)
+              : state.gauges.treasury < firstPayment(offer, price)
                 ? 'NOT_ENOUGH_MONEY'
                 : null,
   };
@@ -1011,7 +1012,7 @@ function subscriptionsView(state: GameState): SubscriptionsView {
             ),
             since: current.subscription.since,
             totalPaid: current.subscription.totalPaid,
-            monthly: monthlyPrice(current.offer),
+            monthly: monthlyPrice(current.offer, offerPrice(state, current.offer)),
             penalty: saturationPenalty(offerLoad(state, current.offer)),
           }
         : null,
@@ -1059,7 +1060,6 @@ function cleaningView(state: GameState): CleaningView {
   const expressPrice = cleaningCallPrice(visitCost, true);
   const busy = cleaning.booking !== null || cleaning.visit !== null;
   const wrongStage = state.stage === 'PITCH' || state.stage === 'ENDED';
-  const plan = cleaning.plan;
   const visit = cleaning.visit;
   return {
     dirt: cleaning.dirt,
@@ -1078,33 +1078,6 @@ function cleaningView(state: GameState): CleaningView {
           inHours: Math.max(0, (cleaning.booking.start - state.tick) / TIME.ticksPerHour),
         }
       : null,
-    plan: plan
-      ? {
-          plan: plan.plan,
-          weeklyPrice: planWeeklyPrice(state, plan.plan),
-          nextBillDays: Math.max(0, (plan.paidUntil - state.tick) / TIME.ticksPerDay),
-          totalPaid: plan.totalPaid,
-        }
-      : null,
-    plans: CLEANING_PLANS.map((option) => {
-      const weeklyPrice = planWeeklyPrice(state, option.id);
-      return {
-        id: option.id,
-        name: option.name,
-        description: option.description,
-        days: [...option.days],
-        weeklyPrice,
-        discount: option.discount,
-        blocker:
-          plan?.plan === option.id
-            ? 'CURRENT'
-            : wrongStage
-              ? 'WRONG_STAGE'
-              : state.gauges.treasury < weeklyPrice
-                ? 'NOT_ENOUGH_MONEY'
-                : null,
-      };
-    }),
     visitPrice: visitCost,
     callPrice,
     expressPrice,
@@ -1462,10 +1435,6 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SET_RECEPTIONISTS', count: command.count };
     case 'callCleaning':
       return { type: 'CALL_CLEANING', express: command.express };
-    case 'subscribeCleaning':
-      return { type: 'SUBSCRIBE_CLEANING', plan: command.plan };
-    case 'cancelCleaning':
-      return { type: 'CANCEL_CLEANING' };
     case 'learnSkill':
       return { type: 'LEARN_SKILL', devId: command.devId, skill: command.skill };
     case 'resetSkills':

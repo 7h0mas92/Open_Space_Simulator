@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
+import { CLEANING_PLANS, CLEANING_VISIT_PRICE, cleaningWeeklyPrice } from './cleaning.js';
 import type { FurnitureEffects } from './furniture.js';
 import { SECURITY_PLANS } from './lobby.js';
 import { FIBRE_PLANS, weeklyPrice } from './serverRoom.js';
@@ -22,6 +23,8 @@ import type { NotificationKind } from './state.js';
  *   salle des serveurs) : sans elle, on ne peut pas souscrire, et un abonnement en cours est payé
  *   mais ne donne pas ses effets. La vérification est faite par la simulation
  *   (`client/src/simulation/subscriptions.ts`, `REQUIREMENT_CHECKS`).
+ * - Le prix d'une offre peut suivre la partie (`PRICE_RULES` côté simulation, par exemple le
+ *   ménage selon la taille du bureau) : `price` est alors le prix de départ, au garage.
  *
  * Ajouter un service : son identifiant dans `SUBSCRIPTION_SERVICES`, sa fiche dans
  * `SUBSCRIPTION_SERVICE_INFO`, ses offres dans `SUBSCRIPTION_OFFERS`, ses textes FR/EN dans
@@ -32,7 +35,7 @@ import type { NotificationKind } from './state.js';
  */
 
 /** Les services auxquels on peut s'abonner, dans l'ordre d'affichage. */
-export const SUBSCRIPTION_SERVICES = ['internet', 'security'] as const;
+export const SUBSCRIPTION_SERVICES = ['internet', 'cleaning', 'security'] as const;
 export const SubscriptionServiceSchema = z.enum(SUBSCRIPTION_SERVICES);
 export type SubscriptionService = z.infer<typeof SubscriptionServiceSchema>;
 
@@ -95,6 +98,15 @@ export const SUBSCRIPTION_SERVICE_INFO: Readonly<
       recovered: 'INTERNET_OK',
     },
   },
+  cleaning: {
+    id: 'cleaning',
+    icon: '🧹',
+    notifications: {
+      started: 'CLEANING_SUBSCRIBED',
+      cancelled: 'CLEANING_CANCELLED',
+      cut: 'CLEANING_CUT',
+    },
+  },
   security: {
     id: 'security',
     icon: '🛡️',
@@ -124,6 +136,19 @@ export const SUBSCRIPTION_OFFERS: readonly SubscriptionOffer[] = [
     ...(plan.needsRouter ? { requires: 'fibreBox' as const } : {}),
     effects: plan.effects,
   })),
+  // Ménage : les passages du soir de l'entreprise de nettoyage (`cleaning.ts`). Pas d'effet
+  // direct : le passage remet la saleté à zéro. Prix au garage, puis selon le bureau.
+  ...CLEANING_PLANS.map((plan): SubscriptionOffer => ({
+    id: plan.id,
+    service: 'cleaning',
+    name: plan.name,
+    description: plan.description,
+    detail: plan.detail,
+    price: cleaningWeeklyPrice(plan, CLEANING_VISIT_PRICE.GARAGE),
+    periodDays: 7,
+    minPhase: 'GARAGE',
+    effects: {},
+  })),
   // Sécurité : les formules du hall d'entrée (`lobby.ts`), payées chaque semaine.
   ...SECURITY_PLANS.map((plan): SubscriptionOffer => ({
     id: plan.id,
@@ -148,13 +173,13 @@ export function offersOf(service: SubscriptionService): SubscriptionOffer[] {
 }
 
 /** Ce que coûte la souscription : la première période et la mise en service. */
-export function firstPayment(offer: SubscriptionOffer): number {
-  return offer.price + (offer.setupFee ?? 0);
+export function firstPayment(offer: SubscriptionOffer, price = offer.price): number {
+  return price + (offer.setupFee ?? 0);
 }
 
 /** Coût d'une offre ramené à 30 jours de jeu (pour la trésorerie en mois). */
-export function monthlyPrice(offer: SubscriptionOffer): number {
-  return (offer.price * 30) / offer.periodDays;
+export function monthlyPrice(offer: SubscriptionOffer, price = offer.price): number {
+  return (price * 30) / offer.periodDays;
 }
 
 /** Un abonnement en cours. */
