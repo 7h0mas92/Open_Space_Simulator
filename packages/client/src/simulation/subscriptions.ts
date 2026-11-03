@@ -36,6 +36,7 @@ export const REQUIREMENT_CHECKS: Readonly<
   Record<SubscriptionRequirement, (state: GameState) => boolean>
 > = {
   fibreBox: (state) => hasFibreBox(serverRoomItems(state)),
+  lobby: (state) => state.lobby !== null,
 };
 
 /**

@@ -18,6 +18,7 @@ import { PETS, PetSchema } from './pets.js';
 import { InvestorArchetypeSchema, PitchCategorySchema } from './pitch.js';
 import { emptyRaisesState, RaisesStateSchema } from './raises.js';
 import { FibreSubscriptionSchema, ServerHeatLevelSchema } from './serverRoom.js';
+import { LobbyStateSchema } from './lobby.js';
 import { CleaningStateSchema, emptyCleaningState } from './cleaning.js';
 import { SubscriptionsSchema } from './subscriptions.js';
 import { SprintObjectiveSchema } from './taskFlow.js';
@@ -329,6 +330,14 @@ export const NOTIFICATION_KINDS = [
   'FIBRE_CANCELLED',
   /** L'opérateur coupe la ligne : la trésorerie ne couvrait plus la semaine. */
   'FIBRE_CUT',
+  /** Hall d'entrée aménagé, secrétaire embauchée ou partie. */
+  'LOBBY_BUILT',
+  'RECEPTIONIST_HIRED',
+  'RECEPTIONIST_LEFT',
+  /** Abonnement de sécurité souscrit, changé, résilié ou suspendu faute de paiement. */
+  'SECURITY_SUBSCRIBED',
+  'SECURITY_CANCELLED',
+  'SECURITY_CUT',
   /** Trop de salariés au bureau pour l'offre internet : la ligne sature (ou ne sature plus). */
   'INTERNET_SATURATED',
   'INTERNET_OK',
@@ -477,6 +486,8 @@ export const GameStateSchema = z.object({
    * `subscriptions` au chargement (`migrateLegacyFibre`), toujours null ensuite.
    */
   fibre: FibreSubscriptionSchema.nullable().default(null),
+  /** Hall d'entrée au rez-de-chaussée (null : pas de hall, ou sauvegarde d'avant son ajout). */
+  lobby: LobbyStateSchema.nullable().default(null),
   /** Saleté du bureau et entreprise de nettoyage (bureau propre dans les vieilles sauvegardes). */
   cleaning: CleaningStateSchema.default(emptyCleaningState),
   /** Abonnements en cours, un par service, dans l'ordre de souscription (vide par défaut). */

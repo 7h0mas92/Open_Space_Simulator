@@ -3,6 +3,7 @@ import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
 import { CLEANING_PLANS, CLEANING_VISIT_PRICE, cleaningWeeklyPrice } from './cleaning.js';
 import type { FurnitureEffects } from './furniture.js';
+import { SECURITY_PLANS } from './lobby.js';
 import { FIBRE_PLANS, weeklyPrice } from './serverRoom.js';
 import type { NotificationKind } from './state.js';
 
@@ -34,12 +35,12 @@ import type { NotificationKind } from './state.js';
  */
 
 /** Les services auxquels on peut s'abonner, dans l'ordre d'affichage. */
-export const SUBSCRIPTION_SERVICES = ['internet', 'cleaning'] as const;
+export const SUBSCRIPTION_SERVICES = ['internet', 'cleaning', 'security'] as const;
 export const SubscriptionServiceSchema = z.enum(SUBSCRIPTION_SERVICES);
 export type SubscriptionService = z.infer<typeof SubscriptionServiceSchema>;
 
 /** Installations qu'une offre peut demander (vérifiées par la simulation). */
-export const SUBSCRIPTION_REQUIREMENTS = ['fibreBox'] as const;
+export const SUBSCRIPTION_REQUIREMENTS = ['fibreBox', 'lobby'] as const;
 export type SubscriptionRequirement = (typeof SUBSCRIPTION_REQUIREMENTS)[number];
 
 /** Effets d'un abonnement actif (mêmes unités que le mobilier, appliqués chaque jour). */
@@ -106,6 +107,15 @@ export const SUBSCRIPTION_SERVICE_INFO: Readonly<
       cut: 'CLEANING_CUT',
     },
   },
+  security: {
+    id: 'security',
+    icon: '🛡️',
+    notifications: {
+      started: 'SECURITY_SUBSCRIBED',
+      cancelled: 'SECURITY_CANCELLED',
+      cut: 'SECURITY_CUT',
+    },
+  },
 };
 
 /** Toutes les offres, service par service. */
@@ -138,6 +148,19 @@ export const SUBSCRIPTION_OFFERS: readonly SubscriptionOffer[] = [
     periodDays: 7,
     minPhase: 'GARAGE',
     effects: {},
+  })),
+  // Sécurité : les formules du hall d'entrée (`lobby.ts`), payées chaque semaine.
+  ...SECURITY_PLANS.map((plan): SubscriptionOffer => ({
+    id: plan.id,
+    service: 'security',
+    name: plan.name,
+    description: plan.description,
+    detail: plan.coverage,
+    price: plan.weeklyPrice,
+    periodDays: 7,
+    minPhase: plan.minPhase,
+    requires: 'lobby',
+    effects: plan.effects,
   })),
 ];
 

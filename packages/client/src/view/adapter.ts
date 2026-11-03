@@ -54,6 +54,8 @@ import {
   WALL_FINISHES,
   floorZones,
   wallZones,
+  LOBBY,
+  SECURITY_PLANS,
   CLEANING,
   CLEANING_CREW,
   cleaningCallPrice,
@@ -129,6 +131,7 @@ import { activeRetro, retroWinner } from '../simulation/retro';
 import { outingBlocker, outingPrice } from '../simulation/teamBuilding';
 import { visitPrice } from '../simulation/cleaning';
 import {
+  activeOffer,
   offerLoad,
   offerPrice,
   requirementMet,
@@ -165,6 +168,7 @@ import type {
   DailyView,
   PetsView,
   ServersView,
+  LobbyView,
   CleaningView,
   SubscriptionOfferView,
   SubscriptionServiceView,
@@ -626,8 +630,8 @@ function monitorView(item: Parameters<typeof monitorOf>[0]): MonitorChoice {
  * seulement (identifiant `annex:<clé>`, jamais celui d'une entité).
  */
 function annexDecorViews(state: GameState, furniture: readonly PlacedItemView[]): PlacedItemView[] {
-  const { phase, annexes, wings } = wallOffice(state);
-  const layout = officeLayout(phase, wings, annexes);
+  const { phase, annexes, wings, lobby } = wallOffice(state);
+  const layout = officeLayout(phase, wings, annexes, lobby === true);
   const view = (fixture: Fixture): PlacedItemView => {
     const moved = state.annexDecor[fixture.key];
     return {
@@ -1023,6 +1027,32 @@ function subscriptionsView(state: GameState): SubscriptionsView {
   };
 }
 
+function lobbyView(state: GameState): LobbyView {
+  const phase = PHASES.indexOf(state.phase);
+  const built = state.lobby !== null;
+  const security = activeOffer(state, 'security');
+  return {
+    built,
+    price: LOBBY.price,
+    minPhase: LOBBY.minPhase,
+    buildBlocker: built
+      ? null
+      : PHASES.indexOf(LOBBY.minPhase) > phase
+        ? 'LOCKED'
+        : state.stage === 'PITCH'
+          ? 'WRONG_STAGE'
+          : state.gauges.treasury < LOBBY.price
+            ? 'NOT_ENOUGH_MONEY'
+            : null,
+    receptionists: state.lobby?.receptionists ?? 0,
+    maxReceptionists: LOBBY.maxReceptionists,
+    receptionistMonthly: LOBBY.receptionistMonthly,
+    guard: security
+      ? (SECURITY_PLANS.find((plan) => plan.id === security.id)?.guard ?? null)
+      : null,
+  };
+}
+
 function cleaningView(state: GameState): CleaningView {
   const cleaning = state.cleaning;
   const visitCost = visitPrice(state);
@@ -1190,6 +1220,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     pets: petsView(state),
     walls: wallsView(state),
     servers: serversView(state),
+    lobby: lobbyView(state),
     cleaning: cleaningView(state),
     subscriptions: subscriptionsView(state),
     floors: floorsView(state),
@@ -1398,6 +1429,10 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'SUBSCRIBE', offer: command.offer };
     case 'cancelSubscription':
       return { type: 'CANCEL_SUBSCRIPTION', service: command.service };
+    case 'buildLobby':
+      return { type: 'BUILD_LOBBY' };
+    case 'setReceptionists':
+      return { type: 'SET_RECEPTIONISTS', count: command.count };
     case 'callCleaning':
       return { type: 'CALL_CLEANING', express: command.express };
     case 'learnSkill':

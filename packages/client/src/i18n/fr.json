@@ -325,6 +325,7 @@
     "pets": "Chats du bureau",
     "servers": "Salle des serveurs",
     "mission": "Mission",
+    "lobby": "Hall d’entrée",
     "subscriptions": "Abonnements",
     "cleaning": "Ménage",
     "tickets": "Kanbanana, l’appli de tickets",
@@ -610,7 +611,8 @@
       "wing-3": "Aile 3",
       "arcade": "Arcade",
       "garden": "Jardin",
-      "auditorium": "Auditorium"
+      "auditorium": "Auditorium",
+      "lobby": "Hall"
     }
   },
   "build": {
@@ -641,7 +643,8 @@
       "accessory": "Accessoires",
       "monitors": "Écrans",
       "devices": "Périphériques",
-      "servers": "Serveurs"
+      "servers": "Serveurs",
+      "lobby": "Accueil"
     },
     "price": "{{price}} €",
     "owned": "{{count}}/{{max}}",
@@ -649,6 +652,7 @@
     "soldOut": "Maximum atteint ({{max}})",
     "tooExpensive": "Pas assez de trésorerie",
     "annexDecor": "Décor offert avec l’annexe : tu peux le déplacer et le tourner, mais il n’a pas d’effet et ne se revend pas. Le même objet est en vente dans la boutique.",
+    "lobbyDecor": "Décor offert avec le hall : tu peux le déplacer et le tourner, mais il n’a pas d’effet et ne se revend pas. Le même objet est en vente dans la boutique.",
     "rotate": "Tourner",
     "sell": "Revendre ({{price}} €)",
     "move": "Déplacer",
@@ -881,6 +885,8 @@
       "projectionScreenMedium": "Écran de projection déroulant (moyen) : caisson alu, pieds, toile, mât et barre animés",
       "projectionScreenLarge": "Écran de projection déroulant (grand) : caisson alu, pieds, toile, mât et barre animés",
       "serverCloset": "Local serveurs : sol technique en dalles, cloisons vitrées, porte à badge, chemin de câbles",
+      "receptionDesk": "Comptoir d’accueil : façade en bois, plateau de pierre, deux écrans, registre des visiteurs et sonnette",
+      "badgeGates": "Hall d’entrée : portiques à badge en inox à portillons vitrés, secrétaires, agent de sécurité et caméra",
       "serverRoom": "Salle des serveurs : sol technique, dalles perforées, cloisons vitrées, porte à badge, chemin de câbles",
       "rackServer": "Baie de serveurs 1U : armoire, six serveurs à voyants, brassage et porte fumée",
       "bladeServer": "Châssis de serveurs lames : deux châssis de lames verticales aux voyants bleus",
@@ -1975,6 +1981,32 @@
     "adoptCardMissing_other": "Il manque encore {{count}} équipements : litière, gamelle et arbre à chat.",
     "adoptCardReady": "Tout est prêt : choisis sa robe et adopte-le."
   },
+  "lobby": {
+    "card": "Hall d’entrée",
+    "cardBuilt": "Aménagé",
+    "cardBuild": "Hall au rez-de-chaussée : portes à badge, comptoir d’accueil, sécurité.",
+    "cardStatus_one": "{{count}} secrétaire · sécurité : {{security}}",
+    "cardStatus_other": "{{count}} secrétaires · sécurité : {{security}}",
+    "open": "Accueil et sécurité",
+    "intro": "Le hall du rez-de-chaussée accueille l’équipe et les visiteurs : on y entre, on badge, puis on monte au bureau. Il passe devant toutes les autres pièces.",
+    "buildTitle": "Aménager le hall",
+    "features": {
+      "gates": "Deux portes à badge magnétique entre le hall et le bureau (+stabilité)",
+      "desk": "Un comptoir d’accueil pour deux secrétaires",
+      "waiting": "Une banquette et deux plantes pour les visiteurs (+hype, +moral)"
+    },
+    "build": "Lancer les travaux ({{price}} €)",
+    "built": "Hall aménagé : tout le monde entre par les portes à badge.",
+    "receptionTitle": "Accueil",
+    "receptionHint": "Jusqu’à deux secrétaires filtrent les appels, les colis et les visiteurs : +1 % de productivité, +moral et +hype chacun. Salaire : {{salary}} € par mois, ajouté aux dépenses.",
+    "receptionists_zero": "Aucune secrétaire (sur {{max}})",
+    "receptionists_one": "{{count}} secrétaire sur {{max}}",
+    "receptionists_other": "{{count}} secrétaires sur {{max}}",
+    "hire": "Embaucher une secrétaire ({{salary}} € par mois)",
+    "dismiss": "Se séparer d’une secrétaire",
+    "payroll": "Salaires de l’accueil : {{price}} € par mois.",
+    "noSecurity": "aucune"
+  },
   "servers": {
     "intro": "Une salle des serveurs héberge une partie du produit : la facture d’hébergement baisse et la prod tient mieux. Achète une salle (rayon Serveurs du mode construction), puis choisis le matériel à y installer. Chaque appareil chauffe : prévois assez de clim.",
     "roomsTitle": "Tes salles",
@@ -2221,6 +2253,10 @@
       "cleaning": {
         "name": "Ménage",
         "intro": "Nickel Chrome passe le soir à 19h, les jours prévus par l’offre, et remet la saleté à zéro. Payé chaque semaine (tous les 7 jours de jeu), moins cher qu’un appel ; le prix suit la taille du bureau."
+      },
+      "security": {
+        "name": "Sécurité",
+        "intro": "Un service de sécurité aux prix du marché, payé chaque semaine (tous les 7 jours de jeu). L’agent se tient dans le hall, à côté des portes à badge."
       }
     },
     "requires": {
@@ -2228,6 +2264,11 @@
         "long": "La fibre dédiée arrive dans une box fibre : installe-la dans une salle des serveurs (rayon Serveurs).",
         "short": "La fibre dédiée arrive dans une box fibre posée dans une salle des serveurs.",
         "inactive": "Aucune box fibre dans une salle : tu paies la fibre dédiée mais elle n’arrive nulle part."
+      },
+      "lobby": {
+        "long": "Pour t’abonner, aménage d’abord le hall d’entrée (rayon Accueil) : l’agent et les portes à badge y sont.",
+        "short": "Il faut un hall d’entrée.",
+        "inactive": "Pas de hall d’entrée : tu paies le service mais il ne sert à rien."
       }
     },
     "none": "Pas d’abonnement : choisis une offre ci-dessous.",

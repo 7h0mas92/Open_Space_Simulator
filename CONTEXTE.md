@@ -2,6 +2,7 @@
 
 > **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : team building
 > (tâche T5, 3e des 3 PR). Base : `develop` avec les congés (#149) et la rétrospective (#155).
+> Puis hall d'entrée et sécurité (PR #134, projet de Melvin) fusionné dans `develop`.
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -67,8 +68,8 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Mode **Carrière** (reproduire de grandes réussites) | Thomas + Claude | Fusionné (#121), réintégré dans `develop` (T1)  |
 | Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135) |
 | Offres internet et température des salles (#129)    | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #129) |
-| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation       |
-| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné dans `develop` (PR #148)               |
+| Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Fusionné dans `develop` le 2 novembre           |
+| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné dans `develop` le 2 novembre (PR #148) |
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                |
 | **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                |
 | Histoire longue, rivaux, arbre R&D (T2, T4)         | Thomas          | Proposition prête, rien de codé                 |
@@ -296,6 +297,7 @@ Le plus récent en haut. Une ligne par travail terminé.
 
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                |
 | -------- | --------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 02/11    | Melvin + Claude | #134              | Hall d'entrée au rez-de-chaussée (rayon Accueil) : portes à badge, comptoir, 2 secrétaires. Sécurité branchée sur le modèle commun (service `security`, installation `lobby` dans `REQUIREMENT_CHECKS`). État `lobby` null par défaut, aucun tirage.                                                                                                                                                      |
 | 02/11    | Melvin + Claude | #147              | Ménage branché sur le modèle commun d'abonnements : service « cleaning » (🧹), 3 offres, `SUBSCRIBE` / `CANCEL_SUBSCRIPTION` à la place de `SUBSCRIBE_CLEANING` / `CANCEL_CLEANING`, `cleaning.plan` retiré. `PRICE_RULES` : prix d'une offre qui suit la partie (ménage selon la taille du bureau).                                                                                                      |
 | 02/11    | Thomas + Claude | T5 (3/3)          | Team building : 5 sorties réservées en planification, effets à 18h le dernier jour, hasard sur `seed#teambuilding#sprint`. État `teamBuilding` par défaut. T5 terminée : les 3 PR empilées sont fusionnées ensemble par #156 (#149 et #155 fermées, incluses).                                                                                                                                            |
 | 02/11    | Thomas + Claude | T5 (2/3)          | Rétrospective de sprint : 3 actions selon les problèmes du sprint, vote des devs sur `seed#retro#sprint`, effet pendant un sprint. Passer la rétro ne coûte rien (écart avec la proposition, pour garder la partie identique). État `retro` par défaut. Bot « retro » : valorisation médiane 297 M€ contre 266 M€ pour « balanced ».                                                                      |

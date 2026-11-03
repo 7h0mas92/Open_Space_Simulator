@@ -142,6 +142,7 @@ Types TypeScript, schémas Zod et constantes utilisés à la fois par le client 
 | `projection.ts`   | Vidéoprojecteurs et écrans déroulants : quel projecteur éclaire quel écran.                |
 | `serverRoom.ts`   | Salle des serveurs, équipements, température et offres internet.                           |
 | `cleaning.ts`     | Saleté du bureau, entreprise de nettoyage, tarifs et offres de ménage.                     |
+| `lobby.ts`        | Hall d'entrée : prix, secrétaires, formules de sécurité, décor offert.                     |
 | `meetings.ts`     | Formules de salle de réunion, réunion du matin, réunion de crise.                          |
 | `pets.ts`         | Chats du bureau : équipement requis, prix, effets.                                         |
 | `teamRoles.ts`    | Équipe web : devs front, back, fullstack, tech lead, DevOps, QA, encadrement.              |
@@ -276,6 +277,7 @@ graine + mêmes commandes = même partie.
 | `projection.ts`   | Interrupteur des projecteurs et effets des projections.                                 |
 | `serverRoom.ts`   | Effets des salles de serveurs selon leur température, alertes de la sonde.              |
 | `cleaning.ts`     | Saleté qui monte, malus de travail, appels et passages de l'équipe de ménage.           |
+| `lobby.ts`        | Aménagement du hall, secrétaires de l'accueil et leurs effets.                          |
 | `pets.ts`         | Adoption des chats, départ, effets sur l'équipe.                                        |
 | `achievements.ts` | Succès vérifiés à partir de l'état.                                                     |
 | `endings.ts`      | Fins de partie et phrase partageable de l'écran de fin.                                 |
@@ -405,6 +407,8 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `meetingRoom.ts`      | Salle de réunion aménagée selon la formule choisie.                       |
 | `serverRoom.ts`       | Local serveur, salle vitrée et leurs équipements.                         |
 | `cleaning.ts`         | Déchets au sol et les 3 agents de nettoyage qui les ramassent.            |
+| `lobby.ts`            | Portes à badge, secrétaires, agent de sécurité et caméra du hall.         |
+| `lobbyFurniture.ts`   | Comptoir d'accueil.                                                       |
 | `annexDecor.ts`       | Décor des annexes (arcade, jardin, auditorium).                           |
 | `characters.ts`       | Personnages dans la scène, animés par les clips Kenney.                   |
 | `officeCharacters.ts` | Look de chaque personnage selon le profil du dev.                         |
@@ -490,6 +494,7 @@ modèles absents des packs Kenney (liste dans la page Crédits).
 | `meetings/MeetingRoom.tsx`        | Panneau « Réunion » : choix de la formule.                              |
 | `servers/ServerRoom.tsx`          | Panneau « Serveurs » : état des salles, offres fibre.                   |
 | `cleaning/Cleaning.tsx`           | Panneau « Ménage » : saleté, appel de l'équipe, abonnement.             |
+| `lobby/Lobby.tsx`                 | Panneau « Hall d'entrée » : travaux, secrétaires, sécurité.             |
 | `pets/Pets.tsx`                   | Panneau « Chats » : adoption et liste des chats.                        |
 | `funding/Funding.tsx`             | Panneau « Lever des fonds » : pitch et autres financements.             |
 | `group/Group.tsx`                 | Panneau « Investir » : filiales.                                        |

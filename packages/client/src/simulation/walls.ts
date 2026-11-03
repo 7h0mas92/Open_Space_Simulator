@@ -30,6 +30,7 @@ export function wallOffice(state: GameState): WallOffice {
     phase: state.phase,
     wings: state.ventures.length,
     annexes: annexCount(state.fundingRounds),
+    ...(state.lobby ? { lobby: true } : {}),
   };
 }
 

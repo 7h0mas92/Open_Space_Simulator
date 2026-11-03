@@ -836,6 +836,25 @@ export interface SubscriptionsView {
   readonly monthlyTotal: number;
 }
 
+/** Hall d'entrée du rez-de-chaussée, ses secrétaires et l'agent de sécurité. */
+export interface LobbyView {
+  /** Le hall est aménagé. */
+  readonly built: boolean;
+  /** Prix des travaux et phase à partir de laquelle on peut les lancer. */
+  readonly price: number;
+  readonly minPhase: Phase;
+  /** Pourquoi on ne peut pas aménager le hall maintenant (`null` si c'est possible ou fait). */
+  readonly buildBlocker: 'LOCKED' | 'NOT_ENOUGH_MONEY' | 'WRONG_STAGE' | null;
+  readonly receptionists: number;
+  readonly maxReceptionists: number;
+  readonly receptionistMonthly: number;
+  /**
+   * Agent de sécurité de l'abonnement en cours (service `security`, actif seulement avec le
+   * hall) : aucun, en journée, ou jour et nuit. `null` sans abonnement de sécurité actif.
+   */
+  readonly guard: 'none' | 'day' | 'always' | null;
+}
+
 /** Saleté du bureau et entreprise de nettoyage. */
 export interface CleaningView {
   /** Saleté de 0 à 100 %. */
@@ -1006,6 +1025,8 @@ export interface GameView {
   readonly cleaning: CleaningView;
   /** Salles des serveurs. */
   readonly servers: ServersView;
+  /** Hall d'entrée, accueil et sécurité. */
+  readonly lobby: LobbyView;
   /** Abonnements (internet…). */
   readonly subscriptions: SubscriptionsView;
   /** Sols des pièces. */
@@ -1123,6 +1144,9 @@ export type GameCommand =
   /** Souscrit à une offre (ou change d'offre pour son service). */
   | { readonly type: 'subscribe'; readonly offer: string }
   | { readonly type: 'cancelSubscription'; readonly service: SubscriptionService }
+  /** Aménage le hall d'entrée, règle l'accueil. */
+  | { readonly type: 'buildLobby' }
+  | { readonly type: 'setReceptionists'; readonly count: number }
   /** Appelle l'entreprise de nettoyage (ce soir, ou en express). */
   | { readonly type: 'callCleaning'; readonly express: boolean }
   | { readonly type: 'learnSkill'; readonly devId: string; readonly skill: SkillId }

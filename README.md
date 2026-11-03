@@ -515,6 +515,14 @@ flowchart LR
   suite (plus cher), ou avec l'abonnement « Ménage » de la rubrique Abonnements (vendredi, mardi
   et vendredi, ou tous les soirs, prix selon la taille du bureau). Pendant le passage, les agents
   vont d'un déchet à l'autre et les déchets disparaissent.
+- **Hall d'entrée** : dès la Seed, le rayon Accueil ouvre le panneau « Hall d'entrée ». Pour
+  18 000 €, un hall au rez-de-chaussée s'ajoute devant tout le bureau : on y entre, on passe
+  l'une des deux portes à badge (les portillons s'ouvrent au passage), puis on rejoint l'open
+  space. Il est livré avec un comptoir d'accueil, une banquette et deux plantes, déplaçables.
+  Jusqu'à deux secrétaires (3 100 € par mois chacune) donnent un peu de productivité, de moral
+  et de hype. La sécurité est un abonnement de la rubrique 🧾 Abonnements, payé chaque semaine :
+  télésurveillance, agent en journée ou gardiennage 24 h/24 (Série A) ; l'agent se tient dans
+  le hall (`shared/sim/lobby.ts`, `render/lobby.ts`).
 - **Chats de bureau** : le rayon Animaux propose 3 litières (ouverte, fermée, robot
   automatique), 3 arbres à chat de 1, 2 et 3 cases aux coloris différents et 2 gamelles qui
   réunissent nourriture et eau. Une fois une litière, une gamelle et un arbre à chat posés, le

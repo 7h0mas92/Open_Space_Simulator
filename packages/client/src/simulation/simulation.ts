@@ -107,11 +107,11 @@ export class Simulation {
    * bureau : la liste des télétravailleurs fait donc aussi partie de la clé, comme la formule
    * de la salle de réunion, les ordinateurs des bureaux (changés sans nouvelle entité),
    * les abonnements, la salle de chaque équipement serveur (déplaçable d'une salle à l'autre)
-   * et l'été (les salles des serveurs chauffent plus).
+   * l'été (les salles des serveurs chauffent plus), le hall et ses secrétaires.
    */
   private officeEffects(): OfficeEffects {
     const { state } = this;
-    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${absentIds(state, getClock(state).day).join(',')}:${computersKey(state)}:${state.subscriptions.map((s) => s.offer).join(',')}:${serverGearKey(state)}:${isSummer(state) ? 'été' : ''}`;
+    const key = `${state.meetingRoom?.format ?? '-'}:${state.pets.map((pet) => pet.id).join(',')}:${state.nextEntityId}:${Object.keys(state.components.furniture).length}:${Object.keys(state.components.identity).length}:${Object.keys(state.components.remote).join(',')}:${absentIds(state, getClock(state).day).join(',')}:${computersKey(state)}:${state.subscriptions.map((s) => s.offer).join(',')}:${serverGearKey(state)}:${isSummer(state) ? 'été' : ''}:${lobbyKey(state)}`;
     if (this.officeCache?.key !== key)
       this.officeCache = { key, effects: computeOfficeEffects(state) };
     return this.officeCache.effects;
@@ -192,4 +192,9 @@ function serverGearKey(state: GameState): string {
   for (const [id, item] of Object.entries(state.components.furniture))
     if (getFurniture(item.itemId)?.serverGear) key += `${id}@${item.hostId ?? ''},`;
   return key;
+}
+
+/** Hall d'entrée : aménagé ou non, nombre de secrétaires, formule de sécurité. */
+function lobbyKey(state: GameState): string {
+  return state.lobby ? `${state.lobby.receptionists}` : '-';
 }

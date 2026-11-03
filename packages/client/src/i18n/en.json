@@ -325,6 +325,7 @@
     "pets": "Office cats",
     "servers": "Server room",
     "mission": "Mission",
+    "lobby": "Lobby",
     "subscriptions": "Subscriptions",
     "cleaning": "Cleaning",
     "tickets": "Kanbanana, the ticket app",
@@ -610,7 +611,8 @@
       "wing-3": "Wing 3",
       "arcade": "Arcade",
       "garden": "Garden",
-      "auditorium": "Auditorium"
+      "auditorium": "Auditorium",
+      "lobby": "Lobby"
     }
   },
   "build": {
@@ -641,7 +643,8 @@
       "accessory": "Accessories",
       "monitors": "Monitors",
       "devices": "Devices",
-      "servers": "Servers"
+      "servers": "Servers",
+      "lobby": "Lobby"
     },
     "price": "€{{price}}",
     "owned": "{{count}}/{{max}}",
@@ -649,6 +652,7 @@
     "soldOut": "Limit reached ({{max}})",
     "tooExpensive": "Not enough cash",
     "annexDecor": "Decor that came with the annex: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
+    "lobbyDecor": "Decor that came with the lobby: you can move and rotate it, but it has no effect and can't be sold. The same item is in the shop.",
     "rotate": "Rotate",
     "sell": "Sell (€{{price}})",
     "move": "Move",
@@ -881,6 +885,8 @@
       "projectionScreenMedium": "Pull-up projection screen (medium): aluminium case, feet, animated fabric, pole and bar",
       "projectionScreenLarge": "Pull-up projection screen (large): aluminium case, feet, animated fabric, pole and bar",
       "serverCloset": "Server closet: raised floor tiles, glass walls, badge-reader door, cable tray",
+      "receptionDesk": "Reception desk: wooden front, stone top, two screens, visitor log and bell",
+      "badgeGates": "Lobby: stainless steel badge gates with glass flaps, receptionists, security guard and camera",
       "serverRoom": "Server room: raised floor, perforated tiles, glass walls, badge-reader door, cable tray",
       "rackServer": "1U server rack: cabinet, six servers with LEDs, patch panel and smoked door",
       "bladeServer": "Blade server chassis: two enclosures of vertical blades with blue LEDs",
@@ -1975,6 +1981,32 @@
     "adoptCardMissing_other": "{{count}} pieces of equipment still missing: litter box, bowl and cat tree.",
     "adoptCardReady": "All set: pick a coat and adopt."
   },
+  "lobby": {
+    "card": "Lobby",
+    "cardBuilt": "Built",
+    "cardBuild": "Ground-floor lobby: badge doors, reception desk, security.",
+    "cardStatus_one": "{{count}} receptionist · security: {{security}}",
+    "cardStatus_other": "{{count}} receptionists · security: {{security}}",
+    "open": "Reception and security",
+    "intro": "The ground-floor lobby welcomes the team and visitors: you come in, badge, then go up to the office. It sits in front of every other room.",
+    "buildTitle": "Build the lobby",
+    "features": {
+      "gates": "Two magnetic badge doors between the lobby and the office (+stability)",
+      "desk": "A reception desk for two receptionists",
+      "waiting": "A bench and two plants for visitors (+hype, +morale)"
+    },
+    "build": "Start the works (€{{price}})",
+    "built": "Lobby built: everyone comes in through the badge doors.",
+    "receptionTitle": "Reception",
+    "receptionHint": "Up to two receptionists screen calls, parcels and visitors: +1% productivity, +morale and +hype each. Salary: €{{salary}} a month, added to expenses.",
+    "receptionists_zero": "No receptionist (out of {{max}})",
+    "receptionists_one": "{{count}} receptionist out of {{max}}",
+    "receptionists_other": "{{count}} receptionists out of {{max}}",
+    "hire": "Hire a receptionist (€{{salary}} a month)",
+    "dismiss": "Let a receptionist go",
+    "payroll": "Reception salaries: €{{price}} a month.",
+    "noSecurity": "none"
+  },
   "servers": {
     "intro": "A server room hosts part of the product: the hosting bill goes down and prod holds up better. Buy a room (Servers aisle of build mode), then choose the hardware to install in it. Every device runs hot: plan enough cooling.",
     "roomsTitle": "Your rooms",
@@ -2221,6 +2253,10 @@
       "cleaning": {
         "name": "Cleaning",
         "intro": "Nickel Chrome comes at 7 pm on the plan’s days and brings dirt back to zero. Paid every week (every 7 game days), cheaper than a call; the price follows the size of the office."
+      },
+      "security": {
+        "name": "Security",
+        "intro": "A security service at market prices, paid every week (every 7 game days). The guard stands in the lobby, next to the badge doors."
       }
     },
     "requires": {
@@ -2228,6 +2264,11 @@
         "long": "Dedicated fibre comes into a fibre router: install one in a server room (Servers aisle).",
         "short": "Dedicated fibre needs a fibre router in a server room.",
         "inactive": "No fibre router in a room: you pay for dedicated fibre but it goes nowhere."
+      },
+      "lobby": {
+        "long": "To subscribe, first build the lobby (Lobby aisle): the guard and the badge doors are there.",
+        "short": "A lobby is needed.",
+        "inactive": "No lobby: you pay for the service but it does nothing."
       }
     },
     "none": "No subscription: pick a plan below.",

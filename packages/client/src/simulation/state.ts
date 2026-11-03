@@ -125,6 +125,7 @@ export function createEmptyState(config: GameConfig): GameState {
     retro: emptyRetroState(),
     teamBuilding: emptyTeamBuildingState(),
     fibre: null,
+    lobby: null,
     cleaning: emptyCleaningState(),
     subscriptions: [],
     career: legend ? createCareerState(config.seed) : null,

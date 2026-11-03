@@ -24,6 +24,7 @@ import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
+import { buildLobby, setReceptionists } from './lobby';
 import { bookLeave, cancelLeave, refuseBridges } from './teamLife';
 import { holdRetro } from './retro';
 import { bookTeamBuilding, cancelTeamBuilding } from './teamBuilding';
@@ -213,6 +214,10 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return subscribe(state, ctx, command.offer);
     case 'CANCEL_SUBSCRIPTION':
       return cancelSubscription(state, ctx, command.service);
+    case 'BUILD_LOBBY':
+      return buildLobby(state, ctx);
+    case 'SET_RECEPTIONISTS':
+      return setReceptionists(state, ctx, command.count);
     case 'CALL_CLEANING':
       return callCleaning(state, ctx, command.express);
     case 'LEARN_SKILL':

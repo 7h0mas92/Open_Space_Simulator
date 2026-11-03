@@ -1,5 +1,6 @@
 import { BALANCE, difficultyOf, endlessCostMultiplier, type GameState } from '@oss/shared';
 import { devIds, teamSize } from './helpers';
+import { receptionistsMonthly } from './lobby';
 import { hostingSaving } from './serverRoom';
 import { subscriptionsMonthly } from './subscriptions';
 
@@ -8,9 +9,9 @@ export function annualRevenue(state: GameState): number {
   return state.gauges.users * BALANCE.economy.arpuMonthly * 12;
 }
 
-/** Masse salariale mensuelle chargée. */
+/** Masse salariale mensuelle chargée (devs, et secrétaires de l'accueil). */
 export function monthlyPayroll(state: GameState): number {
-  let total = 0;
+  let total = receptionistsMonthly(state);
   for (const id of devIds(state)) total += state.components.employment[id]?.salary ?? 0;
   return total;
 }
