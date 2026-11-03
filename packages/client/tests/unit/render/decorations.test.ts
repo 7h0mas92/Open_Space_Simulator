@@ -2,7 +2,9 @@ import { DECOR_THEMES } from '@oss/shared';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { accessCell, buildNavGrid, NEIGHBORS_4 } from '../../../src/ai/grid';
-import { partyProps, THEME_MODELS } from '../../../src/render/decorModels';
+import { ORNAMENT_Y, partyProps, THEME_MODELS } from '../../../src/render/decorModels';
+import { decorWalls, shareWalls } from '../../../src/render/decorations';
+import { wallSlots } from '../../../src/render/officeLights';
 import { decorKey, planDecor } from '../../../src/view/decor';
 import { officeLayout, roomAt, type Cell } from '../../../src/view/layout';
 import { officeSimulation, SEED_OFFICE, viewOf } from '../fixtures/game';
@@ -16,12 +18,69 @@ function meshCount(object: THREE.Object3D): number {
 }
 
 describe('Décorations de saison', () => {
-  it('chaque thème a un objet de bureau et un décor mural', () => {
+  it('chaque thème a un objet de bureau et un décor mural, fusionnés en quelques maillages', () => {
+    const view = viewOf(officeSimulation(SEED_OFFICE));
+    const layout = officeLayout(view.phase);
+    const walls = decorWalls(layout, view.items);
     for (const theme of DECOR_THEMES) {
       const models = THEME_MODELS[theme];
-      expect(meshCount(models.desk()), theme).toBeGreaterThan(0);
-      expect(meshCount(models.wall(14, 10)), theme).toBeGreaterThan(10);
+      const desk = models.desk();
+      expect(meshCount(desk), theme).toBeGreaterThan(0);
+      // Un petit objet : il tient dans un coin du plateau.
+      const size = new THREE.Box3().setFromObject(desk).getSize(new THREE.Vector3());
+      expect(Math.max(size.x, size.z), theme).toBeLessThan(0.2);
+      const wall = models.wall(walls);
+      // Guirlande, ornements et ampoules : quatre maillages au plus pour tout un mur.
+      expect(meshCount(wall), theme).toBeGreaterThan(0);
+      expect(meshCount(wall), theme).toBeLessThanOrEqual(4);
+      // Tout reste sous le plafond et contre les murs du fond.
+      const box = new THREE.Box3().setFromObject(wall);
+      expect(box.max.y, theme).toBeLessThan(2.2);
+      expect(box.min.y, theme).toBeGreaterThan(1);
     }
+  });
+
+  it('les ornements tombent entre les appliques, hors des fenêtres et des cloisons', () => {
+    const view = viewOf(officeSimulation(SEED_OFFICE));
+    const layout = officeLayout(view.phase);
+    const walls = decorWalls(layout, view.items);
+    const lamps = wallSlots(layout);
+    for (const wall of walls) {
+      expect(wall.spots.length, `mur ${wall.side}`).toBeGreaterThan(0);
+      for (const spot of wall.spots) {
+        for (const lamp of lamps.filter((slot) => slot.turn === wall.side))
+          expect(Math.abs((wall.side === 0 ? lamp.x : lamp.z) - spot)).toBeGreaterThanOrEqual(2);
+        const partition = layout.partitions.some((cell) =>
+          wall.side === 0 ? cell.z === 0 && cell.x === spot : cell.x === 0 && cell.z === spot,
+        );
+        expect(partition).toBe(false);
+      }
+      expect(ORNAMENT_Y).toBeLessThan(2);
+    }
+    // Une fenêtre achetée coupe la guirlande et chasse l'ornement de ses cases.
+    const spot = walls[0]?.spots[0] ?? 1;
+    const window = {
+      ...view.items[0]!,
+      id: 'w',
+      kind: 'window-small',
+      x: spot,
+      z: 0,
+      rotation: 0 as const,
+    };
+    const withWindow = decorWalls(layout, [...view.items, window])[0]!;
+    expect(withWindow.spots).not.toContain(spot);
+    for (const [from, to] of withWindow.spans)
+      expect(to <= spot - 0.5 || from >= spot + 0.5).toBe(true);
+  });
+
+  it('deux thèmes à la fois se partagent les murs au lieu de s’empiler', () => {
+    const view = viewOf(officeSimulation(SEED_OFFICE));
+    const walls = decorWalls(officeLayout(view.phase), view.items);
+    const first = shareWalls(walls, 0, 2);
+    const second = shareWalls(walls, 1, 2);
+    const spots = (list: typeof walls) => list.flatMap((wall) => wall.spots);
+    expect([...spots(first), ...spots(second)].sort()).toEqual(spots(walls).sort());
+    for (const value of spots(first)) expect(spots(second)).not.toContain(value);
   });
 
   it('aucune décoration de saison au sol : ni déplaçable ni rangeable, elle n’a rien à y faire', () => {

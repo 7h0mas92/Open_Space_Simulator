@@ -267,8 +267,11 @@ flowchart LR
   objets masqués quand on dézoome (LOD).
 - **Vue sur New York** : on la voit par les fenêtres achetées. Le bureau est au
   dernier étage d'une tour, au milieu d'une ville low-poly façon Manhattan (avenues, tours à
-  gradins, réservoirs d'eau sur les toits, parc, fleuve, taxis qui roulent), faite de formes
-  Three.js sans aucun bâtiment réel. La ville est la même à chaque partie (graine fixe, sans le
+  gradins, réservoirs d'eau sur les toits, parc, fleuve, circulation), faite de formes
+  Three.js sans aucun bâtiment réel. Sept modèles de véhicules roulent dans les rues
+  (`render/cars.ts`) : taxi à enseigne et damier, berline, citadine, SUV, camionnette, pick-up et
+  bus, avec vitres, roues, phares et pare-chocs ; modèle et couleur figés par le numéro de la
+  voiture, deux InstancedMesh par modèle. La ville est la même à chaque partie (graine fixe, sans le
   hasard du jeu) et tient en une quinzaine d'appels de dessin. Aucun toit proche ne dépasse le
   plancher, donc rien ne cache la salle. Les façades sont dessinées par shader en 5 styles
   (verre qui reflète le ciel, brique, pierre, bandeaux, brownstone), les toits ont muret,
@@ -739,7 +742,12 @@ bouton 🛠 du menu principal.
   Costumes dans `render/characterPacks.ts`.
 - **Décorations** : un thème par période de l'année (Nouvel An, Saint-Valentin, Pâques, espace,
   Moyen Âge, super-héros, années 80, été, pirates, Halloween, cyberpunk, Noël). Chacun a une
-  guirlande murale et un petit objet par bureau, construits en Three.js, avec un aperçu 3D. Rien
+  guirlande murale (fil et ampoules qui scintillent, ou cordelette et fanions, tendus en festons
+  entre des clous), un ornement accroché entre deux appliques (jamais devant une fenêtre, une
+  cloison ou un grand meuble : `decorWalls` dans `render/decorations.ts`) et un petit objet par
+  bureau, à l'écart de l'écran et des accessoires, construits en Three.js et fusionnés par
+  matériau (4 appels de dessin au plus par mur), avec un aperçu 3D. Deux thèmes actifs se
+  partagent les murs au lieu de s'empiler. Rien
   n'est posé au sol : le joueur ne pourrait ni déplacer ni ranger un objet qu'il n'a pas acheté. Trois réglages par thème : désactivé, en saison (par défaut, seulement pendant sa
   période) ou toujours. `GET /api/decor-themes` (public, en cache hors ligne) et
   `PUT /api/admin/decor-themes/:id`.
