@@ -124,10 +124,10 @@ export function ComputerPicker({
                     <small>{localized(computer.description, i18n.language)}</small>
                   </span>
                   <span className="computer-price">
-                    {researchLock
-                      ? researchLock
-                      : locked
-                        ? t('build.computerLocked', { phase: t(`phases.${computer.minPhase}`) })
+                    {PHASES.indexOf(phase) < PHASES.indexOf(computer.minPhase)
+                      ? t('build.computerLocked', { phase: t(`phases.${computer.minPhase}`) })
+                      : researchLock
+                        ? researchLock
                         : computer.id === value
                           ? t('build.computerCurrent')
                           : computer.price === 0

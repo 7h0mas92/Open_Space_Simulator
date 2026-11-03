@@ -238,10 +238,10 @@ function MonitorCard({
         <span className="catalog-card-owned">{monitorInches(choice)}″</span>
       </span>
       <span className={locked || research ? 'catalog-card-text locked' : 'catalog-card-text'}>
-        {research
-          ? research
-          : locked
-            ? t('build.locked', { phase: t(`phases.${model.minPhase}`) })
+        {locked
+          ? t('build.locked', { phase: t(`phases.${model.minPhase}`) })
+          : research
+            ? research
             : `${effectSummary(choice, t, language)} · ${localized(model.description, language)}`}
       </span>
     </button>
