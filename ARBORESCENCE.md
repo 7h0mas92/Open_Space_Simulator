@@ -4,7 +4,7 @@ Ce fichier dit **à quoi sert chaque fichier et où il est rangé**. Il est fait
 l'éditeur (VS Code, WebStorm…) : il est à la racine du dépôt, hors de `packages/client`, donc il
 n'est ni servi par Vite, ni copié dans le build, ni visible en jeu.
 
-- Le cahier des charges et la liste de tout ce qui est livré : [`CLAUDE.md`](CLAUDE.md).
+- Le cahier des charges : [`docs/cahier-des-charges/`](docs/cahier-des-charges/) ; tout ce qui est livré : [`docs/etat/`](docs/etat/) ; index de la doc : [`CLAUDE.md`](CLAUDE.md).
 - L'installation, l'architecture et le déploiement : [`README.md`](README.md).
 - Le relais entre Thomas et Melvin : [`CONTEXTE.md`](CONTEXTE.md).
 
@@ -73,7 +73,7 @@ le serveur importe aussi la simulation du client pour rejouer les parties (anti-
 | Fichier                             | Rôle                                                                                        |
 | ----------------------------------- | ------------------------------------------------------------------------------------------- |
 | `ARBORESCENCE.md`                   | Ce fichier : rôle et emplacement de chaque fichier.                                         |
-| `CLAUDE.md`                         | Cahier des charges complet et « État d'avancement » (liste de tout ce qui est livré).       |
+| `CLAUDE.md`                         | Règles de travail et index de la doc (quel fichier de `docs/` lire pour quel sujet).        |
 | `CONTEXTE.md`                       | Relais entre Thomas et Melvin : travaux en cours, décisions en attente, journal.            |
 | `README.md`                         | Documentation principale : installation, architecture, choix techniques, crédits.           |
 | `package.json`                      | Scripts du monorepo (`dev`, `lint`, `test`, `build`, `balance`, `db:*`…) et outils communs. |
