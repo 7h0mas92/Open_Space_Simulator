@@ -69,6 +69,11 @@ test('l’arbre R&D débloque le catalogue de l’histoire', async ({ page }) =>
   await expect(page.getByTestId('campaign-panel')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('campaign-panel')).toBeHidden();
+  // Les règles du mode Histoire s'ouvrent dans le guide : sur tablette, il recouvre le panneau.
+  const guide = page.getByTestId('guide');
+  await expect(guide).toBeVisible();
+  await guide.locator('.guide-minimize').click();
+  await expect(guide).toBeHidden();
 
   await page.locator('[data-tutorial="panel-research"]').click();
   const panel = page.getByTestId('research-panel');
