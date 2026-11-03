@@ -18,6 +18,8 @@ import {
 import { applyDailyLeadership } from '../leadership';
 import { acquireUsers, currentPricing } from '../pricing';
 import { payClients } from '../clients';
+import { supportDay } from '../support';
+import { supportChurnFactor, supportGrowthFactor } from '@oss/shared';
 import { applyDailySkills, skillTeamEffects, type SkillTeamEffects } from '../skills';
 import { log10Approx, round } from '../math';
 import type { SimClock } from '../time';
@@ -42,14 +44,18 @@ function users(state: GameState): void {
   const { users: u } = BALANCE;
   const { hype, stability } = state.gauges;
   const instability = 1 - stability / 100;
-  const growth = state.gauges.users * u.organicDailyGrowth * (hype / 100);
+  // Des utilisateurs contents recommandent le produit ; mécontents, ils partent plus vite.
+  const satisfaction = state.support.satisfaction;
+  const growth =
+    state.gauges.users * u.organicDailyGrowth * (hype / 100) * supportGrowthFactor(satisfaction);
   // Le modèle économique joue sur les arrivées et sur les départs.
   const churn =
     state.gauges.users *
     (u.baseDailyChurn +
       u.instabilityDailyChurn * instability * instability +
       endlessExtraChurn(state.mode, state.sprint)) *
-    currentPricing(state).churn;
+    currentPricing(state).churn *
+    supportChurnFactor(satisfaction);
   acquireUsers(state, growth);
   addUsers(state, -churn);
 }
@@ -193,6 +199,7 @@ export function recordHistory(state: GameState, day: number): void {
 export function dailySystem(state: GameState, ctx: SimContext, clock: SimClock): void {
   if (clock.hour !== 0) return;
   economy(state);
+  supportDay(state, ctx, clock);
   users(state);
   gauges(state, ctx);
   applyDailyLeadership(state);

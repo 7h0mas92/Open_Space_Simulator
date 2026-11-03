@@ -27,6 +27,7 @@ import type {
   PricingModel,
   ClientNeed,
   ClientSize,
+  SupportDuty,
   ServerRoomNeed,
   SubscriptionRequirement,
   SubscriptionService,
@@ -972,6 +973,31 @@ export interface ClientsView {
   readonly earned: number;
 }
 
+/** Support client : tickets, agents, devs de garde et satisfaction des utilisateurs. */
+export interface SupportView {
+  /** Satisfaction de 0 à 100, et seuils des départs et des recommandations. */
+  readonly satisfaction: number;
+  readonly churnThreshold: number;
+  readonly happyThreshold: number;
+  /** Tickets en attente, attendus par jour ouvré et traités par jour. */
+  readonly backlog: number;
+  readonly ticketsPerDay: number;
+  readonly capacity: number;
+  readonly agents: number;
+  readonly maxAgents: number;
+  readonly agentSalary: number;
+  readonly agentCapacity: number;
+  readonly monthly: number;
+  readonly duty: SupportDuty;
+  /** Part du travail des devs passée au support, pour chaque niveau de garde. */
+  readonly dutyShare: Readonly<Record<SupportDuty, number>>;
+  /** Départs d'utilisateurs (1 = normal) et croissance organique selon la satisfaction. */
+  readonly churnFactor: number;
+  readonly growthFactor: number;
+  readonly solved: number;
+  readonly blocker: 'WRONG_STAGE' | null;
+}
+
 /** Une zone de mur (le mur du fond ou de gauche d'une pièce) et son revêtement. */
 export interface WallZoneView {
   readonly zone: WallZone;
@@ -1115,6 +1141,8 @@ export interface GameView {
   readonly pricing: PricingView;
   /** Clients B2B. */
   readonly clients: ClientsView;
+  /** Support client. */
+  readonly support: SupportView;
   /** Salles des serveurs. */
   readonly servers: ServersView;
   /** Hall d'entrée, accueil et sécurité. */
@@ -1249,7 +1277,9 @@ export type GameCommand =
   | { readonly type: 'setPricing'; readonly model: PricingModel; readonly tier: PriceTier }
   /** Signe l'offre d'un client B2B, ou rompt un contrat. */
   | { readonly type: 'signClient'; readonly offerId: string }
-  | { readonly type: 'dropClient'; readonly contractId: string };
+  | { readonly type: 'dropClient'; readonly contractId: string }
+  /** Règle le support client : agents et devs de garde. */
+  | { readonly type: 'setSupport'; readonly agents: number; readonly duty: SupportDuty };
 
 /** Résultat d'une commande, pour un retour immédiat dans l'interface. */
 export type CommandResult =

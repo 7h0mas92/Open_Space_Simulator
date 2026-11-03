@@ -2434,6 +2434,33 @@
       "dropWarning": "Rompre maintenant coûte {{penalty}} de pénalités et de la hype.",
       "endWarning": "Le client part sans frais : plus de forfait, plus de pénalité de panne.",
       "dropConfirm": "Confirmer"
+    },
+    "support": {
+      "title": "Support client",
+      "intro": "Tes utilisateurs écrivent : bugs, questions, « ça marche pas ». Plus ils sont nombreux, plus la dette est haute et la prod instable, plus il y a de tickets. Sans réponse, la satisfaction baisse et ils partent ; contents, ils recommandent le produit.",
+      "satisfaction": "Satisfaction {{value}}/100",
+      "satisfactionLabel": "Satisfaction des utilisateurs",
+      "levels": {
+        "happy": "Ravis",
+        "ok": "Ça va",
+        "angry": "Furieux"
+      },
+      "churn": "Les utilisateurs partent {{percent}} % plus vite.",
+      "happy": "Ils recommandent le produit : +{{percent}} % de croissance et un peu de hype.",
+      "ok": "Au-dessus de {{threshold}}, ils recommanderaient le produit.",
+      "tickets": "{{backlog}} tickets en attente · {{perDay}} par jour ouvré · {{capacity}} traités par jour",
+      "agents_one": "{{count}} agent de support",
+      "agents_other": "{{count}} agents de support",
+      "agentInfo": "{{salary}} par mois chacun, {{capacity}} tickets par jour, {{max}} au plus dans cette phase",
+      "hire": "Embaucher un agent",
+      "fire": "Remercier un agent",
+      "monthly": "Salaires du support : {{price}} par mois",
+      "duty": "Devs de garde au support",
+      "duties": {
+        "NONE": "Aucun",
+        "LIGHT": "Un peu ({{percent}} %)",
+        "HEAVY": "Beaucoup ({{percent}} %)"
+      }
     }
   },
   "leave": {

@@ -28,6 +28,7 @@ import { leadershipEffects, NO_LEADERSHIP, type LeadershipEffects } from '../lea
 import { recordTaskDone, recordWork } from '../performance';
 import { checkDuplicateWork, dailyFocus, isTeamMeetingTime } from '../meetings';
 import { completeSpecialTask } from '../taskFlow';
+import { supportWorkFactor } from '../support';
 import { activeRetro, retroActive } from '../retro';
 import {
   NO_SKILL_EFFECTS,
@@ -82,6 +83,8 @@ export function productivity(
   rate *= 1 - state.gauges.debt / BALANCE.work.debtProductivityDivider;
   // Bureau sale (emballages, gobelets, pizzas…) : on travaille moins bien, sauf de chez soi.
   rate *= dirtMultiplier(state, devId);
+  // De garde au support client : une partie de la journée part en réponses aux tickets.
+  rate *= supportWorkFactor(state);
   // Product Owner : 4 réunions par jour, −10 % pour tout le monde (sauf écouteurs à réduction de bruit) ;
   // la salle de réunion rend ce malus plus léger (stand-up) ou plus lourd (brainstorming).
   // Avec un scrum master, ces réunions pèsent moitié moins.
