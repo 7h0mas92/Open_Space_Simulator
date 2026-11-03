@@ -112,6 +112,15 @@ export interface GameRecord {
   flow: FlowRecord;
   /** Mode Carrière : légende, jalons tenus et étoiles. */
   career?: { legend: CareerLegendId; done: string[]; stars: number };
+  /** Vie de l'équipe : jours de congé et d'arrêt, burn-out, démissions (absent des vieux rapports). */
+  teamLife?: TeamLifeRecord;
+}
+
+export interface TeamLifeRecord {
+  leaveDays: number;
+  sickDays: number;
+  burnoutLeaves: number;
+  resignations: number;
 }
 
 /** Mode Carrière : réussite de chaque légende et de chacun de ses jalons. */
@@ -184,6 +193,12 @@ export function playBalanceGame(
           },
         }
       : {}),
+    teamLife: {
+      leaveDays: state.stats.leaveDays,
+      sickDays: state.stats.sickDays,
+      burnoutLeaves: state.stats.burnoutLeaves,
+      resignations: state.stats.resignations,
+    },
     flow: {
       urgentDone: state.stats.urgentDone,
       urgentMissed: state.stats.urgentMissed,
@@ -283,6 +298,25 @@ export interface BalanceReport {
   flow: { bots: FlowSummary[]; objectives: ObjectiveRate[] };
   /** Mode Carrière, légende par légende (vide si aucune partie Carrière n'a été jouée). */
   career: CareerSummary[];
+  /** Vie de l'équipe par bot, en moyenne par partie (mode Normal). */
+  teamLife: TeamLifeSummary[];
+}
+
+export interface TeamLifeSummary extends TeamLifeRecord {
+  bot: BotName;
+}
+
+function summarizeTeamLife(bot: BotName, records: GameRecord[]): TeamLifeSummary {
+  const n = Math.max(1, records.length);
+  const mean = (pick: (life: TeamLifeRecord) => number) =>
+    records.reduce((total, record) => total + (record.teamLife ? pick(record.teamLife) : 0), 0) / n;
+  return {
+    bot,
+    leaveDays: mean((life) => life.leaveDays),
+    sickDays: mean((life) => life.sickDays),
+    burnoutLeaves: mean((life) => life.burnoutLeaves),
+    resignations: mean((life) => life.resignations),
+  };
 }
 
 export interface FlowSummary {
@@ -621,6 +655,12 @@ export function aggregate(allRecords: GameRecord[], cards: CardLibrary): Balance
       objectives: objectiveRates(records),
     },
     career: careerSummaries(allRecords),
+    teamLife: botNames.map((bot) =>
+      summarizeTeamLife(
+        bot,
+        records.filter((r) => r.bot === bot && r.mode === 'NORMAL'),
+      ),
+    ),
   };
 }
 
@@ -695,6 +735,20 @@ export function renderReport(report: BalanceReport): string {
     lines.push(
       `| ${b.bot} | ${b.funding.rounds.toFixed(2)} | ${pct(b.funding.successRate)} | ${pct(b.funding.annexShare)} | ${b.funding.financings.toFixed(2)} |`,
     );
+  }
+  if (report.teamLife.length > 0) {
+    lines.push('', '## Vie de l’équipe', '');
+    lines.push(
+      'Moyennes par partie en mode Normal : congés pris (posés et ponts), jours d’arrêt maladie, arrêts pour burn-out et démissions.',
+      '',
+      '| Bot | Jours de congé | Jours d’arrêt | Burn-out | Démissions |',
+      '| --- | ---: | ---: | ---: | ---: |',
+    );
+    for (const life of report.teamLife) {
+      lines.push(
+        `| ${life.bot} | ${life.leaveDays.toFixed(1)} | ${life.sickDays.toFixed(1)} | ${life.burnoutLeaves.toFixed(2)} | ${life.resignations.toFixed(2)} |`,
+      );
+    }
   }
   if (report.flow.bots.length > 0) {
     lines.push('', '## Tâches dynamiques', '');

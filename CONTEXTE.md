@@ -1,7 +1,7 @@
 # Contexte de passation
 
-> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Melvin) : offres internet et
-> température des salles des serveurs (PR #129) fusionnées dans `develop` au commit `7de22b1`.
+> **Dernière mise à jour : 2 novembre 2026**, par Claude (projet de Thomas) : team building
+> (tâche T5, 3e des 3 PR). Base : `develop` avec les congés (#149) et la rétrospective (#155).
 
 Ce fichier sert de relais entre **Thomas** (`7h0mas92`) et **Melvin** (`melvinvallot`), et entre
 leurs sessions Claude respectives. Il dit où en est le projet, ce qui est en cours, ce qui attend
@@ -68,10 +68,11 @@ identifiants cités sont ceux de développement local, déjà publics dans le d�
 | Mode **illimité** et classement des entreprises     | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #135) |
 | Offres internet et température des salles (#129)    | Melvin + Claude | Fusionné dans `develop` le 2 novembre (PR #129) |
 | Hall d'entrée, accueil et sécurité (#134)           | Melvin + Claude | Sur les abonnements, attend la validation       |
-| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | PR ouverte, 13 conflits résolus, à valider      |
+| Remettre `main` dans `develop` (T1)                 | Thomas + Claude | Fusionné dans `develop` (PR #148)               |
 | **Base de données sur Supabase** (production)       | Thomas + Claude | Fusionné le 2 novembre (PR #138)                |
-| Histoire longue, rivaux, arbres devs et R&D (T2-T4) | Thomas          | Proposition prête, rien de codé                 |
-| Congés, rétrospective, team building (T5)           | Thomas          | Idées validées à détailler                      |
+| **Arbre de compétences** des devs (T3)              | Thomas + Claude | PR #150 fusionnée dans `develop`                |
+| Histoire longue, rivaux, arbre R&D (T2, T4)         | Thomas          | Proposition prête, rien de codé                 |
+| Congés, rétrospective, team building (T5)           | Thomas + Claude | Fusionné le 2 novembre en une PR (#156)         |
 | Économie : modèle, B2B, support, marketing (M3)     | Melvin          | Idées, rien de codé                             |
 
 **Partage du 2 novembre** : Melvin garde les abonnements, le bureau et l'économie ; Thomas prend la
@@ -231,6 +232,10 @@ Les plus importantes ; le détail est dans `CLAUDE.md` et le README.
   graine à part (`seed#tasks#…`, `seed#meeting#tick`, `seed#pet#n`, `seed#web-roles#sprint`…).
   Sinon les replays, le Daily, les sauvegardes et les scores déjà enregistrés cassent. Les PR
   l'écrivent « aucun tirage » ou « graine à part ».
+- **Abonnements payés à la semaine** (fibre, ménage) : tick `paidUntil`, facture dans un système, ligne coupée si la trésorerie manque, coût mensuel ajouté au calcul des mois de trésorerie (`runwayMonths`).
+- **Bonus sans tirage** (arbre de compétences, encadrement) : sans le bonus, le multiplicateur
+  vaut exactement 1 (multiplier par 1 ne change aucun bit). Un bonus qui change une probabilité
+  garde le même appel `rng.chance(p)` avec un autre `p`, jamais un tirage de plus ou de moins.
 - **Nouveaux champs d'état** : optionnels ou `.default()` en Zod (anciennes sauvegardes) ; un
   identifiant d'objet renommé passe par une table de traduction (`LEGACY_FURNITURE_IDS`,
   `LEGACY_KITCHEN_ITEMS`).
@@ -292,6 +297,10 @@ Le plus récent en haut. Une ligne par travail terminé.
 | Date     | Qui             | PR                | Ce qui a changé / à savoir                                                                                                                                                                                                                                                                                                                                                                                |
 | -------- | --------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 02/11    | Melvin + Claude | #147              | Ménage branché sur le modèle commun d'abonnements : service « cleaning » (🧹), 3 offres, `SUBSCRIBE` / `CANCEL_SUBSCRIPTION` à la place de `SUBSCRIBE_CLEANING` / `CANCEL_CLEANING`, `cleaning.plan` retiré. `PRICE_RULES` : prix d'une offre qui suit la partie (ménage selon la taille du bureau).                                                                                                      |
+| 02/11    | Thomas + Claude | T5 (3/3)          | Team building : 5 sorties réservées en planification, effets à 18h le dernier jour, hasard sur `seed#teambuilding#sprint`. État `teamBuilding` par défaut. T5 terminée : les 3 PR empilées sont fusionnées ensemble par #156 (#149 et #155 fermées, incluses).                                                                                                                                            |
+| 02/11    | Thomas + Claude | T5 (2/3)          | Rétrospective de sprint : 3 actions selon les problèmes du sprint, vote des devs sur `seed#retro#sprint`, effet pendant un sprint. Passer la rétro ne coûte rien (écart avec la proposition, pour garder la partie identique). État `retro` par défaut. Bot « retro » : valorisation médiane 297 M€ contre 266 M€ pour « balanced ».                                                                      |
+| 02/11    | Thomas + Claude | T5 (1/3)          | Congés payés, 11 jours fériés, ponts de mai, arrêts maladie, burn-out au lieu de la démission. État `teamLife` (null = ancienne sauvegarde ou défi 3 sprints : rien ne change), hasard sur `seed#leave#jour`. Les replays des anciens scores Normal et Daily ne rejouent plus à l'identique (comme pour les autres mécaniques automatiques).                                                              |
+| 02/11    | Thomas + Claude | #150              | Tâche T3 : arbre de compétences des devs (1 point par niveau, 3 branches de 5 nœuds, nœud de métier, formations, réinitialisation, Crunch), ouvert partout sauf en Daily. Commandes `LEARN_SKILL`, `RESET_SKILLS`, `TRAIN_DEV`, `USE_CRUNCH`, composant `skills`. Aucun tirage : 48 parties sans arbre identiques à `develop`. Bot « coach ». Fichiers communs : `state.ts`, `bots.ts`, `view/*`, i18n.   |
 | 02/11    | Melvin + Claude | #129              | Internet de la salle des serveurs branché sur les abonnements : 6 offres aux prix réels, capacité en salariés (`maxUsers`), mise en service (`setupFee`), saturation. Température des salles (chaleur et clim en kW, sonde de supervision). Champs `saturated` et `serverHeat` par défaut, aucun tirage. Un champ ajouté à l'état initial suit l'ordre du schéma Zod, sinon le test de sauvegarde échoue. |
 | 02/11    | Melvin + Claude | #127, #140        | Toile du projecteur toute blanche quand elle monte ou descend (plus de cadre noir, `FABRIC_WHITE`), état d'avancement et README à jour.                                                                                                                                                                                                                                                                   |
 | 02/11    | Thomas + Claude | #148              | Tâche T1 : `main` réintégré dans `develop` (merge commit). 13 conflits résolus en gardant les deux côtés : Carrière et Illimité, trésorerie de la légende multipliée par `difficultyOf`, ménage et abonnements à côté de `career`, succès de l'Illimité et de la Carrière (70). Carrière ajoutée à `GLOBAL_EXCLUDED_MODES`.                                                                               |

@@ -26,6 +26,9 @@ import {
   fundingTier,
   fundingTierIndex,
   TIME,
+  OUTINGS,
+  OUTING_DEFINITIONS,
+  TEAM_BUILDING,
   VENTURES,
   birthdayFromKey,
   civilFromDays,
@@ -66,11 +69,24 @@ import {
   type SubscriptionOffer,
   careerLegend,
   careerMilestoneLabel,
+  SKILL_BRANCHES,
+  TRAININGS,
+  branchNodes,
+  isRoleSkill,
+  skillsEnabled,
 } from '@oss/shared';
 import { careerMetricValue } from '../simulation/career';
 import { wallOffice } from '../simulation/walls';
 import { completedSprints, missionProgress } from '../simulation/story';
 import { hasUnlock } from '../simulation/unlocks';
+import {
+  hasSkill,
+  hasSkillTree,
+  isCrunching,
+  resetCost,
+  skillBlocker,
+  skillPoints,
+} from '../simulation/skills';
 import { officeLayout, settleFixtures, type Fixture } from './layout';
 import { badEffectFactor, escalate } from '../events/effects';
 import { portfolioValue, runwayMonths } from '../simulation/economy';
@@ -108,6 +124,9 @@ import {
 } from '../simulation/ventures';
 import { adoptionBlocker, missingPetNeeds, petEquipment } from '../simulation/pets';
 import { leavingAtSprint } from '../simulation/raises';
+import { holidayOf, leaveSlots, sprintHasBridge } from '../simulation/teamLife';
+import { activeRetro, retroWinner } from '../simulation/retro';
+import { outingBlocker, outingPrice } from '../simulation/teamBuilding';
 import { visitPrice } from '../simulation/cleaning';
 import {
   offerLoad,
@@ -124,10 +143,14 @@ import {
   serverRoomStatuses,
 } from '../simulation/serverRoom';
 import type {
+  AbsenceView,
+  TeamBuildingView,
+  RetroView,
   StoryView,
   CandidateView,
   DevActivity,
   DevView,
+  DevSkillsView,
   PerformanceView,
   PitchAnswerView,
   PitchArgumentView,
@@ -264,6 +287,47 @@ export function performanceView(
   };
 }
 
+/** Arbre de compétences d'un dev, prêt à afficher (null : pas d'arbre pour lui ici). */
+function devSkillsView(state: GameState, id: string): DevSkillsView | null {
+  const role = state.components.identity[id]?.role;
+  if (!role || !skillsEnabled(state.mode) || !hasSkillTree(state, id)) return null;
+  const points = skillPoints(state, id);
+  const skills = state.components.skills[id];
+  const crunchLearned = hasSkill(state, id, 'crunch');
+  return {
+    ...points,
+    branches: SKILL_BRANCHES.map((branch) => ({
+      branch,
+      nodes: branchNodes(branch, role).map((node) => {
+        const blocker = skillBlocker(state, id, node.id);
+        return {
+          id: node.id,
+          icon: node.icon,
+          name: node.name,
+          effect: node.effect,
+          status: blocker === 'LEARNED' ? 'LEARNED' : blocker === null ? 'AVAILABLE' : 'LOCKED',
+          roleNode: isRoleSkill(node.id),
+          active: node.active === true,
+        };
+      }),
+    })),
+    trainedThisSprint: skills?.trainedSprint === state.sprint,
+    trainings: TRAININGS.map(({ kind, icon, name, effect, price }) => ({
+      kind,
+      icon,
+      name,
+      effect,
+      price,
+    })),
+    resetCost: resetCost(state, id),
+    crunch: {
+      learned: crunchLearned,
+      ready: crunchLearned && state.stage === 'EXECUTION' && skills?.crunchSprint !== state.sprint,
+      active: isCrunching(state, id),
+    },
+  };
+}
+
 function devView(state: GameState, id: string): DevView | null {
   const c = state.components;
   const identity = c.identity[id];
@@ -313,6 +377,68 @@ function devView(state: GameState, id: string): DevView | null {
         }
       : null,
     leavingAtSprint: leavingAtSprint(state, id),
+    absence: absenceView(state, id),
+    leave:
+      state.teamLife && identity.role !== 'GHOST' && identity.role !== 'AI_AGENT'
+        ? (state.teamLife.leave[id] ?? 0)
+        : null,
+    skills: devSkillsView(state, id),
+  };
+}
+
+function teamBuildingView(state: GameState): TeamBuildingView {
+  const booked = state.teamBuilding.booked;
+  const last = state.teamBuilding.last;
+  return {
+    booked:
+      booked && booked.sprint === state.sprint
+        ? { outing: booked.outing, cost: booked.cost }
+        : null,
+    outings: OUTINGS.map((id) => {
+      const outing = OUTING_DEFINITIONS[id];
+      const days = outing.endDay - outing.startDay;
+      return {
+        id,
+        icon: outing.icon,
+        phase: outing.phase,
+        price: outingPrice(state, outing),
+        blocker: outingBlocker(state, outing),
+        repeat: last?.outing === id && last.sprint === state.sprint - 1,
+        moral: outing.moral,
+        hoursLost: Math.max(0, TEAM_BUILDING.endHour - outing.startHour) + days * 9,
+      };
+    }),
+    count: state.teamBuilding.count,
+  };
+}
+
+function retroView(state: GameState): RetroView | null {
+  const pending = state.retro.pending;
+  if (!pending || pending.sprint !== state.sprint || state.stage !== 'PLANNING') return null;
+  return {
+    options: pending.options.map((action) => ({
+      action,
+      voters: Object.entries(pending.votes)
+        .filter(([id, vote]) => vote === action && state.components.identity[id])
+        .map(([id]) => id),
+    })),
+    winner: retroWinner(pending.options, pending.votes),
+  };
+}
+
+function absenceView(state: GameState, id: string): AbsenceView | null {
+  const absence = state.teamLife?.absences[id];
+  if (!absence) return null;
+  const today = getClock(state).day;
+  const sprintStart = (state.sprint - 1) * TIME.daysPerSprint;
+  const offset = absence.from - sprintStart;
+  return {
+    kind: absence.kind,
+    days: absence.days,
+    // En planification, un congé qui commence lundi n'a pas encore commencé (il s'annule).
+    started: absence.from <= today && !(state.stage === 'PLANNING' && offset === 0),
+    week: absence.kind === 'LEAVE' && offset >= 0 ? (offset >= 7 ? 1 : 0) : null,
+    returnDate: civilFromDays(calendarDay(state, absence.until)),
   };
 }
 
@@ -481,6 +607,9 @@ function candidateViews(state: GameState): CandidateView[] {
         performance: performanceView(candidate.identity, candidate.stats, 1),
         career: null,
         leavingAtSprint: null,
+        absence: null,
+        leave: null,
+        skills: null,
       },
     }));
 }
@@ -1006,6 +1135,7 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
       date: civilFromDays(today),
       seasons: seasonsAt(today),
       birthdays: birthdayPartyIds(state, clock.day),
+      holiday: holidayOf(state, clock.day),
     },
     phase: state.phase,
     step: state.stage,
@@ -1021,6 +1151,16 @@ export function toGameView(state: GameState, context: ViewContext): GameView {
     devs: devIds(state)
       .map((id) => devView(state, id))
       .filter((dev): dev is DevView => dev !== null),
+    teamBuilding: teamBuildingView(state),
+    retro: retroView(state),
+    retroAction: activeRetro(state),
+    teamLife: state.teamLife
+      ? {
+          slots: leaveSlots(state),
+          bridge: sprintHasBridge(state),
+          bridgesRefused: state.teamLife.bridgesRefusedSprint === state.sprint,
+        }
+      : null,
     leadership: leadershipView(state),
     tasks: taskViews(state),
     candidates: candidateViews(state),
@@ -1214,6 +1354,23 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'ANSWER_ACQUISITION', accept: command.accept };
     case 'answerRaise':
       return { type: 'ANSWER_RAISE', accept: command.accept };
+    case 'bookLeave':
+      return {
+        type: 'BOOK_LEAVE',
+        devId: command.devId,
+        week: command.week,
+        days: Math.min(5, Math.max(1, Math.round(command.days))),
+      };
+    case 'cancelLeave':
+      return { type: 'CANCEL_LEAVE', devId: command.devId };
+    case 'refuseBridges':
+      return { type: 'REFUSE_BRIDGES', refuse: command.refuse };
+    case 'holdRetro':
+      return { type: 'HOLD_RETRO', action: command.action };
+    case 'bookTeamBuilding':
+      return { type: 'BOOK_TEAM_BUILDING', outing: command.outing };
+    case 'cancelTeamBuilding':
+      return { type: 'CANCEL_TEAM_BUILDING' };
     case 'launchIpo':
       return { type: 'LAUNCH_IPO' };
     case 'foundVenture':
@@ -1243,5 +1400,13 @@ export function toCommand(command: GameCommand, view: GameView): Command | null 
       return { type: 'CANCEL_SUBSCRIPTION', service: command.service };
     case 'callCleaning':
       return { type: 'CALL_CLEANING', express: command.express };
+    case 'learnSkill':
+      return { type: 'LEARN_SKILL', devId: command.devId, skill: command.skill };
+    case 'resetSkills':
+      return { type: 'RESET_SKILLS', devId: command.devId };
+    case 'trainDev':
+      return { type: 'TRAIN_DEV', devId: command.devId, kind: command.kind };
+    case 'useCrunch':
+      return { type: 'USE_CRUNCH', devId: command.devId };
   }
 }

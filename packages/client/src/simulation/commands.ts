@@ -24,13 +24,17 @@ import { clearMeetingRoom, fitMeetingRoom } from './meetings';
 import { adoptPet, rehomePet } from './pets';
 import { switchProjector } from './projection';
 import { answerRaise } from './raises';
-import { cancelSubscription, subscribe } from './subscriptions';
+import { bookLeave, cancelLeave, refuseBridges } from './teamLife';
+import { holdRetro } from './retro';
+import { bookTeamBuilding, cancelTeamBuilding } from './teamBuilding';
 import { callCleaning } from './cleaning';
+import { cancelSubscription, subscribe } from './subscriptions';
 import { endDemo, startSprint } from './sprint';
 import { assignTask, moveAllToTodo, moveTask } from './tasks';
 import { foundVenture, sellVenture } from './ventures';
 import { coverFloor } from './floors';
 import { coverWall } from './walls';
+import { learnSkill, resetSkills, trainDev, startCrunch } from './skills';
 
 const fail = (error: Extract<CommandResult, { ok: false }>['error']): CommandResult => ({
   ok: false,
@@ -170,6 +174,18 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
     }
     case 'ANSWER_RAISE':
       return answerRaise(state, ctx, command.accept);
+    case 'BOOK_LEAVE':
+      return bookLeave(state, command.devId, command.week, command.days);
+    case 'CANCEL_LEAVE':
+      return cancelLeave(state, command.devId);
+    case 'REFUSE_BRIDGES':
+      return refuseBridges(state, command.refuse);
+    case 'HOLD_RETRO':
+      return holdRetro(state, ctx, command.action);
+    case 'BOOK_TEAM_BUILDING':
+      return bookTeamBuilding(state, ctx, command.outing);
+    case 'CANCEL_TEAM_BUILDING':
+      return cancelTeamBuilding(state);
     case 'LAUNCH_IPO':
       if (state.stage !== 'PLANNING' && state.stage !== 'DEMO') return fail('WRONG_STAGE');
       if (state.phase !== 'UNICORN' || state.gauges.stability < BALANCE.phases.ipoMinStability) {
@@ -199,5 +215,13 @@ export function applyCommand(state: GameState, ctx: SimContext, command: Command
       return cancelSubscription(state, ctx, command.service);
     case 'CALL_CLEANING':
       return callCleaning(state, ctx, command.express);
+    case 'LEARN_SKILL':
+      return learnSkill(state, ctx, command.devId, command.skill);
+    case 'RESET_SKILLS':
+      return resetSkills(state, ctx, command.devId);
+    case 'TRAIN_DEV':
+      return trainDev(state, ctx, command.devId, command.kind);
+    case 'USE_CRUNCH':
+      return startCrunch(state, ctx, command.devId);
   }
 }
