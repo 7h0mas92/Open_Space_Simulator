@@ -265,8 +265,6 @@ export function taskTrade(task: Pick<Task, 'trade'>): TaskTrade {
   return task.trade ?? 'DEV';
 }
 
-export const ROTATIONS = [0, 1, 2, 3] as const;
-
 /**
  * Pas de la grille du mode construction : un objet se pose ou se déplace d'une demi-case. Les
  * anciennes positions (entières) restent valides. Les murs fins et les fenêtres restent sur des

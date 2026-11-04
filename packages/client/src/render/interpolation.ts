@@ -3,10 +3,9 @@
  * dernier instantané. C'est ce qui rend le x4 fluide même si la logique avance par pas fixes.
  */
 import type { AgentSnapshot } from '../ai/agents';
+import { lerp } from '../engine/interpolation';
 
-export function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
-}
+export { lerp };
 
 /** Interpolation d'angle par le plus court chemin. */
 export function lerpAngle(a: number, b: number, t: number): number {

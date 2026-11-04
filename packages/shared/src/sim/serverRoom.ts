@@ -201,10 +201,6 @@ export const FIBRE_PLANS: readonly FibrePlan[] = [
   },
 ];
 
-export function getFibrePlan(id: FibrePlanId): FibrePlan {
-  return FIBRE_PLANS.find((plan) => plan.id === id) ?? (FIBRE_PLANS[0] as FibrePlan);
-}
-
 /** Prix prélevé chaque semaine de jeu : le prix mensuel au prorata de 7 jours sur 30. */
 export function weeklyPrice(plan: FibrePlan): number {
   return Math.round((plan.monthlyPrice * 7) / 30);
@@ -293,10 +289,6 @@ export type FibreSubscription = z.infer<typeof FibreSubscriptionSchema>;
 
 export function isServerRoom(itemId: string): boolean {
   return getFurniture(itemId)?.serverRoom === true;
-}
-
-export function serverGearKind(itemId: string): ServerGearKind | undefined {
-  return getFurniture(itemId)?.serverGear;
 }
 
 /** Un objet posé, tel que le voient la simulation et l'interface. */
