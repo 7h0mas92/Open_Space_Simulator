@@ -388,7 +388,8 @@
       "success": "Goal reached: {{goal}}. Bonus cashed in: {{money}}.",
       "failed": "Goal missed: {{goal}} ({{value}} / {{target}}).",
       "failedOutage": "Goal missed: {{goal}} ({{count}} outage(s))."
-    }
+    },
+    "overload": "Sprint overloaded: {{planned}} tasks planned for about {{capacity}} doable before the demo. The team may not finish everything."
   },
   "team": {
     "age": "{{age}} y/o",

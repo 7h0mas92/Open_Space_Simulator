@@ -5148,3 +5148,11 @@ button.skill-node.available {
   margin: 0.15rem 0 0;
   font-size: 0.8rem;
 }
+
+.start-sprint.overloaded::after {
+  content: ' ⚠️';
+}
+
+.kanban-overload {
+  margin: 0 0 0.5rem;
+}

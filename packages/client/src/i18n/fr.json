@@ -388,7 +388,8 @@
       "success": "Objectif atteint : {{goal}}. Bonus encaissé : {{money}}.",
       "failed": "Objectif raté : {{goal}} ({{value}} / {{target}}).",
       "failedOutage": "Objectif raté : {{goal}} ({{count}} panne(s))."
-    }
+    },
+    "overload": "Sprint trop chargé : {{planned}} tâches prévues pour environ {{capacity}} faisables d’ici la démo. L’équipe risque de ne pas tout finir."
   },
   "team": {
     "age": "{{age}} ans",

@@ -1,4 +1,5 @@
 import { dirtLevel } from '../cleaning/Cleaning';
+import { sprintOverloaded } from '../kanban/Kanban';
 import {
   SEASONS,
   SPEEDS,
@@ -385,11 +386,20 @@ export function StepControls({ view }: { view: GameView }) {
   const { time } = view;
   const setSpeed = (speed: Speed) => void dispatch({ type: 'setSpeed', speed });
   if (view.step === 'PLANNING') {
+    const overloaded = sprintOverloaded(view.sprintLoad);
     return (
       <div className="step-controls planning-actions" data-tutorial="speed">
         <button
           type="button"
-          className="primary start-sprint"
+          className={`primary start-sprint${overloaded ? ' overloaded' : ''}`}
+          title={
+            overloaded
+              ? t('kanban.overload', {
+                  planned: view.sprintLoad.planned,
+                  capacity: view.sprintLoad.capacity,
+                })
+              : undefined
+          }
           onClick={() => void dispatch({ type: 'startSprint' })}
           data-tutorial="start"
         >

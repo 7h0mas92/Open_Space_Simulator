@@ -82,6 +82,15 @@ export function Kanban({ view }: { view: GameView }) {
           planned: view.sprintLoad.planned,
         })}
       </p>
+      {view.step === 'PLANNING' && sprintOverloaded(view.sprintLoad) && (
+        <p className="warning kanban-overload" role="status">
+          <span aria-hidden="true">⚠️ </span>
+          {t('kanban.overload', {
+            planned: view.sprintLoad.planned,
+            capacity: view.sprintLoad.capacity,
+          })}
+        </p>
+      )}
       <div className="kanban-toolbar">
         <p className="hint">{t('kanban.dragHint')}</p>
         {backlogCount > 0 && (
@@ -304,4 +313,12 @@ function TaskCard({ task, view, dragging, previous, next, onMove, handlers }: Ta
       </div>
     </article>
   );
+}
+
+/**
+ * Sprint irréaliste : nettement plus de tâches prévues que l'équipe ne peut en finir d'ici la
+ * démo (plus d'un quart au-delà). Une marge en dessous ne gêne pas : d'autres tâches arrivent.
+ */
+export function sprintOverloaded(load: GameView['sprintLoad']): boolean {
+  return load.planned > Math.ceil(load.capacity * 1.25);
 }
