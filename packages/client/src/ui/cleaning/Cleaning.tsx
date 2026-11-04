@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import type { CleaningView, GameView } from '../../view/types';
 import { formatMoney } from '../game/format';
 import { useGame } from '../store/game';
-import { ServiceSubscription } from '../subscriptions/Subscriptions';
 
 /*
  * Panneau « Ménage » (bouton 🧹 en haut de l'écran) : la saleté du bureau et ce qu'elle coûte en
@@ -57,7 +56,6 @@ export function Cleaning({ view }: { view: GameView }) {
       </section>
 
       <Crew view={view} />
-      <ServiceSubscription view={view} service="cleaning" />
     </div>
   );
 }

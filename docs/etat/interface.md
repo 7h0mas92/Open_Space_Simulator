@@ -29,3 +29,4 @@
 
 - Raccourcis 1/2/4 (vitesse), K (Kanban), T (équipe) et liste des raccourcis dans les options ; alerte « sprint trop chargé » au Kanban et sur le bouton de lancement ; démo : résultat net et dev du sprint (#171).
 - Interface réorganisée : onglet « Locaux » (abonnements, hall, serveurs, ménage, chats) dans le dock, Stats dans la barre du haut, Business en trois onglets (prix, clients, support), catalogue de construction en 4 familles + inventaire.
+- Un seul accès par élément : les abonnements (internet, sécurité, ménage…) ne se gèrent plus que dans Locaux > Abonnements ; le hall, les serveurs et les chats ne s'ouvrent plus depuis le catalogue de construction (seulement depuis Locaux) ; le ménage garde son bouton jauge dans la barre du haut et sort de Locaux.

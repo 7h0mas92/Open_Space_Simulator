@@ -11,7 +11,6 @@ const ROOMS = [
   'subscriptions',
   'lobby',
   'servers',
-  'cleaning',
   'pets',
 ] as const satisfies readonly PanelId[];
 

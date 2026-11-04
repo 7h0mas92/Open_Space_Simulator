@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import type { GameView } from '../../view/types';
 import { formatMoney } from '../game/format';
 import { useGame } from '../store/game';
-import { ServiceSubscription } from '../subscriptions/Subscriptions';
 
 /*
  * Panneau « Hall d'entrée » (ouvert depuis le rayon Accueil du mode construction, ou en
@@ -13,19 +12,10 @@ import { ServiceSubscription } from '../subscriptions/Subscriptions';
 
 export function Lobby({ view }: { view: GameView }) {
   const { t } = useTranslation();
-  const openPanel = useGame((s) => s.openPanel);
   return (
     <div className="servers-panel lobby-panel">
       <p className="hint">{t('lobby.intro')}</p>
       {view.lobby.built ? <Reception view={view} /> : <Build view={view} />}
-      <ServiceSubscription view={view} service="security" />
-      <button
-        type="button"
-        onClick={() => openPanel('subscriptions')}
-        data-testid="lobby-open-subscriptions"
-      >
-        🧾 {t('subscriptions.manageAll')}
-      </button>
     </div>
   );
 }
