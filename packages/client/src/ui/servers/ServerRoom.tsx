@@ -44,7 +44,6 @@ export function ServerRoom({ view }: { view: GameView }) {
           })}
         </p>
       </section>
-
     </div>
   );
 }

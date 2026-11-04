@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { PANEL_ICONS } from '../game/Hud';
 import { useGame, type PanelId } from '../store/game';
 
-const ROOMS = [
+/** Panneaux ouverts depuis Locaux : leur en-tête propose une flèche retour. */
+export const PREMISES_ROOMS = [
   'subscriptions',
   'lobby',
   'servers',
@@ -19,7 +20,7 @@ export function Premises() {
   const openPanel = useGame((s) => s.openPanel);
   return (
     <ul className="premises">
-      {ROOMS.map((id) => (
+      {PREMISES_ROOMS.map((id) => (
         <li key={id}>
           <button type="button" data-testid={`premises-${id}`} onClick={() => openPanel(id)}>
             <span aria-hidden="true">{PANEL_ICONS[id]}</span>

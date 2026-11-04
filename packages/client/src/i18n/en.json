@@ -2826,6 +2826,7 @@
     "lobby": "Reception, security and receptionists.",
     "servers": "Racks, cooling and fibre box.",
     "cleaning": "Office dirt and cleaning visits.",
-    "pets": "The office cats and their needs."
+    "pets": "The office cats and their needs.",
+    "back": "Back to premises"
   }
 }

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { modeRules, type Speed } from '@oss/shared';
+import { PREMISES_ROOMS } from '../premises/Premises';
 import { useTranslation } from 'react-i18next';
 import { BuildMode } from '../build/BuildMode';
 import { CareerPanel } from '../career/CareerPanel';
@@ -289,6 +290,9 @@ export function GameScreen() {
           title={t(`panels.${panel}`)}
           icon={PANEL_ICONS[panel]}
           onClose={() => openPanel(null)}
+          {...((PREMISES_ROOMS as readonly string[]).includes(panel)
+            ? { onBack: () => openPanel('premises'), backLabel: t('premises.back') }
+            : {})}
         >
           <PanelContent panel={panel} view={view} />
         </Sheet>
