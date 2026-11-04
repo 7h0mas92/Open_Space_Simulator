@@ -1579,6 +1579,7 @@ input[type='range'] {
 
 .catalog-tabs {
   display: flex;
+  flex: none;
   gap: 4px;
   /* Dix onglets : quand ils ne tiennent pas, la rangée défile au lieu de tasser les libellés. */
   overflow-x: auto;
@@ -1725,6 +1726,16 @@ input[type='range'] {
   gap: 8px;
   min-width: 0;
   min-height: 0;
+}
+
+/* Familles et rayons gardent leur hauteur ; c'est le contenu du rayon qui défile. */
+.catalog > [role='tabpanel'] {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.walls-panel > * {
+  flex: none;
 }
 
 .wall-zones {
@@ -2420,6 +2431,7 @@ legend {
 
   .catalog {
     flex: 1;
+    overflow: hidden;
   }
 
   .catalog-tabs .catalog-tab-label {
