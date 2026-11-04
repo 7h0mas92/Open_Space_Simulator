@@ -39,7 +39,12 @@ Les plus importantes ; le détail est dans `docs/etat/` et le README.
   (`GridPositionSchema`). Murs fins et fenêtres restent entiers (`snapsToHalf`, `canPlace`). Pour
   une emprise, utiliser `itemBounds` (bords) ou `itemCells` (cases chevauchées) de `ai/grid.ts`,
   jamais `x + dx` sur des entiers ; un mur fin ne compte que par son trait (`segmentCrosses`).
-- **Nouveau mode de jeu** : l'ajouter à `GAME_MODES`, à l'enum Prisma `GameMode` (migration
+- **Règles d'un mode** (pause, cartes qui arrêtent le temps, construction, guide, compétences,
+  récompenses Histoire, menu) : toujours via `modeRules(mode)` / `MODE_RULES` (`shared/game.ts`),
+  jamais `mode === 'HARDCORE'`.
+- **Graine annexe** : toujours `sideRng(state.seed, '<flux>', …)` avec un flux de `SIDE_STREAMS`
+  (`simulation/rng.ts`), jamais une graine écrite à la main.
+- **Nouveau mode de jeu** : l'ajouter à `GAME_MODES` et à `MODE_RULES`, à l'enum Prisma `GameMode` (migration
   `ALTER TYPE`), à `MODE_ICONS`, à `ALL_BUT` de `lessons.ts` (avec ses étapes `rules`) et au
   test des onglets du classement. Un réglage propre à une partie peut s'écrire dans la graine
   (comme `career:<légende>:<graine>`) : le rejeu serveur le retrouve sans changer l'API.
