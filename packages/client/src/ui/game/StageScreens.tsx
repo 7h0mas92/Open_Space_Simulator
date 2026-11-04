@@ -100,8 +100,11 @@ function Dialog({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (focusDialog) ref.current?.focus();
-    else ref.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus();
+    if (focusDialog) ref.current?.focus({ preventScroll: true });
+    else
+      ref.current
+        ?.querySelector<HTMLButtonElement>('button:not([disabled])')
+        ?.focus({ preventScroll: true });
   }, [title, focusDialog]);
   return (
     <div className="stage-backdrop">
@@ -599,9 +602,13 @@ function DemoScreen({ view }: { view: GameView }) {
             <>
               <h3>{t('demo.feedback')}</h3>
               <ul className="feedback">
-                {report.feedback.map((line, index) => (
-                  <li key={index}>{localized(line, i18n.language)}</li>
-                ))}
+                {/* Deux tirages peuvent tomber sur la même phrase : on ne l'affiche qu'une fois
+                    (affichage seul, pour ne rien changer aux tirages de la partie). */}
+                {[...new Set(report.feedback.map((line) => localized(line, i18n.language)))].map(
+                  (line) => (
+                    <li key={line}>{line}</li>
+                  ),
+                )}
               </ul>
             </>
           )}
