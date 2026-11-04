@@ -206,16 +206,25 @@ export class LobbyRenderer {
     }
   }
 
+  private seatItems: LobbyScene['items'] | null = null;
+  private seats: { at: THREE.Vector3; rotation: number }[] = [];
+
+  /** Places de l'accueil, recalculées seulement quand les objets posés changent. */
+  private seatsFor(items: LobbyScene['items']): { at: THREE.Vector3; rotation: number }[] {
+    if (items === this.seatItems) return this.seats;
+    this.seatItems = items;
+    this.seats = items
+      .filter((item) => item.kind === RECEPTION_DESK_ID && !item.host)
+      // Le comptoir offert avec le hall d'abord, puis ceux de la boutique.
+      .sort((a, b) => Number(b.id.startsWith('annex:')) - Number(a.id.startsWith('annex:')))
+      .flatMap((desk) => receptionSeats(desk).map((at) => ({ at, rotation: desk.rotation })));
+    return this.seats;
+  }
+
   /** Place le personnel selon l'heure, la formule de sécurité et les comptoirs posés. */
   sync(scene: LobbyScene): void {
     const { lobby } = scene;
-    const desks = scene.items
-      .filter((item) => item.kind === RECEPTION_DESK_ID && !item.host)
-      // Le comptoir offert avec le hall d'abord, puis ceux de la boutique.
-      .sort((a, b) => Number(b.id.startsWith('annex:')) - Number(a.id.startsWith('annex:')));
-    const seats = desks.flatMap((desk) =>
-      receptionSeats(desk).map((at) => ({ at, rotation: desk.rotation })),
-    );
+    const seats = this.seatsFor(scene.items);
     const open = lobby.built && receptionOpen(scene.minute, scene.weekday);
     this.receptionists.forEach((staff, index) => {
       const seat = seats[index];
