@@ -765,7 +765,8 @@
   },
   "dashboard": {
     "intro": "Gauge history, one point per day.",
-    "noData": "No history yet: start a sprint."
+    "noData": "No history yet: start a sprint.",
+    "sinceStart": "Since the start: {{value}}"
   },
   "settings": {
     "quality": "Graphics quality",
@@ -811,7 +812,8 @@
       "escape": "Escape: go back",
       "answer": "1 and 2: answer a card",
       "undo": "Ctrl+Z: undo the last placement or move"
-    }
+    },
+    "colorBlind": "Colour-blind palette (blue and orange)"
   },
   "credits": {
     "title": "Credits",

@@ -105,6 +105,14 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
         />
         {t('settings.showFps')}
       </label>
+      <label className="switch">
+        <input
+          type="checkbox"
+          checked={settings.colorBlind}
+          onChange={(e) => settings.update({ colorBlind: e.target.checked })}
+        />
+        {t('settings.colorBlind')}
+      </label>
       <fieldset>
         <legend>{t('settings.audio')}</legend>
         {VOLUME_KEYS.map((key) => (

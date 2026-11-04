@@ -31,6 +31,7 @@ export function Dashboard({ view }: { view: GameView }) {
         {GAUGES.map((name: GaugeName) => {
           const values = view.history.map((entry) => entry[name]);
           const last = values.at(-1) ?? 0;
+          const change = last - (values[0] ?? 0);
           return (
             <li key={name} className={`chart chart-${name}`}>
               <h3>
@@ -48,6 +49,11 @@ export function Dashboard({ view }: { view: GameView }) {
                   strokeLinejoin="round"
                 />
               </svg>
+              <p className={`chart-change ${change >= 0 ? 'up' : 'down'}`}>
+                {t('dashboard.sinceStart', {
+                  value: `${change >= 0 ? '+' : '−'}${formatGauge(name, Math.abs(change), i18n.language)}`,
+                })}
+              </p>
             </li>
           );
         })}

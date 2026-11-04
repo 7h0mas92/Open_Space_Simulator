@@ -765,7 +765,8 @@
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
-    "noData": "Pas encore d'historique : lance un sprint."
+    "noData": "Pas encore d'historique : lance un sprint.",
+    "sinceStart": "Depuis le début : {{value}}"
   },
   "settings": {
     "quality": "Qualité graphique",
@@ -811,7 +812,8 @@
       "escape": "Échap : revenir en arrière",
       "answer": "1 et 2 : répondre à une carte",
       "undo": "Ctrl+Z : annuler la dernière pose ou le dernier déplacement"
-    }
+    },
+    "colorBlind": "Couleurs pour daltoniens (bleu et orange)"
   },
   "credits": {
     "title": "Crédits",

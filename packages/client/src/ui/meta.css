@@ -957,7 +957,7 @@
 }
 
 .story-chapter.complete {
-  border-left: 4px solid #7ddc98;
+  border-left: 4px solid var(--good);
 }
 
 .story-chapter header h2 {
@@ -998,7 +998,7 @@
 }
 
 .mission-done {
-  --mission-color: #7ddc98;
+  --mission-color: var(--good);
 }
 
 /* Mission verrouillée : bordure en pointillés, icône grisée, texte toujours lisible (AA). */
@@ -1028,7 +1028,7 @@
 }
 
 .mission-status-done {
-  color: #7ddc98;
+  color: var(--good);
 }
 
 .mission-status-available {
@@ -1095,7 +1095,7 @@
 }
 
 .mission-goal.met {
-  color: #7ddc98;
+  color: var(--good);
 }
 
 .mission-goal.broken {
@@ -1154,7 +1154,7 @@
 }
 
 .reward-card.owned {
-  border-left: 4px solid #7ddc98;
+  border-left: 4px solid var(--good);
 }
 
 .reward-card.locked {
@@ -1367,7 +1367,7 @@
 }
 
 .act-past {
-  border-bottom-color: #7ddc98;
+  border-bottom-color: var(--good);
   opacity: 1;
 }
 
@@ -1422,7 +1422,7 @@
 }
 
 .campaign-side-goal.side-done {
-  border-left-color: #7ddc98;
+  border-left-color: var(--good);
 }
 
 .campaign-side-goal.side-missed {
