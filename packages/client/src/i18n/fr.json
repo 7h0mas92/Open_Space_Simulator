@@ -725,7 +725,9 @@
     "monitor": "Écran",
     "storyLocked": "🔒 Récompense du mode Histoire : réussis sa mission pour l’acheter.",
     "storyLockedMode": "🔒 Récompense du mode Histoire, indisponible dans ce mode.",
-    "storyLockedPrestige": "🏆 Prestige : remplis l’objectif de l’histoire qui donne cette récompense."
+    "storyLockedPrestige": "🏆 Prestige : remplis l’objectif de l’histoire qui donne cette récompense.",
+    "undoMove": "Déplacement annulé.",
+    "undoPlace": "Pose annulée : l’objet est rangé dans l’inventaire."
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -807,7 +809,8 @@
       "arrows": "Flèches : déplacer l'objet en main",
       "enter": "Entrée : poser l'objet",
       "escape": "Échap : revenir en arrière",
-      "answer": "1 et 2 : répondre à une carte"
+      "answer": "1 et 2 : répondre à une carte",
+      "undo": "Ctrl+Z : annuler la dernière pose ou le dernier déplacement"
     }
   },
   "credits": {

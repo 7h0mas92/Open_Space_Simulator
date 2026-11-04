@@ -169,6 +169,7 @@ const SHORTCUTS = [
   'rotate',
   'arrows',
   'enter',
+  'undo',
   'escape',
   'answer',
 ] as const;

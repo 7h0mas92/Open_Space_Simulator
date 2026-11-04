@@ -725,7 +725,9 @@
     "monitor": "Monitor",
     "storyLocked": "🔒 Story mode reward: complete its mission to buy it.",
     "storyLockedMode": "🔒 Story mode reward, not available in this mode.",
-    "storyLockedPrestige": "🏆 Prestige: complete the story goal that awards this reward."
+    "storyLockedPrestige": "🏆 Prestige: complete the story goal that awards this reward.",
+    "undoMove": "Move undone.",
+    "undoPlace": "Placement undone: the item is back in your inventory."
   },
   "results": {
     "INVALID_COMMAND": "That can't be done.",
@@ -807,7 +809,8 @@
       "arrows": "Arrows: move the held item",
       "enter": "Enter: place the item",
       "escape": "Escape: go back",
-      "answer": "1 and 2: answer a card"
+      "answer": "1 and 2: answer a card",
+      "undo": "Ctrl+Z: undo the last placement or move"
     }
   },
   "credits": {

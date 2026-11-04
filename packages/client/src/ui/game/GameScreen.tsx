@@ -137,6 +137,9 @@ function useShortcuts() {
         else if (game.build) game.exitBuild();
         else if (game.panel) game.openPanel(null);
         else game.select(null);
+      } else if (game.build && key === 'z' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        void game.undoBuild();
       } else if (game.build?.kind && key === 'r') {
         game.rotateBuild();
       } else if (game.build?.kind && arrow && game.build.cell) {
