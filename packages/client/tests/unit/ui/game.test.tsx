@@ -288,6 +288,27 @@ describe('Construction', () => {
     expect(useGame.getState().build).toMatchObject({ kind: null });
   });
 
+  it('ignore un double-clic de pose pendant que la simulation répond', async () => {
+    await startGame();
+    act(() => useGame.getState().enterBuild());
+    act(() => useGame.getState().pickItem('plant'));
+    const cell = freeCell('plant');
+    act(() => useGame.getState().setBuildCell(cell));
+    const before = useGame.getState().view!;
+    const tones: string[] = [];
+    const stop = useGame.subscribe((s, prev) => {
+      if (s.toast && s.toast !== prev.toast) tones.push(s.toast.tone);
+    });
+    const results = await act(() =>
+      Promise.all([useGame.getState().placeAt(cell), useGame.getState().placeAt(cell)]),
+    );
+    expect(results).toEqual([true, false]);
+    expect(useGame.getState().view!.items).toHaveLength(before.items.length + 1);
+    expect(useGame.getState().build).toMatchObject({ kind: 'plant', placed: 1 });
+    stop();
+    expect(tones).toEqual(['success']);
+  });
+
   it('revient au catalogue quand le maximum est atteint', async () => {
     await startGame();
     act(() => useGame.getState().enterBuild());
