@@ -1077,7 +1077,12 @@
     "submitting": "Le serveur rejoue ta partie pour valider le score…",
     "guest": "Connecte-toi pour publier tes scores.",
     "rank": "Score validé : {{rank}}e au classement !",
-    "submitFailed": "Score non publié"
+    "submitFailed": "Score non publié",
+    "best": {
+      "first": "🏁 Première partie dans ce mode : c'est ton record à battre.",
+      "beaten": "🏆 Nouveau record dans ce mode ! L'ancien : {{previous}}.",
+      "below": "Ton record dans ce mode : {{best}} (sprint {{sprint}})."
+    }
   },
   "modes": {
     "title": "Choisis ton mode",

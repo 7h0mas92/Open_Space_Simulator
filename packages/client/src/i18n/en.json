@@ -1077,7 +1077,12 @@
     "submitting": "The server is replaying your game to validate the score…",
     "guest": "Log in to post your scores.",
     "rank": "Score validated: rank {{rank}}!",
-    "submitFailed": "Score not posted"
+    "submitFailed": "Score not posted",
+    "best": {
+      "first": "🏁 First game in this mode: this is your record to beat.",
+      "beaten": "🏆 New record in this mode! Previous best: {{previous}}.",
+      "below": "Your best in this mode: {{best}} (sprint {{sprint}})."
+    }
   },
   "modes": {
     "title": "Pick your mode",
