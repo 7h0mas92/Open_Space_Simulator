@@ -17,9 +17,13 @@ import {
   type EntityId,
   type GameState,
 } from '@oss/shared';
+import { query } from './ecs';
 import { addMoney, clamp, devIds, moneyText, notify, text, type SimContext } from './helpers';
 import { activeOffer } from './subscriptions';
 import { getClock, type SimClock } from './time';
+
+/** Poubelle à code mort : elle retient aussi une part des déchets. */
+const TRASHCAN_ID = 'trashcan';
 
 /** Ticks d'une journée de bureau (de l'ouverture à la fermeture). */
 const OPEN_TICKS = (CLEANING.closeHour - CLEANING.openHour) * TIME.ticksPerHour;
@@ -120,6 +124,14 @@ export function callCleaning(state: GameState, ctx: SimContext, express: boolean
   return { ok: true };
 }
 
+/** Part de la saleté retenue par les poubelles posées (10 % chacune, 3 au plus). */
+export function binCut(state: GameState): number {
+  const bins = query(state, 'furniture').filter(
+    (id) => state.components.furniture[id]?.itemId === TRASHCAN_ID,
+  ).length;
+  return Math.min(bins, CLEANING.maxBins) * CLEANING.binCut;
+}
+
 /** La saleté monte pendant les heures de bureau, selon l'équipe présente et les chats. */
 function getDirty(state: GameState, ctx: SimContext, clock: SimClock): void {
   const cleaning = state.cleaning;
@@ -132,7 +144,7 @@ function getDirty(state: GameState, ctx: SimContext, clock: SimClock): void {
       ((CLEANING.dirtPerOpenDay + present * CLEANING.dirtPerDevDay) / OPEN_TICKS) *
       dirtGrowth(cleaning.daysSinceClean);
   }
-  cleaning.dirt = clamp(cleaning.dirt + gain, 0, 100);
+  cleaning.dirt = clamp(cleaning.dirt + gain * (1 - binCut(state)), 0, 100);
   // À la fermeture d'un jour de semaine, un jour de plus sans ménage.
   if (!clock.isWeekend && clock.hour === CLEANING.closeHour) cleaning.daysSinceClean += 1;
   if (!cleaning.alerted && cleaning.dirt >= CLEANING.dirtyAlert) {

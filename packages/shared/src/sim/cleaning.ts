@@ -30,6 +30,10 @@ export const CLEANING = {
   dirtPerOpenDay: 1,
   /** Saleté apportée par chaque chat du bureau, par jour (poils, croquettes, litière). */
   dirtPerPetDay: 0.6,
+  /** Chaque poubelle posée retient 10 % de la saleté (déchets jetés au lieu de traîner)… */
+  binCut: 0.1,
+  /** … cumulable jusqu'à 3 poubelles. */
+  maxBins: 3,
   /** Chaque jour de semaine sans ménage, la saleté monte 12 % plus vite… */
   growthPerDay: 0.12,
   /** … jusqu'à deux fois plus vite. */
