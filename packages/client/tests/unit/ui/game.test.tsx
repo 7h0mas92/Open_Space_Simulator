@@ -292,11 +292,11 @@ describe('Construction', () => {
     await startGame();
     act(() => useGame.getState().enterBuild());
     act(() => useGame.getState().pickItem('trashcan'));
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 3; i++) {
       act(() => useGame.getState().setBuildCell(freeCell('trashcan')));
       await act(() => useGame.getState().placeAt());
     }
-    // 2 poubelles au maximum : la deuxième pose ramène au catalogue.
+    // 3 poubelles au maximum : la troisième pose ramène au catalogue.
     expect(useGame.getState().build).toMatchObject({ kind: null });
     expect(screen.getByText(/maximum atteint, retour au catalogue/)).toBeInTheDocument();
   });

@@ -80,9 +80,9 @@ describe('shopStatus', () => {
 
   it('compte aussi les exemplaires rangés dans l’inventaire', () => {
     const trashcan = catalogItem('trashcan')!;
-    const inventory = [{ kind: 'trashcan', color: 'natural' as const, count: 2, resale: 45 }];
+    const inventory = [{ kind: 'trashcan', color: 'natural' as const, count: 3, resale: 45 }];
     const status = shopStatus(trashcan, { ...view, items: [], inventory });
-    expect(status).toEqual({ owned: 2, block: 'soldOut' });
+    expect(status).toEqual({ owned: 3, block: 'soldOut' });
   });
 });
 
