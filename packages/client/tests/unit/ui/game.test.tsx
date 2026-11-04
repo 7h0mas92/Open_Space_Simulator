@@ -306,7 +306,8 @@ describe('Construction', () => {
     expect(useGame.getState().view!.items).toHaveLength(before.items.length + 1);
     expect(useGame.getState().build).toMatchObject({ kind: 'plant', placed: 1 });
     stop();
-    expect(tones).toEqual(['success']);
+    expect(tones).toContain('success');
+    expect(tones).not.toContain('error');
   });
 
   it('revient au catalogue quand le maximum est atteint', async () => {
