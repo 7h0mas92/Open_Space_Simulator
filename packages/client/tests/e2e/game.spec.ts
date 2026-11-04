@@ -357,6 +357,7 @@ test('mode construction : peindre un mur, puis tous les murs', async ({ page }) 
   // Les peintures sont au niveau 1 de la branche Ambiance de l'arbre R&D.
   await research(page, 'ambiance-1');
   await page.getByRole('button', { name: /Construction/ }).click();
+  await page.getByTestId('catalog-family-layout').click();
   await page.getByTestId('catalog-tab-walls').click();
   await expect(page.getByTestId('walls')).toBeVisible();
 
@@ -396,6 +397,7 @@ test('mode construction : changer la matière et la couleur du sol', async ({ pa
   // Vinyle et moquette sont au niveau 1 de la branche Ambiance de l'arbre R&D.
   await research(page, 'ambiance-1');
   await page.getByRole('button', { name: /Construction/ }).click();
+  await page.getByTestId('catalog-family-layout').click();
   await page.getByTestId('catalog-tab-floors').click();
   await expect(page.getByTestId('floors')).toBeVisible();
 
@@ -507,6 +509,7 @@ test('le panneau Business change le modèle économique', async ({ page }) => {
 test('le panneau Business signe un contrat avec un client B2B', async ({ page }) => {
   await startAsGuest(page);
   await page.getByRole('button', { name: 'Business', exact: true }).click();
+  await page.getByTestId('business-tab-clients').click();
   await expect(page.getByTestId('clients-summary')).toContainText('0/1');
   await page.locator('[data-testid^="client-sign-"]').first().click();
   await expect(page.getByTestId('clients-summary')).toContainText('1/1');
@@ -516,6 +519,7 @@ test('le panneau Business signe un contrat avec un client B2B', async ({ page })
 test('le panneau Business embauche un agent de support', async ({ page }) => {
   await startAsGuest(page);
   await page.getByRole('button', { name: 'Business', exact: true }).click();
+  await page.getByTestId('business-tab-support').click();
   const support = page.locator('.support-stepper');
   await expect(support).toContainText('0');
   await page.getByTestId('support-hire').click();

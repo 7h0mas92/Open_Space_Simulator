@@ -317,7 +317,8 @@
       "slack": "Slack",
       "group": "Invest",
       "meetings": "Meetings",
-      "funding": "Raise"
+      "funding": "Raise",
+      "premises": "Premises"
     },
     "group": "Invest",
     "meetings": "Meeting room",
@@ -332,7 +333,8 @@
     "leaderboard": "Leaderboard",
     "market": "Market",
     "research": "R&D",
-    "business": "Business"
+    "business": "Business",
+    "premises": "Premises"
   },
   "kanban": {
     "columns": {
@@ -635,7 +637,7 @@
       "rolled": "Rolled up: switch on a projector facing it to unroll it."
     },
     "categories": {
-      "work": "Work",
+      "work": "Desks",
       "comfort": "Comfort",
       "kitchen": "Kitchen",
       "appliance": "Appliances",
@@ -727,7 +729,13 @@
     "storyLockedMode": "🔒 Story mode reward, not available in this mode.",
     "storyLockedPrestige": "🏆 Prestige: complete the story goal that awards this reward.",
     "undoMove": "Move undone.",
-    "undoPlace": "Placement undone: the item is back in your inventory."
+    "undoPlace": "Placement undone: the item is back in your inventory.",
+    "families": {
+      "work": "Work",
+      "comfort": "Comfort",
+      "layout": "Layout",
+      "premises": "Premises"
+    }
   },
   "results": {
     "INVALID_COMMAND": "That can't be done.",
@@ -2589,6 +2597,11 @@
         "LIGHT": "A little ({{percent}}%)",
         "HEAVY": "A lot ({{percent}}%)"
       }
+    },
+    "tabs": {
+      "pricing": "Pricing",
+      "clients": "Clients",
+      "support": "Support"
     }
   },
   "leave": {
@@ -2807,5 +2820,12 @@
     "trainedThisSprint": "Already trained this sprint.",
     "reset": "Reset the tree ({{cost}})",
     "resetConfirm": "Refund all of {{name}}'s points for {{cost}} (one month of salary)?"
+  },
+  "premises": {
+    "subscriptions": "Internet, cleaning, security: your running subscriptions.",
+    "lobby": "Reception, security and receptionists.",
+    "servers": "Racks, cooling and fibre box.",
+    "cleaning": "Office dirt and cleaning visits.",
+    "pets": "The office cats and their needs."
   }
 }

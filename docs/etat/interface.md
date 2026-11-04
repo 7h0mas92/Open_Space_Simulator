@@ -28,3 +28,4 @@
   `vite.config.ts`) : « Version 0.1.0 · commit · date du build », pour savoir quelle version tourne.
 
 - Raccourcis 1/2/4 (vitesse), K (Kanban), T (équipe) et liste des raccourcis dans les options ; alerte « sprint trop chargé » au Kanban et sur le bouton de lancement ; démo : résultat net et dev du sprint (#171).
+- Interface réorganisée : onglet « Locaux » (abonnements, hall, serveurs, ménage, chats) dans le dock, Stats dans la barre du haut, Business en trois onglets (prix, clients, support), catalogue de construction en 4 familles + inventaire.

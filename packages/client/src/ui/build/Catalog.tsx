@@ -1,12 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { create } from 'zustand';
-import {
-  CATALOG,
-  ITEM_CATEGORIES,
-  catalogItem,
-  type CatalogItem,
-  type ItemCategory,
-} from '../../view/catalog';
+import { CATALOG, catalogItem, type CatalogItem, type ItemCategory } from '../../view/catalog';
 import { swatchCss } from '../../view/colors';
 import { shopStatus } from '../../view/placement';
 import type { GameView, StoredItemView } from '../../view/types';
@@ -36,18 +30,29 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
 };
 
 /**
- * Onglets du catalogue : les rayons de la boutique, le rayon Écrans (juste après le travail),
- * le rayon Murs (peintures et papiers peints, juste après les fenêtres), le rayon Sols, puis
- * l'inventaire.
+ * Onglets du catalogue, rangés en familles pour ne pas aligner 17 onglets : chaque famille
+ * a ses sous-onglets (les rayons de la boutique, plus Écrans, Murs et Sols). L'inventaire est
+ * une famille à lui seul.
  */
 type CatalogTab = ItemCategory | 'monitors' | 'walls' | 'floors' | 'inventory';
-const TABS: readonly CatalogTab[] = ITEM_CATEGORIES.flatMap((category): CatalogTab[] =>
-  category === 'window'
-    ? [category, 'walls', 'floors']
-    : category === 'work'
-      ? [category, 'monitors']
-      : [category],
-).concat('inventory');
+const FAMILIES = {
+  work: ['work', 'monitors', 'devices', 'accessory'],
+  comfort: ['comfort', 'kitchen', 'appliance', 'fun'],
+  layout: ['decor', 'partition', 'window', 'walls', 'floors'],
+  premises: ['servers', 'lobby', 'pets'],
+  inventory: ['inventory'],
+} as const satisfies Record<string, readonly CatalogTab[]>;
+type Family = keyof typeof FAMILIES;
+const FAMILY_IDS = Object.keys(FAMILIES) as Family[];
+const FAMILY_ICONS: Record<Family, string> = {
+  work: '💻',
+  comfort: '🛋️',
+  layout: '🪴',
+  premises: '🏢',
+  inventory: '📦',
+};
+const familyOf = (tab: CatalogTab): Family =>
+  FAMILY_IDS.find((family) => (FAMILIES[family] as readonly CatalogTab[]).includes(tab)) ?? 'work';
 
 type SpecialTab = 'monitors' | 'walls' | 'floors' | 'inventory';
 const TAB_ICONS: Record<SpecialTab, string> = {
@@ -76,25 +81,26 @@ export function showCatalogTab(tab: CatalogTab): void {
 export function Catalog({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const category = useCatalogTab((s) => s.tab);
+  const family = familyOf(category);
   const pickItem = useGame((s) => s.pickItem);
   const items = CATALOG.filter((item) => item.category === category);
   const stored = view.inventory.reduce((sum, stack) => sum + stack.count, 0);
 
   return (
     <section className="catalog" aria-label={t('build.catalog')}>
-      <div className="catalog-tabs" role="tablist" aria-label={t('build.catalog')}>
-        {TABS.map((id) => (
+      <div className="catalog-tabs catalog-families" role="tablist" aria-label={t('build.catalog')}>
+        {FAMILY_IDS.map((id) => (
           <button
             key={id}
             type="button"
             role="tab"
-            aria-selected={category === id}
-            data-testid={`catalog-tab-${id}`}
-            onClick={() => showCatalogTab(id)}
+            aria-selected={family === id}
+            data-testid={id === 'inventory' ? 'catalog-tab-inventory' : `catalog-family-${id}`}
+            onClick={() => showCatalogTab(FAMILIES[id][0])}
           >
-            <span aria-hidden="true">{isSpecial(id) ? TAB_ICONS[id] : CATEGORY_ICONS[id]}</span>
+            <span aria-hidden="true">{FAMILY_ICONS[id]}</span>
             <span className="catalog-tab-label">
-              {t(id === 'inventory' ? 'build.inventory' : `build.categories.${id}`)}
+              {t(id === 'inventory' ? 'build.inventory' : `build.families.${id}`)}
             </span>
             {id === 'inventory' && stored > 0 && (
               <span className="catalog-tab-badge" data-testid="inventory-count">
@@ -104,6 +110,27 @@ export function Catalog({ view }: { view: GameView }) {
           </button>
         ))}
       </div>
+      {family !== 'inventory' && (
+        <div
+          className="catalog-tabs catalog-subtabs"
+          role="tablist"
+          aria-label={t(`build.families.${family}`)}
+        >
+          {FAMILIES[family].map((id: Exclude<CatalogTab, 'inventory'>) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={category === id}
+              data-testid={`catalog-tab-${id}`}
+              onClick={() => showCatalogTab(id)}
+            >
+              <span aria-hidden="true">{isSpecial(id) ? TAB_ICONS[id] : CATEGORY_ICONS[id]}</span>
+              <span className="catalog-tab-label">{t(`build.categories.${id}`)}</span>
+            </button>
+          ))}
+        </div>
+      )}
       {category === 'inventory' ? (
         <Inventory view={view} />
       ) : category === 'walls' ? (

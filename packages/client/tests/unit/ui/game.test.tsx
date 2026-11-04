@@ -98,8 +98,8 @@ describe('HUD', () => {
       'Recrutement',
       'Investir',
       'Salle de réunion',
+      'Locaux',
       'Construction',
-      'Dashboard',
       'Slack',
     ])
       expect(within(dock).getByRole('button', { name })).toBeInTheDocument();
@@ -236,6 +236,7 @@ describe('Construction', () => {
     expect(screen.queryByRole('navigation', { name: 'Actions du jeu' })).toBeNull();
     expect(screen.getByTestId('catalog')).toBeInTheDocument();
 
+    await userEvent.click(screen.getByRole('tab', { name: /Aménagement/ }));
     await userEvent.click(screen.getByRole('tab', { name: /Déco/ }));
     await userEvent.click(screen.getByTestId('catalog-plant'));
     expect(useGame.getState().build).toMatchObject({ kind: 'plant', rotation: 0 });
@@ -258,6 +259,7 @@ describe('Construction', () => {
   it('pose un objet au clavier : flèches pour viser, Entrée pour poser', async () => {
     await startGame();
     await userEvent.keyboard('b');
+    await userEvent.click(screen.getByRole('tab', { name: /Aménagement/ }));
     await userEvent.click(screen.getByRole('tab', { name: /Déco/ }));
     await userEvent.click(screen.getByTestId('catalog-plant'));
     const cell = freeCell();
@@ -435,6 +437,7 @@ describe('Construction', () => {
   it('les objets verrouillés ne sont pas achetables', async () => {
     await startGame();
     await userEvent.click(screen.getByRole('button', { name: /Construction/ }));
+    await userEvent.click(screen.getByTestId('catalog-family-comfort'));
     await userEvent.click(screen.getByRole('tab', { name: /Détente/ }));
     expect(screen.getByTestId('catalog-slide')).toBeDisabled();
     expect(screen.getByTestId('catalog-slide')).toHaveTextContent('Débloqué en');

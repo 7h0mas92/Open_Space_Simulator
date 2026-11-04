@@ -5163,3 +5163,42 @@ button.skill-node.available {
   margin: 0.25rem 0 0;
   font-size: 0.85rem;
 }
+
+/* Sous-onglets du catalogue : plus discrets que les familles. */
+.catalog-subtabs button {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+.catalog-subtabs button[aria-selected='true'] {
+  opacity: 1;
+}
+
+.premises {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.premises button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+}
+
+.premises button > span:first-child {
+  font-size: 1.5rem;
+}
+
+.premises .hint {
+  display: block;
+  margin: 0;
+}
+
+.panel-tabs {
+  margin: 0 0 12px;
+}
