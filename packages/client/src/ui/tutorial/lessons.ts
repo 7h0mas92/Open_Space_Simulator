@@ -1,4 +1,4 @@
-import { GAME_MODES, type GameMode } from '@oss/shared';
+import { GAME_MODES, type GameMode, modeRules } from '@oss/shared';
 import type { GameView } from '../../view/types';
 import type { PanelId } from '../store/game';
 
@@ -182,7 +182,7 @@ export const LESSONS: readonly Lesson[] = [
     // s'ouvre dès le début du sprint, avant la première carte, pour avoir le temps de le lire.
     trigger: (view, seen) =>
       seen.has('basics') &&
-      (view.event !== null || (view.mode === 'HARDCORE' && view.step === 'EXECUTION')),
+      (view.event !== null || (!modeRules(view.mode).cardsPauseTime && view.step === 'EXECUTION')),
     steps: [
       { id: 'card', target: 'event' },
       { id: 'effects' },

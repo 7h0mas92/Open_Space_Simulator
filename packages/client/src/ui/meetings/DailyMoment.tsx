@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { modeRules } from '@oss/shared';
 import { create } from 'zustand';
 import { useTranslation } from 'react-i18next';
 import type { GameView } from '../../view/types';
@@ -41,7 +42,8 @@ export function DailyMoment({ view }: { view: GameView }) {
     if (!live || !daily || heldTick.current === daily.tick) return;
     heldTick.current = daily.tick;
     const speed = view.time.speed;
-    if (!dailyPause || replay || view.mode === 'HARDCORE' || view.event || speed === 0) return;
+    if (!dailyPause || replay || !modeRules(view.mode).canPause || view.event || speed === 0)
+      return;
     useDailyHold.setState({ speed });
     void dispatch({ type: 'setSpeed', speed: 0 });
   }, [live, daily, dailyPause, replay, view.mode, view.event, view.time.speed, dispatch]);

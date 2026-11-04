@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { modeRules } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { BuildMode } from '../build/BuildMode';
 import { CareerPanel } from '../career/CareerPanel';
@@ -152,7 +153,7 @@ function useShortcuts() {
       } else if (
         event.key === ' ' &&
         game.view?.step === 'EXECUTION' &&
-        game.view.mode !== 'HARDCORE' &&
+        modeRules(game.view.mode).canPause &&
         // Une carte ouverte tient déjà le temps en pause jusqu'à la réponse.
         !game.view.event &&
         target?.tagName !== 'BUTTON'

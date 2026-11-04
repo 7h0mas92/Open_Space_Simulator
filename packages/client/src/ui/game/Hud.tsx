@@ -1,5 +1,13 @@
 import { dirtLevel } from '../cleaning/Cleaning';
-import { SEASONS, SPEEDS, companyName, isEndless, type Phase, type Speed } from '@oss/shared';
+import {
+  SEASONS,
+  SPEEDS,
+  companyName,
+  isEndless,
+  type Phase,
+  type Speed,
+  modeRules,
+} from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView, type GaugeName } from '../../view/types';
 import { useSlack } from '../../slack/store';
@@ -416,7 +424,7 @@ export function StepControls({ view }: { view: GameView }) {
           type="button"
           aria-pressed={time.speed === speed}
           aria-label={speed === 0 ? t('time.pause') : t('time.speed', { speed })}
-          disabled={speed === 0 && view.mode === 'HARDCORE'}
+          disabled={speed === 0 && !modeRules(view.mode).canPause}
           onClick={() => setSpeed(speed)}
         >
           {speed === 0 ? '❚❚' : `x${speed}`}

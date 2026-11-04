@@ -11,6 +11,7 @@ import {
   type CampaignResult,
   RETRO,
   type RetroAction,
+  modeRules,
 } from '@oss/shared';
 import { MissionGoals } from '../story/MissionGoals';
 import { useActLabel } from '../story/CampaignPanel';
@@ -49,7 +50,9 @@ export function StageScreens({ view }: { view: GameView }) {
       return <DemoScreen view={view} />;
     case 'event':
       return (
-        view.event && <EventCardScreen event={view.event} hardcore={view.mode === 'HARDCORE'} />
+        view.event && (
+          <EventCardScreen event={view.event} hardcore={!modeRules(view.mode).cardsPauseTime} />
+        )
       );
     case 'raise': {
       const request = view.raiseRequest;

@@ -7,6 +7,7 @@ import {
   type GameState,
   type LoggedCommand,
   type Notification,
+  modeRules,
 } from '@oss/shared';
 import { eventSystem } from '../events/draw';
 import type { CardLibrary } from '../events/library';
@@ -129,7 +130,7 @@ export class Simulation {
   /** La simulation avance-t-elle ? (Non en planification, en démo, ou face à une carte.) */
   get isRunning(): boolean {
     const { stage, events, mode } = this.state;
-    return stage === 'EXECUTION' && (events.pending === null || mode === 'HARDCORE');
+    return stage === 'EXECUTION' && (events.pending === null || !modeRules(mode).cardsPauseTime);
   }
 
   /** Avance d'un tick (30 minutes simulées). Renvoie les notifications émises. */
