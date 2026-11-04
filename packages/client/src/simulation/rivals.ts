@@ -23,7 +23,7 @@ import {
   text,
   type SimContext,
 } from './helpers';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 
 /*
  * Rivaux de l'histoire « Ctrl+Alt+Fonder » (constantes dans `shared/sim/rivals.ts`).
@@ -34,7 +34,7 @@ import { Rng } from './rng';
  */
 
 function rivalRng(state: GameState): Rng {
-  return Rng.fromSeed(`${state.seed}#rival#${state.sprint}`);
+  return sideRng(state.seed, 'rival', state.sprint);
 }
 
 function newRival(profile: RivalProfile, users = profile.startUsers): RivalState {

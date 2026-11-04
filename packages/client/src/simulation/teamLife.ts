@@ -14,7 +14,7 @@ import {
 } from '@oss/shared';
 import { resignDev } from './devs';
 import { addDevLog, changeMoral, clamp, devIds, notify, text, type SimContext } from './helpers';
-import { Rng } from './rng';
+import { sideRng } from './rng';
 import type { SimClock } from './time';
 
 /*
@@ -194,7 +194,7 @@ export function teamLifeSystem(state: GameState, ctx: SimContext, clock: SimCloc
   }
 
   const bridge = isBridge(state, today) && life.bridgesRefusedSprint !== state.sprint;
-  const rng = Rng.fromSeed(`${state.seed}#leave#${today}`);
+  const rng = sideRng(state.seed, 'leave', today);
   for (const id of devIds(state)) {
     if (!takesLeave(state, id)) continue;
     const absence = life.absences[id];

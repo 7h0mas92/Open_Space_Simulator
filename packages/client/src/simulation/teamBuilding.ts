@@ -19,7 +19,7 @@ import {
   text,
   type SimContext,
 } from './helpers';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 import { absenceOn } from './teamLife';
 import type { SimClock } from './time';
 
@@ -122,7 +122,7 @@ export function cancelTeamBuilding(state: GameState): CommandResult {
 
 /** Générateur dédié : même graine, même sprint ⇒ même sortie. */
 function outingRng(state: GameState): Rng {
-  return Rng.fromSeed(`${state.seed}#teambuilding#${state.sprint}`);
+  return sideRng(state.seed, 'teambuilding', state.sprint);
 }
 
 /** Ajoute `delta` à l'affinité de deux collègues, dans les deux sens. */

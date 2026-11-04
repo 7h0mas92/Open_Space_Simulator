@@ -10,7 +10,7 @@ import {
 } from '@oss/shared';
 import { devIds, notify, text, type SimContext } from './helpers';
 import { TASK_SIZES } from './data/tasks';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 import { createTask, devTrade, hasFreeTask, reorder, tasksInColumn, teamByTrade } from './tasks';
 import type { SimClock } from './time';
 
@@ -102,7 +102,7 @@ function feedTodo(
 }
 
 function topUpRng(state: GameState): Rng {
-  return Rng.fromSeed(`${state.seed}#tasks#topup#${state.sprint}#${state.sprintTick}`);
+  return sideRng(state.seed, 'tasks', 'topup', state.sprint, state.sprintTick);
 }
 
 /** Matin : compare le travail restant au rythme de chaque métier et complète si besoin. */

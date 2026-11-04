@@ -34,7 +34,7 @@ import {
 } from './helpers';
 import { teamShape } from './leadership';
 import { emptySprintPerformance } from './performance';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 
 /**
  * Fréquence des profils historiques parmi les 3 candidats habituels (le Dev Fantôme est rare).
@@ -142,7 +142,7 @@ export function pickCandidateRole(state: GameState, rng: Rng): DevRole {
 
 /** Graine à part des candidats de l'équipe web : le RNG de la partie n'est pas touché. */
 function webRng(state: GameState): Rng {
-  return Rng.fromSeed(`${state.seed}#web-roles#${state.sprint}`);
+  return sideRng(state.seed, 'web-roles', state.sprint);
 }
 
 /**

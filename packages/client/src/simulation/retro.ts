@@ -9,7 +9,7 @@ import {
   type RetroAction,
 } from '@oss/shared';
 import { changeMoral, devIds, hasRole, notify, teamMoral, text, type SimContext } from './helpers';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 
 /*
  * Rétrospective de sprint (voir `packages/shared/src/sim/retro.ts`).
@@ -103,7 +103,7 @@ const TRAIT_TASTE: Record<DevTrait, Partial<Record<RetroAction, number>>> = {
 
 /** Générateur dédié : même graine, même sprint ⇒ mêmes votes. */
 function retroRng(state: GameState): Rng {
-  return Rng.fromSeed(`${state.seed}#retro#${state.sprint}`);
+  return sideRng(state.seed, 'retro', state.sprint);
 }
 
 /** Vote de chaque dev parmi les actions proposées. */

@@ -32,7 +32,7 @@ import {
   text,
   type SimContext,
 } from './helpers';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 import { sprintLoadSystem } from './sprintLoad';
 import { removeTask, reorder, tasksInColumn } from './tasks';
 import { clockAt, type SimClock } from './time';
@@ -43,7 +43,7 @@ import { clockAt, type SimClock } from './time';
  * consommé ici, et la partie reste 100 % déterministe.
  */
 function flowRng(state: GameState, key: string): Rng {
-  return Rng.fromSeed(`${state.seed}#tasks#${key}#${state.sprint}#${state.sprintTick}`);
+  return sideRng(state.seed, 'tasks', key, state.sprint, state.sprintTick);
 }
 
 /** Instant du jeu qui ne fait que croître : sprint × ticks par sprint + tick du sprint. */

@@ -17,7 +17,7 @@ import {
   type Phase,
 } from '@oss/shared';
 import { addGauge, addMoney, addUsers, moneyText, notify, text, type SimContext } from './helpers';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 
 /*
  * Clients B2B (constantes et règles dans `shared/sim/clients.ts`) : offres tirées à chaque
@@ -35,7 +35,7 @@ const POINTS_SCALE: Record<Phase, number> = {
 
 /** Générateur des offres du sprint : il ne touche jamais celui de la partie. */
 function clientRng(state: GameState): Rng {
-  return Rng.fromSeed(`${state.seed}#clients#${state.sprint}`);
+  return sideRng(state.seed, 'clients', state.sprint);
 }
 
 /** Contrats pas encore livrés. */
