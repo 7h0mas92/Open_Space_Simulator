@@ -13,6 +13,8 @@
  * vient de `Math.random` : c'est du son, pas la partie, le RNG du jeu n'est jamais touché.
  */
 
+import { clamp01 } from '../engine/interpolation';
+
 /** Enregistrement de frappe au clavier (relatif à la racine du site). */
 export const KEYBOARD_RECORDING = `${import.meta.env.BASE_URL}assets/sounds/clavier-1-mrboubou13al.mp3`;
 
@@ -51,8 +53,6 @@ export const DESK_SOUND = {
   /** Écart gauche-droite le plus fort (1 = tout d'un côté). */
   maxPan: 0.7,
 } as const;
-
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 
 /** 0 à la vue d'ensemble, 1 quand on a assez zoomé pour entendre les claviers. */
 export function closeness(halfWidth: number, halfHeight: number): number {

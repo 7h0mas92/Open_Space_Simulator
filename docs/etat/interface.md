@@ -26,3 +26,5 @@
   retour sur l'onglet. Dépendance `workbox-window` ajoutée au client.
 - Version du jeu en bas du menu principal (`src/version.ts`, `__APP_BUILD__` écrit par
   `vite.config.ts`) : « Version 0.1.0 · commit · date du build », pour savoir quelle version tourne.
+
+- Raccourcis 1/2/4 (vitesse), K (Kanban), T (équipe) et liste des raccourcis dans les options ; alerte « sprint trop chargé » au Kanban et sur le bouton de lancement ; démo : résultat net et dev du sprint (#171).

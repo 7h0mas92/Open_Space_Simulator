@@ -111,3 +111,32 @@ export class Rng {
     return copy;
   }
 }
+
+/**
+ * Flux aléatoires « annexes » : chacun dérive sa propre graine de celle de la partie, pour ne
+ * jamais consommer le générateur principal (règle du projet, voir docs/dev/conventions.md).
+ * Ajouter ici le nom d'un nouveau flux plutôt qu'écrire la graine à la main.
+ */
+export const SIDE_STREAMS = [
+  'web-roles',
+  'tasks',
+  'raise',
+  'teambuilding',
+  'leave',
+  'rival',
+  'pitch',
+  'retro',
+  'clients',
+  'meeting',
+  'duplicate',
+  'venture',
+] as const;
+export type SideStream = (typeof SIDE_STREAMS)[number];
+
+/**
+ * Générateur annexe : graine `${seed}#${stream}#${parts…}`. Le format ne doit jamais changer
+ * (les replays et les scores déjà enregistrés en dépendent).
+ */
+export function sideRng(seed: string, stream: SideStream, ...parts: (string | number)[]): Rng {
+  return Rng.fromSeed([seed, stream, ...parts].join('#'));
+}

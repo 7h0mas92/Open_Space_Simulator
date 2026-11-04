@@ -815,8 +815,6 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   },
 ];
 
-export const ACHIEVEMENT_IDS: readonly string[] = ACHIEVEMENTS.map((a) => a.id);
-
 const byId = new Map(ACHIEVEMENTS.map((achievement) => [achievement.id, achievement]));
 
 export function getAchievement(id: string): AchievementDefinition | undefined {

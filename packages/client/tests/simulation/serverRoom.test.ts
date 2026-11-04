@@ -270,14 +270,14 @@ describe('Abonnement internet', () => {
       ['wifi-4g', 9, 3],
       ['wifi-5g', 14, 6],
       ['fibre-essential', 11, 10],
-      ['fibre-pro', 28, 25],
-      ['fibre-dedicated', 208, 60],
-      ['fibre-dedicated-10g', 607, 200],
+      ['fibre-pro', 27, 25],
+      ['fibre-dedicated', 205, 60],
+      ['fibre-dedicated-10g', 600, 200],
     ]);
     expect(offers.every((offer) => offer.periodDays === 7)).toBe(true);
     expect(offers.find((offer) => offer.id === 'fibre-pro')).toMatchObject({
       setupFee: 99,
-      firstPayment: 28 + 99,
+      firstPayment: 27 + 99,
     });
   });
 
@@ -313,13 +313,13 @@ describe('Abonnement internet', () => {
     const before = computeOfficeEffects(state);
     const treasury = state.gauges.treasury;
     expect(subscribeTo(simulation, 'fibre-dedicated').ok).toBe(true);
-    expect(treasury - state.gauges.treasury).toBe(208 + 1500);
+    expect(treasury - state.gauges.treasury).toBe(205 + 1500);
     expect(state.subscriptions).toEqual([
       {
         offer: 'fibre-dedicated',
         paidUntil: FIBRE_WEEK_TICKS,
         since: state.sprint,
-        totalPaid: 1708,
+        totalPaid: 1705,
         saturated: false,
       },
     ]);
@@ -329,10 +329,10 @@ describe('Abonnement internet', () => {
 
     // La semaine suivante est facturée au premier pas du 8e jour, sans mise en service.
     advance(simulation, FIBRE_WEEK_TICKS);
-    expect(state.subscriptions[0]?.totalPaid).toBe(1708);
+    expect(state.subscriptions[0]?.totalPaid).toBe(1705);
     advance(simulation, 1);
     expect(state.subscriptions[0]?.paidUntil).toBe(2 * FIBRE_WEEK_TICKS);
-    expect(state.subscriptions[0]?.totalPaid).toBe(1708 + 208);
+    expect(state.subscriptions[0]?.totalPaid).toBe(1705 + 205);
   });
 
   it('trop de salariés pour l’offre : la ligne sature et ralentit toute l’équipe', () => {
@@ -378,9 +378,9 @@ describe('Abonnement internet', () => {
     });
     const treasury = state.gauges.treasury;
     expect(subscribeTo(simulation, 'fibre-pro').ok).toBe(true);
-    expect(treasury - state.gauges.treasury).toBe(28 + 99);
+    expect(treasury - state.gauges.treasury).toBe(27 + 99);
     expect(state.subscriptions).toHaveLength(1);
-    expect(state.subscriptions[0]).toMatchObject({ offer: 'fibre-pro', totalPaid: 11 + 28 + 99 });
+    expect(state.subscriptions[0]).toMatchObject({ offer: 'fibre-pro', totalPaid: 11 + 27 + 99 });
     const paid = state.gauges.treasury;
     expect(
       simulation.dispatch({ type: 'CANCEL_SUBSCRIPTION', service: 'internet' }).result.ok,

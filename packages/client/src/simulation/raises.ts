@@ -19,7 +19,7 @@ import {
   text,
   type SimContext,
 } from './helpers';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 
 /*
  * Demandes d'augmentation : tous les 5 à 10 sprints, un dev peut venir réclamer plus d'argent
@@ -33,7 +33,7 @@ import { Rng } from './rng';
 
 /** Générateur dédié, reproductible : même graine, même clé, même sprint ⇒ même tirage. */
 function raiseRng(state: GameState, key: string): Rng {
-  return Rng.fromSeed(`${state.seed}#raise#${key}#${state.sprint}`);
+  return sideRng(state.seed, 'raise', key, state.sprint);
 }
 
 /** Compétences qu'une augmentation fait progresser (ou qu'un refus fait baisser). */

@@ -39,7 +39,13 @@ interface Played {
  * Joue une vraie partie avec un bot, en faisant lire au « joueur » chaque chapitre dès
  * qu'il s'ouvre. Le tutoriel est observé toutes les heures de jeu, comme le ferait l'écran.
  */
-function playWithGuide(mode: GameMode, seed: string, scope: GuideScope = 'full'): Played {
+function playWithGuide(
+  mode: GameMode,
+  seed: string,
+  scope: GuideScope = 'full',
+  /** Arrêt après ce sprint : le mode Illimité ne finit jamais seul. */
+  maxSprint = Number.POSITIVE_INFINITY,
+): Played {
   const cards = defaultCardLibrary();
   const simulation = Simulation.create({ seed, mode }, cards);
   const bot = createBot('balanced', seed);
@@ -62,7 +68,11 @@ function playWithGuide(mode: GameMode, seed: string, scope: GuideScope = 'full')
     }
   };
 
-  for (let i = 0; i < 40_000 && simulation.state.stage !== 'ENDED'; i++) {
+  for (
+    let i = 0;
+    i < 40_000 && simulation.state.stage !== 'ENDED' && simulation.state.sprint <= maxSprint;
+    i++
+  ) {
     const { state } = simulation;
     const { pending } = state.events;
     if (pending && pending !== lastPending) {
@@ -175,7 +185,8 @@ describe.each(MENU_MODES)('Tutoriel complet en partie réelle : %s', (mode) => {
 
 describe('Joueur qui connaît déjà le jeu', () => {
   it.each(GAME_MODES)('%s : seules les règles du mode s’ouvrent', (mode) => {
-    const { order } = playWithGuide(mode, 'veteran', 'mode');
+    // Les règles du mode s'ouvrent dès le premier sprint : trois sprints suffisent.
+    const { order } = playWithGuide(mode, 'veteran', 'mode', 3);
     expect(order).toEqual(mode === 'NORMAL' ? [] : ['rules']);
   });
 });

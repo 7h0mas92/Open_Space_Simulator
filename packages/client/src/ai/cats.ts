@@ -16,12 +16,14 @@
  * bureau, coussin) est réservée par le chat qui y va, et une case au sol par le chat qui s'y
  * repose ou qui s'y rend. En marchant, un chat contourne ceux qui se reposent par terre.
  */
+import { clamp01 } from '../engine/interpolation';
 import { catalogItem, footprint } from '../view/catalog';
 import { layoutOf, type Cell } from '../view/layout';
 import type { GameView, PetView, PlacedItemView } from '../view/types';
 import { findPath } from './astar';
 import { accessCell, buildNavGrid, type NavGrid } from './grid';
-import { hashString, Random } from './random';
+import { hashString } from '@oss/shared';
+import { Random } from './random';
 
 /** Vitesse de marche d'un chat, en cases par seconde (multipliée par la vitesse de jeu). */
 export const CAT_SPEED = 3;
@@ -140,7 +142,6 @@ interface Cat {
 
 const sameCell = (a: Cell, b: Cell) => a.x === b.x && a.z === b.z;
 const cellOf = (cat: Cat): Cell => ({ x: Math.round(cat.x), z: Math.round(cat.z) });
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 
 /** Coût ajouté au chemin pour traverser la case d'un chat couché par terre. */
 const RESTING_CAT_COST = 6;

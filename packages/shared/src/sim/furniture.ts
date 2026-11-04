@@ -604,14 +604,14 @@ export const FURNITURE_CATALOG = [
     id: 'trashcan',
     name: t('Poubelle à code mort', 'Dead code bin'),
     description: t(
-      'Symbolique mais efficace : −dette chaque jour.',
-      'Symbolic but effective: −debt every day.',
+      'Symbolique mais efficace : −dette chaque jour, et 10 % de déchets en moins dans l’open space (jusqu’à 3 poubelles).',
+      'Symbolic but effective: −debt every day, and 10% less litter in the open space (up to 3 bins).',
     ),
     price: 90,
     width: 1,
     depth: 1,
     minPhase: 'GARAGE',
-    maxCount: 2,
+    maxCount: 3,
     effects: { debtPerDay: -0.08 },
   },
   {

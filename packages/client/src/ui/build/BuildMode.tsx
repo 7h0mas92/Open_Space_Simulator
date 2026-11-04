@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { modeRules } from '@oss/shared';
 import { catalogItem } from '../../view/catalog';
 import { layoutOf } from '../../view/layout';
 import { checkPlacement } from '../../view/placement';
@@ -59,7 +60,7 @@ export function BuildMode({ view }: { view: GameView }) {
 function PauseToggle({ view }: { view: GameView }) {
   const { t } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
-  if (view.step !== 'EXECUTION' || view.mode === 'HARDCORE') return null;
+  if (view.step !== 'EXECUTION' || !modeRules(view.mode).buildDuringRun) return null;
   const paused = view.time.speed === 0;
   return (
     <button

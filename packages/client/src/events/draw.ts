@@ -1,4 +1,4 @@
-import { BALANCE, difficultyOf, type EventCard, type GameState } from '@oss/shared';
+import { BALANCE, difficultyOf, type EventCard, type GameState, modeRules } from '@oss/shared';
 import { notify, type SimContext } from '../simulation/helpers';
 import type { SimClock } from '../simulation/time';
 import { inCooldown, isEligible } from './conditions';
@@ -62,7 +62,7 @@ export function eventSystem(state: GameState, ctx: SimContext, clock: SimClock):
   const { pending } = state.events;
   if (pending) {
     if (
-      state.mode === 'HARDCORE' &&
+      !modeRules(state.mode).cardsPauseTime &&
       state.tick - pending.drawnAtTick >= BALANCE.events.hardcoreAutoResolveTicks
     ) {
       const card = ctx.cards.get(pending.cardId);

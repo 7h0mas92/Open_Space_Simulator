@@ -121,10 +121,6 @@ export const SECURITY_PLANS: readonly SecurityPlan[] = [
   }),
 ];
 
-export function getSecurityPlan(id: SecurityPlanId): SecurityPlan {
-  return SECURITY_PLANS.find((p) => p.id === id) ?? (SECURITY_PLANS[0] as SecurityPlan);
-}
-
 /** Le hall, une fois aménagé. */
 export const LobbyStateSchema = z.object({
   /** Sprint de l'aménagement. */

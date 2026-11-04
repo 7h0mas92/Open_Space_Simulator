@@ -35,11 +35,16 @@ export class SnapshotBuffer {
     if (!current || !this.previous || !current.running) return 1;
     const duration = current.tickDurationMs;
     if (!Number.isFinite(duration) || duration <= 0) return 1;
-    return Math.min(1, Math.max(0, (nowMs - this.receivedAt) / duration));
+    return clamp01((nowMs - this.receivedAt) / duration);
   }
 }
 
 /** Interpolation linéaire. */
 export function lerp(from: number, to: number, alpha: number): number {
   return from + (to - from) * alpha;
+}
+
+/** Ramène une valeur entre 0 et 1. */
+export function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
 }

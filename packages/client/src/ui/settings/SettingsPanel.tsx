@@ -105,6 +105,14 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
         />
         {t('settings.showFps')}
       </label>
+      <label className="switch">
+        <input
+          type="checkbox"
+          checked={settings.colorBlind}
+          onChange={(e) => settings.update({ colorBlind: e.target.checked })}
+        />
+        {t('settings.colorBlind')}
+      </label>
       <fieldset>
         <legend>{t('settings.audio')}</legend>
         {VOLUME_KEYS.map((key) => (
@@ -147,6 +155,7 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
       {inGame && (
         <>
           <GuideIndex />
+          <ShortcutList />
           <button type="button" onClick={() => openPanel('credits')}>
             {t('panels.credits')}
           </button>
@@ -156,5 +165,34 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
         </>
       )}
     </div>
+  );
+}
+
+const SHORTCUTS = [
+  'space',
+  'speed',
+  'build',
+  'kanban',
+  'team',
+  'rotate',
+  'arrows',
+  'enter',
+  'undo',
+  'escape',
+  'answer',
+] as const;
+
+/** Raccourcis clavier (repris de `useShortcuts` dans GameScreen), repliés par défaut. */
+function ShortcutList() {
+  const { t } = useTranslation();
+  return (
+    <details className="shortcut-list">
+      <summary>{t('settings.shortcuts.title')}</summary>
+      <ul>
+        {SHORTCUTS.map((id) => (
+          <li key={id}>{t(`settings.shortcuts.${id}`)}</li>
+        ))}
+      </ul>
+    </details>
   );
 }

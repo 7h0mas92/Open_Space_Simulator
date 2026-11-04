@@ -11,7 +11,7 @@ import {
 import { computeValuation, monthlyExpenses } from './economy';
 import { phaseIndex } from './furniture';
 import { addGauge, addMoney, moneyText, notify, text, type SimContext } from './helpers';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 
 /*
  * Filiales : la startup investit sa trésorerie pour créer d'autres startups.
@@ -24,7 +24,7 @@ import { Rng } from './rng';
 
 /** Générateur dédié, reproductible : même graine, même filiale, même sprint ⇒ même tirage. */
 function ventureRng(state: GameState, key: string): Rng {
-  return Rng.fromSeed(`${state.seed}#venture#${key}#${state.sprint}`);
+  return sideRng(state.seed, 'venture', key, state.sprint);
 }
 
 /** Projet proposé pendant la planification, avec son coût. */

@@ -42,6 +42,11 @@ function useTextScale() {
   useEffect(() => {
     document.documentElement.style.setProperty('--font-scale', String(textScale));
   }, [textScale]);
+  const colorBlind = useSettings((s) => s.colorBlind);
+  useEffect(() => {
+    if (colorBlind) document.documentElement.dataset.palette = 'colorblind';
+    else delete document.documentElement.dataset.palette;
+  }, [colorBlind]);
 }
 
 /** Écrans du menu (hors partie). */

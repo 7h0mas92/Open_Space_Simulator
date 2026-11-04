@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { GameMode } from '../game.js';
+import { modeRules, type GameMode } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
 import type { DevRole } from './components.js';
 
@@ -455,7 +455,7 @@ export function canHaveSkill(role: DevRole, id: SkillId): boolean {
 
 /** L'arbre est ouvert dans tous les modes, sauf le Daily (parties comparables au classement). */
 export function skillsEnabled(mode: GameMode): boolean {
-  return mode !== 'DAILY';
+  return modeRules(mode).skills;
 }
 
 /** Points gagnés par un dev d'un niveau donné. */

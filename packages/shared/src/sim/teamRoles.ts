@@ -1,7 +1,6 @@
 import { PHASES, type Phase } from '../game.js';
 import { BALANCE } from './balance.js';
 import {
-  WEB_ROLES,
   taskTrade,
   type DevRole,
   type DevSpecialty,
@@ -39,11 +38,6 @@ export const SPECIALTIES_BY_STACK: Readonly<Record<TaskStack, readonly DevSpecia
   BACK: ['NODE', 'DATABASE', 'SECURITY', 'CLOUD'],
 };
 
-/** Côté de chaque spécialité. */
-export function specialtyStack(specialty: DevSpecialty): TaskStack {
-  return SPECIALTIES_BY_STACK.FRONT.includes(specialty) ? 'FRONT' : 'BACK';
-}
-
 /** Type de tâche accéléré par chaque spécialité. */
 export const SPECIALTY_FOCUS: Readonly<Record<DevSpecialty, TaskType>> = {
   REACT: 'FEATURE',
@@ -62,11 +56,6 @@ export type ManagementRole = (typeof MANAGEMENT_ROLES)[number];
 
 export function isManagementRole(role: DevRole): role is ManagementRole {
   return (MANAGEMENT_ROLES as readonly string[]).includes(role);
-}
-
-/** Profil de l'équipe web (et non l'un des 8 profils historiques) ? */
-export function isWebRole(role: DevRole): boolean {
-  return (WEB_ROLES as readonly string[]).includes(role);
 }
 
 // ---------------------------------------------------------------------------------------------

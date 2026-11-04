@@ -327,6 +327,8 @@ export class ScreenGlow {
   private readonly spill: THREE.InstancedMesh;
   private readonly spillMaterial: THREE.MeshBasicMaterial;
   private key = '';
+  /** Dernière entrée vue : entre deux ticks, rien ne change et on saute le recalcul. */
+  private lastInput: ScreenInput | null = null;
   private elapsed = 0;
 
   constructor() {
@@ -386,6 +388,21 @@ export class ScreenGlow {
    * `darkness` (0 en plein jour, 1 la nuit) règle l'intensité du reflet.
    */
   update(input: ScreenInput, delta: number, darkness: number, animate: boolean): void {
+    const last = this.lastInput;
+    if (
+      !last ||
+      last.items !== input.items ||
+      last.roles !== input.roles ||
+      last.agents !== input.agents
+    ) {
+      this.lastInput = input;
+      this.refresh(input);
+    }
+    this.animate(delta, darkness, animate);
+  }
+
+  /** Recalcule les écrans allumés et ne reconstruit les dalles que si la liste a changé. */
+  private refresh(input: ScreenInput): void {
     const screens = litScreens(input);
     const key = screens
       .map(
@@ -398,6 +415,9 @@ export class ScreenGlow {
       this.key = key;
       this.rebuild(screens);
     }
+  }
+
+  private animate(delta: number, darkness: number, animate: boolean): void {
     this.spillMaterial.opacity = 0.25 + 0.55 * darkness;
     if (!animate) return;
     this.elapsed += delta;

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { modeRules, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { BuildMode } from '../build/BuildMode';
 import { CareerPanel } from '../career/CareerPanel';
@@ -118,8 +119,9 @@ const ARROWS: Record<string, readonly [number, number]> = {
 };
 
 /**
- * Raccourcis clavier globaux : Échap, espace (pause), B (construction) et, objet en main,
- * R (tourner), flèches (déplacer l'aperçu d'une demi-case), Entrée (poser).
+ * Raccourcis clavier globaux : Échap, espace (pause), 1, 2 et 4 (vitesse), B (construction),
+ * K (Kanban), T (équipe) et, objet en main, R (tourner), flèches (déplacer l'aperçu d'une
+ * demi-case), Entrée (poser). La liste est reprise dans les options (`ShortcutList`).
  */
 function useShortcuts() {
   useEffect(() => {
@@ -135,6 +137,9 @@ function useShortcuts() {
         else if (game.build) game.exitBuild();
         else if (game.panel) game.openPanel(null);
         else game.select(null);
+      } else if (game.build && key === 'z' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        void game.undoBuild();
       } else if (game.build?.kind && key === 'r') {
         game.rotateBuild();
       } else if (game.build?.kind && arrow && game.build.cell) {
@@ -150,9 +155,21 @@ function useShortcuts() {
         if (game.build) game.exitBuild();
         else game.enterBuild();
       } else if (
+        ['1', '2', '4'].includes(event.key) &&
+        !game.build &&
+        !game.panel &&
+        game.view?.step === 'EXECUTION' &&
+        // Une carte ou une demande d'augmentation garde ses propres touches 1 et 2.
+        stageScreen(game.view) === null
+      ) {
+        void game.dispatch({ type: 'setSpeed', speed: Number(event.key) as Speed });
+      } else if ((key === 'k' || key === 't') && !game.build && game.view) {
+        const panel = key === 'k' ? 'kanban' : 'team';
+        game.openPanel(game.panel === panel ? null : panel);
+      } else if (
         event.key === ' ' &&
         game.view?.step === 'EXECUTION' &&
-        game.view.mode !== 'HARDCORE' &&
+        modeRules(game.view.mode).canPause &&
         // Une carte ouverte tient déjà le temps en pause jusqu'à la réponse.
         !game.view.event &&
         target?.tagName !== 'BUTTON'
