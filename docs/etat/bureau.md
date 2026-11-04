@@ -8,6 +8,8 @@
   maximum ou si la trésorerie manque) ; 12 accessoires posés sur les meubles (`surfaceSlots`,
   commandes `BUY_ACCESSORY` / `MOVE_ACCESSORY`, revendus et déplacés avec leur meuble) ; 12 couleurs
   au choix à l'achat ou via « Peindre » (`PAINT_FURNITURE`, `client/src/view/colors.ts`).
+- Construction : une seule pose envoyée à la fois (le double-clic ne déclenche plus d'erreur ni de
+  double achat).
 - Accessoires de bureau et inventaire : écouteurs sans fil (`desk-earbuds`, protègent 1 dev des
   réunions) et mini-cactus (`mini-cactus`) posés sur les bureaux, 3 emplacements par bureau ; la
   station au sol et le cactus au sol restent (« Station de recharge d'écouteurs », « Cactus en pot »).

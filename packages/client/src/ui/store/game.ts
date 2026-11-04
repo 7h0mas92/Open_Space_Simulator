@@ -378,6 +378,9 @@ async function createSource(options: StartOptions): Promise<GameSource> {
   );
 }
 
+/** Une pose est-elle en cours d'envoi à la simulation ? (voir `placeAt`) */
+let placing = false;
+
 export const useGame = create<GameStore>((set, get) => ({
   source: null,
   view: null,
@@ -585,6 +588,9 @@ export const useGame = create<GameStore>((set, get) => ({
   },
 
   async placeAt(target) {
+    // Un seul envoi à la fois : un double-clic partirait de l'ancien instantané (case encore
+    // libre, stock et trésorerie d'avant) et finirait en erreur ou en double pose.
+    if (placing) return false;
     const { build, view, dispatch, notify } = get();
     const cell = target ?? build?.cell;
     if (!build?.kind || !view || !cell) return false;
@@ -655,7 +661,10 @@ export const useGame = create<GameStore>((set, get) => ({
               color: build.color,
             };
     const before = moving ? view.items.find((item) => item.id === moving) : undefined;
-    const result = await dispatch(command);
+    placing = true;
+    const result = await dispatch(command).finally(() => {
+      placing = false;
+    });
     if (!result.ok) return false;
     set({
       buildUndo: before
