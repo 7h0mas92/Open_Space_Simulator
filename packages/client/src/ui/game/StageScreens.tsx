@@ -517,12 +517,28 @@ function PitchScreen({ pitch }: { pitch: PitchView }) {
   );
 }
 
+/** Dev du sprint : le plus de points de tâches terminées pendant le sprint (null si personne). */
+export function sprintMvp(
+  devs: readonly DevView[],
+  sprint: number,
+): { name: string; points: number; tasks: number } | null {
+  let best: { name: string; points: number; tasks: number } | null = null;
+  for (const dev of devs) {
+    const done = dev.performance.lastSprints.find((entry) => entry.sprint === sprint);
+    if (!done || done.lost || done.points <= 0) continue;
+    if (!best || done.points > best.points)
+      best = { name: dev.name, points: done.points, tasks: done.tasks };
+  }
+  return best;
+}
+
 function DemoScreen({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
   const report = view.lastReport;
   const money = (value: number) => `${formatMoney(Math.round(value), i18n.language)} €`;
   const offer = view.acquisitionOffer;
+  const mvp = report ? sprintMvp(view.devs, report.sprint) : null;
   return (
     <Dialog
       title={t('demo.title', { sprint: view.time.sprint })}
@@ -544,6 +560,11 @@ function DemoScreen({ view }: { view: GameView }) {
             <dd>{money(report.revenue)}</dd>
             <dt>{t('demo.expenses')}</dt>
             <dd>{money(report.expenses)}</dd>
+            <dt>{t('demo.net')}</dt>
+            <dd className={report.revenue >= report.expenses ? 'up' : 'down'}>
+              {report.revenue >= report.expenses ? '+' : '−'}
+              {money(Math.abs(report.revenue - report.expenses))}
+            </dd>
             <dt>{t('gauges.hype.name')}</dt>
             <dd className={report.hypeDelta >= 0 ? 'up' : 'down'}>
               {report.hypeDelta >= 0 ? '+' : ''}
@@ -567,6 +588,12 @@ function DemoScreen({ view }: { view: GameView }) {
             <dt>{t('demo.valuation')}</dt>
             <dd>{formatGauge('treasury', report.valuation, i18n.language)}</dd>
           </dl>
+          {mvp && (
+            <p className="demo-mvp">
+              <span aria-hidden="true">🏆 </span>
+              {t('demo.mvp', { name: mvp.name, count: mvp.tasks, points: mvp.points })}
+            </p>
+          )}
           {report.objective && <ObjectiveResult objective={report.objective} />}
           {report.feedback.length > 0 && (
             <>

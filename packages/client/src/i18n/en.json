@@ -1011,7 +1011,10 @@
     "accept": "Accept",
     "refuse": "Decline",
     "special": "Emergencies and weekly tasks",
-    "specialValue": "{{done}} in time, {{missed}} missed"
+    "specialValue": "{{done}} in time, {{missed}} missed",
+    "net": "Sprint result",
+    "mvp_one": "Dev of the sprint: {{name}}, {{count}} task done ({{points}} points).",
+    "mvp_other": "Dev of the sprint: {{name}}, {{count}} tasks done ({{points}} points)."
   },
   "raise": {
     "kicker": "Raise request",

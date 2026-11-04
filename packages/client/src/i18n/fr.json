@@ -1011,7 +1011,10 @@
     "accept": "Accepter",
     "refuse": "Refuser",
     "special": "Urgences et tâches hebdo",
-    "specialValue": "{{done}} à temps, {{missed}} ratée(s)"
+    "specialValue": "{{done}} à temps, {{missed}} ratée(s)",
+    "net": "Résultat du sprint",
+    "mvp_one": "Dev du sprint : {{name}}, {{count}} tâche terminée ({{points}} points).",
+    "mvp_other": "Dev du sprint : {{name}}, {{count}} tâches terminées ({{points}} points)."
   },
   "raise": {
     "kicker": "Demande d'augmentation",
