@@ -47,14 +47,33 @@ function delta(factor: number, language: string): string {
   }).format(percent / 100);
 }
 
+const BUSINESS_TABS = ['pricing', 'clients', 'support'] as const;
+type BusinessTab = (typeof BUSINESS_TABS)[number];
+
+/** Business en trois onglets (prix, clients, support) pour ne pas tout afficher d'un coup. */
 export function Business({ view }: { view: GameView }) {
   const { t } = useTranslation();
+  const [tab, setTab] = useState<BusinessTab>('pricing');
   return (
     <div className="business-panel">
       <p className="hint">{t('business.intro')}</p>
-      <Pricing view={view} />
-      <Support view={view} />
-      <Clients view={view} />
+      <div className="segmented panel-tabs" role="tablist" aria-label={t('panels.business')}>
+        {BUSINESS_TABS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            data-testid={`business-tab-${id}`}
+            onClick={() => setTab(id)}
+          >
+            {t(`business.tabs.${id}`)}
+          </button>
+        ))}
+      </div>
+      {tab === 'pricing' && <Pricing view={view} />}
+      {tab === 'clients' && <Clients view={view} />}
+      {tab === 'support' && <Support view={view} />}
     </div>
   );
 }

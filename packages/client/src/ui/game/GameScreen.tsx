@@ -22,6 +22,7 @@ import { MeetingRoom } from '../meetings/MeetingRoom';
 import { TicketApp } from '../meetings/TicketApp';
 import { Pets } from '../pets/Pets';
 import { Lobby } from '../lobby/Lobby';
+import { Premises } from '../premises/Premises';
 import { ServerRoom } from '../servers/ServerRoom';
 import { Cleaning } from '../cleaning/Cleaning';
 import { Business } from '../business/Business';
@@ -69,6 +70,8 @@ function PanelContent({ panel, view }: { panel: PanelId; view: GameView }) {
       return <Pets view={view} />;
     case 'servers':
       return <ServerRoom view={view} />;
+    case 'premises':
+      return <Premises />;
     case 'lobby':
       return <Lobby view={view} />;
     case 'cleaning':

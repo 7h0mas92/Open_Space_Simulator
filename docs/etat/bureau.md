@@ -210,3 +210,4 @@
   24 h/24 (16 500 €, Série A), payés chaque semaine. Rendu `render/lobby.ts` et
   `render/lobbyFurniture.ts` (formes `receptionDesk` et `badgeGates` des assets manquants).
   Commandes `BUILD_LOBBY` / `SET_RECEPTIONISTS`, état `lobby` (null par défaut), aucun tirage.
+- Poubelles : chacune retient 10 % des déchets, jusqu'à 3 (#171).

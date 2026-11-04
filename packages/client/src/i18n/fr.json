@@ -317,7 +317,8 @@
       "slack": "Slack",
       "group": "Investir",
       "meetings": "Réunion",
-      "funding": "Lever"
+      "funding": "Lever",
+      "premises": "Locaux"
     },
     "group": "Investir",
     "meetings": "Salle de réunion",
@@ -332,7 +333,8 @@
     "leaderboard": "Classement",
     "market": "Marché",
     "research": "R&D",
-    "business": "Business"
+    "business": "Business",
+    "premises": "Locaux"
   },
   "kanban": {
     "columns": {
@@ -635,7 +637,7 @@
       "rolled": "Enroulé : allume un projecteur tourné vers lui pour le dérouler."
     },
     "categories": {
-      "work": "Travail",
+      "work": "Bureaux",
       "comfort": "Confort",
       "kitchen": "Cuisine",
       "appliance": "Électroménager",
@@ -727,7 +729,13 @@
     "storyLockedMode": "🔒 Récompense du mode Histoire, indisponible dans ce mode.",
     "storyLockedPrestige": "🏆 Prestige : remplis l’objectif de l’histoire qui donne cette récompense.",
     "undoMove": "Déplacement annulé.",
-    "undoPlace": "Pose annulée : l’objet est rangé dans l’inventaire."
+    "undoPlace": "Pose annulée : l’objet est rangé dans l’inventaire.",
+    "families": {
+      "work": "Travail",
+      "comfort": "Confort",
+      "layout": "Aménagement",
+      "premises": "Locaux"
+    }
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -2589,6 +2597,11 @@
         "LIGHT": "Un peu ({{percent}} %)",
         "HEAVY": "Beaucoup ({{percent}} %)"
       }
+    },
+    "tabs": {
+      "pricing": "Prix",
+      "clients": "Clients",
+      "support": "Support"
     }
   },
   "leave": {
@@ -2807,5 +2820,12 @@
     "trainedThisSprint": "Déjà en formation ce sprint.",
     "reset": "Réinitialiser l'arbre ({{cost}})",
     "resetConfirm": "Rendre tous les points de {{name}} pour {{cost}} (un mois de salaire) ?"
+  },
+  "premises": {
+    "subscriptions": "Internet, ménage, sécurité : tes abonnements en cours.",
+    "lobby": "L’accueil, la sécurité et les secrétaires.",
+    "servers": "Baies, clim et box fibre.",
+    "cleaning": "Saleté du bureau et passages de ménage.",
+    "pets": "Les chats du bureau et leurs besoins."
   }
 }
