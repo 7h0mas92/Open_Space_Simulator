@@ -1,4 +1,5 @@
 import {
+  CLIENT_NEED_INFO,
   PRICE_TIERS,
   PRICING_MODEL_INFO,
   PRICING_MODELS,
@@ -207,8 +208,6 @@ function Preview({ choice }: { choice: PricingChoiceView }) {
   );
 }
 
-const NEED_ICONS = { FEATURE: '✨', INFRA: '🏗️', BUGFIX: '🐛' } as const;
-
 /** Clients B2B : contrats en cours, puis offres à signer. */
 function Clients({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
@@ -270,13 +269,16 @@ function DealHeader({ deal }: { deal: ClientDealView }) {
           {localized(deal.sector, i18n.language)} · {t(`business.clients.sizes.${deal.size}`)}
         </span>
       </h4>
-      <p className="client-need">
-        <span aria-hidden="true">{NEED_ICONS[deal.need]} </span>
+      <p className="client-need" title={localized(CLIENT_NEED_INFO[deal.need].ask, i18n.language)}>
+        <span aria-hidden="true">{CLIENT_NEED_INFO[deal.need].icon} </span>
         {t('business.clients.need', {
           count: deal.points,
           type: t(`business.clients.needs.${deal.need}`),
           sprints: deal.sprints,
         })}
+        <span className="hint">
+          {deal.company} {localized(CLIENT_NEED_INFO[deal.need].ask, i18n.language)}
+        </span>
       </p>
     </>
   );

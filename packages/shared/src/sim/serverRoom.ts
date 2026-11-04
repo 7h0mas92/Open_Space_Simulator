@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { weeklyFromMonthly } from './lobby.js';
 import type { Phase } from '../game.js';
 import type { LocalizedText } from '../i18n.js';
 import { TIME } from './balance.js';
@@ -201,9 +202,9 @@ export const FIBRE_PLANS: readonly FibrePlan[] = [
   },
 ];
 
-/** Prix prélevé chaque semaine de jeu : le prix mensuel au prorata de 7 jours sur 30. */
+/** Prix prélevé chaque semaine de jeu, calculé comme les autres abonnements (12 mois = 52 semaines). */
 export function weeklyPrice(plan: FibrePlan): number {
-  return Math.round((plan.monthlyPrice * 7) / 30);
+  return weeklyFromMonthly(plan.monthlyPrice);
 }
 
 /**

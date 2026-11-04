@@ -5142,3 +5142,9 @@ button.skill-node.available {
   font-weight: 600;
   text-align: center;
 }
+
+.client-need .hint {
+  display: block;
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+}
