@@ -62,11 +62,25 @@ export function cardsVersionOf(cards: readonly EventCard[]): string {
 
 /** S'assure que la version « builtin » (cartes intégrées au client) existe en base. */
 export async function ensureBuiltinCardSet(prisma: PrismaClient): Promise<void> {
+  await saveCardSet(prisma, BUILTIN_CARDS_VERSION, EVENT_CARDS);
+}
+
+/**
+ * Versions déjà enregistrées dans `CardSet`, par connexion à la base : on n'écrit l'instantané
+ * qu'une fois par version et par processus, au lieu d'un upsert à chaque partie lancée.
+ */
+const savedVersions = new WeakMap<PrismaClient, Set<string>>();
+
+async function saveCardSet(prisma: PrismaClient, version: string, cards: readonly EventCard[]) {
+  let saved = savedVersions.get(prisma);
+  if (!saved) savedVersions.set(prisma, (saved = new Set()));
+  if (saved.has(version)) return;
   await prisma.cardSet.upsert({
-    where: { version: BUILTIN_CARDS_VERSION },
+    where: { version },
     update: {},
-    create: { version: BUILTIN_CARDS_VERSION, cards: EVENT_CARDS as Prisma.InputJsonValue },
+    create: { version, cards: cards as Prisma.InputJsonValue },
   });
+  saved.add(version);
 }
 
 /** Cartes actives servies aux joueurs, avec leur version (instantané gardé en base). */
@@ -79,11 +93,7 @@ export async function activeCardSet(prisma: PrismaClient): Promise<CardSetRespon
   }
   const cards = rows.map(toEventCard);
   const version = cardsVersionOf(cards);
-  await prisma.cardSet.upsert({
-    where: { version },
-    update: {},
-    create: { version, cards: cards as Prisma.InputJsonValue },
-  });
+  await saveCardSet(prisma, version, cards);
   return { version, cards };
 }
 

@@ -163,11 +163,6 @@ export function getStoryAct(index: number): StoryAct {
   return act;
 }
 
-/** Acte où se trouve une mission de la campagne (chaque mission est dans un seul acte). */
-export function actOfMission(id: StoryMissionId): StoryAct | undefined {
-  return STORY_ACTS.find((act) => act.side.includes(id));
-}
-
 /** Fins écrites de l'histoire : entrée en Bourse ou rachat par Gigacorp. */
 export const STORY_ENDINGS = ['IPO', 'ACQUISITION'] as const;
 export const StoryEndingSchema = z.enum(STORY_ENDINGS);

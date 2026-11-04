@@ -388,7 +388,8 @@
       "success": "Objectif atteint : {{goal}}. Bonus encaissé : {{money}}.",
       "failed": "Objectif raté : {{goal}} ({{value}} / {{target}}).",
       "failedOutage": "Objectif raté : {{goal}} ({{count}} panne(s))."
-    }
+    },
+    "overload": "Sprint trop chargé : {{planned}} tâches prévues pour environ {{capacity}} faisables d’ici la démo. L’équipe risque de ne pas tout finir."
   },
   "team": {
     "age": "{{age}} ans",
@@ -724,7 +725,9 @@
     "monitor": "Écran",
     "storyLocked": "🔒 Récompense du mode Histoire : réussis sa mission pour l’acheter.",
     "storyLockedMode": "🔒 Récompense du mode Histoire, indisponible dans ce mode.",
-    "storyLockedPrestige": "🏆 Prestige : remplis l’objectif de l’histoire qui donne cette récompense."
+    "storyLockedPrestige": "🏆 Prestige : remplis l’objectif de l’histoire qui donne cette récompense.",
+    "undoMove": "Déplacement annulé.",
+    "undoPlace": "Pose annulée : l’objet est rangé dans l’inventaire."
   },
   "results": {
     "INVALID_COMMAND": "Action impossible.",
@@ -762,7 +765,8 @@
   },
   "dashboard": {
     "intro": "Historique des jauges, un point par jour.",
-    "noData": "Pas encore d'historique : lance un sprint."
+    "noData": "Pas encore d'historique : lance un sprint.",
+    "sinceStart": "Depuis le début : {{value}}"
   },
   "settings": {
     "quality": "Qualité graphique",
@@ -794,7 +798,22 @@
     },
     "slackAi": "Slack piloté par l'IA",
     "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques.",
-    "dailyPause": "Arrêter le temps quelques secondes au Daily du matin"
+    "dailyPause": "Arrêter le temps quelques secondes au Daily du matin",
+    "shortcuts": {
+      "title": "Raccourcis clavier",
+      "space": "Espace : pause / reprise",
+      "speed": "1, 2, 4 : vitesse du temps",
+      "build": "B : mode construction",
+      "kanban": "K : Kanban",
+      "team": "T : équipe",
+      "rotate": "R : tourner l'objet en main",
+      "arrows": "Flèches : déplacer l'objet en main",
+      "enter": "Entrée : poser l'objet",
+      "escape": "Échap : revenir en arrière",
+      "answer": "1 et 2 : répondre à une carte",
+      "undo": "Ctrl+Z : annuler la dernière pose ou le dernier déplacement"
+    },
+    "colorBlind": "Couleurs pour daltoniens (bleu et orange)"
   },
   "credits": {
     "title": "Crédits",
@@ -997,7 +1016,10 @@
     "accept": "Accepter",
     "refuse": "Refuser",
     "special": "Urgences et tâches hebdo",
-    "specialValue": "{{done}} à temps, {{missed}} ratée(s)"
+    "specialValue": "{{done}} à temps, {{missed}} ratée(s)",
+    "net": "Résultat du sprint",
+    "mvp_one": "Dev du sprint : {{name}}, {{count}} tâche terminée ({{points}} points).",
+    "mvp_other": "Dev du sprint : {{name}}, {{count}} tâches terminées ({{points}} points)."
   },
   "raise": {
     "kicker": "Demande d'augmentation",
@@ -1055,7 +1077,12 @@
     "submitting": "Le serveur rejoue ta partie pour valider le score…",
     "guest": "Connecte-toi pour publier tes scores.",
     "rank": "Score validé : {{rank}}e au classement !",
-    "submitFailed": "Score non publié"
+    "submitFailed": "Score non publié",
+    "best": {
+      "first": "🏁 Première partie dans ce mode : c'est ton record à battre.",
+      "beaten": "🏆 Nouveau record dans ce mode ! L'ancien : {{previous}}.",
+      "below": "Ton record dans ce mode : {{best}} (sprint {{sprint}})."
+    }
   },
   "modes": {
     "title": "Choisis ton mode",
@@ -2430,38 +2457,6 @@
     "maxUsers_other": "Jusqu’à {{count}} salariés",
     "tooSmall": "trop petite pour ton équipe",
     "setupFee": "Mise en service : {{price}} €, payée à la souscription"
-  },
-  "cleaning": {
-    "intro": "Chaque jour de semaine, l’équipe présente au bureau le salit : emballages, gobelets, canettes, boîtes de pizza… Plus tu attends, plus la saleté monte vite, et un bureau sale ralentit tous ceux qui y travaillent (pas les télétravailleurs). Appelle l’entreprise de nettoyage Nickel Chrome ou prends un abonnement.",
-    "dirtTitle": "Saleté du bureau",
-    "dirt": "{{percent}} % de saleté",
-    "levels": {
-      "clean": "Propre",
-      "warn": "À surveiller",
-      "dirty": "Sale"
-    },
-    "loss": "L’équipe sur place travaille {{percent}} % moins vite.",
-    "noLoss": "Bureau impeccable : aucun travail perdu.",
-    "days_one": "{{count}} jour sans ménage",
-    "days_other": "{{count}} jours sans ménage",
-    "crewTitle": "Nickel Chrome, entreprise de nettoyage",
-    "tools": {
-      "cart": "cheffe d’équipe, chariot",
-      "vacuum": "aspirateur",
-      "mop": "serpillière"
-    },
-    "status": {
-      "visit": "Ménage en cours ({{percent}} %)",
-      "express": "L’équipe express arrive tout de suite",
-      "booked_one": "L’équipe passe dans {{count}} heure",
-      "booked_other": "L’équipe passe dans {{count}} heures"
-    },
-    "call": "Appeler pour ce soir ({{price}} €)",
-    "express": "Express, tout de suite ({{price}} €)",
-    "callHint": "Un appel est payé à la réservation : l’équipe passe le soir à 19h, ou tout de suite en express.",
-    "history_one": "{{count}} passage, {{price}} € dépensés en appels",
-    "history_other": "{{count}} passages, {{price}} € dépensés en appels",
-    "button": "Ménage : {{percent}} % de saleté"
   },
   "daily": {
     "liveUseful": "Daily en salle de réunion : chacun fait le point sur son ticket. Utile, +{{focus}} % jusqu’au soir.",

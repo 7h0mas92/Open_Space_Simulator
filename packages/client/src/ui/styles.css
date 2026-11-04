@@ -10,6 +10,7 @@
   --accent: #f5b942;
   --accent-text: #1b1f2e;
   --danger: #ff8a80;
+  --good: #7ddc98;
   --border: #4a5170;
   --radius: 12px;
   --touch: 44px;
@@ -30,6 +31,12 @@
 
 * {
   box-sizing: border-box;
+}
+
+/* Palette pour daltoniens (deutéranopie, protanopie) : bleu et orange au lieu de vert et rouge. */
+:root[data-palette='colorblind'] {
+  --good: #5aa9ff;
+  --danger: #ffa94d;
 }
 
 html,

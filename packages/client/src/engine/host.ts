@@ -4,6 +4,7 @@ import {
   type LoggedCommand,
   type Notification,
   type Speed,
+  modeRules,
 } from '@oss/shared';
 import { CardLibrary } from '../events/library';
 import { Simulation } from '../simulation/simulation';
@@ -104,7 +105,7 @@ export class SimulationHost {
   private setSpeed(speed: Speed): void {
     if (!isSpeed(speed)) return;
     // Mode Hardcore : pas de pause.
-    if (speed === 0 && this.simulation?.state.mode === 'HARDCORE') return;
+    if (speed === 0 && this.simulation && !modeRules(this.simulation.state.mode).canPause) return;
     // Carte ouverte : la pause tient jusqu'à la réponse, la vitesse choisie s'appliquera après.
     if (this.resumeSpeed !== null) {
       if (speed !== 0) this.resumeSpeed = speed;
@@ -206,7 +207,7 @@ export class SimulationHost {
     } else if (
       pending &&
       !this.replay &&
-      simulation.state.mode !== 'HARDCORE' &&
+      modeRules(simulation.state.mode).cardsPauseTime &&
       simulation.state.stage === 'EXECUTION' &&
       this.clock.speed !== 0
     ) {

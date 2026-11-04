@@ -28,7 +28,8 @@ import {
 import { findPath } from './astar';
 import { action, condition, selector, sequence, type BTNode, type Status } from './behaviorTree';
 import { accessCell, accessPoint, buildNavGrid, type ItemPlacement, type NavGrid } from './grid';
-import { hashString, Random } from './random';
+import { hashString } from '@oss/shared';
+import { Random } from './random';
 import { pickThought } from './thoughts';
 
 /** Durée d'un pas de l'IA, en secondes (multipliée par la vitesse de jeu). */

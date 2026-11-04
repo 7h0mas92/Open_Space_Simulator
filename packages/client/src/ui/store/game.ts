@@ -37,6 +37,7 @@ import type { GameSource } from '../../view/source';
 import type {
   CommandResult,
   GameCommand,
+  ItemHost,
   GameNotification,
   GameView,
   PlacedItemView,
@@ -83,6 +84,21 @@ export type PanelId = (typeof PANELS)[number];
  *   `cell` (souris, doigt ou flèches du clavier). Après une pose, l'objet reste en main pour
  *   en poser d'autres, jusqu'à « Annuler » ou « Terminer ».
  */
+/**
+ * Dernière action du mode construction, annulable par Ctrl+Z : un déplacement se défait en
+ * reposant l'objet à son ancienne place ; une pose range l'objet dans l'inventaire (il reste
+ * acheté, on peut le reposer gratuitement).
+ */
+export type BuildUndo =
+  | { readonly kind: 'move'; readonly command: GameCommand }
+  | {
+      readonly kind: 'place';
+      readonly item: string;
+      readonly x: number;
+      readonly z: number;
+      readonly host: ItemHost | null;
+    };
+
 export interface BuildState {
   readonly kind: string | null;
   readonly rotation: Rotation;
@@ -245,6 +261,7 @@ interface GameStore {
   panel: PanelId | null;
   selected: PickTarget | null;
   build: BuildState | null;
+  buildUndo: BuildUndo | null;
   toast: Toast | null;
   fps: number;
   /** Pseudo du joueur dont on regarde le replay (null pour une partie jouée). */
@@ -279,6 +296,8 @@ interface GameStore {
    * acheté reste en main (pose en série) ; un objet déplacé ramène au catalogue.
    */
   placeAt(cell?: Cell): Promise<boolean>;
+  /** Annule la dernière pose ou le dernier déplacement (Ctrl+Z en construction). */
+  undoBuild(): Promise<void>;
   notify(key: string, tone?: Toast['tone'], params?: Toast['params']): void;
   setFps(fps: number): void;
   setTeamFilters(filters: TeamFilters): void;
@@ -364,6 +383,7 @@ export const useGame = create<GameStore>((set, get) => ({
   panel: null,
   selected: null,
   build: null,
+  buildUndo: null,
   toast: null,
   fps: 0,
   replayOf: null,
@@ -451,7 +471,28 @@ export const useGame = create<GameStore>((set, get) => ({
   },
 
   exitBuild() {
-    set({ build: null, selected: null });
+    set({ build: null, selected: null, buildUndo: null });
+  },
+
+  async undoBuild() {
+    const { buildUndo: undo, view, dispatch, notify } = get();
+    if (!undo || !view) return;
+    set({ buildUndo: null });
+    let command: GameCommand | null = undo.kind === 'move' ? undo.command : null;
+    if (undo.kind === 'place') {
+      const { host } = undo;
+      const placed = view.items.find(
+        (item) =>
+          item.kind === undo.item &&
+          (host
+            ? item.host?.id === host.id && item.host?.slot === host.slot
+            : !item.host && item.x === undo.x && item.z === undo.z),
+      );
+      command = placed ? { type: 'storeItem', itemId: placed.id } : null;
+    }
+    if (!command) return;
+    const result = await dispatch(command);
+    if (result.ok) notify(undo.kind === 'move' ? 'build.undoMove' : 'build.undoPlace', 'info');
   },
 
   pickItem(kind) {
@@ -611,8 +652,30 @@ export const useGame = create<GameStore>((set, get) => ({
               rotation: build.rotation,
               color: build.color,
             };
+    const before = moving ? view.items.find((item) => item.id === moving) : undefined;
     const result = await dispatch(command);
     if (!result.ok) return false;
+    set({
+      buildUndo: before
+        ? {
+            kind: 'move',
+            command: before.host
+              ? {
+                  type: 'moveAccessory',
+                  itemId: before.id,
+                  host: before.host,
+                  rotation: before.rotation,
+                }
+              : {
+                  type: 'moveItem',
+                  itemId: before.id,
+                  x: before.x,
+                  z: before.z,
+                  rotation: before.rotation,
+                },
+          }
+        : { kind: 'place', item: build.kind, x: cell.x, z: cell.z, host },
+    });
     const name = localized(def.name, i18n.language);
     notify(moving ? 'build.moved' : 'build.placed', 'success', { item: name });
     if (!get().build) return true; // on a quitté la construction entre-temps

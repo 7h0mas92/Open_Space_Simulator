@@ -1,4 +1,5 @@
 import type { GameMode } from '@oss/shared';
+import { modeRules } from '@oss/shared';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameView } from '../../view/types';
@@ -141,7 +142,7 @@ export function Guide({ view }: { view: GameView }) {
   // La partie se met en pause à l'ouverture d'un chapitre (sauf en Hardcore : jamais de pause).
   const lessonId = active?.lesson ?? null;
   useEffect(() => {
-    if (!lessonId || view.mode === 'HARDCORE' || !running) return;
+    if (!lessonId || !modeRules(view.mode).guide || !running) return;
     useGuide.getState().setPausedByGuide(true);
     void dispatch({ type: 'setSpeed', speed: 0 });
     // Seule l'ouverture du chapitre compte : le joueur reste libre de relancer le temps.

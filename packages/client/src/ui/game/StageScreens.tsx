@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   STORY_MISSION_IDS,
   companyName,
@@ -11,6 +11,7 @@ import {
   type CampaignResult,
   RETRO,
   type RetroAction,
+  modeRules,
 } from '@oss/shared';
 import { MissionGoals } from '../story/MissionGoals';
 import { useActLabel } from '../story/CampaignPanel';
@@ -28,6 +29,7 @@ import type {
 import { useObjectiveGoal } from '../kanban/Objective';
 import { useGame } from '../store/game';
 import { formatGauge, formatMoney, localized } from './format';
+import { recordGame, type PersonalBest } from './personalBest';
 import { GAUGE_ICONS } from './Hud';
 import { moodEmoji, StatBars } from '../team/StatBars';
 import { CareerMilestones } from '../career/CareerPanel';
@@ -49,7 +51,9 @@ export function StageScreens({ view }: { view: GameView }) {
       return <DemoScreen view={view} />;
     case 'event':
       return (
-        view.event && <EventCardScreen event={view.event} hardcore={view.mode === 'HARDCORE'} />
+        view.event && (
+          <EventCardScreen event={view.event} hardcore={!modeRules(view.mode).cardsPauseTime} />
+        )
       );
     case 'raise': {
       const request = view.raiseRequest;
@@ -97,8 +101,11 @@ function Dialog({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (focusDialog) ref.current?.focus();
-    else ref.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus();
+    if (focusDialog) ref.current?.focus({ preventScroll: true });
+    else
+      ref.current
+        ?.querySelector<HTMLButtonElement>('button:not([disabled])')
+        ?.focus({ preventScroll: true });
   }, [title, focusDialog]);
   return (
     <div className="stage-backdrop">
@@ -514,12 +521,28 @@ function PitchScreen({ pitch }: { pitch: PitchView }) {
   );
 }
 
+/** Dev du sprint : le plus de points de tâches terminées pendant le sprint (null si personne). */
+export function sprintMvp(
+  devs: readonly DevView[],
+  sprint: number,
+): { name: string; points: number; tasks: number } | null {
+  let best: { name: string; points: number; tasks: number } | null = null;
+  for (const dev of devs) {
+    const done = dev.performance.lastSprints.find((entry) => entry.sprint === sprint);
+    if (!done || done.lost || done.points <= 0) continue;
+    if (!best || done.points > best.points)
+      best = { name: dev.name, points: done.points, tasks: done.tasks };
+  }
+  return best;
+}
+
 function DemoScreen({ view }: { view: GameView }) {
   const { t, i18n } = useTranslation();
   const dispatch = useGame((s) => s.dispatch);
   const report = view.lastReport;
   const money = (value: number) => `${formatMoney(Math.round(value), i18n.language)} €`;
   const offer = view.acquisitionOffer;
+  const mvp = report ? sprintMvp(view.devs, report.sprint) : null;
   return (
     <Dialog
       title={t('demo.title', { sprint: view.time.sprint })}
@@ -541,6 +564,11 @@ function DemoScreen({ view }: { view: GameView }) {
             <dd>{money(report.revenue)}</dd>
             <dt>{t('demo.expenses')}</dt>
             <dd>{money(report.expenses)}</dd>
+            <dt>{t('demo.net')}</dt>
+            <dd className={report.revenue >= report.expenses ? 'up' : 'down'}>
+              {report.revenue >= report.expenses ? '+' : '−'}
+              {money(Math.abs(report.revenue - report.expenses))}
+            </dd>
             <dt>{t('gauges.hype.name')}</dt>
             <dd className={report.hypeDelta >= 0 ? 'up' : 'down'}>
               {report.hypeDelta >= 0 ? '+' : ''}
@@ -564,14 +592,24 @@ function DemoScreen({ view }: { view: GameView }) {
             <dt>{t('demo.valuation')}</dt>
             <dd>{formatGauge('treasury', report.valuation, i18n.language)}</dd>
           </dl>
+          {mvp && (
+            <p className="demo-mvp">
+              <span aria-hidden="true">🏆 </span>
+              {t('demo.mvp', { name: mvp.name, count: mvp.tasks, points: mvp.points })}
+            </p>
+          )}
           {report.objective && <ObjectiveResult objective={report.objective} />}
           {report.feedback.length > 0 && (
             <>
               <h3>{t('demo.feedback')}</h3>
               <ul className="feedback">
-                {report.feedback.map((line, index) => (
-                  <li key={index}>{localized(line, i18n.language)}</li>
-                ))}
+                {/* Deux tirages peuvent tomber sur la même phrase : on ne l'affiche qu'une fois
+                    (affichage seul, pour ne rien changer aux tirages de la partie). */}
+                {[...new Set(report.feedback.map((line) => localized(line, i18n.language)))].map(
+                  (line) => (
+                    <li key={line}>{line}</li>
+                  ),
+                )}
               </ul>
             </>
           )}
@@ -675,6 +713,18 @@ function EndScreen({ view }: { view: GameView }) {
   const notify = useGame((s) => s.notify);
   const replayOf = useGame((s) => s.replayOf);
   const result = view.result;
+  // Lu et enregistré une seule fois, à l'ouverture de l'écran (pas pour un replay).
+  const [best] = useState<{ previous: PersonalBest | null } | null>(() =>
+    result && !replayOf && !result.mission && !result.campaign
+      ? {
+          previous: recordGame(view.mode, {
+            valuation: result.valuation,
+            sprint: result.sprint,
+            seed: view.seed,
+          }),
+        }
+      : null,
+  );
   if (!result) return null;
   const headline = localized(result.headline, i18n.language);
   const valuation = formatGauge('treasury', result.valuation, i18n.language);
@@ -738,6 +788,22 @@ function EndScreen({ view }: { view: GameView }) {
         <dt>{t('achievements.title')}</dt>
         <dd>{view.achievements.length}</dd>
       </dl>
+      {best && (
+        <p
+          className={`personal-best ${!best.previous || result.valuation > best.previous.valuation ? 'up' : ''}`}
+        >
+          {!best.previous
+            ? t('end.best.first')
+            : result.valuation > best.previous.valuation
+              ? t('end.best.beaten', {
+                  previous: formatGauge('treasury', best.previous.valuation, i18n.language),
+                })
+              : t('end.best.below', {
+                  best: formatGauge('treasury', best.previous.valuation, i18n.language),
+                  sprint: best.previous.sprint,
+                })}
+        </p>
+      )}
       {view.career && result.career && (
         <section className="career-end" aria-labelledby="career-end-title">
           <h3 id="career-end-title">

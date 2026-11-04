@@ -41,7 +41,7 @@ import {
   type SimContext,
 } from './helpers';
 import { log10Approx, softSigmoid } from './math';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 
 /*
  * Levée de fonds : chaque tour de table (Seed, Série A, Série B…) est plus exigeant que le
@@ -63,7 +63,7 @@ const BLUFF_CAUGHT = -2.5;
 
 /** Générateur dédié, reproductible : même graine, même sprint, même clé ⇒ même tirage. */
 function pitchRng(state: GameState, key: string): Rng {
-  return Rng.fromSeed(`${state.seed}#pitch#${state.sprint}#${key}`);
+  return sideRng(state.seed, 'pitch', state.sprint, key);
 }
 
 /** Tour de table du pitch en cours (ou du prochain pitch). */

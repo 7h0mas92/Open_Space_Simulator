@@ -14,6 +14,8 @@ export interface Settings {
   readonly zoomSpeed: ZoomSpeed;
   readonly textScale: number;
   readonly showFps: boolean;
+  /** Couleurs bleu et orange au lieu de vert et rouge (gains, pertes, alertes). */
+  readonly colorBlind: boolean;
   /** Défilement de la caméra quand la souris touche un bord de l'écran (desktop). */
   readonly edgePan: boolean;
   /** Le temps s'arrête quelques secondes au Daily du matin, le temps de lire l'appli projetée. */
@@ -66,6 +68,7 @@ function detectDefaults(): Settings {
     zoomSpeed: 'normal',
     textScale: 1,
     showFps: false,
+    colorBlind: false,
     edgePan: true,
     dailyPause: true,
     tutorialDone: false,
@@ -93,6 +96,7 @@ function load(): Settings {
         ? (raw.textScale as number)
         : 1,
       showFps: raw.showFps === true,
+      colorBlind: raw.colorBlind === true,
       edgePan: raw.edgePan !== false,
       dailyPause: raw.dailyPause !== false,
       tutorialDone: raw.tutorialDone === true,

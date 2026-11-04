@@ -34,7 +34,7 @@ import {
   slotPosition,
   snapsToHalf,
 } from '../view/placement';
-import type { GameView, Rotation } from '../view/types';
+import type { GameView, PlacedItemView, Rotation } from '../view/types';
 import { aimWindow, isWallItem, wallOpenings, type WallSide } from '../view/windows';
 import { AssetLibrary } from './assets';
 import { CharacterView } from './characters';
@@ -198,6 +198,12 @@ export class GameRenderer {
   private cameraState: IsoCameraState = { targetX: 4, targetZ: 3, zoom: 1, quarter: 0 };
   private previous = new Map<string, AgentSnapshot>();
   private current: AgentSnapshot[] = [];
+  /** Devs et chats réunis pour le hall, refaits seulement quand un instantané change. */
+  private lobbyCrowd: readonly (AgentSnapshot | CatSnapshot)[] = [];
+  private lobbyCrowdOf: [AgentSnapshot[], CatSnapshot[]] | null = null;
+  /** Objets posés indexés par id, refaits seulement quand la vue change. */
+  private itemIndex = new Map<string, PlacedItemView>();
+  private itemIndexOf: readonly PlacedItemView[] | null = null;
   private accumulator = 0;
   private lastFrame = 0;
   private frameHandle = 0;
@@ -651,7 +657,7 @@ export class GameRenderer {
       );
     }
     this.projection.update(delta, !this.reducedMotion);
-    this.lobby.update([...this.current, ...this.currentCats], delta, !this.reducedMotion);
+    this.lobby.update(this.crowd(), delta, !this.reducedMotion);
     this.dailyBoard.update(delta, !this.reducedMotion);
     this.options.onDeskActivity?.(this.deskActivity(speed > 0));
     this.smoke.update(delta);
@@ -850,6 +856,23 @@ export class GameRenderer {
     }
   }
 
+  private crowd(): readonly (AgentSnapshot | CatSnapshot)[] {
+    const of = this.lobbyCrowdOf;
+    if (!of || of[0] !== this.current || of[1] !== this.currentCats) {
+      this.lobbyCrowdOf = [this.current, this.currentCats];
+      this.lobbyCrowd = [...this.current, ...this.currentCats];
+    }
+    return this.lobbyCrowd;
+  }
+
+  private itemsById(items: readonly PlacedItemView[]): ReadonlyMap<string, PlacedItemView> {
+    if (items !== this.itemIndexOf) {
+      this.itemIndexOf = items;
+      this.itemIndex = new Map(items.map((item) => [item.id, item]));
+    }
+    return this.itemIndex;
+  }
+
   /** Devs qui travaillent à un ordinateur, placés par rapport au centre de l'écran. */
   private deskActivity(running: boolean): DeskActivity {
     const halfWidth = this.camera.right;
@@ -857,7 +880,7 @@ export class GameRenderer {
     const typists: DeskActivity['typists'][number][] = [];
     const view = this.view;
     if (running && view) {
-      const items = new Map(view.items.map((item) => [item.id, item]));
+      const items = this.itemsById(view.items);
       const point = this.deskPoint;
       for (const agent of this.current) {
         if (!agent.visible || agent.pose !== 'work' || !agent.using) continue;
@@ -887,13 +910,13 @@ export class GameRenderer {
       marker.rotation.set(0, 0, 0);
       if (this.outlinePass) this.outlinePass.selectedObjects = [character.outlineTarget];
     } else if (target.type === 'item') {
-      const item = this.view.items.find((i) => i.id === target.id);
+      const item = this.itemsById(this.view.items).get(target.id);
       const def = item && catalogItem(item.kind);
       if (!item || !def) return;
       if (item.host) {
         // Accessoire : un petit carré sur le plateau, à son emplacement.
         const hostId = item.host.id;
-        const host = this.view.items.find((i) => i.id === hostId);
+        const host = this.itemsById(this.view.items).get(hostId);
         const position = host && slotPosition(host, item.host.slot);
         if (!position) return;
         marker.visible = true;

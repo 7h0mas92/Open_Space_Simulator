@@ -26,7 +26,7 @@ import {
   type SimContext,
 } from './helpers';
 import { assignTask } from './tasks';
-import { Rng } from './rng';
+import { sideRng, type Rng } from './rng';
 import { getClock, type SimClock } from './time';
 import { researchUnlocked } from './research';
 
@@ -124,7 +124,7 @@ export function isTeamMeetingTime(state: GameState, clock: SimClock): boolean {
 
 /** Tirage reproductible d'une réunion : même graine, même tick ⇒ même verdict. */
 function meetingRng(state: GameState): Rng {
-  return Rng.fromSeed(`${state.seed}#meeting#${state.tick}`);
+  return sideRng(state.seed, 'meeting', state.tick);
 }
 
 /**
@@ -233,7 +233,7 @@ export function checkDuplicateWork(state: GameState, ctx: SimContext, clock: Sim
   const unsynced = coders.filter((id) => !sync?.attendees.includes(id));
   const odds = duplicateOdds(coders.length, unsynced.length);
   if (odds <= 0) return;
-  const rng = Rng.fromSeed(`${state.seed}#duplicate#${state.tick}`);
+  const rng = sideRng(state.seed, 'duplicate', state.tick);
   if (!rng.chance(odds)) return;
   const victimId = rng.pick(unsynced);
   const partnerId = rng.pick(coders.filter((id) => id !== victimId));

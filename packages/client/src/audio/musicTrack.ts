@@ -10,6 +10,8 @@
  * Sans Web Audio (vieux navigateur), le volume de la balise sert de repli.
  */
 
+import { clamp01 } from '../engine/interpolation';
+
 export type MusicEvent = 'play' | 'end' | 'fade' | 'playerror' | 'unlock';
 
 /** Ce que le lecteur de musique utilise d'un morceau (le même sous-ensemble que Howler). */
@@ -60,7 +62,6 @@ if (typeof window !== 'undefined') {
     window.addEventListener(event, unlock, { passive: true, capture: true });
 }
 
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 /** Pas du fondu, en millisecondes. */
 const FADE_STEP_MS = 30;
 

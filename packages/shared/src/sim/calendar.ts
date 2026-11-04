@@ -291,11 +291,6 @@ export function seasonsAt(days: number): DecorTheme[] {
   );
 }
 
-/** Thèmes de saison actifs un jour de partie donné. */
-export function seasonsOnGameDay(seed: string, gameDay: number): DecorTheme[] {
-  return seasonsAt(calendarStartDays(seed) + gameDay);
-}
-
 /** Thèmes décorés compte tenu des réglages du back-office (thème absent = `SEASON`). */
 export function decoratedThemes(
   seasons: readonly DecorTheme[],

@@ -10,6 +10,8 @@
   position: fixed;
   inset: 0;
   overflow: hidden;
+  /* « clip » : un focus() sur un bouton hors de l'écran ne peut plus faire défiler le jeu. */
+  overflow: clip;
   background: var(--bg);
   color: var(--text);
 }
@@ -268,7 +270,7 @@
 }
 
 .gauge-trend.good {
-  color: #7ddc98;
+  color: var(--good);
 }
 
 .gauge-trend.bad {
@@ -312,7 +314,7 @@
 }
 
 .gauge-users {
-  --gauge-color: #7ddc98;
+  --gauge-color: var(--good);
 }
 
 .gauge.critical .tooltip-trigger {
@@ -386,7 +388,7 @@
 }
 
 .clock .step-EXECUTION {
-  color: #7ddc98;
+  color: var(--good);
 }
 
 .sprint-progress {
@@ -1039,7 +1041,7 @@ button.danger {
 }
 
 .up {
-  color: #7ddc98;
+  color: var(--good);
 }
 
 .down {
@@ -1260,7 +1262,7 @@ select {
 
 .grade-A,
 .grade-fill-A {
-  background: #7ddc98;
+  background: var(--good);
 }
 
 .grade-B,
@@ -1275,7 +1277,7 @@ select {
 
 .grade-D,
 .grade-fill-D {
-  background: #ff8a80;
+  background: var(--danger);
 }
 
 .perf-panel {
@@ -1425,7 +1427,7 @@ select {
 
 .chip.good,
 .good-text {
-  color: #7ddc98;
+  color: var(--good);
 }
 
 .chip.bad,
@@ -1453,7 +1455,7 @@ select {
 }
 
 .relation.friend span:last-child {
-  color: #7ddc98;
+  color: var(--good);
 }
 
 .relation.enemy span:last-child {
@@ -2071,7 +2073,7 @@ legend {
 
 .guide-task.done {
   background: rgb(125 220 152 / 16%);
-  color: #7ddc98;
+  color: var(--good);
 }
 
 .guide-actions {
@@ -2189,7 +2191,7 @@ legend {
 }
 
 .guide-seen {
-  color: #7ddc98;
+  color: var(--good);
 }
 
 /* Tablette : une carte plus étroite, à gauche. */
@@ -3599,8 +3601,8 @@ legend {
 }
 
 .pitch-rating.rating-strong {
-  border-color: #7ddc98;
-  color: #7ddc98;
+  border-color: var(--good);
+  color: var(--good);
 }
 
 .pitch-rating.rating-weak {
@@ -5141,4 +5143,23 @@ button.skill-node.available {
   font-size: 1.1rem;
   font-weight: 600;
   text-align: center;
+}
+
+.client-need .hint {
+  display: block;
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+}
+
+.start-sprint.overloaded::after {
+  content: ' ⚠️';
+}
+
+.kanban-overload {
+  margin: 0 0 0.5rem;
+}
+
+.chart-change {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
 }

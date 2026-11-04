@@ -1,5 +1,14 @@
 import { dirtLevel } from '../cleaning/Cleaning';
-import { SEASONS, SPEEDS, companyName, isEndless, type Phase, type Speed } from '@oss/shared';
+import { sprintOverloaded } from '../kanban/Kanban';
+import {
+  SEASONS,
+  SPEEDS,
+  companyName,
+  isEndless,
+  type Phase,
+  type Speed,
+  modeRules,
+} from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { GAUGES, isFridayFive, weekday, type GameView, type GaugeName } from '../../view/types';
 import { useSlack } from '../../slack/store';
@@ -377,11 +386,20 @@ export function StepControls({ view }: { view: GameView }) {
   const { time } = view;
   const setSpeed = (speed: Speed) => void dispatch({ type: 'setSpeed', speed });
   if (view.step === 'PLANNING') {
+    const overloaded = sprintOverloaded(view.sprintLoad);
     return (
       <div className="step-controls planning-actions" data-tutorial="speed">
         <button
           type="button"
-          className="primary start-sprint"
+          className={`primary start-sprint${overloaded ? ' overloaded' : ''}`}
+          title={
+            overloaded
+              ? t('kanban.overload', {
+                  planned: view.sprintLoad.planned,
+                  capacity: view.sprintLoad.capacity,
+                })
+              : undefined
+          }
           onClick={() => void dispatch({ type: 'startSprint' })}
           data-tutorial="start"
         >
@@ -416,7 +434,7 @@ export function StepControls({ view }: { view: GameView }) {
           type="button"
           aria-pressed={time.speed === speed}
           aria-label={speed === 0 ? t('time.pause') : t('time.speed', { speed })}
-          disabled={speed === 0 && view.mode === 'HARDCORE'}
+          disabled={speed === 0 && !modeRules(view.mode).canPause}
           onClick={() => setSpeed(speed)}
         >
           {speed === 0 ? '❚❚' : `x${speed}`}

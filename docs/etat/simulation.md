@@ -128,3 +128,5 @@
   toutes les parties (anciens replays de scores divergent). 192 titres de plus
   (`data/moreTasks.ts`, 439 au total), 5 urgences et 5 tâches de la semaine de plus, 150 titres
   récents gardés.
+
+- Prix hebdo de la fibre calculé comme les autres abonnements (×12/52) ; besoin du client affiché sur sa fiche ; graines annexes via `sideRng` ; règles par mode dans `MODE_RULES` (#171).
