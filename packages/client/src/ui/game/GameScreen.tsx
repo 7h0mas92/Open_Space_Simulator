@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { modeRules } from '@oss/shared';
+import { modeRules, type Speed } from '@oss/shared';
 import { useTranslation } from 'react-i18next';
 import { BuildMode } from '../build/BuildMode';
 import { CareerPanel } from '../career/CareerPanel';
@@ -119,8 +119,9 @@ const ARROWS: Record<string, readonly [number, number]> = {
 };
 
 /**
- * Raccourcis clavier globaux : Échap, espace (pause), B (construction) et, objet en main,
- * R (tourner), flèches (déplacer l'aperçu d'une demi-case), Entrée (poser).
+ * Raccourcis clavier globaux : Échap, espace (pause), 1, 2 et 4 (vitesse), B (construction),
+ * K (Kanban), T (équipe) et, objet en main, R (tourner), flèches (déplacer l'aperçu d'une
+ * demi-case), Entrée (poser). La liste est reprise dans les options (`ShortcutList`).
  */
 function useShortcuts() {
   useEffect(() => {
@@ -150,6 +151,18 @@ function useShortcuts() {
       } else if (key === 'b' && !game.panel && game.view && !game.replayOf) {
         if (game.build) game.exitBuild();
         else game.enterBuild();
+      } else if (
+        ['1', '2', '4'].includes(event.key) &&
+        !game.build &&
+        !game.panel &&
+        game.view?.step === 'EXECUTION' &&
+        // Une carte ou une demande d'augmentation garde ses propres touches 1 et 2.
+        stageScreen(game.view) === null
+      ) {
+        void game.dispatch({ type: 'setSpeed', speed: Number(event.key) as Speed });
+      } else if ((key === 'k' || key === 't') && !game.build && game.view) {
+        const panel = key === 'k' ? 'kanban' : 'team';
+        game.openPanel(game.panel === panel ? null : panel);
       } else if (
         event.key === ' ' &&
         game.view?.step === 'EXECUTION' &&

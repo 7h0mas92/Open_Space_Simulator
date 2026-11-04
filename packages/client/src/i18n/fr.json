@@ -794,7 +794,20 @@
     },
     "slackAi": "Slack piloté par l'IA",
     "slackAiHint": "Les devs réagissent en direct grâce à l'IA (quota quotidien). Décoché : messages classiques.",
-    "dailyPause": "Arrêter le temps quelques secondes au Daily du matin"
+    "dailyPause": "Arrêter le temps quelques secondes au Daily du matin",
+    "shortcuts": {
+      "title": "Raccourcis clavier",
+      "space": "Espace : pause / reprise",
+      "speed": "1, 2, 4 : vitesse du temps",
+      "build": "B : mode construction",
+      "kanban": "K : Kanban",
+      "team": "T : équipe",
+      "rotate": "R : tourner l'objet en main",
+      "arrows": "Flèches : déplacer l'objet en main",
+      "enter": "Entrée : poser l'objet",
+      "escape": "Échap : revenir en arrière",
+      "answer": "1 et 2 : répondre à une carte"
+    }
   },
   "credits": {
     "title": "Crédits",
@@ -2430,38 +2443,6 @@
     "maxUsers_other": "Jusqu’à {{count}} salariés",
     "tooSmall": "trop petite pour ton équipe",
     "setupFee": "Mise en service : {{price}} €, payée à la souscription"
-  },
-  "cleaning": {
-    "intro": "Chaque jour de semaine, l’équipe présente au bureau le salit : emballages, gobelets, canettes, boîtes de pizza… Plus tu attends, plus la saleté monte vite, et un bureau sale ralentit tous ceux qui y travaillent (pas les télétravailleurs). Appelle l’entreprise de nettoyage Nickel Chrome ou prends un abonnement.",
-    "dirtTitle": "Saleté du bureau",
-    "dirt": "{{percent}} % de saleté",
-    "levels": {
-      "clean": "Propre",
-      "warn": "À surveiller",
-      "dirty": "Sale"
-    },
-    "loss": "L’équipe sur place travaille {{percent}} % moins vite.",
-    "noLoss": "Bureau impeccable : aucun travail perdu.",
-    "days_one": "{{count}} jour sans ménage",
-    "days_other": "{{count}} jours sans ménage",
-    "crewTitle": "Nickel Chrome, entreprise de nettoyage",
-    "tools": {
-      "cart": "cheffe d’équipe, chariot",
-      "vacuum": "aspirateur",
-      "mop": "serpillière"
-    },
-    "status": {
-      "visit": "Ménage en cours ({{percent}} %)",
-      "express": "L’équipe express arrive tout de suite",
-      "booked_one": "L’équipe passe dans {{count}} heure",
-      "booked_other": "L’équipe passe dans {{count}} heures"
-    },
-    "call": "Appeler pour ce soir ({{price}} €)",
-    "express": "Express, tout de suite ({{price}} €)",
-    "callHint": "Un appel est payé à la réservation : l’équipe passe le soir à 19h, ou tout de suite en express.",
-    "history_one": "{{count}} passage, {{price}} € dépensés en appels",
-    "history_other": "{{count}} passages, {{price}} € dépensés en appels",
-    "button": "Ménage : {{percent}} % de saleté"
   },
   "daily": {
     "liveUseful": "Daily en salle de réunion : chacun fait le point sur son ticket. Utile, +{{focus}} % jusqu’au soir.",

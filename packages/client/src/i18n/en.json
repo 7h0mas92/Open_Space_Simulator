@@ -794,7 +794,20 @@
     },
     "slackAi": "AI-driven Slack",
     "slackAiHint": "Devs react live thanks to AI (daily quota). Unchecked: classic messages.",
-    "dailyPause": "Stop time for a few seconds at the morning Daily"
+    "dailyPause": "Stop time for a few seconds at the morning Daily",
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "space": "Space: pause / resume",
+      "speed": "1, 2, 4: time speed",
+      "build": "B: build mode",
+      "kanban": "K: Kanban",
+      "team": "T: team",
+      "rotate": "R: rotate the held item",
+      "arrows": "Arrows: move the held item",
+      "enter": "Enter: place the item",
+      "escape": "Escape: go back",
+      "answer": "1 and 2: answer a card"
+    }
   },
   "credits": {
     "title": "Credits",
@@ -2430,38 +2443,6 @@
     "maxUsers_other": "Up to {{count}} employees",
     "tooSmall": "too small for your team",
     "setupFee": "Setup fee: €{{price}}, paid when you subscribe"
-  },
-  "cleaning": {
-    "intro": "Every weekday, the team in the office makes a mess: wrappers, cups, cans, pizza boxes… The longer you wait, the faster it gets dirty, and a dirty office slows down everyone working there (not remote workers). Call the Nickel Chrome cleaning company or take a subscription.",
-    "dirtTitle": "Office dirt",
-    "dirt": "{{percent}}% dirty",
-    "levels": {
-      "clean": "Clean",
-      "warn": "Watch out",
-      "dirty": "Dirty"
-    },
-    "loss": "The team on site works {{percent}}% slower.",
-    "noLoss": "Spotless office: no work lost.",
-    "days_one": "{{count}} day without cleaning",
-    "days_other": "{{count}} days without cleaning",
-    "crewTitle": "Nickel Chrome, cleaning company",
-    "tools": {
-      "cart": "team lead, cart",
-      "vacuum": "vacuum cleaner",
-      "mop": "mop"
-    },
-    "status": {
-      "visit": "Cleaning in progress ({{percent}}%)",
-      "express": "The express crew is on its way",
-      "booked_one": "The crew comes in {{count}} hour",
-      "booked_other": "The crew comes in {{count}} hours"
-    },
-    "call": "Book for tonight (€{{price}})",
-    "express": "Express, right now (€{{price}})",
-    "callHint": "A call is paid when booked: the crew comes at 7 pm, or right away for express.",
-    "history_one": "{{count}} visit, €{{price}} spent on calls",
-    "history_other": "{{count}} visits, €{{price}} spent on calls",
-    "button": "Cleaning: {{percent}}% dirty"
   },
   "daily": {
     "liveUseful": "Daily in the meeting room: everyone gives an update on their ticket. Useful, +{{focus}}% until tonight.",

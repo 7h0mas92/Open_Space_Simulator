@@ -147,6 +147,7 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
       {inGame && (
         <>
           <GuideIndex />
+          <ShortcutList />
           <button type="button" onClick={() => openPanel('credits')}>
             {t('panels.credits')}
           </button>
@@ -156,5 +157,33 @@ export function SettingsPanel({ inGame = true }: { inGame?: boolean }) {
         </>
       )}
     </div>
+  );
+}
+
+const SHORTCUTS = [
+  'space',
+  'speed',
+  'build',
+  'kanban',
+  'team',
+  'rotate',
+  'arrows',
+  'enter',
+  'escape',
+  'answer',
+] as const;
+
+/** Raccourcis clavier (repris de `useShortcuts` dans GameScreen), repliés par défaut. */
+function ShortcutList() {
+  const { t } = useTranslation();
+  return (
+    <details className="shortcut-list">
+      <summary>{t('settings.shortcuts.title')}</summary>
+      <ul>
+        {SHORTCUTS.map((id) => (
+          <li key={id}>{t(`settings.shortcuts.${id}`)}</li>
+        ))}
+      </ul>
+    </details>
   );
 }
