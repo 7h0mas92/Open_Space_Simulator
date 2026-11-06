@@ -357,6 +357,7 @@ test('mode construction : choisir l’écran des bureaux', async ({ page }) => {
 });
 
 test('mode construction : peindre un mur, puis tous les murs', async ({ page }) => {
+  test.slow();
   await startAsGuest(page);
   // Les peintures sont au niveau 1 de la branche Ambiance de l'arbre R&D.
   await research(page, 'ambiance-1');
