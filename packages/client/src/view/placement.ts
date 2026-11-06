@@ -67,6 +67,23 @@ export function snapToGrid(kind: string, point: { readonly x: number; readonly z
   return { x: Math.round(point.x / step) * step, z: Math.round(point.z / step) * step };
 }
 
+/**
+ * Case d'ancrage d'un objet visé au pointeur : l'emprise est centrée sur le point du sol touché
+ * (et non accrochée par son coin), arrondie à la grille de l'objet et gardée dans le bureau.
+ */
+export function aimAnchor(
+  kind: string,
+  rotation: Rotation,
+  point: { readonly x: number; readonly z: number },
+  layout: Pick<OfficeLayout, 'width' | 'depth'>,
+): Cell {
+  const def = catalogItem(kind);
+  const [w, d] = def ? footprint(def, rotation) : [1, 1];
+  const snapped = snapToGrid(kind, { x: point.x - (w - 1) / 2, z: point.z - (d - 1) / 2 });
+  const clamp = (value: number, max: number) => Math.max(0, Math.min(max, value));
+  return { x: clamp(snapped.x, layout.width - w), z: clamp(snapped.z, layout.depth - d) };
+}
+
 /** Tronçons des murs fins (plan et murs posés), mis en cache pour une même liste d'objets. */
 const segmentCache = new WeakMap<
   readonly PlacedItemView[],

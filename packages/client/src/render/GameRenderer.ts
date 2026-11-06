@@ -32,7 +32,7 @@ import {
   nearestValidCell,
   resolveAccessory,
   slotPosition,
-  snapsToHalf,
+  aimAnchor,
 } from '../view/placement';
 import type { GameView, PlacedItemView, Rotation } from '../view/types';
 import { aimWindow, isWallItem, wallOpenings, type WallSide } from '../view/windows';
@@ -1051,7 +1051,19 @@ export class GameRenderer {
         if (best) return best;
       }
     }
-    if (kind && snapsToHalf(kind)) return this.pointAt(x, y);
+    if (kind && this.build) {
+      // Emprise centrée sous le pointeur, quelle que soit sa taille (voir aimAnchor).
+      this.raycaster.setFromCamera(this.ndc(x, y), this.camera);
+      const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      const hit = this.raycaster.ray.intersectPlane(ground, new THREE.Vector3());
+      if (!hit) return null;
+      const inside =
+        hit.x >= -0.5 &&
+        hit.z >= -0.5 &&
+        hit.x <= this.layout.width - 0.5 &&
+        hit.z <= this.layout.depth - 0.5;
+      return inside ? aimAnchor(kind, this.build.rotation, hit, this.layout) : null;
+    }
     return this.cellAt(x, y);
   }
 
@@ -1329,24 +1341,6 @@ export class GameRenderer {
     const clamp = (value: number, max: number) => Math.max(0, Math.min(max - 1, Math.round(value)));
     const cell = { x: clamp(hit.x, this.layout.width), z: clamp(hit.z, this.layout.depth) };
     return aimWindow(this.layout, kind, cell);
-  }
-
-  /**
-   * Position visée par un objet qui se pose sur une demi-case : le point du sol sous le pointeur,
-   * arrondi à la demi-case, dans le bureau.
-   */
-  private pointAt(x: number, y: number): Cell | null {
-    this.raycaster.setFromCamera(this.ndc(x, y), this.camera);
-    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const hit = this.raycaster.ray.intersectPlane(ground, new THREE.Vector3());
-    if (!hit) return null;
-    const point = { x: Math.round(hit.x * 2) / 2, z: Math.round(hit.z * 2) / 2 };
-    return point.x >= 0 &&
-      point.z >= 0 &&
-      point.x <= this.layout.width - 1 &&
-      point.z <= this.layout.depth - 1
-      ? point
-      : null;
   }
 
   private cellAt(x: number, y: number): Cell | null {

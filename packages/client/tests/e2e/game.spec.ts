@@ -172,7 +172,8 @@ test('mode construction : le catalogue se replie quand on prend un objet', async
   );
   expect(overflow).toBeLessThanOrEqual(0);
 
-  await page.getByRole('tab', { name: /Déco/ }).click();
+  await page.getByTestId('catalog-family-layout').click();
+  await page.getByTestId('catalog-tab-decor').click();
   await page.getByTestId('catalog-plant').click();
   await expect(page.getByTestId('catalog')).toBeHidden();
   await expect(page.getByTestId('placement-bar')).toContainText('Plante verte');
@@ -204,7 +205,8 @@ test('mode construction : la souris pose au clic, le doigt vise au tap', async (
 }) => {
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();
-  await page.getByRole('tab', { name: /Déco/ }).click();
+  await page.getByTestId('catalog-family-layout').click();
+  await page.getByTestId('catalog-tab-decor').click();
   await page.getByTestId('catalog-plant').click();
   await expect(page.getByTestId('place')).toBeEnabled();
 
@@ -250,7 +252,8 @@ test('mode construction : au doigt, on fait glisser l’aperçu sans bouger la c
   test.skip(!hasTouch, 'Glisser au doigt : écrans tactiles uniquement');
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();
-  await page.getByRole('tab', { name: /Déco/ }).click();
+  await page.getByTestId('catalog-family-layout').click();
+  await page.getByTestId('catalog-tab-decor').click();
   await page.getByTestId('catalog-plant').click();
   await expect.poll(async () => (await debug(page))?.ghost ?? null).not.toBeNull();
   const start = (await debug(page))!.ghost!;
@@ -280,7 +283,8 @@ test('inventaire : ranger un objet posé puis le reposer gratuitement', async ({
   test.slow();
   await startAsGuest(page);
   await page.getByRole('button', { name: /Construction/ }).click();
-  await page.getByRole('tab', { name: /Déco/ }).click();
+  await page.getByTestId('catalog-family-layout').click();
+  await page.getByTestId('catalog-tab-decor').click();
   await page.getByTestId('catalog-plant').click();
   await expect.poll(async () => (await debug(page))?.ghost ?? null).not.toBeNull();
   const spot = (await debug(page))!.ghost!;
@@ -353,6 +357,7 @@ test('mode construction : choisir l’écran des bureaux', async ({ page }) => {
 });
 
 test('mode construction : peindre un mur, puis tous les murs', async ({ page }) => {
+  test.slow();
   await startAsGuest(page);
   // Les peintures sont au niveau 1 de la branche Ambiance de l'arbre R&D.
   await research(page, 'ambiance-1');

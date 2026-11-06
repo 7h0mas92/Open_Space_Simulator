@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { catalogItem } from '../../view/catalog';
 import type { GameView, ServerRoomView } from '../../view/types';
 import { localized } from '../game/format';
-import { useGame } from '../store/game';
-import { ServiceSubscription } from '../subscriptions/Subscriptions';
 
 /*
  * Panneau « Salle des serveurs » (ouvert depuis le rayon Serveurs du mode construction, ou en
@@ -17,7 +15,6 @@ const NEED_ICONS = { server: '🗄️', network: '🔌', cooling: '❄️' } as 
 
 export function ServerRoom({ view }: { view: GameView }) {
   const { t } = useTranslation();
-  const openPanel = useGame((s) => s.openPanel);
   const servers = view.servers;
   return (
     <div className="servers-panel">
@@ -47,15 +44,6 @@ export function ServerRoom({ view }: { view: GameView }) {
           })}
         </p>
       </section>
-
-      <ServiceSubscription view={view} service="internet" />
-      <button
-        type="button"
-        onClick={() => openPanel('subscriptions')}
-        data-testid="servers-open-subscriptions"
-      >
-        🧾 {t('subscriptions.manageAll')}
-      </button>
     </div>
   );
 }

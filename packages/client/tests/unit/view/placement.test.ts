@@ -1,8 +1,9 @@
 import { FURNITURE_CATALOG } from '@oss/shared';
 import { describe, expect, it } from 'vitest';
-import { catalogItem } from '../../../src/view/catalog';
+import { catalogItem, footprint } from '../../../src/view/catalog';
 import { officeLayout } from '../../../src/view/layout';
 import {
+  aimAnchor,
   checkPlacement,
   nearestValidCell,
   resolveAccessory,
@@ -361,5 +362,25 @@ describe('Placement à la demi-case', () => {
     const desk = item('d', 'desk', 2.5, 2);
     const resolved = resolveAccessory([desk], { kind: 'rubber-duck', x: 3, z: 2 });
     expect(resolved).toMatchObject({ host: { id: 'd' } });
+  });
+});
+
+describe('aimAnchor', () => {
+  const layout = { width: 10, depth: 8 };
+  it('centre un objet de 1 case sous le pointeur', () => {
+    expect(aimAnchor('plant', 0, { x: 3.1, z: 4.2 }, layout)).toEqual({ x: 3, z: 4 });
+  });
+  it('centre une emprise plus large au lieu de l’accrocher par son coin', () => {
+    const def = catalogItem('desk')!;
+    const [w] = footprint(def, 0);
+    const anchor = aimAnchor('desk', 0, { x: 5, z: 4 }, layout);
+    expect(anchor.x + (w - 1) / 2).toBeCloseTo(5, 0);
+  });
+  it('garde l’emprise dans le bureau', () => {
+    const def = catalogItem('desk')!;
+    const [w, d] = footprint(def, 0);
+    const anchor = aimAnchor('desk', 0, { x: 9.4, z: 7.4 }, layout);
+    expect(anchor.x).toBeLessThanOrEqual(10 - w);
+    expect(anchor.z).toBeLessThanOrEqual(8 - d);
   });
 });

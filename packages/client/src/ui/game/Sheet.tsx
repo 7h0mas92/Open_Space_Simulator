@@ -10,12 +10,17 @@ export function Sheet({
   title,
   icon,
   onClose,
+  onBack,
+  backLabel,
   children,
 }: {
   title: string;
   /** Icône décorative devant le titre (celle du bouton qui a ouvert le panneau). */
   icon?: string;
   onClose: () => void;
+  /** Flèche retour vers le panneau parent (ex. Locaux), affichée avant le titre. */
+  onBack?: () => void;
+  backLabel?: string;
   children: ReactNode;
 }) {
   const { t } = useTranslation();
@@ -48,6 +53,18 @@ export function Sheet({
       >
         <header className="sheet-header">
           <span className="sheet-grip" aria-hidden="true" />
+          {onBack && (
+            <button
+              type="button"
+              className="icon-button sheet-back"
+              onClick={onBack}
+              aria-label={backLabel}
+              title={backLabel}
+              data-testid="sheet-back"
+            >
+              ←
+            </button>
+          )}
           {icon && (
             <span className="sheet-icon" aria-hidden="true">
               {icon}
